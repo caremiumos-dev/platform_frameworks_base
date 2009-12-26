@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAqH///3M\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 1001146
+      },
+      "writtenOn": "2009-12-26T16:35:52Z",
+      "side": 1,
+      "message": "This line is too long, \u003e 100 characters\nThe explanation \"allow the layout to override it\" is a bit confusing, please use \"XML layout\" or \"attributes\" instead",
+      "revId": "eaef4644422648e5391cec68210b0a393cba39f9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAqH///3I\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 425,
+      "author": {
+        "id": 1001146
+      },
+      "writtenOn": "2009-12-26T16:35:52Z",
+      "side": 1,
+      "message": "Limit comments to 80 characters, do not mention subclasses in parent classes.",
+      "revId": "eaef4644422648e5391cec68210b0a393cba39f9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAqH///3E\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 428,
+      "author": {
+        "id": 1001146
+      },
+      "writtenOn": "2009-12-26T16:35:52Z",
+      "side": 1,
+      "message": "You are changing a value that affects the layout, you should also be calling requestLayout() in the if statement.",
+      "revId": "eaef4644422648e5391cec68210b0a393cba39f9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
