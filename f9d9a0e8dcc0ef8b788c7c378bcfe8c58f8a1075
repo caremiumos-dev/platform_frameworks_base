@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAqH///1o\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 1001146
+      },
+      "writtenOn": "2009-12-28T18:13:11Z",
+      "side": 1,
+      "message": "Do not put a comment *after* the statement you are commenting. Also, do not break a comment if the first line is a continuation of a code statement. You should write something like this:\n\n// line1\n// line2\ncode();",
+      "revId": "f9d9a0e8dcc0ef8b788c7c378bcfe8c58f8a1075",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAqH///1k\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 426,
+      "author": {
+        "id": 1001146
+      },
+      "writtenOn": "2009-12-28T18:13:11Z",
+      "side": 1,
+      "message": "Do not mention a \"thumb\" since this class does not know anything about a thumb. Just mention that if necessary, the height of the progress bar will be updated.",
+      "revId": "f9d9a0e8dcc0ef8b788c7c378bcfe8c58f8a1075",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAqH///1g\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 429,
+      "author": {
+        "id": 1001146
+      },
+      "writtenOn": "2009-12-28T18:13:11Z",
+      "side": 1,
+      "message": "I just realized that this test should probably be !\u003d instead of \u003c, otherwise the progress bar will not resize properly when drawableHeight \u003e mMaxHeight.",
+      "revId": "f9d9a0e8dcc0ef8b788c7c378bcfe8c58f8a1075",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
