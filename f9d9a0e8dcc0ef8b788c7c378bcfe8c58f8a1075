@@ -50,6 +50,24 @@
       "revId": "f9d9a0e8dcc0ef8b788c7c378bcfe8c58f8a1075",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAqH///1U\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 429,
+      "author": {
+        "id": 1002350
+      },
+      "writtenOn": "2009-12-29T00:24:27Z",
+      "side": 1,
+      "message": "I thought \u0027mMaxHeight \u003c drawableHeight\u0027 is enough because of \u0027Math.min(mMaxHeight, d.getIntrinsicHeight())\u0027 in onMeasure().\nIf mMaxHeight should be exactly same as drawableHeight, is it ok to override in xml layout by user? Now I wonder what is the real purpose of mMaxHeight?",
+      "parentUuid": "AAAAqH///1g\u003d",
+      "revId": "f9d9a0e8dcc0ef8b788c7c378bcfe8c58f8a1075",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
