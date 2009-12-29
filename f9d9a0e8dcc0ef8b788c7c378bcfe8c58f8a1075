@@ -68,6 +68,24 @@
       "revId": "f9d9a0e8dcc0ef8b788c7c378bcfe8c58f8a1075",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAqH///0c\u003d",
+        "filename": "core/java/android/widget/ProgressBar.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 429,
+      "author": {
+        "id": 1001146
+      },
+      "writtenOn": "2009-12-29T04:29:22Z",
+      "side": 1,
+      "message": "I didn\u0027t think of the Math.min(), that\u0027s fine then",
+      "parentUuid": "AAAAqH///1U\u003d",
+      "revId": "f9d9a0e8dcc0ef8b788c7c378bcfe8c58f8a1075",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
