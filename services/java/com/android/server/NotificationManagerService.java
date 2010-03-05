@@ -118,11 +118,11 @@ class NotificationManagerService extends INotificationManager.Stub
     private boolean mBatteryFull;
     private NotificationRecord mLedNotification;
 
-    private static final int BATTERY_LOW_ARGB = 0xFFFF0000; // Charging Low - red solid on
-    private static final int BATTERY_MEDIUM_ARGB = 0xFFFFFF00;    // Charging - orange solid on
-    private static final int BATTERY_FULL_ARGB = 0xFF00FF00; // Charging Full - green solid on
-    private static final int BATTERY_BLINK_ON = 125;
-    private static final int BATTERY_BLINK_OFF = 2875;
+    private static int mBatteryLowARGB;
+    private static int mBatteryMediumARGB;
+    private static int mBatteryFullARGB;
+    private static int mBatteryBlinkOn;
+    private static int mBatteryBlinkOff;
 
     // Tag IDs for EventLog.
     private static final int EVENT_LOG_ENQUEUE = 2750;
@@ -416,6 +416,17 @@ class NotificationManagerService extends INotificationManager.Stub
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         mContext.registerReceiver(mIntentReceiver, filter);
         
+        mBatteryLowARGB = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_notificationsBatteryLowARGB);
+        mBatteryMediumARGB = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_notificationsBatteryMediumARGB);
+        mBatteryFullARGB = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_notificationsBatteryFullARGB);
+        mBatteryBlinkOn = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_notificationsBatteryBlinkOn);
+        mBatteryBlinkOff = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_notificationsBatteryBlinkOff);
+
         SettingsObserver observer = new SettingsObserver(mHandler);
         observer.observe();
     }
@@ -997,20 +1008,20 @@ class NotificationManagerService extends INotificationManager.Stub
         if (mBatteryLow) {
             if (mBatteryCharging) {
                 mHardware.setLightColor_UNCHECKED(HardwareService.LIGHT_ID_BATTERY,
-                    BATTERY_LOW_ARGB);
+                    mBatteryLowARGB);
             } else {
                 // Flash when battery is low and not charging
                 mHardware.setLightFlashing_UNCHECKED(HardwareService.LIGHT_ID_BATTERY,
-                    BATTERY_LOW_ARGB, HardwareService.LIGHT_FLASH_TIMED,
-                    BATTERY_BLINK_ON, BATTERY_BLINK_OFF);
+                    mBatteryLowARGB, HardwareService.LIGHT_FLASH_TIMED,
+                    mBatteryBlinkOn, mBatteryBlinkOff);
             }
         } else if (mBatteryCharging) {
             if (mBatteryFull) {
                 mHardware.setLightColor_UNCHECKED(HardwareService.LIGHT_ID_BATTERY,
-                        BATTERY_FULL_ARGB);
+                        mBatteryFullARGB);
             } else {
                 mHardware.setLightColor_UNCHECKED(HardwareService.LIGHT_ID_BATTERY,
-                        BATTERY_MEDIUM_ARGB);
+                        mBatteryMediumARGB);
             }
         } else {
             mHardware.setLightOff_UNCHECKED(HardwareService.LIGHT_ID_BATTERY);
