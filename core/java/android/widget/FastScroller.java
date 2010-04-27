@@ -109,38 +109,56 @@ class FastScroller {
     public int getState() {
         return mState;
     }
-    
+
     private void resetThumbPos() {
-        final int viewWidth = mList.getWidth();
-        // Bounds are always top right. Y coordinate get's translated during draw
-        mThumbDrawable.setBounds(viewWidth - mThumbW, 0, viewWidth, mThumbH);
-        mThumbDrawable.setAlpha(ScrollFade.ALPHA_MAX);
+        if (mThumbDrawable != null) {
+            final int viewWidth = mList.getWidth();
+            // Bounds are always top right. Y coordinate get's translated during draw
+            mThumbDrawable.setBounds(viewWidth - mThumbW, 0, viewWidth, mThumbH);
+            mThumbDrawable.setAlpha(ScrollFade.ALPHA_MAX);
+        }
     }
-    
-    private void useThumbDrawable(Context context, Drawable drawable) {
-        mThumbDrawable = drawable;
-        mThumbW = context.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.fastscroll_thumb_width);
-        mThumbH = context.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.fastscroll_thumb_height);
-        mChangedBounds = true;
+
+    public void setOverlay(Drawable overlay, int size) {
+        if (overlay != null) {
+            mOverlayDrawable = overlay;
+            mOverlaySize = size;
+
+            mOverlayPos.left = (mList.getWidth() - mOverlaySize) / 2;
+            mOverlayPos.right = mOverlayPos.left + mOverlaySize;
+            mOverlayPos.top = mList.getHeight() / 10; // 10% from top
+            mOverlayPos.bottom = mOverlayPos.top + mOverlaySize;
+            mOverlayDrawable.setBounds((int)mOverlayPos.left, (int)mOverlayPos.top,
+                                       (int)mOverlayPos.right, (int)mOverlayPos.bottom);
+
+            if (mPaint != null) {
+                mPaint.setTextSize(mOverlaySize / 2);
+            }
+        }
+    }
+
+    public Drawable getOverlay() {
+        return mOverlayDrawable;
+    }
+
+    public void setThumb(Drawable thumb, int width, int height) {
+        if (thumb != null) {
+            mThumbDrawable = thumb;
+            mThumbW = width;
+            mThumbH = height;
+            mChangedBounds = true;
+        }
+    }
+
+    public Drawable getThumb() {
+        return mThumbDrawable;
     }
 
     private void init(Context context) {
-        // Get both the scrollbar states drawables
-        final Resources res = context.getResources();
-        useThumbDrawable(context, res.getDrawable(
-                com.android.internal.R.drawable.scrollbar_handle_accelerated_anim2));
-        
-        mOverlayDrawable = res.getDrawable(
-                com.android.internal.R.drawable.menu_submenu_background);
-        
         mScrollCompleted = true;
 
         getSectionsFromIndexer();
 
-        mOverlaySize = context.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.fastscroll_overlay_size);
         mOverlayPos = new RectF();
         mScrollFade = new ScrollFade();
         mPaint = new Paint();
@@ -179,21 +197,27 @@ class FastScroller {
         int alpha = -1;
         if (mState == STATE_EXIT) {
             alpha = scrollFade.getAlpha();
-            if (alpha < ScrollFade.ALPHA_MAX / 2) {
-                mThumbDrawable.setAlpha(alpha * 2);
+            if (mThumbDrawable != null) {
+                if (alpha < ScrollFade.ALPHA_MAX / 2) {
+                    mThumbDrawable.setAlpha(alpha * 2);
+                }
+                int left = viewWidth - (mThumbW * alpha) / ScrollFade.ALPHA_MAX;
+                mThumbDrawable.setBounds(left, 0, viewWidth, mThumbH);
+                mChangedBounds = true;
             }
-            int left = viewWidth - (mThumbW * alpha) / ScrollFade.ALPHA_MAX;
-            mThumbDrawable.setBounds(left, 0, viewWidth, mThumbH);
-            mChangedBounds = true;
         }
 
-        canvas.translate(0, y);
-        mThumbDrawable.draw(canvas);
-        canvas.translate(0, -y);
+        if (mThumbDrawable != null) {
+            canvas.translate(0, y);
+            mThumbDrawable.draw(canvas);
+            canvas.translate(0, -y);
+        }
 
         // If user is dragging the scroll bar, draw the alphabet overlay
         if (mState == STATE_DRAGGING && mDrawOverlay) {
-            mOverlayDrawable.draw(canvas);
+            if (mOverlayDrawable != null) {
+                mOverlayDrawable.draw(canvas);
+            }
             final Paint paint = mPaint;
             float descent = paint.descent();
             final RectF rectF = mOverlayPos;

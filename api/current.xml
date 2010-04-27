@@ -3573,6 +3573,61 @@
  visibility="public"
 >
 </field>
+<field name="fastScrollOverlay"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843446"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollOverlaySize"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843447"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollThumb"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843448"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollThumbHeight"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843450"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollThumbWidth"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843449"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
 <field name="fillAfter"
  type="int"
  transient="false"
@@ -179205,6 +179260,28 @@
  visibility="public"
 >
 </method>
+<method name="getFastScrollOverlay"
+ return="int"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</method>
+<method name="getFastScrollThumb"
+ return="int"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</method>
 <method name="getListPaddingBottom"
  return="int"
  abstract="false"
@@ -179563,6 +179640,38 @@
  visibility="public"
 >
 <parameter name="enabled" type="boolean">
+</parameter>
+</method>
+<method name="setFastScrollOverlay"
+ return="void"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+<parameter name="overlay" type="int">
+</parameter>
+<parameter name="size" type="int">
+</parameter>
+</method>
+<method name="setFastScrollThumb"
+ return="void"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+<parameter name="thumb" type="int">
+</parameter>
+<parameter name="width" type="int">
+</parameter>
+<parameter name="height" type="int">
 </parameter>
 </method>
 <method name="setFilterText"

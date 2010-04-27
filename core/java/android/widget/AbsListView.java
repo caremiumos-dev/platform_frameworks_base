@@ -67,6 +67,11 @@ import java.util.List;
  * @attr ref android.R.styleable#AbsListView_cacheColorHint
  * @attr ref android.R.styleable#AbsListView_fastScrollEnabled
  * @attr ref android.R.styleable#AbsListView_smoothScrollbar
+ * @attr ref android.R.styleable#AbsListView_fastScrollOverlay
+ * @attr ref android.R.styleable#AbsListView_fastScrollOverlaySize
+ * @attr ref android.R.styleable#AbsListView_fastScrollThumb
+ * @attr ref android.R.styleable#AbsListView_fastScrollThumbWidth
+ * @attr ref android.R.styleable#AbsListView_fastScrollThumbHeight
  */
 public abstract class AbsListView extends AdapterView<ListAdapter> implements TextWatcher,
         ViewTreeObserver.OnGlobalLayoutListener, Filter.FilterListener,
@@ -325,6 +330,33 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
     boolean mFastScrollEnabled;
 
     /**
+     * The resource that will be used as background for the fast scroller
+     * hint letter.
+     */
+    private int mFastScrollOverlay;
+
+    /**
+     * The size of the hint letter and its background.
+     */
+    private int mFastScrollOverlaySize;
+
+    /**
+     * The resource that will be used for the thumb icons that are used
+     * for the fast scroller feature.
+     */
+    private int mFastScrollThumb;
+
+    /**
+     * The width of the thumb used for fast scrolling.
+     */
+    private int mFastScrollThumbWidth;
+
+    /**
+     * The height of the thumb used for fast scrolling.
+     */
+    private int mFastScrollThumbHeight;
+
+    /**
      * Optional callback to notify client when scroll position has changed
      */
     private OnScrollListener mOnScrollListener;
@@ -535,6 +567,16 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
         int color = a.getColor(R.styleable.AbsListView_cacheColorHint, 0);
         setCacheColorHint(color);
 
+        // Get settings for the fast scroller.
+        mFastScrollOverlay = a.getResourceId(R.styleable.AbsListView_fastScrollOverlay, 0);
+        mFastScrollOverlaySize =
+            a.getDimensionPixelSize(R.styleable.AbsListView_fastScrollOverlaySize, 0);
+        mFastScrollThumb = a.getResourceId(R.styleable.AbsListView_fastScrollThumb, 0);
+        mFastScrollThumbWidth =
+            a.getDimensionPixelSize(R.styleable.AbsListView_fastScrollThumbWidth, 0);
+        mFastScrollThumbHeight =
+            a.getDimensionPixelSize(R.styleable.AbsListView_fastScrollThumbHeight, 0);
+
         boolean enableFastScroll = a.getBoolean(R.styleable.AbsListView_fastScrollEnabled, false);
         setFastScrollEnabled(enableFastScroll);
 
@@ -573,6 +615,8 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
         if (enabled) {
             if (mFastScroller == null) {
                 mFastScroller = new FastScroller(getContext(), this);
+                setFastScrollOverlay(mFastScrollOverlay, mFastScrollOverlaySize);
+                setFastScrollThumb(mFastScrollThumb, mFastScrollThumbWidth, mFastScrollThumbHeight);
             }
         } else {
             if (mFastScroller != null) {
@@ -590,6 +634,66 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
     @ViewDebug.ExportedProperty
     public boolean isFastScrollEnabled() {
         return mFastScrollEnabled;
+    }
+
+    /**
+     * Set the drawable that will be used as the background of the hint letter,
+     * and the size of the letter.
+     *
+     * @param overlay the drawable that will be used as background for
+     *        the hint letter
+     * @param size the size of the hint letter
+     */
+    public void setFastScrollOverlay(int overlay, int size) {
+        if (overlay != 0) {
+            mFastScrollOverlay = overlay;
+            mFastScrollOverlaySize = size;
+            if (mFastScroller != null) {
+                Drawable d = getResources().getDrawable(mFastScrollOverlay);
+                mFastScroller.setOverlay(d, size);
+            }
+        }
+    }
+
+    /**
+     * Returns the id of the resource that will be used as background of the index letter
+     * when fast scrolling is used.
+     *
+     * @return The resource id used as background for fast scroll index letter.
+     */
+    public int getFastScrollOverlay() {
+        return mFastScrollOverlay;
+    }
+
+    /**
+     * Set the drawable that will be used as thumbs when fast scrolling is
+     * active and its size.
+     *
+     * @param thumb the drawable that will be used as background for
+     *        the section text
+     * @param width the width of the thumb drawable
+     * @param height the height of the thumb drawable
+     */
+    public void setFastScrollThumb(int thumb, int width, int height) {
+        if (thumb != 0) {
+            mFastScrollThumb = thumb;
+            mFastScrollThumbWidth = width;
+            mFastScrollThumbHeight = height;
+            if (mFastScroller != null) {
+                Drawable d = getResources().getDrawable(mFastScrollThumb);
+                mFastScroller.setThumb(d, width, height);
+            }
+        }
+    }
+
+    /**
+     * Returns the id of the resource that will be used as thumbs when fast
+     * scrolling is used.
+     *
+     * @return The resource id used as thumbs for fast scrolling.
+     */
+    public int getFastScrollThumb() {
+        return mFastScrollThumb;
     }
 
     /**
@@ -1481,6 +1585,12 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
         super.drawableStateChanged();
         if (mSelector != null) {
             mSelector.setState(getDrawableState());
+        }
+        if (mFastScroller != null) {
+            Drawable overlay = mFastScroller.getOverlay();
+            Drawable thumb = mFastScroller.getThumb();
+            if (overlay != null) overlay.setState(getDrawableState());
+            if (thumb != null) thumb.setState(getDrawableState());
         }
     }
 
