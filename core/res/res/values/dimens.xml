@@ -28,10 +28,14 @@
     <dimen name="toast_y_offset">64dip</dimen>
     <!-- Height of the status bar -->
     <dimen name="status_bar_height">25dip</dimen>
-    <!-- Size of the fastscroll hint letter -->
-    <dimen name="fastscroll_overlay_size">104dp</dimen>
+    <!-- Width of the background of the fastscroll index text -->
+    <dimen name="fastscroll_overlay_width">104dp</dimen>
+    <!-- Height of the background of the fastscroll index text -->
+    <dimen name="fastscroll_overlay_height">104dp</dimen>
     <!-- Width of the fastscroll thumb -->
     <dimen name="fastscroll_thumb_width">64dp</dimen>
     <!-- Height of the fastscroll thumb -->
     <dimen name="fastscroll_thumb_height">52dp</dimen>
+    <!-- The size of the index text -->
+    <dimen name="fastscroll_text_size">52dp</dimen>
 </resources>

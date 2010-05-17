@@ -1506,6 +1506,22 @@
              will use only the number of items in the adapter and the number of items visible
              on screen to determine the scrollbar's properties. -->
         <attr name="smoothScrollbar" format="boolean" />
+        <!-- The drawable that will be used as background for the section text when
+             fast scrolling is used. If set, fastScrollOverlaySize should also be set. -->
+        <attr name="fastScrollOverlay" format="reference" />
+        <!-- The width of the fast scroller hint letter. -->
+        <attr name="fastScrollOverlayWidth" format="dimension" />
+        <!-- The size of the fast scroller hint letter. -->
+        <attr name="fastScrollOverlayHeight" format="dimension" />
+        <!-- The drawable that will be used as fast scroll thumbs. If set,
+             fastScrollThumbWidth and fastScrollThumbHeight should also be set. -->
+        <attr name="fastScrollThumb" format="reference" />
+        <!-- The width of the thumb. -->
+        <attr name="fastScrollThumbWidth" format="dimension" />
+        <!-- The height of the thumb. -->
+        <attr name="fastScrollThumbHeight" format="dimension" />
+        <!-- The size of the index text.  -->
+        <attr name="fastScrollTextSize" format="dimension" />
     </declare-styleable>
     <declare-styleable name="AbsSpinner">
         <!-- Reference to an array resource that will populate the Spinner.  For static content,

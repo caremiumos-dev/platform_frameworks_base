@@ -55,7 +55,9 @@ class FastScroller {
     private int mThumbY;
 
     private RectF mOverlayPos;
-    private int mOverlaySize;
+    private int mOverlayWidth;
+    private int mOverlayHeight;
+    private int mTextSize;
 
     private AbsListView mList;
     private boolean mScrollCompleted;
@@ -92,7 +94,7 @@ class FastScroller {
                 break;
             case STATE_VISIBLE:
                 if (mState != STATE_VISIBLE) { // Optimization
-                    resetThumbPos();
+                    setupDrawables();
                 }
                 // Fall through
             case STATE_DRAGGING:
@@ -110,43 +112,72 @@ class FastScroller {
         return mState;
     }
     
-    private void resetThumbPos() {
+    private void setupDrawables() {
         final int viewWidth = mList.getWidth();
         // Bounds are always top right. Y coordinate get's translated during draw
-        mThumbDrawable.setBounds(viewWidth - mThumbW, 0, viewWidth, mThumbH);
-        mThumbDrawable.setAlpha(ScrollFade.ALPHA_MAX);
+        if (mThumbDrawable != null) {
+            mThumbDrawable.setBounds(viewWidth - mThumbW, 0, viewWidth, mThumbH);
+            mThumbDrawable.setAlpha(ScrollFade.ALPHA_MAX);
+        }
+        if (mOverlayDrawable != null) {
+            mOverlayPos.left = (viewWidth - mOverlayWidth) / 2;
+            mOverlayPos.right = mOverlayPos.left + mOverlayWidth;
+            mOverlayPos.top = mList.getHeight() / 10; // 10% from top
+            mOverlayPos.bottom = mOverlayPos.top + mOverlayHeight;
+            mOverlayDrawable.setBounds((int) mOverlayPos.left, (int) mOverlayPos.top,
+                    (int) mOverlayPos.right, (int) mOverlayPos.bottom);
+        }
     }
-    
-    private void useThumbDrawable(Context context, Drawable drawable) {
-        mThumbDrawable = drawable;
-        mThumbW = context.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.fastscroll_thumb_width);
-        mThumbH = context.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.fastscroll_thumb_height);
+
+    public void setOverlay(Drawable overlay, int width, int height) {
+        if (overlay == null || width == 0 || height == 0) {
+            throw new IllegalArgumentException("A valid drawable and correct width and height " +
+                    "must be set for the fast scroller overlay");
+        }
+        mOverlayDrawable = overlay;
+        mOverlayWidth = width;
+        mOverlayHeight = height;
+        setupDrawables();
+        mList.invalidate();
+    }
+
+    public Drawable getOverlay() {
+        return mOverlayDrawable;
+    }
+
+    public void setThumb(Drawable thumb, int width, int height) {
+        if (thumb == null || width == 0 || height == 0) {
+            throw new IllegalArgumentException("A valid drawable and correct width and height " +
+                    "must be set for the fast scroller thumb");
+        }
+        mThumbDrawable = thumb;
+        mThumbW = width;
+        mThumbH = height;
         mChangedBounds = true;
+        setupDrawables();
+        mList.invalidate();
+    }
+
+    public Drawable getThumb() {
+        return mThumbDrawable;
+    }
+
+    public void setTextSize(int size) {
+        mTextSize = size;
+        mPaint.setTextSize(size);
+        mList.invalidate();
     }
 
     private void init(Context context) {
-        // Get both the scrollbar states drawables
-        final Resources res = context.getResources();
-        useThumbDrawable(context, res.getDrawable(
-                com.android.internal.R.drawable.scrollbar_handle_accelerated_anim2));
-        
-        mOverlayDrawable = res.getDrawable(
-                com.android.internal.R.drawable.menu_submenu_background);
-        
         mScrollCompleted = true;
 
         getSectionsFromIndexer();
 
-        mOverlaySize = context.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.fastscroll_overlay_size);
         mOverlayPos = new RectF();
         mScrollFade = new ScrollFade();
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setTextAlign(Paint.Align.CENTER);
-        mPaint.setTextSize(mOverlaySize / 2);
         TypedArray ta = context.getTheme().obtainStyledAttributes(new int[] { 
                 android.R.attr.textColorPrimary });
         ColorStateList textColor = ta.getColorStateList(ta.getIndex(0));
@@ -198,7 +229,7 @@ class FastScroller {
             float descent = paint.descent();
             final RectF rectF = mOverlayPos;
             canvas.drawText(mSectionText, (int) (rectF.left + rectF.right) / 2,
-                    (int) (rectF.bottom + rectF.top) / 2 + mOverlaySize / 4 - descent, paint);
+                    (int) (rectF.bottom + rectF.top) / 2 + mTextSize / 2 - descent, paint);
         } else if (mState == STATE_EXIT) {
             if (alpha == 0) { // Done with exit
                 setState(STATE_NONE);
@@ -209,18 +240,7 @@ class FastScroller {
     }
 
     void onSizeChanged(int w, int h, int oldw, int oldh) {
-        if (mThumbDrawable != null) {
-            mThumbDrawable.setBounds(w - mThumbW, 0, w, mThumbH);
-        }
-        final RectF pos = mOverlayPos;
-        pos.left = (w - mOverlaySize) / 2;
-        pos.right = pos.left + mOverlaySize;
-        pos.top = h / 10; // 10% from top
-        pos.bottom = pos.top + mOverlaySize;
-        if (mOverlayDrawable != null) {
-            mOverlayDrawable.setBounds((int) pos.left, (int) pos.top,
-                (int) pos.right, (int) pos.bottom);
-        }
+        setupDrawables();
     }
     
     void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, 
@@ -240,7 +260,7 @@ class FastScroller {
             mThumbY = ((mList.getHeight() - mThumbH) * firstVisibleItem) 
                     / (totalItemCount - visibleItemCount);
             if (mChangedBounds) {
-                resetThumbPos();
+                setupDrawables();
                 mChangedBounds = false;
             }
         }

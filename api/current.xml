@@ -3573,6 +3573,83 @@
  visibility="public"
 >
 </field>
+<field name="fastScrollOverlay"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843446"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollOverlayHeight"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843448"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollOverlayWidth"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843447"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollTextSize"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843452"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollThumb"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843449"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollThumbHeight"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843451"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
+<field name="fastScrollThumbWidth"
+ type="int"
+ transient="false"
+ volatile="false"
+ value="16843450"
+ static="true"
+ final="true"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</field>
 <field name="fillAfter"
  type="int"
  transient="false"
@@ -179238,6 +179315,39 @@
  visibility="public"
 >
 </method>
+<method name="getFastScrollOverlay"
+ return="android.graphics.drawable.Drawable"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</method>
+<method name="getFastScrollTextSize"
+ return="int"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</method>
+<method name="getFastScrollThumb"
+ return="android.graphics.drawable.Drawable"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+</method>
 <method name="getListPaddingBottom"
  return="int"
  abstract="false"
@@ -179596,6 +179706,53 @@
  visibility="public"
 >
 <parameter name="enabled" type="boolean">
+</parameter>
+</method>
+<method name="setFastScrollOverlay"
+ return="void"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+<parameter name="overlay" type="android.graphics.drawable.Drawable">
+</parameter>
+<parameter name="width" type="int">
+</parameter>
+<parameter name="height" type="int">
+</parameter>
+</method>
+<method name="setFastScrollTextSize"
+ return="void"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+<parameter name="size" type="int">
+</parameter>
+</method>
+<method name="setFastScrollThumb"
+ return="void"
+ abstract="false"
+ native="false"
+ synchronized="false"
+ static="false"
+ final="false"
+ deprecated="not deprecated"
+ visibility="public"
+>
+<parameter name="thumb" type="android.graphics.drawable.Drawable">
+</parameter>
+<parameter name="width" type="int">
+</parameter>
+<parameter name="height" type="int">
 </parameter>
 </method>
 <method name="setFilterText"

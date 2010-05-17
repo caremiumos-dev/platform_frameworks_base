@@ -201,6 +201,13 @@
     <style name="Widget.AbsListView">
         <item name="android:scrollbars">vertical</item>
         <item name="android:fadingEdge">vertical</item>
+        <item name="android:fastScrollOverlay">@android:drawable/menu_submenu_background</item>
+        <item name="android:fastScrollOverlayWidth">@android:dimen/fastscroll_overlay_width</item>
+        <item name="android:fastScrollOverlayHeight">@android:dimen/fastscroll_overlay_height</item>
+        <item name="android:fastScrollThumb">@android:drawable/scrollbar_handle_accelerated_anim2</item>
+        <item name="android:fastScrollThumbWidth">@android:dimen/fastscroll_thumb_width</item>
+        <item name="android:fastScrollThumbHeight">@android:dimen/fastscroll_thumb_height</item>
+        <item name="android:fastScrollTextSize">@android:dimen/fastscroll_text_size</item>
     </style>
 
     <style name="Widget.GestureOverlayView">
