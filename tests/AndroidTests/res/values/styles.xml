@@ -43,4 +43,11 @@
     
     <style name="TestEnum1.EmptyInherit">
     </style>
+
+    <style name="WontBeUsed">
+      <item name="android:textSize">11px</item>
+    </style>
+
+    <style name="ParentWillChange" parent="WontBeUsed">
+    </style>
 </resources>

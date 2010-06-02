@@ -137,5 +137,25 @@ public class PrimitiveTest extends AndroidTestCase {
                 mResources.getString(R.string.formattedStringTwo, "unused", "hi", 43),
                 "Format[43,hi]");
     }
+
+    private float getStyleTextSize(int styleid) {
+        TypedArray sa =
+                mContext.obtainStyledAttributes(styleid, android.R.styleable.TextAppearance);
+        float value = sa.getDimension(android.R.styleable.TextAppearance_textSize, 0.0f);
+        sa.recycle();
+
+        return value;
+    }
+
+    @SmallTest
+    public void testChangeParentInOverlay() {
+        // Make sure we managed to change the 'ParentWillChange'
+        // parent style through an overlay, see res/values/styles.xml
+        // and overlay/res/values/styles.xml. We simulate
+        // PRODUCT_PACKAGE_OVERLAYS by putting both res and
+        // overlay/res in our LOCAL_RESOURCE_DIR
+        assertEquals(getStyleTextSize(R.style.NewParent),
+                     getStyleTextSize(R.style.ParentWillChange));
+    }
 }
 

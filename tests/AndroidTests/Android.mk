@@ -10,6 +10,12 @@ LOCAL_STATIC_JAVA_LIBRARIES := googlelogin-client
 # Resource unit tests use a private locale
 LOCAL_AAPT_FLAGS = -c xx_YY -c cs -c 160dpi -c 32dpi -c 240dpi
 
+# Simulate PRODUCT_PACKAGE_OVERLAYS by also having
+# '$(LOCAL_PATH)/overlay/res' here
+LOCAL_RESOURCE_DIR = \
+	$(LOCAL_PATH)/overlay/res \
+	$(LOCAL_PATH)/res
+
 LOCAL_SRC_FILES := \
 	$(call all-subdir-java-files) \
 	src/com/android/unit_tests/os/IAidlTest.aidl
