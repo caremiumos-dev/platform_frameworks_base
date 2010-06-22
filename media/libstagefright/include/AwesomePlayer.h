@@ -25,6 +25,7 @@
 #include <media/stagefright/HTTPDataSource.h>
 #include <media/stagefright/OMXClient.h>
 #include <utils/threads.h>
+#include <drm/DrmManagerClient.h>
 
 namespace android {
 
@@ -35,6 +36,8 @@ struct MediaExtractor;
 struct MediaSource;
 struct Prefetcher;
 struct TimeSource;
+class DrmManagerClinet;
+class DecryptHandle;
 
 struct AwesomeRenderer : public RefBase {
     AwesomeRenderer() {}
@@ -156,6 +159,9 @@ private:
     bool mIsAsyncPrepare;
     status_t mPrepareResult;
     status_t mStreamDoneStatus;
+
+    DrmManagerClient *mDrmManagerClient;
+    DecryptHandle *mDecryptHandle;
 
     void postVideoEvent_l(int64_t delayUs = -1);
     void postBufferingEvent_l();

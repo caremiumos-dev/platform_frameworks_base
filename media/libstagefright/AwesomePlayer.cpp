@@ -187,7 +187,8 @@ AwesomePlayer::AwesomePlayer()
       mExtractorFlags(0),
       mLastVideoBuffer(NULL),
       mVideoBuffer(NULL),
-      mSuspensionState(NULL) {
+      mSuspensionState(NULL),
+      mDecryptHandle(NULL) {
     CHECK_EQ(mClient.connect(), OK);
 
     DataSource::RegisterDefaultSniffers();
@@ -286,6 +287,17 @@ status_t AwesomePlayer::setDataSource_l(
         return UNKNOWN_ERROR;
     }
 
+    dataSource->getDrmInfo(&mDecryptHandle, &mDrmManagerClient);
+    if (mDecryptHandle != NULL) {
+        if (RightsStatus::RIGHTS_VALID == mDecryptHandle->status) {
+            if (DecryptApiType::CONTAINER_BASED == mDecryptHandle->decryptApiType) {
+                mDrmManagerClient->consumeRights(mDecryptHandle, Action::PLAY, true);
+            }
+        } else {
+            notifyListener_l(MEDIA_ERROR, MEDIA_ERROR_UNKNOWN, ERROR_NO_LICENSE);
+        }
+    }
+
     return setDataSource_l(extractor);
 }
 
@@ -316,6 +328,11 @@ status_t AwesomePlayer::setDataSource_l(const sp<MediaExtractor> &extractor) {
     }
 
     mExtractorFlags = extractor->flags();
+    if (mDecryptHandle != NULL) {
+        if (DecryptApiType::ELEMENTARY_STREAM_BASED == mDecryptHandle->decryptApiType) {
+            mDrmManagerClient->consumeRights(mDecryptHandle, Action::PLAY, true);
+        }
+    }
 
     return OK;
 }
@@ -413,6 +430,16 @@ void AwesomePlayer::reset_l() {
 
     delete mSuspensionState;
     mSuspensionState = NULL;
+
+    if (mDecryptHandle != NULL) {
+            mDrmManagerClient->setPlaybackStatus(mDecryptHandle,
+                    Playback::STOP, 0);
+            mDrmManagerClient->consumeRights(mDecryptHandle,
+                    Action::PLAY, false);
+            mDrmManagerClient->closeDecryptSession(mDecryptHandle);
+            mDecryptHandle = NULL;
+            mDrmManagerClient = NULL;
+    }
 }
 
 void AwesomePlayer::notifyListener_l(int msg, int ext1, int ext2) {
@@ -568,6 +595,13 @@ status_t AwesomePlayer::play_l() {
         seekTo_l(0);
     }
 
+    if (mDecryptHandle != NULL) {
+        int64_t position;
+        getPosition(&position);
+        mDrmManagerClient->setPlaybackStatus(mDecryptHandle,
+                Playback::START, position / 1000);
+    }
+
     return OK;
 }
 
@@ -630,6 +664,11 @@ status_t AwesomePlayer::pause_l() {
     }
 
     mFlags &= ~PLAYING;
+
+    if (mDecryptHandle != NULL) {
+        mDrmManagerClient->setPlaybackStatus(mDecryptHandle,
+                Playback::PAUSE, 0);
+    }
 
     return OK;
 }
@@ -727,6 +766,13 @@ void AwesomePlayer::seekAudioIfNecessary_l() {
         mWatchForAudioSeekComplete = true;
         mWatchForAudioEOS = true;
         mSeekNotificationSent = false;
+
+        if (mDecryptHandle != NULL) {
+            mDrmManagerClient->setPlaybackStatus(mDecryptHandle,
+                    Playback::PAUSE, 0);
+            mDrmManagerClient->setPlaybackStatus(mDecryptHandle,
+                    Playback::START, mSeekTimeUs / 1000);
+        }
     }
 }
 
@@ -919,6 +965,13 @@ void AwesomePlayer::onVideoEvent() {
         mFlags |= FIRST_FRAME;
         mSeeking = false;
         mSeekNotificationSent = false;
+
+        if (mDecryptHandle != NULL) {
+            mDrmManagerClient->setPlaybackStatus(mDecryptHandle,
+                    Playback::PAUSE, 0);
+            mDrmManagerClient->setPlaybackStatus(mDecryptHandle,
+                    Playback::START, timeUs / 1000);
+        }
     }
 
     if (mFlags & FIRST_FRAME) {
@@ -1135,6 +1188,17 @@ status_t AwesomePlayer::finishSetDataSource_l() {
 
     if (extractor == NULL) {
         return UNKNOWN_ERROR;
+    }
+
+    dataSource->getDrmInfo(&mDecryptHandle, &mDrmManagerClient);
+    if (mDecryptHandle != NULL) {
+        if (RightsStatus::RIGHTS_VALID == mDecryptHandle->status) {
+            if (DecryptApiType::CONTAINER_BASED == mDecryptHandle->decryptApiType) {
+                mDrmManagerClient->consumeRights(mDecryptHandle, Action::PLAY, true);
+            }
+        } else {
+            notifyListener_l(MEDIA_ERROR, MEDIA_ERROR_UNKNOWN, ERROR_NO_LICENSE);
+        }
     }
 
     if (dataSource->flags() & DataSource::kWantsPrefetching) {
