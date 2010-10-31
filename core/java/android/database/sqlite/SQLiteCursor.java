@@ -375,6 +375,15 @@ public class SQLiteCursor extends AbstractWindowedCursor {
         }
     }
 
+    /**
+     * Returns a string array holding the names of all of the columns in the
+     * result set in the order in which they were listed in the result.
+     *
+     * <p>The returned array must not be modified because it is a window into
+     * critical internal state.
+     *
+     * @return the names of the columns returned in this query.
+     */
     @Override
     public String[] getColumnNames() {
         return mColumns;

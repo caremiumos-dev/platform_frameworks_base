@@ -198,6 +198,9 @@ public interface Cursor {
      * Returns a string array holding the names of all of the columns in the
      * result set in the order in which they were listed in the result.
      *
+     * <p>The returned array must not be modified because it may be a window
+     * into internal state.
+     *
      * @return the names of the columns returned in this query.
      */
     String[] getColumnNames();
