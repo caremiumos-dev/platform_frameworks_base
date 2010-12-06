@@ -1675,7 +1675,7 @@ public final class ActivityManagerService extends ActivityManagerNative
                 if (cr.binding != null && cr.binding.service != null
                         && cr.binding.service.app != null
                         && cr.binding.service.app.lruSeq != mLruSeq) {
-                    updateLruProcessInternalLocked(cr.binding.service.app, oomAdj,
+                    updateLruProcessInternalLocked(cr.binding.service.app, false,
                             updateActivityTime, i+1);
                 }
             }
@@ -1683,7 +1683,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         if (app.conProviders.size() > 0) {
             for (ContentProviderRecord cpr : app.conProviders.keySet()) {
                 if (cpr.app != null && cpr.app.lruSeq != mLruSeq) {
-                    updateLruProcessInternalLocked(cpr.app, oomAdj,
+                    updateLruProcessInternalLocked(cpr.app, false,
                             updateActivityTime, i+1);
                 }
             }
