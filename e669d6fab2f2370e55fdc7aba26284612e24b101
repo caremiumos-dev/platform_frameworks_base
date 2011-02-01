@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAA+3//6pU\u003d",
+        "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1000718
+      },
+      "writtenOn": "2011-02-01T19:47:45Z",
+      "side": 1,
+      "message": "Give this a more generic name; India won\u0027t be the only country that may have this issue.",
+      "revId": "e669d6fab2f2370e55fdc7aba26284612e24b101",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAA+3//6pQ\u003d",
+        "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 480,
+      "author": {
+        "id": 1000718
+      },
+      "writtenOn": "2011-02-01T19:47:45Z",
+      "side": 1,
+      "message": "Don\u0027t do this lookup here; do it where we determine mncLength (see other comments).",
+      "revId": "e669d6fab2f2370e55fdc7aba26284612e24b101",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAA+3//6pM\u003d",
+        "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 532,
+      "author": {
+        "id": 1000718
+      },
+      "writtenOn": "2011-02-01T19:47:45Z",
+      "side": 1,
+      "message": "Do lookup here.",
+      "revId": "e669d6fab2f2370e55fdc7aba26284612e24b101",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAA+3//6pI\u003d",
+        "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 775,
+      "author": {
+        "id": 1000718
+      },
+      "writtenOn": "2011-02-01T19:47:45Z",
+      "side": 1,
+      "message": "Also do lookup here.",
+      "revId": "e669d6fab2f2370e55fdc7aba26284612e24b101",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
