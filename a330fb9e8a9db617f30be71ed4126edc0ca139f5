@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAA+3//6gQ\u003d",
+        "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 520,
+      "author": {
+        "id": 1002609
+      },
+      "writtenOn": "2011-02-02T03:02:12Z",
+      "side": 1,
+      "message": "I\u0027d really rather not do this if mncLength is uninitialized or \u003d\u003d3.  What you are doing is a guess to patch up bad cases.  Please let the existing logic run until we know we need to guess.\n\nif (((mncLength \u003d\u003d UNKNOWN) || (mncLength \u003d\u003d 2)) \u0026\u0026\n        ((imsi !\u003d null) \u0026\u0026 (imsi.length() \u003e\u003d 6))) {",
+      "revId": "a330fb9e8a9db617f30be71ed4126edc0ca139f5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
