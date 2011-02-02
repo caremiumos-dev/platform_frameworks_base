@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAA+3//6g0\u003d",
+        "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1005536
+      },
+      "writtenOn": "2011-02-02T02:34:07Z",
+      "side": 1,
+      "message": "i\u0027d like to change like below - \nLookup table for carriers known to produce SIMs which incorrectly indicate MNC length",
+      "parentUuid": "AAAA+3//6hU\u003d",
+      "revId": "41ddbe473368393e924a8f3d1032743408970ea3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAA+3//6hQ\u003d",
         "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2011-02-02T02:03:39Z",
       "side": 1,
       "message": "also do this only if mncLength \u003d 2 (or perhaps less than 3 but not uninitialized).\n\nSame below.  Maybe make a subroutine?",
+      "revId": "41ddbe473368393e924a8f3d1032743408970ea3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAA+3//6g8\u003d",
+        "filename": "telephony/java/com/android/internal/telephony/gsm/SIMRecords.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 522,
+      "author": {
+        "id": 1005536
+      },
+      "writtenOn": "2011-02-02T02:34:07Z",
+      "side": 1,
+      "message": "it also can be UNKNOWN value, so i added like this to check all case.",
+      "parentUuid": "AAAA+3//6hQ\u003d",
       "revId": "41ddbe473368393e924a8f3d1032743408970ea3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
