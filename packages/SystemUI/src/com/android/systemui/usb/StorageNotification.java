@@ -175,8 +175,9 @@ public class StorageNotification extends StorageEventListener {
                     /*
                      * Show safe to unmount media notification, and enable UMS
                      * notification if connected.
+                     * Show notification only if previous state is mounted
                      */
-                    if (Environment.isExternalStorageRemovable()) {
+                    if (Environment.isExternalStorageRemovable() && oldState.equals(Environment.MEDIA_MOUNTED)) {
                         setMediaStorageNotification(
                                 com.android.internal.R.string.ext_media_safe_unmount_notification_title,
                                 com.android.internal.R.string.ext_media_safe_unmount_notification_message,
