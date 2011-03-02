@@ -41,6 +41,8 @@ namespace android {
 static const int64_t kMax32BitFileSize = 0x007fffffffLL;
 static const uint8_t kNalUnitTypeSeqParamSet = 0x07;
 static const uint8_t kNalUnitTypePicParamSet = 0x08;
+static const uint8_t kNalUnitTypeH264Sei = 0x06;
+static const uint8_t kNalUnitTypeH264IFrame = 0x5;
 
 // Using longer adjustment period to suppress fluctuations in
 // the audio encoding paths
@@ -1335,6 +1337,46 @@ static const uint8_t *findNextStartCode(
     return &data[length - bytesLeft];
 }
 
+static const uint16_t getLengthNalUnit(
+        const uint8_t *data, size_t length) {
+
+    LOGV("getLengthNalUnit: %p %d", data, length);
+
+    size_t bytesLeft = length;
+    uint16_t NalUnitLength = 0;
+    while (bytesLeft > 4  &&
+            memcmp("\x00\x00\x00\x01", &data[length - bytesLeft], 4)) {
+        --bytesLeft;
+        NalUnitLength++;
+    }
+    return (NalUnitLength + 4);
+}
+
+static void StripSpsPps(MediaBuffer *buffer) {
+   const uint8_t *ptr = (const uint8_t *)buffer->data() + buffer->range_offset();
+   const uint8_t *nextStartCode = ptr;
+   size_t bytesLeft = buffer->range_length();
+   uint8_t type = 0;
+   uint16_t nalLength = 0;
+
+    while (bytesLeft > 4 && !memcmp("\x00\x00\x00\x01", ptr, 4)) {
+        getNalUnitType(*(ptr + 4), &type);
+        if (type == kNalUnitTypeH264IFrame) {
+            LOGV("Got the sync frame. Break out.");
+            break;
+        }
+        // Strip SPS, PPS or SEI info if any
+        else if (type == kNalUnitTypeSeqParamSet || type == kNalUnitTypePicParamSet || type == kNalUnitTypeH264Sei) {
+            nalLength = getLengthNalUnit(ptr+4,bytesLeft-4);
+            LOGV("Stripping Nal Type 0x%x, Nal-Length %d",type,nalLength);
+            buffer->set_range(buffer->range_offset() + nalLength, buffer->range_length() - nalLength);
+        }
+        nextStartCode = findNextStartCode(ptr+4,bytesLeft-4);
+        bytesLeft -= nextStartCode - ptr;
+        ptr = nextStartCode;
+    }
+}
+
 const uint8_t *MPEG4Writer::Track::parseParamSet(
         const uint8_t *data, size_t length, int type, size_t *paramSetLen) {
 
@@ -1773,6 +1815,11 @@ status_t MPEG4Writer::Track::threadEntry() {
         meta_data = new MetaData(*buffer->meta_data().get());
         buffer->release();
         buffer = NULL;
+
+        int32_t isSync1 = 0;
+        meta_data->findInt32(kKeyIsSyncFrame, &isSync1);
+
+        if (mIsAvc && isSync1) StripSpsPps(copy);
 
         if (mIsAvc) StripStartcode(copy);
 
