@@ -47,6 +47,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Comparator;
 
 
 /**
@@ -437,7 +438,7 @@ public abstract class LauncherActivity extends ListActivity {
      * implementation queries for activities.
      */
     protected List<ResolveInfo> onQueryPackageManager(Intent queryIntent) {
-        return mPackageManager.queryIntentActivities(queryIntent, /* no flags */ 0);
+        return mPackageManager.queryIntentActivities(queryIntent, getQueryFlags());
     }
     
     /**
@@ -446,13 +447,15 @@ public abstract class LauncherActivity extends ListActivity {
     public List<ListItem> makeListItems() {
         // Load all matching activities and sort correctly
         List<ResolveInfo> list = onQueryPackageManager(mIntent);
-        Collections.sort(list, new ResolveInfo.DisplayNameComparator(mPackageManager));
+        Collections.sort(list, getComparator());
 
         ArrayList<ListItem> result = new ArrayList<ListItem>(list.size());
         int listSize = list.size();
         for (int i = 0; i < listSize; i++) {
             ResolveInfo resolveInfo = list.get(i);
-            result.add(new ListItem(mPackageManager, resolveInfo, null));
+            if (checkActivityForAdding(resolveInfo)) {
+                result.add(new ListItem(mPackageManager, resolveInfo, null));
+            }
         }
 
         return result;
@@ -464,6 +467,28 @@ public abstract class LauncherActivity extends ListActivity {
      * @return true to show icons beside the activity names, false otherwise
      */
     protected boolean onEvaluateShowIcons() {
+        return true;
+    }
+
+    /**
+     * Get the comparator object to use for list item comparisons
+     */
+    protected Comparator<ResolveInfo> getComparator() {
+        return new ResolveInfo.DisplayNameComparator(mPackageManager);
+    }
+
+    /**
+     * Get the query flags use when calling
+     * {@link PackageManager#queryIntentActivities(Intent, int)}.
+     */
+    protected int getQueryFlags() {
+        return 0; /* no flags */
+    }
+
+    /**
+     * Preforms a check if an entry should be added to the list.
+     */
+    protected boolean checkActivityForAdding(ResolveInfo ri) {
         return true;
     }
 }
