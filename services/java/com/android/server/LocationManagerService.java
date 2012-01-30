@@ -40,6 +40,7 @@ import android.location.INetInitiatedListener;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.location.GeoFenceParams;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -67,6 +68,8 @@ import com.android.server.location.LocationProviderInterface;
 import com.android.server.location.LocationProviderProxy;
 import com.android.server.location.MockProvider;
 import com.android.server.location.PassiveProvider;
+import com.android.server.location.GeoFencerBase;
+import com.android.server.location.GeoFencerProxy;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -119,7 +122,9 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
     private final Context mContext;
     private final String mNetworkLocationProviderPackageName;
     private final String mGeocodeProviderPackageName;
+    private final String mGeoFencerPackageName;
     private GeocoderProxy mGeocodeProvider;
+    private GeoFencerBase mGeoFencer;
     private IGpsStatusProvider mGpsStatusProvider;
     private INetInitiatedListener mNetInitiatedListener;
     private LocationWorkerHandler mLocationHandler;
@@ -136,7 +141,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
     private final static String WAKELOCK_KEY = "LocationManagerService";
     private PowerManager.WakeLock mWakeLock = null;
     private int mPendingBroadcasts;
-    
+
     /**
      * List of all receivers.
      */
@@ -171,8 +176,6 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
     // Proximity listeners
     private Receiver mProximityReceiver = null;
     private ILocationListener mProximityListener = null;
-    private HashMap<PendingIntent,ProximityAlert> mProximityAlerts =
-        new HashMap<PendingIntent,ProximityAlert>();
     private HashSet<ProximityAlert> mProximitiesEntered =
         new HashSet<ProximityAlert>();
 
@@ -497,6 +500,13 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             mGeocodeProvider = new GeocoderProxy(mContext, mGeocodeProviderPackageName);
         }
 
+        if (mGeoFencerPackageName != null &&
+                pm.resolveService(new Intent(mGeoFencerPackageName), 0) != null) {
+            mGeoFencer = GeoFencerProxy.getGeoFencerProxy(mContext, mGeoFencerPackageName);
+        } else {
+            mGeoFencer = new ProximityAlerter();
+        }
+
         updateProvidersLocked();
     }
 
@@ -511,6 +521,8 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                 com.android.internal.R.string.config_networkLocationProvider);
         mGeocodeProviderPackageName = resources.getString(
                 com.android.internal.R.string.config_geocodeProvider);
+        mGeoFencerPackageName = resources.getString(
+                com.android.internal.R.string.config_geofenceProvider);
         mPackageMonitor.register(context, true);
 
         if (LOCAL_LOGV) {
@@ -918,7 +930,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
         }
 
         ArrayList<Receiver> deadReceivers = null;
-        
+
         ArrayList<UpdateRecord> records = mRecordsByProvider.get(provider);
         if (records != null) {
             final int N = records.size();
@@ -940,7 +952,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                 removeUpdatesLocked(deadReceivers.get(i));
             }
         }
-        
+
         if (enabled) {
             p.enable();
             if (listeners > 0) {
@@ -1025,7 +1037,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                     + Integer.toHexString(System.identityHashCode(this))
                     + " mProvider: " + mProvider + " mUid: " + mUid + "}";
         }
-        
+
         void dump(PrintWriter pw, String prefix) {
             pw.println(prefix + this);
             pw.println(prefix + "mProvider=" + mProvider + " mReceiver=" + mReceiver);
@@ -1078,12 +1090,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                 }
            }
         }
-        for (ProximityAlert alert : mProximityAlerts.values()) {
-            if (alert.mUid == uid) {
-                return true;
-            }
-        }
-        return false;
+        return mGeoFencer.hasCaller(uid);
     }
 
     public void requestLocationUpdates(String provider, Criteria criteria,
@@ -1338,7 +1345,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             if (p == null) {
                 return false;
             }
-    
+
             return p.sendExtraCommand(command, extras);
         }
     }
@@ -1359,35 +1366,27 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
         }
     }
 
-    class ProximityAlert {
-        final int  mUid;
-        final double mLatitude;
-        final double mLongitude;
-        final float mRadius;
-        final long mExpiration;
-        final PendingIntent mIntent;
+    class ProximityAlert extends GeoFenceParams{
         final Location mLocation;
 
-        public ProximityAlert(int uid, double latitude, double longitude,
+        public ProximityAlert(double latitude, double longitude,
             float radius, long expiration, PendingIntent intent) {
-            mUid = uid;
-            mLatitude = latitude;
-            mLongitude = longitude;
-            mRadius = radius;
-            mExpiration = expiration;
-            mIntent = intent;
+            super(latitude, longitude, radius,
+                  expiration != -1 ? expiration + System.currentTimeMillis() : expiration,
+                  intent);
 
             mLocation = new Location("");
             mLocation.setLatitude(latitude);
             mLocation.setLongitude(longitude);
         }
 
-        long getExpiration() {
-            return mExpiration;
-        }
+        public ProximityAlert(GeoFenceParams geofence) {
+            super(geofence.mUid, geofence.mLatitude, geofence.mLongitude,
+                  geofence.mRadius, geofence.mExpiration, geofence.mIntent);
 
-        PendingIntent getIntent() {
-            return mIntent;
+            mLocation = new Location("");
+            mLocation.setLatitude(geofence.mLatitude);
+            mLocation.setLongitude(geofence.mLongitude);
         }
 
         boolean isInProximity(double latitude, double longitude, float accuracy) {
@@ -1396,23 +1395,63 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             loc.setLongitude(longitude);
 
             double radius = loc.distanceTo(mLocation);
-            return radius <= Math.max(mRadius,accuracy);
+            return radius <= Math.max(super.mRadius,accuracy);
         }
-        
+
         @Override
         public String toString() {
             return "ProximityAlert{"
                     + Integer.toHexString(System.identityHashCode(this))
-                    + " uid " + mUid + mIntent + "}";
+                    + " uid " + getCallerUid() + getIntent() + "}";
         }
-        
-        void dump(PrintWriter pw, String prefix) {
-            pw.println(prefix + this);
-            pw.println(prefix + "mLatitude=" + mLatitude + " mLongitude=" + mLongitude);
-            pw.println(prefix + "mRadius=" + mRadius + " mExpiration=" + mExpiration);
-            pw.println(prefix + "mIntent=" + mIntent);
+
+        @Override
+        public void dump(PrintWriter pw, String prefix) {
+            super.dump(pw, prefix);
             pw.println(prefix + "mLocation:");
             mLocation.dump(new PrintWriterPrinter(pw), prefix + "  ");
+        }
+    }
+
+    class ProximityAlerter extends GeoFencerBase{
+        @Override
+        public void add(double latitude, double longitude,
+                 float radius, long expiration,
+                 PendingIntent intent) {
+            super.add((GeoFenceParams)new ProximityAlert(latitude, longitude,
+                                                   radius, expiration, intent));
+        }
+        @Override
+        public void add(GeoFenceParams geofence) {
+            super.add((GeoFenceParams)new ProximityAlert(geofence));
+        }
+
+        @Override
+        protected boolean start(GeoFenceParams geoFence) {
+            if (mProximityReceiver == null) {
+                mProximityListener = new ProximityListener();
+                mProximityReceiver = new Receiver(mProximityListener);
+
+                for (int i = mProviders.size() - 1; i >= 0; i--) {
+                    LocationProviderInterface provider = mProviders.get(i);
+                    requestLocationUpdatesLocked(provider.getName(), 1000L, 1.0f,
+                                                 false, mProximityReceiver);
+                }
+            }
+            return true;
+        }
+
+        @Override
+        protected boolean stop(PendingIntent intent) {
+            ProximityAlert alert = (ProximityAlert)getGeoFence(intent);
+            mProximitiesEntered.remove(alert);
+
+            if (getNumbOfGeoFences() == 0) {
+                removeUpdatesLocked(mProximityReceiver);
+                mProximityReceiver = null;
+                mProximityListener = null;
+            }
+            return true;
         }
     }
 
@@ -1439,7 +1478,8 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             float accuracy = loc.getAccuracy();
             ArrayList<PendingIntent> intentsToRemove = null;
 
-            for (ProximityAlert alert : mProximityAlerts.values()) {
+            for (GeoFenceParams fence : mGeoFencer.getAllGeoFences()) {
+                ProximityAlert alert = (ProximityAlert)fence;
                 PendingIntent intent = alert.getIntent();
                 long expiration = alert.getExpiration();
 
@@ -1515,9 +1555,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             // Remove expired alerts
             if (intentsToRemove != null) {
                 for (PendingIntent i : intentsToRemove) {
-                    ProximityAlert alert = mProximityAlerts.get(i);
-                    mProximitiesEntered.remove(alert);
-                    removeProximityAlertLocked(i);
+                    mGeoFencer.remove(i);
                 }
             }
         }
@@ -1583,23 +1621,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             throw new SecurityException("Requires ACCESS_FINE_LOCATION permission");
         }
 
-        if (expiration != -1) {
-            expiration += System.currentTimeMillis();
-        }
-        ProximityAlert alert = new ProximityAlert(Binder.getCallingUid(),
-                latitude, longitude, radius, expiration, intent);
-        mProximityAlerts.put(intent, alert);
-
-        if (mProximityReceiver == null) {
-            mProximityListener = new ProximityListener();
-            mProximityReceiver = new Receiver(mProximityListener);
-
-            for (int i = mProviders.size() - 1; i >= 0; i--) {
-                LocationProviderInterface provider = mProviders.get(i);
-                requestLocationUpdatesLocked(provider.getName(), 1000L, 1.0f,
-                        false, mProximityReceiver);
-            }
-        }
+        mGeoFencer.add(latitude, longitude, radius, expiration, intent);
     }
 
     public void removeProximityAlert(PendingIntent intent) {
@@ -1621,12 +1643,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             Slog.v(TAG, "removeProximityAlert: intent = " + intent);
         }
 
-        mProximityAlerts.remove(intent);
-        if (mProximityAlerts.size() == 0) {
-            removeUpdatesLocked(mProximityReceiver);
-            mProximityReceiver = null;
-            mProximityListener = null;
-        }
+        mGeoFencer.remove(intent);
      }
 
     /**
@@ -1788,7 +1805,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
         int status = p.getStatus(extras);
 
         ArrayList<Receiver> deadReceivers = null;
-        
+
         // Broadcast location or status to all listeners
         final int N = records.size();
         for (int i=0; i<N; i++) {
@@ -1831,7 +1848,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                 }
             }
         }
-        
+
         if (deadReceivers != null) {
             for (int i=deadReceivers.size()-1; i>=0; i--) {
                 removeUpdatesLocked(deadReceivers.get(i));
@@ -1926,29 +1943,15 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                                     }
                                 }
                             }
-                            ArrayList<ProximityAlert> removedAlerts = null;
-                            for (ProximityAlert i : mProximityAlerts.values()) {
-                                if (i.mUid == uid) {
-                                    if (queryRestart) {
-                                        setResultCode(Activity.RESULT_OK);
-                                        return;
-                                    }
-                                    if (removedAlerts == null) {
-                                        removedAlerts = new ArrayList<ProximityAlert>();
-                                    }
-                                    if (!removedAlerts.contains(i)) {
-                                        removedAlerts.add(i);
-                                    }
-                                }
+                            if (queryRestart && mGeoFencer.hasCaller(uid)) {
+                                setResultCode(Activity.RESULT_OK);
+                                return;
+                            } else {
+                                mGeoFencer.removeCaller(uid);
                             }
                             if (removedRecs != null) {
                                 for (int i=removedRecs.size()-1; i>=0; i--) {
                                     removeUpdatesLocked(removedRecs.get(i));
-                                }
-                            }
-                            if (removedAlerts != null) {
-                                for (int i=removedAlerts.size()-1; i>=0; i--) {
-                                    removeProximityAlertLocked(removedAlerts.get(i).mIntent);
                                 }
                             }
                         }
@@ -2094,6 +2097,14 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             if (mProvidersByName.get(name) != null) {
                 throw new IllegalArgumentException("Provider \"" + name + "\" already exists");
             }
+
+            PackageManager pm = mContext.getPackageManager();
+            if (mGeoFencerPackageName != null &&
+                pm.resolveService(new Intent(mGeoFencerPackageName), 0) != null) {
+                GeoFencerBase oldFencer = mGeoFencer;
+                mGeoFencer = new ProximityAlerter();
+                mGeoFencer.transferService(oldFencer);
+            }
             addProvider(provider);
             mMockProviders.put(name, provider);
             mLastKnownLocation.put(name, null);
@@ -2119,6 +2130,14 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             } else if (LocationManager.NETWORK_PROVIDER.equals(provider) &&
                     mNetworkLocationProvider != null) {
                 addProvider(mNetworkLocationProvider);
+            }
+
+            PackageManager pm = mContext.getPackageManager();
+            if (mGeoFencerPackageName != null &&
+                pm.resolveService(new Intent(mGeoFencerPackageName), 0) != null) {
+                GeoFencerBase oldFencer = mGeoFencer;
+                mGeoFencer = GeoFencerProxy.getGeoFencerProxy(mContext, mGeoFencerPackageName);
+                mGeoFencer.transferService(oldFencer);
             }
             mLastKnownLocation.put(provider, null);
             updateProvidersLocked();
@@ -2215,7 +2234,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
             Slog.d(TAG, log);
         }
     }
-    
+
     protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
         if (mContext.checkCallingOrSelfPermission(android.Manifest.permission.DUMP)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -2224,7 +2243,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                     + ", uid=" + Binder.getCallingUid());
             return;
         }
-        
+
         synchronized (mLock) {
             pw.println("Current Location Manager state:");
             pw.println("  sProvidersLoaded=" + sProvidersLoaded);
@@ -2256,14 +2275,7 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                 pw.println("    " + i.getKey() + ":");
                 i.getValue().dump(new PrintWriterPrinter(pw), "      ");
             }
-            if (mProximityAlerts.size() > 0) {
-                pw.println("  Proximity Alerts:");
-                for (Map.Entry<PendingIntent, ProximityAlert> i
-                        : mProximityAlerts.entrySet()) {
-                    pw.println("    " + i.getKey() + ":");
-                    i.getValue().dump(pw, "      ");
-                }
-            }
+            mGeoFencer.dump(pw, "");
             if (mProximitiesEntered.size() > 0) {
                 pw.println("  Proximities Entered:");
                 for (ProximityAlert i : mProximitiesEntered) {
@@ -2278,14 +2290,14 @@ public class LocationManagerService extends ILocationManager.Stub implements Run
                 for (String i : mEnabledProviders) {
                     pw.println("    " + i);
                 }
-                
+
             }
             if (mDisabledProviders.size() > 0) {
                 pw.println("  Disabled Providers:");
                 for (String i : mDisabledProviders) {
                     pw.println("    " + i);
                 }
-                
+
             }
             if (mMockProviders.size() > 0) {
                 pw.println("  Mock Providers:");
