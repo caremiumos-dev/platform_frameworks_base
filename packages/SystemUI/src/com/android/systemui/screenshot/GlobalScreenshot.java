@@ -56,7 +56,7 @@ import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
 import com.android.systemui.R;
-
+import java.io.InputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -204,8 +204,11 @@ class SaveImageInBackgroundTask extends AsyncTask<SaveImageInBackgroundData, Voi
 
             // update file size in the database
             values.clear();
-            values.put(MediaStore.Images.ImageColumns.SIZE, new File(mImageFilePath).length());
+            InputStream in = resolver.openInputStream(uri);
+            int size = in.available();
+            values.put(MediaStore.Images.ImageColumns.SIZE, size);
             resolver.update(uri, values, null, null);
+            in.close();
 
             params[0].imageUri = uri;
             params[0].result = 0;
