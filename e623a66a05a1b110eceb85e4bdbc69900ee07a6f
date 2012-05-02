@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAADMH///+k\u003d",
+        "filename": "voip/java/com/android/server/sip/SipService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1000660
+      },
+      "writtenOn": "2012-05-02T22:00:22Z",
+      "side": 1,
+      "message": "I wonder if it\u0027d make sense to isolate this in a separate function now that it\u0027s used twice.",
+      "revId": "e623a66a05a1b110eceb85e4bdbc69900ee07a6f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAADMH///+s\u003d",
+        "filename": "voip/java/com/android/server/sip/SipService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 1000660
+      },
+      "writtenOn": "2012-05-02T22:00:22Z",
+      "side": 1,
+      "message": "Code style: please indent this block 4 characters further to the left, please enclose the content of the if between braces (it doesn\u0027t fit on a single line), and remove the trailing space.",
+      "revId": "e623a66a05a1b110eceb85e4bdbc69900ee07a6f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAADMH///+o\u003d",
+        "filename": "voip/java/com/android/server/sip/SipService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 467,
+      "author": {
+        "id": 1000660
+      },
+      "writtenOn": "2012-05-02T22:00:22Z",
+      "side": 1,
+      "message": "Similar as above: braces, and trailing space.",
+      "revId": "e623a66a05a1b110eceb85e4bdbc69900ee07a6f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
