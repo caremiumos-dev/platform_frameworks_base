@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAFw3///74\u003d",
+        "filename": "voip/java/com/android/server/sip/SipService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1079,
+      "author": {
+        "id": 1000660
+      },
+      "writtenOn": "2012-05-24T17:56:57Z",
+      "side": 1,
+      "message": "This should be wrapped to 100 columns",
+      "revId": "bac243125ee404f421560434fcd7b1e9f1bf8819",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
