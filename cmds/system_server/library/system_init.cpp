@@ -8,11 +8,14 @@
 
 #define LOG_TAG "sysproc"
 
+#include <androidfw/ResourceTypes.h>
+#include <androidfw/StreamingZipInflater.h>
 #include <binder/IPCThreadState.h>
 #include <binder/ProcessState.h>
 #include <binder/IServiceManager.h>
 #include <utils/TextOutput.h>
 #include <utils/Log.h>
+#include <utils/ZipFileRO.h>
 
 #include <SurfaceFlinger.h>
 #include <SensorService.h>
@@ -51,63 +54,66 @@ public:
 } // namespace android
 
 namespace {
-    static const char* SINGLE_OVERLAY_APK = "/vendor/overlay/framework/framework-res.apk";
-    static const char* SINGLE_IDMAP_FILE =
-        "/data/resource-cache/vendor@overlay@framework@framework-res.apk@idmap";
+    static const char* OVERLAY_DIR = "/vendor/overlay";
     static const char* IDMAP_BIN = "/system/bin/idmap";
     static const char* ORIG_APK = "/system/framework/framework-res.apk";
-    static const char* MULTIPLE_IDMAP_PREFIX =
-        "/data/resource-cache/vendor@overlay@framework@framework-res.apk@" ;
-    static const char* MULTIPLE_IDMAP_SUFFIX = "@idmap";
+    static const char* TARGET_PACKAGE_NAME = "android";
+    static const char* IDMAP_FILE_PREFIX = "/data/resource-cache/";
+    static const char* IDMAP_FILE_SUFFIX = "@idmap";
+#define NO_OVERLAY_TAG (-1000)
 
     void exec_idmap(const char* idmap_bin, const char* orig_apk,
-            const char* overlay_apk, const char* idmap_file) {
+            const char* overlay_apk, const char* idmap_file)
+    {
         execl(idmap_bin, idmap_bin, "--path", orig_apk, overlay_apk, idmap_file, (char*)NULL);
         ALOGE("execl(%s) failed: %s\n", idmap_bin, strerror(errno));
     }
 
-    int create_idmap_symlink(const char* idmap_file, const char* symlink_name) {
-        static const char* prefix = "/data/system/overlay";
-        static const char* dir = "/data/system/overlay/system@framework@framework-res.apk";
-        static const mode_t mode =
-            S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
-
-        struct stat st;
-        char symlink_path[PATH_MAX + 1];
-
-        memset(symlink_path, 0, sizeof(symlink_path));
-        snprintf(symlink_path, sizeof(symlink_path) - 1, "%s/%s", dir, symlink_name);
-
-        if (stat(prefix, &st) != 0) {
-            if (mkdir(prefix, 0755) != 0) {
-                return -1;
-            }
-            if (chown(prefix, AID_SYSTEM, AID_SYSTEM) == -1) {
-                return -1;
-            }
-            if (chmod(prefix, mode) == -1) {
-                return -1;
-            }
-        }
-
-        if (stat(dir, &st) != 0) {
-            if (mkdir(dir, 0755) != 0) {
-                return -1;
-            }
-            if (chown(dir, AID_SYSTEM, AID_SYSTEM) == -1) {
-                return -1;
-            }
-            if (chmod(dir, mode) == -1) {
-                return -1;
-            }
-        }
-
-        (void)unlink(symlink_path);
-
-        return symlink(idmap_file, symlink_path);
+    String8 flatten_path(const char* path)
+    {
+        String16 tmp(path);
+        tmp.replaceAll('/', '@');
+        return String8(tmp);
     }
 
-    int wait_idmap(pid_t pid) {
+    int mkdir_p(const String8& path)
+    {
+        static const mode_t mode =
+            S_IRUSR | S_IWUSR | S_IXUSR | S_IWGRP | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
+        struct stat st;
+
+        if (stat(path.string(), &st) == 0) {
+            return 0;
+        }
+        if (mkdir_p(path.getPathDir()) < 0) {
+            return -1;
+        }
+        if (mkdir(path.string(), 0755) != 0) {
+            return -1;
+        }
+        if (chown(path.string(), AID_SYSTEM, AID_SYSTEM) == -1) {
+            return -1;
+        }
+        if (chmod(path.string(), mode) == -1) {
+            return -1;
+        }
+        return 0;
+    }
+
+    int create_idmap_symlink(const char* old_path, const char* orig_apk, int priority)
+    {
+        static const char* prefix = "/data/system/overlay";
+        const String8 new_path =
+            String8::format("%s/%s/%04d", prefix, flatten_path(orig_apk + 1).string(), priority);
+        if (mkdir_p(new_path.getPathDir()) < 0) {
+            return -1;
+        }
+        (void)unlink(new_path.string());
+        return symlink(old_path, new_path.string());
+    }
+
+    int wait_idmap(pid_t pid)
+    {
         int status;
         pid_t got_pid;
 
@@ -130,9 +136,9 @@ namespace {
     }
 
     int idmap(const char* idmap_bin, const char* orig_apk,
-            const char* overlay_apk, const char* idmap_file) {
+            const char* overlay_apk, const char* idmap_file, int priority)
+    {
         int retval = -1;
-        const char* symlink_name = NULL;
 
         pid_t pid = fork();
         if (pid == 0) {
@@ -144,74 +150,149 @@ namespace {
             retval = wait_idmap(pid);
         }
 
-        if (retval == 0) {
-            if ((symlink_name = strrchr(overlay_apk, '/')) != NULL) {
-                symlink_name += 1;
-            } else {
-                retval = -1;
-            }
-        }
-
-        if (retval == 0) {
-            if ((retval = create_idmap_symlink(idmap_file, symlink_name)) != 0) {
-                (void)unlink(idmap_file);
-            }
-        }
-
         return retval;
     }
 
-    int verify_system_idmap_file_is_up_to_date() {
+    int parse_overlay_tag(const ResXMLTree& parser, const char* target_package_name)
+    {
+        const size_t N = parser.getAttributeCount();
+        String16 target;
+        int priority = -1;
+        for (size_t i = 0; i < N; ++i) {
+            size_t len;
+            String16 key(parser.getAttributeName(i, &len));
+            String16 value("");
+            const uint16_t* p = parser.getAttributeStringValue(i, &len);
+            if (p) {
+                value = String16(p);
+            }
+            if (key == String16("target")) {
+                target = value;
+            } else if (key == String16("priority") && value.size() > 0) {
+                priority = atoi(String8(value).string());
+                if (priority < 0 || priority > 9999) {
+                    return -2;
+                }
+            }
+        }
+        if (target == String16(target_package_name)) {
+            return priority;
+        }
+        return NO_OVERLAY_TAG;
+    }
+
+    int parse_manifest(const void* data, size_t size, const char* target_package_name)
+    {
+        ResXMLTree parser(data, size);
+        if (parser.getError() != NO_ERROR) {
+            ALOGD("%s failed to init xml parser, error=0x%08x\n", __FUNCTION__, parser.getError());
+            return -1;
+        }
+
+        ResXMLParser::event_code_t type;
+        do {
+            type = parser.next();
+            if (type == ResXMLParser::START_TAG) {
+                size_t len;
+                String16 tag(parser.getElementName(&len));
+                if (tag == String16("overlay")) {
+                    return parse_overlay_tag(parser, target_package_name);
+                }
+            }
+        } while (type != ResXMLParser::BAD_DOCUMENT && type != ResXMLParser::END_DOCUMENT);
+
+        return NO_OVERLAY_TAG;
+    }
+
+    int parse_apk(const char* path, const char* target_package_name)
+    {
+        ZipFileRO zip;
+        if (zip.open(path) != NO_ERROR) {
+            ALOGW("%s: failed to open zip %s\n", __FUNCTION__, path);
+            return -1;
+        }
+        ZipEntryRO entry;
+        if ((entry = zip.findEntryByName("AndroidManifest.xml")) == NULL) {
+            ALOGW("%s: failed to find entry AndroidManifest.xml\n", __FUNCTION__);
+            return -2;
+        }
+        size_t uncompLen = 0;
+        int method;
+        if (!zip.getEntryInfo(entry, &method, &uncompLen, NULL, NULL, NULL, NULL)) {
+            ALOGW("%s: failed to read entry info\n", __FUNCTION__);
+            return -3;
+        }
+        // FIXME: ensure method == compressed?
+        FileMap* dataMap = zip.createEntryFileMap(entry);
+        if (!dataMap) {
+            ALOGW("%s: failed to create FileMap\n", __FUNCTION__);
+            return -4;
+        }
+        char* buf = new char[uncompLen];
+        if (NULL == buf) {
+            ALOGW("%s: failed to allocate %d byte\n", __FUNCTION__, uncompLen);
+            return -5;
+        }
+        StreamingZipInflater inflater(dataMap, uncompLen);
+        if (inflater.read(buf, uncompLen) < 0) {
+            ALOGW("%s: failed to inflate %d byte\n", __FUNCTION__, uncompLen);
+            delete[] buf;
+            return -6;
+        }
+
+        int priority = parse_manifest(buf, uncompLen, target_package_name);
+        delete[] buf;
+        return priority;
+    }
+
+    int verify_system_idmap_file_is_up_to_date(const char* root_dir, const char* orig_apk,
+            const char* target_package_name)
+    {
         if (getuid() != AID_SYSTEM || getgid() != AID_SYSTEM) {
             // not user system -> nothing we can do
             ALOGE("Not user system: uid=%d, gid=%d\n", getuid(), getgid());
             return -1;
         }
 
-        struct stat st;
-
-        if (stat(SINGLE_OVERLAY_APK, &st) == -1) {
-            if (errno == ENOENT) { // No overlay file. Do not create any idmap files.
-                return 0;
-            }
-            ALOGE("Failed to stat %s: %s\n", SINGLE_OVERLAY_APK, strerror(errno));
+        DIR* dir = opendir(root_dir);
+        if (NULL == dir) {
             return -1;
         }
-        if (S_ISREG(st.st_mode)) {
-            // A single overlay file. Create a single idmap file.
-            (void)idmap(IDMAP_BIN, ORIG_APK, SINGLE_OVERLAY_APK, SINGLE_IDMAP_FILE);
-        } else if (S_ISDIR(st.st_mode)) {
-            // Several overlay files. SINGLE_OVERLAY_APK is a directory which contains all
-            // overlay files for framework-res.apk. Create an idmap for each overlay file.
-            DIR* dir = NULL;
-            struct dirent* dirent;
-            char overlay_apk[PATH_MAX + 1];
-            char idmap_file[PATH_MAX + 1];
 
-            overlay_apk[PATH_MAX] = '\0';
-            idmap_file[PATH_MAX] = '\0';
+        struct dirent* dirent;
+        while ((dirent = readdir(dir)) != NULL) {
+            struct stat st;
+            char path[PATH_MAX + 1];
+            snprintf(path, PATH_MAX, "%s/%s", root_dir, dirent->d_name);
+            if (stat(path, &st) < 0) {
+                continue;
+            }
+            if (!S_ISREG(st.st_mode)) {
+                continue;
+            }
 
-            if ((dir = opendir(SINGLE_OVERLAY_APK)) == NULL) {
-                ALOGE("Failed to opendir %s: %s\n", SINGLE_OVERLAY_APK, strerror(errno));
-                return -1;
+            int priority = parse_apk(path, target_package_name);
+            if (priority < 0) {
+                continue;
             }
-            while ((dirent = readdir(dir)) != NULL) {
-                struct stat st;
-                snprintf(overlay_apk, PATH_MAX, "%s/%s", SINGLE_OVERLAY_APK, dirent->d_name);
-                if (stat(overlay_apk, &st) < 0) { // stat will follow symlink
-                    continue;
-                }
-                if (!S_ISREG(st.st_mode)) {
-                    continue;
-                }
-                snprintf(overlay_apk, PATH_MAX, "%s/%s", SINGLE_OVERLAY_APK, dirent->d_name);
-                snprintf(idmap_file, PATH_MAX, "%s%s%s",
-                        MULTIPLE_IDMAP_PREFIX, dirent->d_name, MULTIPLE_IDMAP_SUFFIX);
-                (void)idmap(IDMAP_BIN, ORIG_APK, overlay_apk, idmap_file);
+
+            String8 idmap_path(IDMAP_FILE_PREFIX);
+            idmap_path.append(flatten_path(path + 1));
+            idmap_path.append(IDMAP_FILE_SUFFIX);
+            if (idmap(IDMAP_BIN, orig_apk, path, idmap_path.string(), priority) < 0) {
+                ALOGW("System server: failed to create idmap file %s for overlay %s\n",
+                        idmap_path.string(), path);
+                continue;
             }
-            closedir(dir);
+
+            if (create_idmap_symlink(idmap_path.string(), orig_apk, priority) != 0) {
+                ALOGW("System server: failed to create symlink for %s\n", idmap_path.string());
+                (void)unlink(idmap_path.string());
+                continue;
+            }
         }
 
+        closedir(dir);
         return 0;
     }
 }
@@ -220,7 +301,7 @@ extern "C" status_t system_init()
 {
     ALOGI("Entered system_init()");
 
-    if (verify_system_idmap_file_is_up_to_date() < 0) {
+    if (verify_system_idmap_file_is_up_to_date(OVERLAY_DIR, ORIG_APK, TARGET_PACKAGE_NAME) < 0) {
         ALOGI("System server: failed to verify idmap file(s) for framework-res.apk.\n");
     }
 

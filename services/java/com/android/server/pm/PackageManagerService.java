@@ -169,7 +169,6 @@ public class PackageManagerService extends IPackageManager.Stub {
     private static final boolean DEBUG_PACKAGE_SCANNING = false;
     private static final boolean DEBUG_APP_DIR_OBSERVER = false;
     private static final boolean DEBUG_VERIFY = false;
-    private static final boolean DEBUG_RADO = false;
 
     private static final int RADIO_UID = Process.PHONE_UID;
     private static final int LOG_UID = Process.LOG_UID;
@@ -221,6 +220,8 @@ public class PackageManagerService extends IPackageManager.Stub {
     private static final String PACKAGE_MIME_TYPE = "application/vnd.android.package-archive";
 
     private static final String LIB_DIR_NAME = "lib";
+
+    private static final String OVERLAY_DIR = "/vendor/overlay";
 
     static final String mTempContainerPrefix = "smdl2tmp";
 
@@ -1054,8 +1055,8 @@ public class PackageManagerService extends IPackageManager.Stub {
 
             // Collect vendor overlay packages.
             // (Do this before scanning any apps.)
-            mVendorOverlayDir = new File("/vendor/overlay/app");
-            mVendorOverlayInstallObserver = new RecursiveAppDirObserver(
+            mVendorOverlayDir = new File(OVERLAY_DIR);
+            mVendorOverlayInstallObserver = new AppDirObserver(
                 mVendorOverlayDir.getPath(), OBSERVER_EVENTS, true);
             mVendorOverlayInstallObserver.startWatching();
             scanDirLI(mVendorOverlayDir, PackageParser.PARSE_IS_SYSTEM
@@ -3477,7 +3478,8 @@ public class PackageManagerService extends IPackageManager.Stub {
     private PackageParser.Package scanPackageLI(PackageParser.Package pkg,
             int parseFlags, int scanMode, long currentTime) {
         if ((scanMode & SCAN_IS_OVERLAY) != 0) {
-            if (pkg.mOverlayTarget != null) {
+            // "android", ie framework-res.apk, is handled by native layers
+            if (pkg.mOverlayTarget != null && !pkg.mOverlayTarget.equals("android")) {
                 if (!mOverlays.containsKey(pkg.mOverlayTarget)) {
                     mOverlays.put(pkg.mOverlayTarget, new HashSet<PackageParser.Package>());
                 }
@@ -5279,7 +5281,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                 if ((event&ADD_EVENTS) != 0) {
                     if (p == null) {
                         final int extraScanMode =
-                            mRootDir.indexOf("/vendor/overlay/app", 0) == 0 ? SCAN_IS_OVERLAY : 0;
+                            mRootDir.indexOf(OVERLAY_DIR, 0) == 0 ? SCAN_IS_OVERLAY : 0;
                         p = scanPackageLI(fullPath,
                                 (mIsRom ? PackageParser.PARSE_IS_SYSTEM
                                         | PackageParser.PARSE_IS_SYSTEM_DIR: 0) |
@@ -5327,102 +5329,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
         private final String mRootDir;
         private final boolean mIsRom;
-    }
-
-    private final class RecursiveAppDirObserver extends FileObserver {
-        private static final int DIR_FLAG = 0x40000000;
-        private static final int DIR_REMOVE_EVENTS = REMOVE_EVENTS;
-        private static final int DIR_ADD_EVENTS = ADD_EVENTS | FileObserver.CREATE;
-
-        private final String mRootDir;
-        private int mMask;
-        private final boolean mIsRom;
-        private final AppDirObserver mADO;
-        private final ArrayList<RecursiveAppDirObserver> mChildren;
-
-        private int findChild(String path) {
-            for (int i = 0; i < mChildren.size(); ++i) {
-                RecursiveAppDirObserver child = mChildren.get(i);
-                if (child.mRootDir.equals(path)) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        private void addChild(String path) {
-            if (DEBUG_RADO) {
-                Log.d(TAG, "RecursiveAppDirObserver.addChild path=" + path);
-            }
-            if (findChild(path) == -1) {
-                RecursiveAppDirObserver child = new RecursiveAppDirObserver(path, mMask, mIsRom);
-                child.startWatching();
-                mChildren.add(child);
-            }
-        }
-
-        private void removeChild(String path) {
-            if (DEBUG_RADO) {
-                Log.d(TAG, "RecursiveAppDirObserver.removeChild path=" + path);
-            }
-            int index = findChild(path);
-            if (index != -1) {
-                RecursiveAppDirObserver child = mChildren.get(index);
-                child.stopWatching();
-                mChildren.remove(index);
-            }
-        }
-
-        public RecursiveAppDirObserver(String path, int mask, boolean isrom) {
-            super(path, mask | FileObserver.CREATE);
-
-            if (DEBUG_RADO) {
-                Log.d(TAG, "RecursiveAppDirObserver() path=" + path);
-            }
-
-            mRootDir = path;
-            mMask = mask;
-            mIsRom = isrom;
-            mADO = new AppDirObserver(path, mask, isrom);
-            mChildren = new ArrayList<RecursiveAppDirObserver>();
-
-            // populate mChildren with pre-existing directories
-            File[] ls = new File(path).listFiles();
-            if (ls != null) {
-                for (File f : ls) {
-                    if (f.isDirectory()) {
-                        addChild(f.getAbsolutePath());
-                    } else {
-                        mADO.onEvent(FileObserver.MOVED_TO, f.getName());
-                    }
-                }
-            }
-        }
-
-        public void onEvent(int event, String path) {
-            String fullPathStr = null;
-            File fullPath = null;
-            if (path != null) {
-                fullPath = new File(mRootDir, path);
-                fullPathStr = fullPath.getPath();
-            }
-
-            if (DEBUG_RADO) {
-                Log.d(TAG, "RecursiveAppDirObserver.onEvent path=" + fullPathStr +
-                        " event=0x" + String.format("%08x", event));
-            }
-
-            if ((event & DIR_FLAG) != 0 && (event & DIR_ADD_EVENTS) != 0) {
-                addChild(fullPathStr);
-            } else if ((event & DIR_FLAG) != 0 && (event & DIR_REMOVE_EVENTS) != 0) {
-                removeChild(fullPathStr);
-            } else if ((event & (REMOVE_EVENTS | ADD_EVENTS)) != 0) {
-                if (DEBUG_RADO) {
-                    Log.d(TAG, "RecursiveAppDirObserver.onEvent, offloading event to ADO");
-                }
-                mADO.onEvent(event, path);
-            }
-        }
     }
 
     /* Called when a downloaded package installation has been confirmed by the user */

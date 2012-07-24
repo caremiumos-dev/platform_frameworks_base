@@ -10,10 +10,12 @@ native = $(LOCAL_PATH)/../../../../native
 LOCAL_C_INCLUDES := \
 	$(base)/services/sensorservice \
 	$(native)/services/surfaceflinger \
+	external/zlib \
 	$(JNI_H_INCLUDE)
 
 LOCAL_SHARED_LIBRARIES := \
 	libandroid_runtime \
+	libandroidfw \
 	libsensorservice \
 	libsurfaceflinger \
     libinput \

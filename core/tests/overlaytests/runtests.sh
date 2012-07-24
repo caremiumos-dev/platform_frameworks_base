@@ -129,15 +129,15 @@ function disable_overlay()
 {
 	echo "Disabling all overlays"
 
-	rm_if_needed "/vendor/overlay/framework/framework-res.apk"
-	rm_if_needed "/data/resource-cache/vendor@overlay@framework@framework-res.apk@idmap"
-	rm_if_needed "/data/resource-cache/vendor@overlay@framework@framework-res.apk@1.apk@idmap"
-	rm_if_needed "/data/resource-cache/vendor@overlay@framework@framework-res.apk@2.apk@idmap"
+	rm_if_needed "/vendor/overlay/framework_a.apk"
+	rm_if_needed "/vendor/overlay/framework_b.apk"
+	rm_if_needed "/data/resource-cache/vendor@overlay@framework_a.apk@idmap"
+	rm_if_needed "/data/resource-cache/vendor@overlay@framework_b.apk@idmap"
 
-	rm_if_needed "/vendor/overlay/app/OverlayTest.apk"
-	rm_if_needed "/data/resource-cache/vendor@overlay@app@OverlayTest.apk@idmap"
-	rm_if_needed "/data/resource-cache/vendor@overlay@app@OverlayTest.apk@1.apk@idmap"
-	rm_if_needed "/data/resource-cache/vendor@overlay@app@OverlayTest.apk@2.apk@idmap"
+	rm_if_needed "/vendor/overlay/app_a.apk"
+	rm_if_needed "/vendor/overlay/app_b.apk"
+	rm_if_needed "/data/resource-cache/vendor@overlay@app_a.apk@idmap"
+	rm_if_needed "/data/resource-cache/vendor@overlay@app_b.apk@idmap"
 
 	rm_if_needed "/data/system/overlay"
 }
@@ -148,12 +148,10 @@ function enable_overlay()
 	echo "Enabling single overlay"
 
 	mkdir_if_needed "/system/vendor"
+	mkdir_if_needed "/vendor/overlay"
 
-	mkdir_if_needed "/vendor/overlay/framework"
-	push "/data/app/com.android.overlaytest.overlay.apk" "/vendor/overlay/framework/framework-res.apk"
-
-	mkdir_if_needed "/vendor/overlay/app"
-	push "/data/app/com.android.overlaytest.first_app_overlay.apk" "/vendor/overlay/app/OverlayTest.apk"
+	push "/data/app/com.android.overlaytest.overlay.apk" "/vendor/overlay/framework_a.apk"
+	push "/data/app/com.android.overlaytest.first_app_overlay.apk" "/vendor/overlay/app_a.apk"
 }
 
 function enable_multiple_overlays()
@@ -162,14 +160,16 @@ function enable_multiple_overlays()
 	echo "Enabling multiple overlays"
 
 	mkdir_if_needed "/system/vendor"
+	mkdir_if_needed "/vendor/overlay"
 
-	mkdir_if_needed "/vendor/overlay/framework/framework-res.apk"
-	push "/data/app/com.android.overlaytest.overlay.apk" "/vendor/overlay/framework/framework-res.apk/2.apk"
-	push "/data/app/com.android.overlaytest.multipleoverlays.apk" "/vendor/overlay/framework/framework-res.apk/1.apk"
-
-	mkdir_if_needed "/vendor/overlay/app/OverlayTest.apk"
-	push "/data/app/com.android.overlaytest.first_app_overlay.apk" "/vendor/overlay/app/OverlayTest.apk/1.apk"
-	push "/data/app/com.android.overlaytest.second_app_overlay.apk" "/vendor/overlay/app/OverlayTest.apk/2.apk"
+	# The order in which overlay packages (targeting the same base package) are loaded is
+	# determined by the overlay packages' <overlay priority=..."/> fields. The actual file
+	# names should not matter: for framework-res.apk, explicitly name overlay packages in
+	# reverse lexicographical order to verify this.
+	push "/data/app/com.android.overlaytest.overlay.apk" "/vendor/overlay/framework_b.apk"
+	push "/data/app/com.android.overlaytest.multipleoverlays.apk" "/vendor/overlay/framework_a.apk"
+	push "/data/app/com.android.overlaytest.first_app_overlay.apk" "/vendor/overlay/app_a.apk"
+	push "/data/app/com.android.overlaytest.second_app_overlay.apk" "/vendor/overlay/app_b.apk"
 }
 
 function instrument()
