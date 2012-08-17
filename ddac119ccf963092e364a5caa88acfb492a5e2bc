@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAIkH///34\u003d",
+        "filename": "services/java/com/android/server/LightsService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1000660
+      },
+      "writtenOn": "2012-08-17T00:43:15Z",
+      "side": 1,
+      "message": "Technically, the indentation is slightly off.",
+      "revId": "ddac119ccf963092e364a5caa88acfb492a5e2bc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
