@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAI13//9sc\u003d",
+        "filename": "services/java/com/android/server/InputMethodManagerService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 1000660
+      },
+      "writtenOn": "2012-08-24T17:56:09Z",
+      "side": 1,
+      "message": "indent by 8 spaces",
+      "revId": "818af4d95182f0847b9a7d6c414f4b27e478c41a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
