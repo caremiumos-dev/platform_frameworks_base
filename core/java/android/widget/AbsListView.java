@@ -3365,8 +3365,9 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
             }
             }
 
-            if (performButtonActionOnTouchDown(ev)) {
-                if (mTouchMode == TOUCH_MODE_DOWN) {
+            // Check where is clicked, on an item or not.
+            if (mTouchMode == TOUCH_MODE_DOWN && mMotionPosition >= 0) {
+                if (performButtonActionOnTouchDown(ev)) {
                     removeCallbacks(mPendingCheckForTap);
                 }
             }
