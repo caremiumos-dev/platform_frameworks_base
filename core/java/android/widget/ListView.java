@@ -3087,9 +3087,9 @@ public class ListView extends AbsListView {
             bounds.left = mPaddingLeft;
             bounds.right = mRight - mLeft - mPaddingRight;
 
-            final int count = getChildCount();
+            final int count = Math.min(getChildCount(), mAdapter.getCount());
             final int headerCount = mHeaderViewInfos.size();
-            final int itemCount = mItemCount;
+            final int itemCount = count;
             final int footerLimit = itemCount - mFooterViewInfos.size() - 1;
             final boolean headerDividers = mHeaderDividersEnabled;
             final boolean footerDividers = mFooterDividersEnabled;
