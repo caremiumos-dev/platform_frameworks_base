@@ -3834,7 +3834,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                             }
                             // Create data directories for all users
                             sUserManager.installPackageForAllUsers(pkgName,
-                                    pkg.applicationInfo.uid);
+                                    pkg.applicationInfo.uid, pkg.applicationInfo.seinfo);
                         }
                         if (!recovered) {
                             mHasSystemUidErrors = true;
@@ -3880,7 +3880,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                     return null;
                 }
                 // Create data directories for all users
-                sUserManager.installPackageForAllUsers(pkgName, pkg.applicationInfo.uid);
+                sUserManager.installPackageForAllUsers(pkgName, pkg.applicationInfo.uid,
+                        pkg.applicationInfo.seinfo);
 
                 if (dataPath.exists()) {
                     pkg.applicationInfo.dataDir = dataPath.getPath();

@@ -17,6 +17,7 @@
 #include "installd.h"
 #include <diskusage/dirsize.h>
 #include <selinux/android.h>
+#include <selinux/selinux.h>
 
 /* Directory records that are used in execution of commands. */
 dir_rec_t android_data_dir;
@@ -173,7 +174,7 @@ int delete_user_data(const char *pkgname, uid_t persona)
     return delete_dir_contents(pkgdir, 0, "lib");
 }
 
-int make_user_data(const char *pkgname, uid_t uid, uid_t persona)
+int make_user_data2(const char *pkgname, uid_t uid, uid_t persona, char* sctx)
 {
     char pkgdir[PKG_PATH_MAX];
     char real_libdir[PKG_PATH_MAX];
@@ -186,7 +187,34 @@ int make_user_data(const char *pkgname, uid_t uid, uid_t persona)
         ALOGE("cannot create dir '%s': %s\n", pkgdir, strerror(errno));
         return -errno;
     }
-    if (selinux_android_setfilecon(pkgdir, pkgname, uid) < 0) {
+    if (setfilecon(pkgdir, sctx) < 0) {
+        ALOGE("cannot setfilecon dir '%s': %s\n", pkgdir, strerror(errno));
+        unlink(pkgdir);
+        return -errno;
+    }
+    if (chown(pkgdir, uid, uid) < 0) {
+        ALOGE("cannot chown dir '%s': %s\n", pkgdir, strerror(errno));
+        unlink(pkgdir);
+        return -errno;
+    }
+
+    return 0;
+}
+
+int make_user_data(const char *pkgname, uid_t uid, uid_t persona, const char* seinfo)
+{
+    char pkgdir[PKG_PATH_MAX];
+    char real_libdir[PKG_PATH_MAX];
+
+    // Create the data dir for the package
+    if (create_pkg_path(pkgdir, pkgname, PKG_DIR_POSTFIX, persona)) {
+        return -1;
+    }
+    if (mkdir(pkgdir, 0751) < 0) {
+        ALOGE("cannot create dir '%s': %s\n", pkgdir, strerror(errno));
+        return -errno;
+    }
+    if (selinux_android_setfilecon2(pkgdir, pkgname, seinfo, uid) < 0) {
         ALOGE("cannot setfilecon dir '%s': %s\n", pkgdir, strerror(errno));
         unlink(pkgdir);
         return -errno;
@@ -214,6 +242,7 @@ int clone_persona_data(uid_t src_persona, uid_t target_persona, int copy)
 {
     char src_data_dir[PKG_PATH_MAX];
     char pkg_path[PKG_PATH_MAX];
+    char *ctx_str = NULL;
     DIR *d;
     struct dirent *de;
     struct stat s;
@@ -242,9 +271,15 @@ int clone_persona_data(uid_t src_persona, uid_t target_persona, int copy)
                 /* Get the uid of the package */
                 ALOGI("Adding datadir for uid = %d\n", s.st_uid);
                 uid = (uid_t) s.st_uid % PER_USER_RANGE;
+                if (getfilecon(pkg_path, &ctx_str) < 0) {
+                    ALOGE("Cannot getfilecon on %s (%s)", pkg_path, strerror(errno));
+                    goto err;
+                }
                 /* Create the directory for the target */
-                make_user_data(name, uid + target_persona * PER_USER_RANGE,
-                               target_persona);
+                make_user_data2(name, uid + target_persona * PER_USER_RANGE,
+                                target_persona, ctx_str);
+            err:
+                if (ctx_str) freecon(ctx_str);
             }
         }
         closedir(d);

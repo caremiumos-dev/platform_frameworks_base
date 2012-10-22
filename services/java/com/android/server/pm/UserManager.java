@@ -384,13 +384,13 @@ public class UserManager {
         return false;
     }
 
-    public void installPackageForAllUsers(String packageName, int uid) {
+    public void installPackageForAllUsers(String packageName, int uid, String seinfo) {
         for (int userId : mUserIds) {
             // Don't do it for the primary user, it will become recursive.
             if (userId == 0)
                 continue;
             mInstaller.createUserData(packageName, UserId.getUid(userId, uid),
-                    userId);
+                    userId, seinfo);
         }
     }
 
