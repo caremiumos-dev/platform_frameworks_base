@@ -16,6 +16,23 @@
       "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "Oq89N.Jc",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1014554
+      },
+      "writtenOn": "2013-01-24T23:08:21Z",
+      "side": 1,
+      "message": "mTN.mNextView \u003d null;   // other option. then handleshow must check if it is null.",
+      "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
