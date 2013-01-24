@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "OqDfl7y0",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1014554
+      },
+      "writtenOn": "2013-01-24T16:40:23Z",
+      "side": 1,
+      "message": "// remove any pending show (don\u0027t show it if it isn\u0027t showing yet.)",
+      "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
