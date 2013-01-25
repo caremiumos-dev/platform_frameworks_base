@@ -220,4 +220,10 @@
 
     <!-- used by DessertCase -->
     <dimen name="dessert_case_cell_size">192dp</dimen>
+
+    <!-- This is used when the ScrollView is scrolled to show an item that was not fully -->
+    <!-- visible in the ScrollView to increase the margin between the edge of the visible -->
+    <!-- ScrollView and the item. It's only used when there are more items in the ScrollView -->
+    <!-- above or below the selected item to show that there are more items in the ScrollView.-->
+    <item name="scroll_margin_factor" type="dimen">30%</item>
 </resources>

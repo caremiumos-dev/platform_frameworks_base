@@ -19,12 +19,14 @@ package com.android.systemui.recent;
 import android.animation.LayoutTransition;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.FloatMath;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -53,6 +55,7 @@ public class RecentsVerticalScrollView extends ScrollView
     private HashSet<View> mRecycledViews;
     private int mNumItemsInOneScreenful;
     private Runnable mOnScrollListener;
+    private int mSelectedTaskIndex = -1;
 
     public RecentsVerticalScrollView(Context context, AttributeSet attrs) {
         super(context, attrs, 0);
@@ -92,6 +95,7 @@ public class RecentsVerticalScrollView extends ScrollView
     private void update() {
         for (int i = 0; i < mLinearLayout.getChildCount(); i++) {
             View v = mLinearLayout.getChildAt(i);
+            v.setSelected(false);
             addToRecycledViews(v);
             mAdapter.recycleView(v);
         }
@@ -99,7 +103,7 @@ public class RecentsVerticalScrollView extends ScrollView
         setLayoutTransition(null);
 
         mLinearLayout.removeAllViews();
-
+        mSelectedTaskIndex = -1;
         // Once we can clear the data associated with individual item views,
         // we can get rid of the removeAllViews() and the code below will
         // recycle them.
@@ -181,6 +185,105 @@ public class RecentsVerticalScrollView extends ScrollView
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN) &&
+                !event.isCanceled()) {
+            int oldIndex = mSelectedTaskIndex;
+            if (mAdapter.getCount() == 0) {
+                mSelectedTaskIndex = -1;
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                if (mSelectedTaskIndex < 0 || mSelectedTaskIndex >= mAdapter.getCount()) {
+                    mSelectedTaskIndex = mAdapter.getCount() - 1;
+                } else if (mSelectedTaskIndex > 0) {
+                    mSelectedTaskIndex--;
+                }
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                if (mSelectedTaskIndex < 0 || mSelectedTaskIndex >= mAdapter.getCount()) {
+                    mSelectedTaskIndex = 0;
+                } else if (mSelectedTaskIndex < mAdapter.getCount() - 1) {
+                    mSelectedTaskIndex++;
+                }
+            }
+            switchSelected(oldIndex, mSelectedTaskIndex);
+            scrollToItem(mSelectedTaskIndex);
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER ||
+                keyCode == KeyEvent.KEYCODE_MENU) && !event.isCanceled()) {
+            if (mSelectedTaskIndex >= 0 && mSelectedTaskIndex < mLinearLayout.getChildCount()) {
+                View view = mLinearLayout.getChildAt(mSelectedTaskIndex);
+                if (view != null) {
+                    if ((keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
+                            keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        mCallback.handleOnClick(view);
+                    } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+                        View thumbnailView = view.findViewById(R.id.app_thumbnail);
+                        View anchorView = view.findViewById(R.id.app_description);
+                        mCallback.handleLongPress(view, anchorView, thumbnailView);
+                    }
+                }
+            }
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    private void switchSelected(int oldIndex, int newIndex) {
+        if (oldIndex >= 0 && oldIndex < mLinearLayout.getChildCount()) {
+            View v = mLinearLayout.getChildAt(oldIndex);
+            v.setSelected(false);
+        }
+
+        if (newIndex >= 0 && newIndex < mLinearLayout.getChildCount()) {
+            View v = mLinearLayout.getChildAt(newIndex);
+            v.setSelected(true);
+        }
+    }
+
+    /**
+     * Scrolls to a specific item if it is out of sight
+     * @param item The index of the item to scroll to
+     */
+    private void scrollToItem(int item) {
+        if (item < 0 || item >= mLinearLayout.getChildCount()) {
+            return;
+        }
+
+        View view = mLinearLayout.getChildAt(item);
+        int scrollMargin = (int)(view.getHeight() * mContext.getResources().
+                getFraction(R.dimen.scroll_margin_factor, 1, 1));
+
+        if (item == 0) {
+            // Scroll to top of list
+            scrollTo(0, 0);
+        } else if (item == mLinearLayout.getChildCount() -1) {
+            // Scroll to bottom of list
+            scrollTo(0, mLinearLayout.getHeight());
+        } else if (view.getTop() < mScrollY) {
+            // Scroll up
+            scrollTo(0, view.getTop() - scrollMargin);
+        } else if (view.getBottom() > mScrollY + getHeight()) {
+            // Scroll down
+            scrollTo(0, view.getBottom() - getHeight() + scrollMargin);
+        }
+    }
+
+    private int findIndexForView(View v) {
+        for (int i = 0; i < mLinearLayout.getChildCount(); i++) {
+            if (mLinearLayout.getChildAt(i) == v) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    @Override
     public void removeViewInLayout(final View view) {
         dismissChild(view);
     }
@@ -206,9 +309,16 @@ public class RecentsVerticalScrollView extends ScrollView
     }
 
     public void onChildDismissed(View v) {
+        int viewIndex = findIndexForView(v);
+        if ((viewIndex <= mSelectedTaskIndex && mSelectedTaskIndex != 0) ||
+                mSelectedTaskIndex == mLinearLayout.getChildCount()) {
+            mSelectedTaskIndex--;
+        }
+        v.setSelected(false);
         addToRecycledViews(v);
         mLinearLayout.removeView(v);
         mCallback.handleSwipe(v);
+        switchSelected(-1, mSelectedTaskIndex);
         // Restore the alpha/translation parameters to what they were before swiping
         // (for when these items are recycled)
         View contentView = getChildContentView(v);
