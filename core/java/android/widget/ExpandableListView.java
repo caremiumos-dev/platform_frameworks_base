@@ -291,18 +291,36 @@ public class ExpandableListView extends ListView {
             // If this item type and the previous item type are different, then we need to change
             // the left & right bounds
             if (pos.position.type != lastItemType) {
+                boolean isLayoutRtl = getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
                 if (pos.position.type == ExpandableListPosition.CHILD) {
-                    indicatorRect.left = (mChildIndicatorLeft == CHILD_INDICATOR_INHERIT) ?
-                            mIndicatorLeft : mChildIndicatorLeft;
-                    indicatorRect.right = (mChildIndicatorRight == CHILD_INDICATOR_INHERIT) ?
-                            mIndicatorRight : mChildIndicatorRight;
+                    if (isLayoutRtl) {
+                        indicatorRect.left = (mChildIndicatorLeft == CHILD_INDICATOR_INHERIT) ?
+                                mRight - mIndicatorRight : mRight - mChildIndicatorRight;
+                        indicatorRect.right = (mChildIndicatorRight == CHILD_INDICATOR_INHERIT) ?
+                                mRight - mIndicatorLeft : mRight - mChildIndicatorLeft;
+                    } else {
+                        indicatorRect.left = (mChildIndicatorLeft == CHILD_INDICATOR_INHERIT) ?
+                                mIndicatorLeft : mChildIndicatorLeft;
+                        indicatorRect.right = (mChildIndicatorRight == CHILD_INDICATOR_INHERIT) ?
+                                mIndicatorRight : mChildIndicatorRight;
+                    }
                 } else {
-                    indicatorRect.left = mIndicatorLeft;
-                    indicatorRect.right = mIndicatorRight;
+                    if (isLayoutRtl) {
+                        indicatorRect.left = mRight - mIndicatorRight;
+                        indicatorRect.right = mRight - mIndicatorLeft;
+                    } else {
+                        indicatorRect.left = mIndicatorLeft;
+                        indicatorRect.right = mIndicatorRight;
+                    }
                 }
-                
-                indicatorRect.left += mPaddingLeft;
-                indicatorRect.right += mPaddingLeft;
+
+                if (isLayoutRtl) {
+                    indicatorRect.left -= mPaddingRight;
+                    indicatorRect.right -= mPaddingRight;
+                } else {
+                    indicatorRect.left += mPaddingLeft;
+                    indicatorRect.right += mPaddingLeft;
+                }
 
                 lastItemType = pos.position.type; 
             }
