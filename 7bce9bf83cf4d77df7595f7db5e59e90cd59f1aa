@@ -33,6 +33,92 @@
       "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "PkbdOsJA",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1003957
+      },
+      "writtenOn": "2013-02-07T03:01:23Z",
+      "side": 1,
+      "message": "We should do both and add the null check in handle show.\n\nRemoving the message to show isn\u0027t enough.  There\u0027s still the possibility that the system server will call show() after we decided to cancel the toast.  Of course the system server will then immediately call hide() but we didn\u0027t need to show the toast at all in the first place.\n\nSo use:\n\n    mTN.cancel();\n\nAnd in cancel() we should set mTM.mNextView to null.",
+      "parentUuid": "Oq89N.Jc",
+      "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "PkTc8AN8",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 309,
+      "author": {
+        "id": 1003957
+      },
+      "writtenOn": "2013-02-07T03:01:23Z",
+      "side": 1,
+      "message": "Please sort these by index.",
+      "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "PkXdpaOM",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 1003957
+      },
+      "writtenOn": "2013-02-07T03:01:23Z",
+      "side": 1,
+      "message": "Add:\n\n    mNextView \u003d null;",
+      "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "PkTdj4AU",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 377,
+      "author": {
+        "id": 1003957
+      },
+      "writtenOn": "2013-02-07T03:01:23Z",
+      "side": 1,
+      "message": "Check for null:\n\n    if (mView !\u003d mNextView \u0026\u0026 mNextView !\u003d null) {",
+      "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "PkVcvhKc",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 1003957
+      },
+      "writtenOn": "2013-02-07T03:01:23Z",
+      "side": 1,
+      "message": "We should clear mNextView here.  Essentially, showing a view should consume the next view that was set.  This ensures we don\u0027t leak the view after it is hidden.\n\nNote that the old code used to clear mNextView as part of the hide runnable but you didn\u0027t port that over.  That\u0027s ok.  It makes more sense to do it here anyhow.\n\n    mView \u003d mNextView;\n    mNextView \u003d null;",
+      "revId": "7bce9bf83cf4d77df7595f7db5e59e90cd59f1aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
