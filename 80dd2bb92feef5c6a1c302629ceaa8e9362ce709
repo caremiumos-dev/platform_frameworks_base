@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "P10VpTuM",
+        "filename": "core/java/android/widget/Toast.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 331,
+      "author": {
+        "id": 1014554
+      },
+      "writtenOn": "2013-02-13T14:55:44Z",
+      "side": 1,
+      "message": "if (mNextView !\u003d null) {\n              if (mNextView !\u003d mView) {\n\t\t\t// remove the old view if necessary \t326\n\t\t\thandleHide();\t327\n\t\t\tmView \u003d mNextView;\t328\n\t\t\tmNextView \u003d null;\t329\n\t\t\thandleShow();\t330\n\t\t\t}\n              } else {\n                       mNextView \u003d null; // or check in MSG_SETNEXT\n             }\n\n// check if can eliminate Toast.mNextView\n\nnow, all assignment take place inside hander thread, which will remove race condition.",
+      "revId": "80dd2bb92feef5c6a1c302629ceaa8e9362ce709",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
