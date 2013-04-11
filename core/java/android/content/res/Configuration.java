@@ -1204,14 +1204,12 @@ public final class Configuration implements Parcelable, Comparable<Configuration
 
     /**
      * Set the locale. This is the preferred way for setting up the locale (instead of using the
-     * direct accessor). This will also set the userLocale and layout direction according to
-     * the locale.
+     * direct accessor). This will also set layout direction according to the locale.
      *
      * @param loc The locale. Can be null.
      */
     public void setLocale(Locale loc) {
         locale = loc;
-        userSetLocale = true;
         setLayoutDirection(locale);
     }
 

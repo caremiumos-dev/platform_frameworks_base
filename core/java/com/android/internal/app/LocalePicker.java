@@ -245,6 +245,7 @@ public class LocalePicker extends ListFragment {
 
             // Will set userSetLocale to indicate this isn't some passing default - the user
             // wants this remembered
+            config.userSetLocale = true;
             config.setLocale(locale);
 
             am.updateConfiguration(config);

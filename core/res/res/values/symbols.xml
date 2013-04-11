@@ -1816,4 +1816,7 @@
 
   <!-- From PinyinIME(!!!) -->
   <java-symbol type="string" name="inputMethod" />
+
+  <!-- From SIM Records -->
+  <java-symbol type="bool" name="config_set_default_locale_from_usim" />
 </resources>
