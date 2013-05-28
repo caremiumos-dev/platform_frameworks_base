@@ -31,8 +31,17 @@
 
     <!-- String containing the apn value for tethering.  May be overriden by secure settings
          TETHER_DUN_APN.  Value is a comma separated series of strings:
-         "name,apn,proxy,port,username,password,server,mmsc,mmsproxy,mmsport,mcc,mnc,auth,type"
+         "name,apn,proxy,port,username,password,server,mmsc,mmsproxy,mmsport,mcc,mnc,auth,type",
+         Or string format of ApnSettingV2.
          note that empty fields can be ommitted: "name,apn,,,,,,,,,310,260,,DUN" -->
-    <string translatable="false" name="config_tether_apndata">SFR option modem,websfr,,,,,,,,,208,10,,DUN</string>
+    <string-array translatable="false" name="config_tether_apndata">
+        <item>SFR option modem,websfr,,,,,,,,,208,10,,DUN</item>
+        <item>[ApnSettingV2]INTERNET NRJ,internetnrj,,,,,,,,,208,10,,DUN,,,true,0,gid,4E</item>
+        <item>[ApnSettingV2]Auchan,wap65,,,,,,,,,208,10,,DUN,,,true,0,spn,A MOBILE</item>
+        <item>[ApnSettingV2]LeclercMobile,wap66,,,,,,,,,208,10,,DUN,,,true,0,spn,LeclercMobile</item>
+        <item>[ApnSettingV2]Coriolis,fnetcoriolis,,,,,,,,,208,10,,DUN,,,true,0,gid,12</item>
+        <item>[ApnSettingV2]WEB La Poste Mobile,wapdebitel,,,,,,,,,208,10,,DUN,,,true,0,gid,4C</item>
+        <item>[ApnSettingV2]Darty Surf Mails,wap68,,,,,,,,,208,10,,DUN,,,true,0,gid,44</item>
+    </string-array>
 
 </resources>

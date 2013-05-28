@@ -441,7 +441,6 @@
   <java-symbol type="string" name="config_default_dns_server" />
   <java-symbol type="string" name="config_ethernet_iface_regex" />
   <java-symbol type="string" name="config_ntpServer" />
-  <java-symbol type="string" name="config_tether_apndata" />
   <java-symbol type="string" name="config_useragentprofile_url" />
   <java-symbol type="string" name="config_wifi_p2p_device_type" />
   <java-symbol type="string" name="contentServiceSync" />
@@ -1520,6 +1519,7 @@
   <java-symbol type="array" name="config_tether_bluetooth_regexs" />
   <java-symbol type="array" name="config_tether_dhcp_range" />
   <java-symbol type="array" name="config_tether_upstream_types" />
+  <java-symbol type="array" name="config_tether_apndata" />
   <java-symbol type="array" name="config_tether_usb_regexs" />
   <java-symbol type="array" name="config_tether_wifi_regexs" />
   <java-symbol type="array" name="config_usbHostBlacklist" />
