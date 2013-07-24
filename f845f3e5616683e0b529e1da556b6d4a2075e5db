@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "934d4312_21ab6a1f",
+        "filename": "services/java/com/android/server/location/GpsXtraDownloader.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 1022928
+      },
+      "writtenOn": "2013-07-24T18:07:52Z",
+      "side": 1,
+      "message": "nit: extra whitespace.",
+      "revId": "f845f3e5616683e0b529e1da556b6d4a2075e5db",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
