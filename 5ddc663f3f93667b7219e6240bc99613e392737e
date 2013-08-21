@@ -16,6 +16,24 @@
       "revId": "5ddc663f3f93667b7219e6240bc99613e392737e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "edde9c26_fec6c130",
+        "filename": "telephony/java/android/telephony/SignalStrength.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 756,
+      "author": {
+        "id": 1019883
+      },
+      "writtenOn": "2013-08-21T12:37:16Z",
+      "side": 1,
+      "message": "Do you mean calculating antenna level from combination of 3 metrics: RSRP,RSRQ and RSSNR?\n\nI think it is more complicated than it is worth. Characteristics of RSRQ and RSSNR are very similar so that combination of these values wouldn\u0027t produce extra value.\n\nAdding config value to choose RSRQ or RSSNR is feasible. It could be the last option if we couldn\u0027t agree which one is better; RSRQ or RSSNR.\n\nBefore that, I would like to hear any opinions from reviewers; which one is better?",
+      "parentUuid": "ad4bc472_e4175a95",
+      "revId": "5ddc663f3f93667b7219e6240bc99613e392737e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
