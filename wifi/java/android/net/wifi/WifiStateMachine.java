@@ -240,22 +240,20 @@ public class WifiStateMachine extends StateMachine {
         }
 
         @Override
-        public void addressUpdated(LinkAddress address, String iface, int flags, int scope) {
+        public void addressUpdated(String iface, LinkAddress address) {
             if (mWifiStateMachine.mInterfaceName.equals(iface)) {
                 if (DBG) {
-                    log("addressUpdated: " + address + " on " + iface +
-                        " flags " + flags + " scope " + scope);
+                    log("addressUpdated: " + address + " on " + iface);
                 }
                 mWifiStateMachine.sendMessage(CMD_IP_ADDRESS_UPDATED, address);
             }
         }
 
         @Override
-        public void addressRemoved(LinkAddress address, String iface, int flags, int scope) {
+        public void addressRemoved(String iface, LinkAddress address) {
             if (mWifiStateMachine.mInterfaceName.equals(iface)) {
                 if (DBG) {
-                    log("addressRemoved: " + address + " on " + iface +
-                        " flags " + flags + " scope " + scope);
+                    log("addressRemoved: " + address + " on " + iface);
                 }
                 mWifiStateMachine.sendMessage(CMD_IP_ADDRESS_REMOVED, address);
             }
