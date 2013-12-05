@@ -80,7 +80,8 @@ public abstract class SensorManager {
     /** @hide */
     protected static final String TAG = "SensorManager";
 
-    private static final float[] mTempMatrix = new float[16];
+    private static final float[] mTempMatrix_3x3 = new float[9];
+	private static final float[] mTempMatrix_4x4 = new float[16];
 
     // Cached lists of sensors by type.  Guarded by mSensorListByType.
     private final SparseArray<List<Sensor>> mSensorListByType =
@@ -1070,7 +1071,7 @@ public abstract class SensorManager {
             float[] outR)
     {
         if (inR == outR) {
-            final float[] temp = mTempMatrix;
+            final float[] temp = outR.length==16 ? mTempMatrix_4x4 : mTempMatrix_3x3;
             synchronized(temp) {
                 // we don't expect to have a lot of contention
                 if (remapCoordinateSystemImpl(inR, X, Y, temp)) {
@@ -1079,6 +1080,7 @@ public abstract class SensorManager {
                         outR[i] = temp[i];
                     return true;
                 }
+				return false;
             }
         }
         return remapCoordinateSystemImpl(inR, X, Y, outR);
