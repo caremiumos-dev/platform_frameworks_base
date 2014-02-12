@@ -27,18 +27,29 @@ import com.android.internal.telephony.IPhoneStateListener;
 
 interface ITelephonyRegistry {
     void listen(String pkg, IPhoneStateListener callback, int events, boolean notifyNow);
-
+    void listenUsingSub(in int subscription, String pkg, IPhoneStateListener callback, int events,
+            boolean notifyNow);
     void notifyCallState(int state, String incomingNumber);
+    void notifyCallStateUsingSub(in int subscription, int state, String incomingNumber);
     void notifyServiceState(in ServiceState state);
+    void notifyServiceStateUsingSub(in int subscription, in ServiceState state);
     void notifySignalStrength(in SignalStrength signalStrength);
+    void notifySignalStrengthUsingSub(in int subscription, in SignalStrength signalStrength);
     void notifyMessageWaitingChanged(boolean mwi);
+    void notifyMessageWaitingChangedUsingSub(in int subscription, boolean mwi);
     void notifyCallForwardingChanged(boolean cfi);
+    void notifyCallForwardingChangedUsingSub(in int subscription, boolean cfi);
     void notifyDataActivity(int state);
     void notifyDataConnection(int state, boolean isDataConnectivityPossible,
             String reason, String apn, String apnType, in LinkProperties linkProperties,
             in LinkCapabilities linkCapabilities, int networkType, boolean roaming);
+    void notifyDataConnectionUsingSub(int subscription, int state, boolean isDataConnectivityPossible,
+            String reason, String apn, String apnType, in LinkProperties linkProperties,
+            in LinkCapabilities linkCapabilities, int networkType, boolean roaming);
     void notifyDataConnectionFailed(String reason, String apnType);
+    void notifyDataConnectionFailedUsingSub(int subscription, String reason, String apnType);
     void notifyCellLocation(in Bundle cellLocation);
+    void notifyCellLocationUsingSub(in int subscription, in Bundle cellLocation);
     void notifyOtaspChanged(in int otaspMode);
     void notifyCellInfo(in List<CellInfo> cellInfo);
     void notifyPreciseCallState(int ringingCallState, int foregroundCallState,
@@ -46,4 +57,5 @@ interface ITelephonyRegistry {
     void notifyDisconnectCause(int disconnectCause, int preciseDisconnectCause);
     void notifyPreciseDataConnectionFailed(String reason, String apnType, String apn,
             String failCause);
+    void notifyCellInfoUsingSub(in int subscription, in List<CellInfo> cellInfo);
 }

@@ -188,7 +188,23 @@ public class PhoneStateListener {
      */
     public static final int LISTEN_PRECISE_DATA_CONNECTION_STATE            = 0x00001000;
 
+     /*
+     * Subscription used to listen to the phone state changes
+     * @hide
+     */
+    /** @hide */
+    protected int mSubscription = 0;
+
     public PhoneStateListener() {
+        // If subscription is not passed set the default subscription.
+        mSubscription = TelephonyManager.getDefault().getDefaultSubscription();
+    }
+
+    /**
+     * @hide
+     */
+    public PhoneStateListener(int subscription) {
+        mSubscription = subscription;
     }
 
     /**
