@@ -393,6 +393,9 @@ public class PackageManagerService extends IPackageManager.Stub {
     // If mac_permissions.xml was found for seinfo labeling.
     boolean mFoundPolicyFile;
 
+    // If a recursive restorecon of /data/data/<pkg> is needed.
+    boolean mShouldRestoreconData;
+
     // All available activities, for your resolving pleasure.
     final ActivityIntentResolver mActivities =
             new ActivityIntentResolver();
@@ -1153,6 +1156,7 @@ public class PackageManagerService extends IPackageManager.Stub {
             readPermissions();
 
             mFoundPolicyFile = SELinuxMMAC.readInstallPolicy();
+            mShouldRestoreconData = SELinuxMMAC.shouldRestorecon();
 
             mRestoredSettings = mSettings.readLPw(this, sUserManager.getUsers(false),
                     mSdkVersion, mOnlyCore);
@@ -1485,13 +1489,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
             // can downgrade to reader
             mSettings.writeLPr();
-
-            if (SELinuxMMAC.shouldRestorecon()) {
-                Slog.i(TAG, "Relabeling of /data/data and /data/user issued.");
-                if (mInstaller.restoreconData()) {
-                    SELinuxMMAC.setRestoreconDone();
-                }
-            }
 
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_READY,
                     SystemClock.uptimeMillis());
@@ -4617,6 +4614,11 @@ public class PackageManagerService extends IPackageManager.Stub {
                     }
                 }
                 pkg.applicationInfo.dataDir = dataPath.getPath();
+                if (mShouldRestoreconData) {
+                    Slog.i(TAG, "Relabeling of " + pkg.applicationInfo.dataDir + " issued.");
+                    mInstaller.restoreconData(pkg.applicationInfo.dataDir, pkg.applicationInfo.seinfo,
+                                pkg.applicationInfo.uid);
+                }
             } else {
                 if (DEBUG_PACKAGE_SCANNING) {
                     if ((parseFlags & PackageParser.PARSE_CHATTY) != 0)
@@ -11062,6 +11064,9 @@ public class PackageManagerService extends IPackageManager.Stub {
      */
     public void scanAvailableAsecs() {
         updateExternalMediaStatusInner(true, false, false);
+        if (mShouldRestoreconData) {
+            SELinuxMMAC.setRestoreconDone();
+        }
     }
 
     /*
