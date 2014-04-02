@@ -34,6 +34,24 @@
       "revId": "cf61c9b71faa053f407430fde043b4672c501340",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "59b93ba9_10fbaae5",
+        "filename": "core/java/android/view/ViewRootImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 666,
+      "author": {
+        "id": 1010082
+      },
+      "writtenOn": "2014-04-02T15:59:45Z",
+      "side": 1,
+      "message": "Looks like HardwareRenderer has already been updated to use long in AOSP.",
+      "parentUuid": "99bf338c_d2143a61",
+      "revId": "cf61c9b71faa053f407430fde043b4672c501340",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
