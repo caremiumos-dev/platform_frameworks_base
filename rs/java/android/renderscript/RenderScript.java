@@ -606,12 +606,35 @@ public class RenderScript {
     }
 
     synchronized void nScriptForEachClipped(long id, int slot, long ain, long aout, byte[] params,
-                                            int xstart, int xend, int ystart, int yend, int zstart, int zend) {
+                                              int xstart, int xend, int ystart, int yend, int zstart, int zend) {
         validate();
         if (params == null) {
             rsnScriptForEachClipped(mContext, id, slot, ain, aout, xstart, xend, ystart, yend, zstart, zend);
         } else {
             rsnScriptForEachClipped(mContext, id, slot, ain, aout, params, xstart, xend, ystart, yend, zstart, zend);
+        }
+    }
+
+    /**
+     * Multi-input code.
+     *
+     */
+
+    // @hide
+    native void rsnScriptForEachMultiClipped(long con, long id, int slot, long[] ains, long aout, byte[] params,
+                                              int xstart, int xend, int ystart, int yend, int zstart, int zend);
+    // @hide
+    native void rsnScriptForEachMultiClipped(long con, long id, int slot, long[] ains, long aout,
+                                              int xstart, int xend, int ystart, int yend, int zstart, int zend);
+
+    // @hide
+    synchronized void nScriptForEachMultiClipped(long id, int slot, long[] ains, long aout, byte[] params,
+                                                   int xstart, int xend, int ystart, int yend, int zstart, int zend) {
+        validate();
+        if (params == null) {
+            rsnScriptForEachMultiClipped(mContext, id, slot, ains, aout, xstart, xend, ystart, yend, zstart, zend);
+        } else {
+            rsnScriptForEachMultiClipped(mContext, id, slot, ains, aout, params, xstart, xend, ystart, yend, zstart, zend);
         }
     }
 
