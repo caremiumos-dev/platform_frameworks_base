@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "6487392a_dd664bf7",
+        "filename": "core/res/res/values/strings.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 3573,
+      "author": {
+        "id": 1048135
+      },
+      "writtenOn": "2014-06-26T14:06:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3f854c8a_47875dc0",
+      "revId": "de555420a86cbb0e29ae8e3460efefba3ffde22c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5f6920a1_99d47b57",
         "filename": "core/res/res/values/strings.xml",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "e472491f_ce7e97bc",
+        "filename": "core/res/res/values/strings.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 3597,
+      "author": {
+        "id": 1048135
+      },
+      "writtenOn": "2014-06-26T14:06:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5f6920a1_99d47b57",
+      "revId": "de555420a86cbb0e29ae8e3460efefba3ffde22c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1f8a489d_1e2cbc88",
         "filename": "packages/SystemUI/src/com/android/systemui/usb/StorageNotification.java",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2014-06-11T20:24:04Z",
       "side": 1,
       "message": "Please don\u0027t key this off of description string scraping.\n\nCould you describe more about exactly what storage configurations you\u0027re working with?  Are these USB mass storage devices connected to a Android device running in a USB host mode?",
+      "revId": "de555420a86cbb0e29ae8e3460efefba3ffde22c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "447cf5f0_3cf3e9c3",
+        "filename": "packages/SystemUI/src/com/android/systemui/usb/StorageNotification.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1048135
+      },
+      "writtenOn": "2014-06-26T14:06:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1f8a489d_1e2cbc88",
       "revId": "de555420a86cbb0e29ae8e3460efefba3ffde22c",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
