@@ -233,6 +233,9 @@ public class ImageWallpaper extends WallpaperService {
             int surfaceWidth = Math.max(p.x, mBackgroundWidth);
             int surfaceHeight = Math.max(p.y, mBackgroundHeight);
 
+            surfaceWidth = Math.max(getDesiredMinimumWidth(), surfaceWidth);
+            surfaceHeight = Math.max(getDesiredMinimumHeight(), surfaceHeight);
+
             // If the surface dimensions haven't changed, then just return
             final Rect frame = surfaceHolder.getSurfaceFrame();
             if (frame != null) {
