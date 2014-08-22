@@ -413,23 +413,23 @@ public class GpsLocationProvider implements LocationProviderInterface {
                 checkSmsSuplInit(intent);
             } else if (action.equals(Intents.WAP_PUSH_RECEIVED_ACTION)) {
                 checkWapSuplInit(intent);
-             } else if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
-                 int networkState;
-                 if (intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)) {
-                     networkState = LocationProvider.TEMPORARILY_UNAVAILABLE;
-                 } else {
-                     networkState = LocationProvider.AVAILABLE;
-                 }
+            } else if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+                int networkState;
+                if (intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)) {
+                    networkState = LocationProvider.TEMPORARILY_UNAVAILABLE;
+                } else {
+                    networkState = LocationProvider.AVAILABLE;
+                }
 
-                 // retrieve NetworkInfo result for this UID
-                 NetworkInfo info =
-                         intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-                 ConnectivityManager connManager = (ConnectivityManager)
-                         mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-                 info = connManager.getNetworkInfo(info.getType());
+                // retrieve NetworkInfo result for this UID
+                NetworkInfo info =
+                        intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+                ConnectivityManager connManager = (ConnectivityManager)
+                        mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                info = connManager.getNetworkInfo(info.getType());
 
-                 updateNetworkState(networkState, info);
-             }
+                updateNetworkState(networkState, info);
+            }
         }
     };
 
@@ -493,8 +493,6 @@ public class GpsLocationProvider implements LocationProviderInterface {
         mContext = context;
         mNtpTime = NtpTrustedTime.getInstance(context);
         mILocationManager = ilocationManager;
-        mNIHandler = new GpsNetInitiatedHandler(context);
-
         mLocation.setExtras(mLocationExtras);
 
         // Create a wake lock
@@ -526,6 +524,19 @@ public class GpsLocationProvider implements LocationProviderInterface {
         if (!propertiesLoaded) {
             loadPropertiesFile(DEFAULT_PROPERTIES_FILE);
         }
+
+        String suplESProperty = mProperties.getProperty("SUPL_ES");
+        boolean isSuplEsEnabled = false;
+        if (suplESProperty != null) {
+            try {
+                isSuplEsEnabled = (Integer.parseInt(suplESProperty) == 1);
+            } catch (NumberFormatException e) {
+                Log.e(TAG, "unable to parse SUPL_ES: " + suplESProperty);
+            }
+        }
+        mNIHandler = new GpsNetInitiatedHandler(context,
+                                                mNetInitiatedListener,
+                                                isSuplEsEnabled);
 
         // construct handler, listen for events
         mHandler = new ProviderHandler(looper);
