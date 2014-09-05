@@ -1269,7 +1269,24 @@ public abstract class HardwareRenderer {
         abstract void initAtlas();
 
         EGLContext createContext(EGL10 egl, EGLDisplay eglDisplay, EGLConfig eglConfig) {
-            int[] attribs = { EGL14.EGL_CONTEXT_CLIENT_VERSION, mGlVersion, EGL_NONE };
+            //USE_EGL_CONTEXT_PROTECTION{
+
+            //should go in the EGL14 class but we don't want to create compile
+            // dependencies at the Java layer at this time:
+            final int EGL_CONTEXT_PROTECTION_SEC = 0x5EC1;
+
+            int[] attribs;
+            String extensions = egl.eglQueryString(eglDisplay, EGL14.EGL_EXTENSIONS);
+            if (extensions != null && extensions.contains("EGL_SEC_context_protection")) {
+                attribs = new int[]{ EGL14.EGL_CONTEXT_CLIENT_VERSION, mGlVersion,
+                                  EGL_CONTEXT_PROTECTION_SEC, EGL14.EGL_TRUE,
+                                  EGL_NONE };
+            }
+            else {
+                attribs = new int[]{ EGL14.EGL_CONTEXT_CLIENT_VERSION, mGlVersion,
+                                  EGL_NONE };
+            }
+            //USE_EGL_CONTEXT_PROTECTION}
 
             EGLContext context = egl.eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT,
                     mGlVersion != 0 ? attribs : null);
@@ -1555,6 +1572,10 @@ public abstract class HardwareRenderer {
         }
 
         private DisplayList buildDisplayList(View view, HardwareCanvas canvas) {
+            if (mDrawDelta <= 0) {
+                return view.mDisplayList;
+            }
+
             view.mRecreateDisplayList = (view.mPrivateFlags & View.PFLAG_INVALIDATED)
                     == View.PFLAG_INVALIDATED;
             view.mPrivateFlags &= ~View.PFLAG_INVALIDATED;
@@ -1977,7 +1998,7 @@ public abstract class HardwareRenderer {
                 if (atlas.isCompatible(android.os.Process.myPpid())) {
                     GraphicBuffer buffer = atlas.getBuffer();
                     if (buffer != null) {
-                        long[] map = atlas.getMap();
+                        int[] map = atlas.getMap();
                         if (map != null) {
                             GLES20Canvas.initAtlas(buffer, map);
                         }

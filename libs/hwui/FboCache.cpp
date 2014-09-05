@@ -22,6 +22,9 @@
 #include "FboCache.h"
 #include "Properties.h"
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 namespace android {
 namespace uirenderer {
 
@@ -60,9 +63,12 @@ uint32_t FboCache::getMaxSize() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void FboCache::clear() {
-    for (size_t i = 0; i < mCache.size(); i++) {
-        const GLuint fbo = mCache.itemAt(i);
-        glDeleteFramebuffers(1, &fbo);
+    if (eglProtectCurrentContextSEC(false)) {
+        for (size_t i = 0; i < mCache.size(); i++) {
+            const GLuint fbo = mCache.itemAt(i);
+            glDeleteFramebuffers(1, &fbo);
+        }
+        eglProtectCurrentContextSEC(true);
     }
     mCache.clear();
 }
@@ -84,7 +90,10 @@ bool FboCache::put(GLuint fbo) {
         return true;
     }
 
-    glDeleteFramebuffers(1, &fbo);
+    if (eglProtectCurrentContextSEC(false)) {
+        glDeleteFramebuffers(1, &fbo);
+        eglProtectCurrentContextSEC(true);
+    }
     return false;
 }
 

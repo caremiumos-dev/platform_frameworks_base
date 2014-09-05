@@ -85,7 +85,10 @@ void PatchCache::clear() {
 
     if (mMeshBuffer) {
         Caches::getInstance().unbindMeshBuffer();
-        glDeleteBuffers(1, &mMeshBuffer);
+        if (eglProtectCurrentContextSEC(false)) {
+            glDeleteBuffers(1, &mMeshBuffer);
+            eglProtectCurrentContextSEC(true);
+        }
         mMeshBuffer = 0;
         mSize = 0;
     }

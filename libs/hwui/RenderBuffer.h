@@ -17,6 +17,8 @@
 #ifndef ANDROID_HWUI_RENDER_BUFFER_H
 #define ANDROID_HWUI_RENDER_BUFFER_H
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
@@ -40,7 +42,10 @@ struct RenderBuffer {
 
     ~RenderBuffer() {
         if (mName) {
-            glDeleteRenderbuffers(1, &mName);
+            if (eglProtectCurrentContextSEC(false)) {
+                glDeleteRenderbuffers(1, &mName);
+                eglProtectCurrentContextSEC(true);
+            }
         }
     }
 

@@ -22,6 +22,9 @@
 #include "Program.h"
 #include "Vertex.h"
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 namespace android {
 namespace uirenderer {
 
@@ -72,15 +75,21 @@ Program::Program(const ProgramDescription& description, const char* vertex, cons
                 glDetachShader(mProgramId, mVertexShader);
                 glDetachShader(mProgramId, mFragmentShader);
 
-                glDeleteShader(mVertexShader);
-                glDeleteShader(mFragmentShader);
+                if (eglProtectCurrentContextSEC(false)) {
+                    glDeleteShader(mVertexShader);
+                    glDeleteShader(mFragmentShader);
 
-                glDeleteProgram(mProgramId);
+                    glDeleteProgram(mProgramId);
+                    eglProtectCurrentContextSEC(true);
+                }
             } else {
                 mInitialized = true;
             }
         } else {
-            glDeleteShader(mVertexShader);
+            if (eglProtectCurrentContextSEC(false)) {
+                glDeleteShader(mVertexShader);
+                eglProtectCurrentContextSEC(true);
+            }
         }
     }
 
@@ -98,10 +107,14 @@ Program::~Program() {
         glDetachShader(mProgramId, mVertexShader);
         glDetachShader(mProgramId, mFragmentShader);
 
-        glDeleteShader(mVertexShader);
-        glDeleteShader(mFragmentShader);
+        if (eglProtectCurrentContextSEC(false)) {
+            glDeleteShader(mVertexShader);
+            glDeleteShader(mFragmentShader);
 
-        glDeleteProgram(mProgramId);
+            glDeleteProgram(mProgramId);
+
+            eglProtectCurrentContextSEC(true);
+        }
     }
 }
 
@@ -154,7 +167,10 @@ GLuint Program::buildShader(const char* source, GLenum type) {
         GLchar log[512];
         glGetShaderInfoLog(shader, sizeof(log), 0, &log[0]);
         ALOGE("Error while compiling shader: %s", log);
-        glDeleteShader(shader);
+        if (eglProtectCurrentContextSEC(false)) {
+            glDeleteShader(shader);
+            eglProtectCurrentContextSEC(true);
+        }
         return 0;
     }
 

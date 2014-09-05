@@ -214,10 +214,12 @@ bool Caches::initProperties() {
 void Caches::terminate() {
     if (!mInitialized) return;
 
-    glDeleteBuffers(1, &meshBuffer);
+    if (eglProtectCurrentContextSEC(false)) {
+        glDeleteBuffers(1, &meshBuffer);
+        glDeleteBuffers(1, &mMeshIndices);
+        eglProtectCurrentContextSEC(true);
+    }
     mCurrentBuffer = 0;
-
-    glDeleteBuffers(1, &mMeshIndices);
     delete[] mRegionMesh;
     mMeshIndices = 0;
     mRegionMesh = NULL;
@@ -556,7 +558,10 @@ void Caches::deleteTexture(GLuint texture) {
 
     unbindTexture(texture);
 
-    glDeleteTextures(1, &texture);
+    if (eglProtectCurrentContextSEC(false)) {
+        glDeleteTextures(1, &texture);
+        eglProtectCurrentContextSEC(true);
+    }
 }
 
 void Caches::resetBoundTextures() {

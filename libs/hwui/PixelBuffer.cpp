@@ -107,7 +107,10 @@ GpuPixelBuffer::GpuPixelBuffer(GLenum format, uint32_t width, uint32_t height):
 }
 
 GpuPixelBuffer::~GpuPixelBuffer() {
-    glDeleteBuffers(1, &mBuffer);
+    if (eglProtectCurrentContextSEC(false)) {
+        glDeleteBuffers(1, &mBuffer);
+        eglProtectCurrentContextSEC(true);
+    }
 }
 
 uint8_t* GpuPixelBuffer::map(AccessMode mode) {
