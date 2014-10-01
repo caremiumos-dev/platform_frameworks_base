@@ -35,12 +35,14 @@ import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pGroupList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pWfdInfo;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.GroupInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
+import android.net.wifi.p2p.WifiP2pManager.PersistentGroupInfoListener;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.Slog;
@@ -52,6 +54,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 
 import libcore.util.Objects;
@@ -274,6 +277,37 @@ final class WifiDisplayController implements DumpUtils.Dump {
 
     public void requestDisconnect() {
         disconnect();
+    }
+
+    public void requestForget(String address) {
+        if (DEBUG) {
+            Slog.d(TAG, "requestForget " + address);
+        }
+
+        final WifiP2pDevice p2pDevice = new WifiP2pDevice(address);
+
+        mWifiP2pManager.requestPersistentGroupInfo(mWifiP2pChannel,
+                new  PersistentGroupInfoListener() {
+            @Override
+            public void onPersistentGroupInfoAvailable(WifiP2pGroupList groups) {
+
+                int netId = -1;
+                Collection<WifiP2pGroup> list = groups.getGroupList();
+                for (WifiP2pGroup grp: list) {
+                    if (grp.contains(p2pDevice)) {
+                        netId = grp.getNetworkId();
+                        break;
+                    }
+                }
+
+                if (netId != -1) {
+                    if (DEBUG) {
+                        Slog.d(TAG, "Deleting persistent group " + netId);
+                    }
+                    mWifiP2pManager.deletePersistentGroup(mWifiP2pChannel, netId, null);
+                }
+            }
+        });
     }
 
     private void updateWfdEnableState() {
