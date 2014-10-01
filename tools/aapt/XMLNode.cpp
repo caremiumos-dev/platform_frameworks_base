@@ -180,7 +180,7 @@ status_t hasSubstitutionErrors(const char* fileName,
     return NO_ERROR;
 }
 
-status_t parseStyledString(Bundle* bundle,
+status_t parseStyledString(Bundle* /* bundle */,
                            const char* fileName,
                            ResXMLTree* inXml,
                            const String16& endTag,
@@ -1056,7 +1056,6 @@ status_t XMLNode::flatten(const sp<AaptFile>& dest,
 
     void* data = dest->editData();
     ResXMLTree_header* hd = (ResXMLTree_header*)(((uint8_t*)data)+basePos);
-    size_t size = dest->getSize()-basePos;
     hd->header.size = htodl(dest->getSize()-basePos);
 
     NOISY(aout << "XML resource:"

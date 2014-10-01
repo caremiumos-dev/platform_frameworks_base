@@ -41,6 +41,7 @@ LOCAL_CFLAGS += -D_DARWIN_UNLIMITED_STREAMS
 endif
 
 LOCAL_CFLAGS += -DSTATIC_ANDROIDFW_FOR_TOOLS
+LOCAL_CFLAGS += -Wall -Werror
 
 LOCAL_C_INCLUDES += external/libpng
 LOCAL_C_INCLUDES += external/zlib
@@ -84,6 +85,7 @@ LOCAL_C_INCLUDES += external/libpng
 LOCAL_C_INCLUDES += external/zlib
 
 LOCAL_CFLAGS += -Wno-non-virtual-dtor
+LOCAL_CFLAGS += -Wall -Werror
 
 LOCAL_SHARED_LIBRARIES := \
         libandroidfw \

@@ -418,7 +418,7 @@ static void collect_files(const sp<AaptDir>& dir,
                         files.valueAt(j)->getSourceFile().string(),
                         files.keyAt(j).toDirName(String8()).string(),
                         resType.string()));
-                    status_t err = existingGroup->addFile(files.valueAt(j));
+                    existingGroup->addFile(files.valueAt(j));
                 }
             }
         }
@@ -599,7 +599,7 @@ static bool applyFileOverlay(Bundle *bundle,
                 if (baseSet->get() != NULL) {
                     baseIndex = (*baseSet)->indexOfKey(overlaySet->keyAt(overlayIndex));
                 }
-                if (baseIndex < UNKNOWN_ERROR) {
+                if (baseIndex < static_cast<size_t>(UNKNOWN_ERROR)) {
                     // look for same flavor.  For a given file (strings.xml, for example)
                     // there may be a locale specific or other flavors - we want to match
                     // the same flavor.
@@ -628,7 +628,7 @@ static bool applyFileOverlay(Bundle *bundle,
                         size_t baseFileIndex =
                                 baseGroup->getFiles().indexOfKey(overlayFiles.
                                 keyAt(overlayGroupIndex));
-                        if (baseFileIndex < UNKNOWN_ERROR) {
+                        if (baseFileIndex < static_cast<size_t>(UNKNOWN_ERROR)) {
                             if (bundle->getVerbose()) {
                                 printf("found a match (" ZD ") for overlay file %s, for flavor %s\n",
                                         (ZD_TYPE) baseFileIndex,
@@ -1975,7 +1975,7 @@ static status_t writeTextLayoutClasses(
                     package16.string(), package16.size(), &typeSpecFlags);
                 //printf("%s:%s/%s: 0x%08x\n", String8(package16).string(),
                 //    String8(attr16).string(), String8(name16).string(), typeSpecFlags);
-                const bool pub = (typeSpecFlags&ResTable_typeSpec::SPEC_PUBLIC) != 0;
+                //const bool pub = (typeSpecFlags&ResTable_typeSpec::SPEC_PUBLIC) != 0;
 
                 fprintf(fp,
                         "int styleable %s_%s %d\n",
@@ -2318,7 +2318,7 @@ addProguardKeepRule(ProguardKeepSet* keep, const String8& inClassName,
 
 void
 addProguardKeepMethodRule(ProguardKeepSet* keep, const String8& memberName,
-        const char* pkg, const String8& srcName, int line)
+        const char* /* pkg */, const String8& srcName, int line)
 {
     String8 rule("-keepclassmembers class * { *** ");
     rule += memberName;
@@ -2640,7 +2640,7 @@ status_t writePathsToFile(const sp<FilePathStore>& files, FILE* fp)
 }
 
 status_t
-writeDependencyPreReqs(Bundle* bundle, const sp<AaptAssets>& assets, FILE* fp, bool includeRaw)
+writeDependencyPreReqs(Bundle* /* bundle */, const sp<AaptAssets>& assets, FILE* fp, bool includeRaw)
 {
     status_t deps = -1;
     deps += writePathsToFile(assets->getFullResPaths(), fp);

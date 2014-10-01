@@ -28,7 +28,7 @@ png_write_aapt_file(png_structp png_ptr, png_bytep data, png_size_t length)
 
 
 static void
-png_flush_aapt_file(png_structp png_ptr)
+png_flush_aapt_file(png_structp /* png_ptr */)
 {
 }
 
@@ -81,7 +81,7 @@ struct image_info
     png_bytepp allocRows;
 };
 
-static void read_png(const char* imageName,
+static void read_png(const char* /* imageName */,
                      png_structp read_ptr, png_infop read_info,
                      image_info* outImageInfo)
 {
@@ -312,7 +312,7 @@ static status_t get_vertical_ticks(
 }
 
 static status_t get_horizontal_layout_bounds_ticks(
-        png_bytep row, int width, bool transparent, bool required,
+        png_bytep row, int width, bool transparent, bool /* required */,
         int32_t* outLeft, int32_t* outRight, const char** outError)
 {
     int i;
@@ -350,7 +350,7 @@ static status_t get_horizontal_layout_bounds_ticks(
 }
 
 static status_t get_vertical_layout_bounds_ticks(
-        png_bytepp rows, int offset, int height, bool transparent, bool required,
+        png_bytepp rows, int offset, int height, bool transparent, bool /* required */,
         int32_t* outTop, int32_t* outBottom, const char** outError)
 {
     int i;
@@ -418,40 +418,40 @@ static uint32_t get_color(
     return (color[3]<<24) | (color[0]<<16) | (color[1]<<8) | color[2];
 }
 
-static void select_patch(
-    int which, int front, int back, int size, int* start, int* end)
-{
-    switch (which) {
-    case 0:
-        *start = 0;
-        *end = front-1;
-        break;
-    case 1:
-        *start = front;
-        *end = back-1;
-        break;
-    case 2:
-        *start = back;
-        *end = size-1;
-        break;
-    }
-}
-
-static uint32_t get_color(image_info* image, int hpatch, int vpatch)
-{
-    int left, right, top, bottom;
-    select_patch(
-        hpatch, image->xDivs[0], image->xDivs[1],
-        image->width, &left, &right);
-    select_patch(
-        vpatch, image->yDivs[0], image->yDivs[1],
-        image->height, &top, &bottom);
-    //printf("Selecting h=%d v=%d: (%d,%d)-(%d,%d)\n",
-    //       hpatch, vpatch, left, top, right, bottom);
-    const uint32_t c = get_color(image->rows, left, top, right, bottom);
-    NOISY(printf("Color in (%d,%d)-(%d,%d): #%08x\n", left, top, right, bottom, c));
-    return c;
-}
+// static void select_patch(
+//     int which, int front, int back, int size, int* start, int* end)
+// {
+//     switch (which) {
+//     case 0:
+//         *start = 0;
+//         *end = front-1;
+//         break;
+//     case 1:
+//         *start = front;
+//         *end = back-1;
+//         break;
+//     case 2:
+//         *start = back;
+//         *end = size-1;
+//         break;
+//     }
+// }
+// 
+// static uint32_t get_color(image_info* image, int hpatch, int vpatch)
+// {
+//     int left, right, top, bottom;
+//     select_patch(
+//         hpatch, image->xDivs[0], image->xDivs[1],
+//         image->width, &left, &right);
+//     select_patch(
+//         vpatch, image->yDivs[0], image->yDivs[1],
+//         image->height, &top, &bottom);
+//     //printf("Selecting h=%d v=%d: (%d,%d)-(%d,%d)\n",
+//     //       hpatch, vpatch, left, top, right, bottom);
+//     const uint32_t c = get_color(image->rows, left, top, right, bottom);
+//     NOISY(printf("Color in (%d,%d)-(%d,%d): #%08x\n", left, top, right, bottom, c));
+//     return c;
+// }
 
 static status_t do_9patch(const char* imageName, image_info* image)
 {
@@ -724,54 +724,54 @@ static void checkNinePatchSerialization(Res_png_9patch* inPatch,  void* data)
     free(newData);
 }
 
-static void dump_image(int w, int h, png_bytepp rows, int color_type)
-{
-    int i, j, rr, gg, bb, aa;
-
-    int bpp;
-    if (color_type == PNG_COLOR_TYPE_PALETTE || color_type == PNG_COLOR_TYPE_GRAY) {
-        bpp = 1;
-    } else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        bpp = 2;
-    } else if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
-        // We use a padding byte even when there is no alpha
-        bpp = 4;
-    } else {
-        printf("Unknown color type %d.\n", color_type);
-    }
-
-    for (j = 0; j < h; j++) {
-        png_bytep row = rows[j];
-        for (i = 0; i < w; i++) {
-            rr = row[0];
-            gg = row[1];
-            bb = row[2];
-            aa = row[3];
-            row += bpp;
-
-            if (i == 0) {
-                printf("Row %d:", j);
-            }
-            switch (bpp) {
-            case 1:
-                printf(" (%d)", rr);
-                break;
-            case 2:
-                printf(" (%d %d", rr, gg);
-                break;
-            case 3:
-                printf(" (%d %d %d)", rr, gg, bb);
-                break;
-            case 4:
-                printf(" (%d %d %d %d)", rr, gg, bb, aa);
-                break;
-            }
-            if (i == (w - 1)) {
-                NOISY(printf("\n"));
-            }
-        }
-    }
-}
+// static void dump_image(int w, int h, png_bytepp rows, int color_type)
+// {
+//     int i, j, rr, gg, bb, aa;
+// 
+//     int bpp;
+//     if (color_type == PNG_COLOR_TYPE_PALETTE || color_type == PNG_COLOR_TYPE_GRAY) {
+//         bpp = 1;
+//     } else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+//         bpp = 2;
+//     } else if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
+//         // We use a padding byte even when there is no alpha
+//         bpp = 4;
+//     } else {
+//         printf("Unknown color type %d.\n", color_type);
+//     }
+// 
+//     for (j = 0; j < h; j++) {
+//         png_bytep row = rows[j];
+//         for (i = 0; i < w; i++) {
+//             rr = row[0];
+//             gg = row[1];
+//             bb = row[2];
+//             aa = row[3];
+//             row += bpp;
+// 
+//             if (i == 0) {
+//                 printf("Row %d:", j);
+//             }
+//             switch (bpp) {
+//             case 1:
+//                 printf(" (%d)", rr);
+//                 break;
+//             case 2:
+//                 printf(" (%d %d", rr, gg);
+//                 break;
+//             case 3:
+//                 printf(" (%d %d %d)", rr, gg, bb);
+//                 break;
+//             case 4:
+//                 printf(" (%d %d %d %d)", rr, gg, bb, aa);
+//                 break;
+//             }
+//             if (i == (w - 1)) {
+//                 NOISY(printf("\n"));
+//             }
+//         }
+//     }
+// }
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define ABS(a)   ((a)<0?-(a):(a))
@@ -950,7 +950,6 @@ static void write_png(const char* imageName,
                       png_structp write_ptr, png_infop write_info,
                       image_info& imageInfo, int grayscaleTolerance)
 {
-    bool optimize = true;
     png_uint_32 width, height;
     int color_type;
     int bit_depth, interlace_type, compression_type;
@@ -1099,8 +1098,8 @@ static void write_png(const char* imageName,
                  compression_type));
 }
 
-status_t preProcessImage(const Bundle* bundle, const sp<AaptAssets>& assets,
-                         const sp<AaptFile>& file, String8* outNewLeafName)
+status_t preProcessImage(const Bundle* bundle, const sp<AaptAssets>& /* assets */,
+                         const sp<AaptFile>& file, String8* /* outNewLeafName */)
 {
     String8 ext(file->getPath().getPathExtension());
 

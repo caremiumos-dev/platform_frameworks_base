@@ -576,7 +576,7 @@ status_t parseAndAddBag(Bundle* bundle,
                         const String16& itemIdent,
                         int32_t curFormat,
                         bool isFormatted,
-                        const String16& product,
+                        const String16& /* product */,
                         PseudolocalizationMethod pseudolocalize,
                         const bool overwrite,
                         ResourceTable* outTable)
@@ -1856,7 +1856,7 @@ status_t ResourceTable::startBag(const SourcePos& sourcePos,
                                  const String16& bagParent,
                                  const ResTable_config* params,
                                  bool overlay,
-                                 bool replace, bool isId)
+                                 bool replace, bool /* isId */)
 {
     status_t result = NO_ERROR;
 
@@ -3339,7 +3339,7 @@ status_t ResourceTable::Entry::generateAttributes(ResourceTable* table,
 }
 
 status_t ResourceTable::Entry::assignResourceIds(ResourceTable* table,
-                                                 const String16& package)
+                                                 const String16& /* package */)
 {
     bool hasErrors = false;
     
@@ -3431,22 +3431,20 @@ status_t ResourceTable::Entry::remapStringValue(StringPool* strings)
     return NO_ERROR;
 }
 
-ssize_t ResourceTable::Entry::flatten(Bundle* bundle, const sp<AaptFile>& data, bool isPublic)
+ssize_t ResourceTable::Entry::flatten(Bundle* /* bundle */, const sp<AaptFile>& data, bool isPublic)
 {
     size_t amt = 0;
     ResTable_entry header;
     memset(&header, 0, sizeof(header));
     header.size = htods(sizeof(header));
-    const type ty = this != NULL ? mType : TYPE_ITEM;
-    if (this != NULL) {
-        if (ty == TYPE_BAG) {
-            header.flags |= htods(header.FLAG_COMPLEX);
-        }
-        if (isPublic) {
-            header.flags |= htods(header.FLAG_PUBLIC);
-        }
-        header.key.index = htodl(mNameIndex);
+    const type ty = mType;
+    if (ty == TYPE_BAG) {
+        header.flags |= htods(header.FLAG_COMPLEX);
     }
+    if (isPublic) {
+        header.flags |= htods(header.FLAG_PUBLIC);
+    }
+    header.key.index = htodl(mNameIndex);
     if (ty != TYPE_BAG) {
         status_t err = data->writeData(&header, sizeof(header));
         if (err != NO_ERROR) {
