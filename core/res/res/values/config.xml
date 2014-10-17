@@ -2052,4 +2052,8 @@
 
     <!-- Whether to start in touch mode -->
     <bool name="config_defaultInTouchMode">true</bool>
+
+    <!-- Configure discarding WiFi scanning when P2P connected.-->
+    <bool name="config_discard_scan_when_p2p_connected">false</bool>
+
 </resources>
