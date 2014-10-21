@@ -6683,6 +6683,7 @@ public class WindowManagerService extends IWindowManager.Stub
             displayInfo.getAppMetrics(mDisplayMetrics);
             mDisplayManagerService.setDisplayInfoOverrideFromWindowManager(
                     displayContent.getDisplayId(), displayInfo);
+            displayContent.mBaseDisplayRect.set(0, 0, dw, dh);
         }
         if (false) {
             Slog.i(TAG, "Set app display size: " + appWidth + " x " + appHeight);
