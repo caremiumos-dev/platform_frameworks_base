@@ -68,14 +68,11 @@ struct file_metadata_v1 {
 
 const static int CURRENT_METADATA_VERSION = 1;
 
-#if 1
-#define LOGP(f, x...)
-#else
+static const bool kIsDebug = false;
 #if TEST_BACKUP_HELPERS
-#define LOGP(f, x...) printf(f "\n", x)
+#define LOGP(f, x...) if (kIsDebug) printf(f "\n", x)
 #else
-#define LOGP(x...) ALOGD(x)
-#endif
+#define LOGP(x...) if (kIsDebug) ALOGD(x)
 #endif
 
 const static int ROUND_UP[4] = { 0, 3, 2, 1 };

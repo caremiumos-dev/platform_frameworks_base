@@ -50,6 +50,8 @@ LOCAL_MODULE_TAGS := optional
 
 LOCAL_CFLAGS += -DSTATIC_ANDROIDFW_FOR_TOOLS
 
+LOCAL_CFLAGS += -Wall -Werror
+
 LOCAL_C_INCLUDES := \
 	external/zlib
 
@@ -81,6 +83,8 @@ LOCAL_C_INCLUDES := \
 LOCAL_MODULE:= libandroidfw
 
 LOCAL_MODULE_TAGS := optional
+
+LOCAL_CFLAGS += -Wall -Werror
 
 include $(BUILD_SHARED_LIBRARY)
 

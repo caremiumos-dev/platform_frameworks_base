@@ -340,15 +340,19 @@ BackupDataReader::ReadEntityData(void* data, size_t size)
         return -1;
     }
     int remaining = m_dataEndPos - m_pos;
-    //ALOGD("ReadEntityData size=%d m_pos=0x%x m_dataEndPos=0x%x remaining=%d\n",
-    //        size, m_pos, m_dataEndPos, remaining);
+    if (DEBUG) {
+        ALOGD("ReadEntityData size=%d m_pos=0x%x m_dataEndPos=0x%x remaining=%d\n",
+                size, m_pos, m_dataEndPos, remaining);
+    }
     if (remaining <= 0) {
         return 0;
     }
     if (((int)size) > remaining) {
         size = remaining;
     }
-    //ALOGD("   reading %d bytes", size);
+    if (DEBUG) {
+        ALOGD("   reading %d bytes", size);
+    }
     int amt = read(m_fd, data, size);
     if (amt < 0) {
         m_status = errno;
