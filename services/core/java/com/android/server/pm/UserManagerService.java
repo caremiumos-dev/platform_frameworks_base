@@ -639,6 +639,7 @@ public class UserManagerService extends IUserManager.Stub {
                 }
             }
 
+            boolean mGuestRestrictionRead = false;
             while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
                 if (type == XmlPullParser.START_TAG) {
                     final String name = parser.getName();
@@ -653,8 +654,17 @@ public class UserManagerService extends IUserManager.Stub {
                             }
                         }
                     } else if (name.equals(TAG_GUEST_RESTRICTIONS)) {
-                        mGuestRestrictions.clear();
-                        readRestrictionsLocked(parser, mGuestRestrictions);
+                        mGuestRestrictionRead = true;
+                    } else if (name.equals(TAG_RESTRICTIONS)) {
+                        if (mGuestRestrictionRead) {
+                            mGuestRestrictions.clear();
+                            readRestrictionsLocked(parser, mGuestRestrictions);
+                        }
+                    }
+                } else if (type == XmlPullParser.END_TAG) {
+                    final String name = parser.getName();
+                    if (name.equals(TAG_GUEST_RESTRICTIONS)) {
+                        mGuestRestrictionRead = false;
                     }
                 }
             }
