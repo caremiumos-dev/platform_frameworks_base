@@ -60,6 +60,12 @@
 namespace android {
 namespace uirenderer {
 
+#if DEBUG_SHADOW
+static const bool kDebugShadow = true;
+#else
+static const bool kDebugShadow = true;
+#endif
+
 static const double EPSILON = 1e-7;
 
 /**
@@ -78,7 +84,7 @@ struct OutlineData {
  * For each vertex, we need to keep track of its angle, whether it is penumbra or
  * umbra, and its corresponding vertex index.
  */
-struct SpotShadow::VertexAngleData {
+struct VertexAngleData {
     // The angle to the vertex from the centroid.
     float mAngle;
     // True is the vertex comes from penumbra, otherwise it comes from umbra.
@@ -91,6 +97,88 @@ struct SpotShadow::VertexAngleData {
         mVertexIndex = index;
     }
 };
+
+// Forward-declare the static functions here.
+// TODO: The definitions can be reordered such that there are no problematic dependencies.
+static float projectCasterToOutline(Vector2& outline,
+        const Vector3& lightCenter, const Vector3& polyVertex);
+static int calculateOccludedUmbra(const Vector2* umbra, int umbraLength,
+        const Vector3* poly, int polyLength, Vector2* occludedUmbra) __attribute__((unused));
+
+static int setupAngleList(VertexAngleData* angleDataList,
+        int polyLength, const Vector2* polygon, const Vector2& centroid,
+        bool isPenumbra, const char* name);
+
+static int convertPolysToVerticesPerRay(
+        bool hasOccludedUmbraArea, const Vector2* poly2d, int polyLength,
+        const Vector2* umbra, int umbraLength, const Vector2* penumbra,
+        int penumbraLength, const Vector2& centroid,
+        Vector2* umbraVerticesPerRay, Vector2* penumbraVerticesPerRay,
+        Vector2* occludedUmbraVerticesPerRay);
+
+static bool checkClockwise(int maxIndex, int listLength,
+        VertexAngleData* angleList, const char* name);
+
+static void calculateDistanceCounter(bool needsOffsetToUmbra, int angleLength,
+        const VertexAngleData* allVerticesAngleData, int* distances);
+
+static void mergeAngleList(int maxUmbraAngleIndex, int maxPenumbraAngleIndex,
+        const VertexAngleData* umbraAngleList, int umbraLength,
+        const VertexAngleData* penumbraAngleList, int penumbraLength,
+        VertexAngleData* allVerticesAngleData);
+
+static int setupPolyAngleList(float* polyAngleList, int polyAngleLength,
+        const Vector2* poly2d, const Vector2& centroid);
+
+static bool checkPolyClockwise(int polyAngleLength, int maxPolyAngleIndex,
+        const float* polyAngleList);
+
+static int getEdgeStartIndex(const int* offsets, int rayIndex, int totalRayNumber,
+        const VertexAngleData* allVerticesAngleData);
+
+static int getPolyEdgeStartIndex(int maxPolyAngleIndex, int polyLength,
+        const float* polyAngleList, float rayAngle);
+
+static void computeLightPolygon(int points, const Vector3& lightCenter,
+        float size, Vector3* ret) __attribute__((unused));
+
+static void smoothPolygon(int level, int rays, float* rayDist) __attribute__((unused));
+
+// Originally declared, never defined.
+// static float rayIntersectPoly(const Vector2* poly, int polyLength,
+//         const Vector2& point, float dx, float dy);
+
+static void xsort(Vector2* points, int pointsLength);
+static int hull(Vector2* points, int pointsLength, Vector2* retPoly);
+static bool ccw(double ax, double ay, double bx, double by, double cx, double cy);
+static int intersection(const Vector2* poly1, int poly1length, Vector2* poly2, int poly2length);
+static void sort(Vector2* poly, int polyLength, const Vector2& center);
+
+static void swap(Vector2* points, int i, int j);
+static void quicksortCirc(Vector2* points, int low, int high, const Vector2& center);
+static void quicksortX(Vector2* points, int low, int high);
+
+static bool testPointInsidePolygon(const Vector2 testPoint, const Vector2* poly, int len);
+static void makeClockwise(Vector2* polygon, int len) __attribute__((unused));
+static void reverse(Vector2* polygon, int len);
+static inline bool lineIntersection(double x1, double y1, double x2, double y2,
+        double x3, double y3, double x4, double y4, Vector2& ret);
+
+static void generateTriangleStrip(bool isCasterOpaque, float shadowStrengthScale,
+        Vector2* penumbra, int penumbraLength, Vector2* umbra, int umbraLength,
+        const Vector3* poly, int polyLength, VertexBuffer& retstrips, const Vector2& centroid);
+
+static bool testConvex(const Vector2* polygon, int polygonLength,
+        const char* name);
+static void testIntersection(const Vector2* poly1, int poly1Length,
+        const Vector2* poly2, int poly2Length,
+        const Vector2* intersection, int intersectionLength);
+static void updateBound(const Vector2 inVector, Vector2& lowerBound, Vector2& upperBound );
+static void dumpPolygon(const Vector2* poly, int polyLength, const char* polyName);
+static void dumpPolygon(const Vector3* poly, int polyLength, const char* polyName);
+
+
+// Actual definitions.
 
 /**
  * Calculate the angle between and x and a y coordinate.
@@ -121,12 +209,12 @@ static float rayIntersectPoints(const Vector2& rayOrigin, float dx, float dy,
     double divisor = (dx * (p1.y - p2.y) + dy * p2.x - dy * p1.x);
     if (divisor == 0) return -1.0f; // error, invalid divisor
 
-#if DEBUG_SHADOW
-    double interpVal = (dx * (p1.y - rayOrigin.y) + dy * rayOrigin.x - dy * p1.x) / divisor;
-    if (interpVal < 0 || interpVal > 1) {
-        ALOGW("rayIntersectPoints is hitting outside the segment %f", interpVal);
+    if (kDebugShadow) {
+        double interpVal = (dx * (p1.y - rayOrigin.y) + dy * rayOrigin.x - dy * p1.x) / divisor;
+        if (interpVal < 0 || interpVal > 1) {
+            ALOGW("rayIntersectPoints is hitting outside the segment %f", interpVal);
+        }
     }
-#endif
 
     double distance = (p1.x * (rayOrigin.y - p2.y) + p2.x * (p1.y - rayOrigin.y) +
             rayOrigin.x * (p2.y - p1.y)) / divisor;
@@ -140,7 +228,7 @@ static float rayIntersectPoints(const Vector2& rayOrigin, float dx, float dy,
  * @param points the points as a Vector2 array.
  * @param pointsLength the number of vertices of the polygon.
  */
-void SpotShadow::xsort(Vector2* points, int pointsLength) {
+void xsort(Vector2* points, int pointsLength) {
     quicksortX(points, 0, pointsLength - 1);
 }
 
@@ -152,7 +240,7 @@ void SpotShadow::xsort(Vector2* points, int pointsLength) {
  * @param retPoly pre allocated array of floats to put the vertices
  * @return the number of points in the polygon 0 if no intersection
  */
-int SpotShadow::hull(Vector2* points, int pointsLength, Vector2* retPoly) {
+int hull(Vector2* points, int pointsLength, Vector2* retPoly) {
     xsort(points, pointsLength);
     int n = pointsLength;
     Vector2 lUpper[n];
@@ -217,7 +305,7 @@ int SpotShadow::hull(Vector2* points, int pointsLength, Vector2* retPoly) {
  *
  * @return true if a right hand turn
  */
-bool SpotShadow::ccw(double ax, double ay, double bx, double by,
+bool ccw(double ax, double ay, double bx, double by,
         double cx, double cy) {
     return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax) > EPSILON;
 }
@@ -232,16 +320,16 @@ bool SpotShadow::ccw(double ax, double ay, double bx, double by,
  * @param poly2Length The number of vertices of 2nd polygon.
  * @return number of vertices in output polygon as poly2.
  */
-int SpotShadow::intersection(const Vector2* poly1, int poly1Length,
+int intersection(const Vector2* poly1, int poly1Length,
         Vector2* poly2, int poly2Length) {
-#if DEBUG_SHADOW
-    if (!ShadowTessellator::isClockwise(poly1, poly1Length)) {
-        ALOGW("Poly1 is not clockwise! Intersection is wrong!");
+    if (kDebugShadow) {
+        if (!ShadowTessellator::isClockwise(poly1, poly1Length)) {
+            ALOGW("Poly1 is not clockwise! Intersection is wrong!");
+        }
+        if (!ShadowTessellator::isClockwise(poly2, poly2Length)) {
+            ALOGW("Poly2 is not clockwise! Intersection is wrong!");
+        }
     }
-    if (!ShadowTessellator::isClockwise(poly2, poly2Length)) {
-        ALOGW("Poly2 is not clockwise! Intersection is wrong!");
-    }
-#endif
     Vector2 poly[poly1Length * poly2Length + 2];
     int count = 0;
     int pcount = 0;
@@ -318,13 +406,15 @@ int SpotShadow::intersection(const Vector2* poly1, int poly1Length,
     center /= count;
     sort(poly, count, center);
 
-#if DEBUG_SHADOW
-    // Since poly2 is overwritten as the result, we need to save a copy to do
-    // our verification.
-    Vector2 oldPoly2[poly2Length];
-    int oldPoly2Length = poly2Length;
-    memcpy(oldPoly2, poly2, sizeof(Vector2) * poly2Length);
-#endif
+    Vector2* oldPoly2;
+    int oldPoly2Length;
+    if (kDebugShadow) {
+        // Since poly2 is overwritten as the result, we need to save a copy to do
+        // our verification.
+        oldPoly2 = new Vector2[poly2Length];
+        oldPoly2Length = poly2Length;
+        memcpy(oldPoly2, poly2, sizeof(Vector2) * poly2Length);
+    }
 
     // Filter the result out from poly and put it into poly2.
     poly2[0] = poly[0];
@@ -345,13 +435,15 @@ int SpotShadow::intersection(const Vector2* poly1, int poly1Length,
     }
     int resultLength = lastOutputIndex + 1;
 
-#if DEBUG_SHADOW
-    testConvex(poly2, resultLength, "intersection");
-    testConvex(poly1, poly1Length, "input poly1");
-    testConvex(oldPoly2, oldPoly2Length, "input poly2");
+    if (kDebugShadow) {
+        testConvex(poly2, resultLength, "intersection");
+        testConvex(poly1, poly1Length, "input poly1");
+        testConvex(oldPoly2, oldPoly2Length, "input poly2");
 
-    testIntersection(poly1, poly1Length, oldPoly2, oldPoly2Length, poly2, resultLength);
-#endif
+        testIntersection(poly1, poly1Length, oldPoly2, oldPoly2Length, poly2, resultLength);
+
+        delete oldPoly2;
+    }
 
     return resultLength;
 }
@@ -363,14 +455,14 @@ int SpotShadow::intersection(const Vector2* poly1, int poly1Length,
  * @param polyLength The number of vertices of the polygon.
  * @param center the center ctr[0] = x , ctr[1] = y to sort around.
  */
-void SpotShadow::sort(Vector2* poly, int polyLength, const Vector2& center) {
+void sort(Vector2* poly, int polyLength, const Vector2& center) {
     quicksortCirc(poly, 0, polyLength - 1, center);
 }
 
 /**
  * Swap points pointed to by i and j
  */
-void SpotShadow::swap(Vector2* points, int i, int j) {
+void swap(Vector2* points, int i, int j) {
     Vector2 temp = points[i];
     points[i] = points[j];
     points[j] = temp;
@@ -379,7 +471,7 @@ void SpotShadow::swap(Vector2* points, int i, int j) {
 /**
  * quick sort implementation about the center.
  */
-void SpotShadow::quicksortCirc(Vector2* points, int low, int high,
+void quicksortCirc(Vector2* points, int low, int high,
         const Vector2& center) {
     int i = low, j = high;
     int p = low + (high - low) / 2;
@@ -409,7 +501,7 @@ void SpotShadow::quicksortCirc(Vector2* points, int low, int high,
  * @param low start index
  * @param high end index
  */
-void SpotShadow::quicksortX(Vector2* points, int low, int high) {
+void quicksortX(Vector2* points, int low, int high) {
     int i = low, j = high;
     int p = low + (high - low) / 2;
     float pivot = points[p].x;
@@ -438,7 +530,7 @@ void SpotShadow::quicksortX(Vector2* points, int low, int high) {
  * @param poly the polygon
  * @return true if the testPoint is inside the poly.
  */
-bool SpotShadow::testPointInsidePolygon(const Vector2 testPoint,
+bool testPointInsidePolygon(const Vector2 testPoint,
         const Vector2* poly, int len) {
     bool c = false;
     double testx = testPoint.x;
@@ -464,7 +556,7 @@ bool SpotShadow::testPointInsidePolygon(const Vector2 testPoint,
  * @param polygon the polygon as a Vector2 array.
  * @param len the number of points of the polygon
  */
-void SpotShadow::makeClockwise(Vector2* polygon, int len) {
+void makeClockwise(Vector2* polygon, int len) {
     if (polygon == 0  || len == 0) {
         return;
     }
@@ -479,7 +571,7 @@ void SpotShadow::makeClockwise(Vector2* polygon, int len) {
  * @param polygon the polygon as a Vector2 array
  * @param len the number of points of the polygon
  */
-void SpotShadow::reverse(Vector2* polygon, int len) {
+void reverse(Vector2* polygon, int len) {
     int n = len / 2;
     for (int i = 0; i < n; i++) {
         Vector2 tmp = polygon[i];
@@ -504,7 +596,7 @@ void SpotShadow::reverse(Vector2* polygon, int len) {
  * @param ret the x,y location of the intersection
  * @return true if it found an intersection
  */
-inline bool SpotShadow::lineIntersection(double x1, double y1, double x2, double y2,
+inline bool lineIntersection(double x1, double y1, double x2, double y2,
         double x3, double y3, double x4, double y4, Vector2& ret) {
     double d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
     if (d == 0.0) return false;
@@ -538,7 +630,7 @@ inline bool SpotShadow::lineIntersection(double x1, double y1, double x2, double
  * @param size the light size.
  * @param ret result polygon.
  */
-void SpotShadow::computeLightPolygon(int points, const Vector3& lightCenter,
+void computeLightPolygon(int points, const Vector3& lightCenter,
         float size, Vector3* ret) {
     // TODO: Caching all the sin / cos values and store them in a look up table.
     for (int i = 0; i < points; i++) {
@@ -558,7 +650,7 @@ void SpotShadow::computeLightPolygon(int points, const Vector3& lightCenter,
  *
  * @return float The ratio of (polygon.z / light.z - polygon.z)
  */
-float SpotShadow::projectCasterToOutline(Vector2& outline,
+float projectCasterToOutline(Vector2& outline,
         const Vector3& lightCenter, const Vector3& polyVertex) {
     float lightToPolyZ = lightCenter.z - polyVertex.z;
     float ratioZ = CASTER_Z_CAP_RATIO;
@@ -592,9 +684,9 @@ void SpotShadow::createSpotShadow(bool isCasterOpaque, const Vector3& lightCente
         return;
     }
     if (CC_UNLIKELY(polyLength < 3)) {
-#if DEBUG_SHADOW
-        ALOGW("Invalid polygon length. No spot shadow!");
-#endif
+        if (kDebugShadow) {
+            ALOGW("Invalid polygon length. No spot shadow!");
+        }
         return;
     }
     OutlineData outlineData[polyLength];
@@ -688,11 +780,11 @@ void SpotShadow::createSpotShadow(bool isCasterOpaque, const Vector3& lightCente
 
         int currentCornerSliceNumber = 1 + currentExtraSliceNumber;
         totalExtraCornerSliceNumber += currentExtraSliceNumber;
-#if DEBUG_SHADOW
-        ALOGD("currentExtraSliceNumber should be %d", currentExtraSliceNumber);
-        ALOGD("currentCornerSliceNumber should be %d", currentCornerSliceNumber);
-        ALOGD("totalCornerSliceNumber is %d", totalExtraCornerSliceNumber);
-#endif
+        if (kDebugShadow) {
+            ALOGD("currentExtraSliceNumber should be %d", currentExtraSliceNumber);
+            ALOGD("currentCornerSliceNumber should be %d", currentCornerSliceNumber);
+            ALOGD("totalCornerSliceNumber is %d", totalExtraCornerSliceNumber);
+        }
         if (CC_UNLIKELY(totalExtraCornerSliceNumber > SPOT_MAX_EXTRA_CORNER_VERTEX_NUMBER)) {
             currentCornerSliceNumber = 1;
         }
@@ -754,9 +846,9 @@ void SpotShadow::createSpotShadow(bool isCasterOpaque, const Vector3& lightCente
     hasValidUmbra = (minRaitoVI <= 1.0);
     float shadowStrengthScale = 1.0;
     if (!hasValidUmbra) {
-#if DEBUG_SHADOW
-        ALOGW("The object is too close to the light or too small, no real umbra!");
-#endif
+        if (kDebugShadow) {
+            ALOGW("The object is too close to the light or too small, no real umbra!");
+        }
         for (int i = 0; i < polyLength; i++) {
             umbra[i] = outlineData[i].position * FAKE_UMBRA_SIZE_RATIO +
                     outlineCentroid * (1 - FAKE_UMBRA_SIZE_RATIO);
@@ -767,13 +859,15 @@ void SpotShadow::createSpotShadow(bool isCasterOpaque, const Vector3& lightCente
     int penumbraLength = penumbraIndex;
     int umbraLength = polyLength;
 
-#if DEBUG_SHADOW
-    ALOGD("penumbraLength is %d , allocatedPenumbraLength %d", penumbraLength, allocatedPenumbraLength);
-    dumpPolygon(poly, polyLength, "input poly");
-    dumpPolygon(penumbra, penumbraLength, "penumbra");
-    dumpPolygon(umbra, umbraLength, "umbra");
-    ALOGD("hasValidUmbra is %d and shadowStrengthScale is %f", hasValidUmbra, shadowStrengthScale);
-#endif
+    if (kDebugShadow) {
+        ALOGD("penumbraLength is %d , allocatedPenumbraLength %d", penumbraLength,
+              allocatedPenumbraLength);
+        dumpPolygon(poly, polyLength, "input poly");
+        dumpPolygon(penumbra, penumbraLength, "penumbra");
+        dumpPolygon(umbra, umbraLength, "umbra");
+        ALOGD("hasValidUmbra is %d and shadowStrengthScale is %f", hasValidUmbra,
+              shadowStrengthScale);
+    }
 
     // The penumbra and umbra needs to be in convex shape to keep consistency
     // and quality.
@@ -837,9 +931,9 @@ bool convertPolyToRayDist(const Vector2* poly, int polyLength, const Vector2& po
                     sin(rayIndex * step),
                     *lastVertex, poly[polyIndex]);
             if (distanceToIntersect < 0) {
-#if DEBUG_SHADOW
-                ALOGW("ERROR: convertPolyToRayDist failed");
-#endif
+                if (kDebugShadow) {
+                    ALOGW("ERROR: convertPolyToRayDist failed");
+                }
                 return false; // error case, abort
             }
 
@@ -853,7 +947,7 @@ bool convertPolyToRayDist(const Vector2* poly, int polyLength, const Vector2& po
     return true;
 }
 
-int SpotShadow::calculateOccludedUmbra(const Vector2* umbra, int umbraLength,
+int calculateOccludedUmbra(const Vector2* umbra, int umbraLength,
         const Vector3* poly, int polyLength, Vector2* occludedUmbra) {
     // Occluded umbra area is computed as the intersection of the projected 2D
     // poly and umbra.
@@ -878,7 +972,7 @@ int SpotShadow::calculateOccludedUmbra(const Vector2* umbra, int umbraLength,
  * @param rayDist (In and Out) The distance for each ray.
  *
  */
-void SpotShadow::smoothPolygon(int level, int rays, float* rayDist) {
+void smoothPolygon(int level, int rays, float* rayDist) {
     for (int k = 0; k < level; k++) {
         for (int i = 0; i < rays; i++) {
             float p1 = rayDist[(rays - 1 + i) % rays];
@@ -898,7 +992,7 @@ void SpotShadow::smoothPolygon(int level, int rays, float* rayDist) {
  *
  * @return int The maximum angle's index in the array.
  */
-int SpotShadow::setupAngleList(VertexAngleData* angleDataList,
+int setupAngleList(VertexAngleData* angleDataList,
         int polyLength, const Vector2* polygon, const Vector2& centroid,
         bool isPenumbra, const char* name) {
     float maxAngle = FLT_MIN;
@@ -910,9 +1004,9 @@ int SpotShadow::setupAngleList(VertexAngleData* angleDataList,
             maxAngleIndex = i;
         }
         angleDataList[i].set(currentAngle, isPenumbra, i);
-#if DEBUG_SHADOW
-        ALOGD("%s AngleList i %d %f", name, i, currentAngle);
-#endif
+        if (kDebugShadow) {
+            ALOGD("%s AngleList i %d %f", name, i, currentAngle);
+        }
     }
     return maxAngleIndex;
 }
@@ -928,20 +1022,20 @@ int SpotShadow::setupAngleList(VertexAngleData* angleDataList,
  *
  * @return bool True if the angle list is actually from big to small.
  */
-bool SpotShadow::checkClockwise(int indexOfMaxAngle, int listLength, VertexAngleData* angleList,
+bool checkClockwise(int indexOfMaxAngle, int listLength, VertexAngleData* angleList,
         const char* name) {
     int currentIndex = indexOfMaxAngle;
-#if DEBUG_SHADOW
-    ALOGD("max index %d", currentIndex);
-#endif
+    if (kDebugShadow) {
+        ALOGD("max index %d", currentIndex);
+    }
     for (int i = 0; i < listLength - 1; i++) {
         // TODO: Cache the last angle.
         float currentAngle = angleList[currentIndex].mAngle;
         float nextAngle = angleList[(currentIndex + 1) % listLength].mAngle;
         if (currentAngle < nextAngle) {
-#if DEBUG_SHADOW
-            ALOGE("%s, is not CW, at index %d", name, currentIndex);
-#endif
+            if (kDebugShadow) {
+                ALOGE("%s, is not CW, at index %d", name, currentIndex);
+            }
             return false;
         }
         currentIndex = (currentIndex + 1) % listLength;
@@ -954,7 +1048,7 @@ bool SpotShadow::checkClockwise(int indexOfMaxAngle, int listLength, VertexAngle
  *
  * @return bool True is the polygon is clockwise.
  */
-bool SpotShadow::checkPolyClockwise(int polyAngleLength, int maxPolyAngleIndex,
+bool checkPolyClockwise(int polyAngleLength, int maxPolyAngleIndex,
         const float* polyAngleList) {
     bool isPolyCW = true;
     // Starting from maxPolyAngleIndex , check around to make sure angle decrease.
@@ -977,7 +1071,7 @@ bool SpotShadow::checkPolyClockwise(int polyAngleLength, int maxPolyAngleIndex,
  *
  * @param distances The result of the array distance counter.
  */
-void SpotShadow::calculateDistanceCounter(bool needsOffsetToUmbra, int angleLength,
+void calculateDistanceCounter(bool needsOffsetToUmbra, int angleLength,
         const VertexAngleData* allVerticesAngleData, int* distances) {
 
     bool firstVertexIsPenumbra = allVerticesAngleData[0].mIsPenumbra;
@@ -998,9 +1092,9 @@ void SpotShadow::calculateDistanceCounter(bool needsOffsetToUmbra, int angleLeng
                 " umbra or penumbra's length is 0");
         distanceCounter = angleLength - foundIndex;
     }
-#if DEBUG_SHADOW
-    ALOGD("distances[0] is %d", distanceCounter);
-#endif
+    if (kDebugShadow) {
+        ALOGD("distances[0] is %d", distanceCounter);
+    }
 
     distances[0] = distanceCounter; // means never see a target poly
 
@@ -1026,7 +1120,7 @@ void SpotShadow::calculateDistanceCounter(bool needsOffsetToUmbra, int angleLeng
  *
  * @param allVerticesAngleData The result array of merged angle data.
  */
-void SpotShadow::mergeAngleList(int maxUmbraAngleIndex, int maxPenumbraAngleIndex,
+void mergeAngleList(int maxUmbraAngleIndex, int maxPenumbraAngleIndex,
         const VertexAngleData* umbraAngleList, int umbraLength,
         const VertexAngleData* penumbraAngleList, int penumbraLength,
         VertexAngleData* allVerticesAngleData) {
@@ -1075,7 +1169,6 @@ void SpotShadow::mergeAngleList(int maxUmbraAngleIndex, int maxPenumbraAngleInde
     }
 }
 
-#if DEBUG_SHADOW
 /**
  * DEBUG ONLY: Verify all the offset compuation is correctly done by examining
  * each vertex and its neighbor.
@@ -1162,7 +1255,6 @@ static void verifyAngleData(int totalRayNumber, const VertexAngleData* allVertic
         }
     }
 }
-#endif
 
 /**
  * In order to compute the occluded umbra, we need to setup the angle data list
@@ -1173,7 +1265,7 @@ static void verifyAngleData(int totalRayNumber, const VertexAngleData* allVertic
  *
  * @return int The index for the maximum angle in this array.
  */
-int SpotShadow::setupPolyAngleList(float* polyAngleList, int polyAngleLength,
+int setupPolyAngleList(float* polyAngleList, int polyAngleLength,
         const Vector2* poly2d, const Vector2& centroid) {
     int maxPolyAngleIndex = -1;
     float maxPolyAngle = -FLT_MAX;
@@ -1193,7 +1285,7 @@ int SpotShadow::setupPolyAngleList(float* polyAngleList, int polyAngleLength,
  *
  * @return int The index of the starting vertex of the edge.
  */
-inline int SpotShadow::getEdgeStartIndex(const int* offsets, int rayIndex, int totalRayNumber,
+inline int getEdgeStartIndex(const int* offsets, int rayIndex, int totalRayNumber,
         const VertexAngleData* allVerticesAngleData) {
     int tempOffset = offsets[rayIndex];
     int targetRayIndex = (rayIndex - tempOffset + totalRayNumber) % totalRayNumber;
@@ -1208,7 +1300,7 @@ inline int SpotShadow::getEdgeStartIndex(const int* offsets, int rayIndex, int t
  *
  * @return int The index of the starting vertex of the edge.
  */
-inline int SpotShadow::getPolyEdgeStartIndex(int maxPolyAngleIndex, int polyLength,
+inline int getPolyEdgeStartIndex(int maxPolyAngleIndex, int polyLength,
         const float* polyAngleList, float rayAngle) {
     int minPolyAngleIndex  = (maxPolyAngleIndex + polyLength - 1) % polyLength;
     int resultIndex = -1;
@@ -1241,7 +1333,7 @@ inline int SpotShadow::getPolyEdgeStartIndex(int maxPolyAngleIndex, int polyLeng
  *
  * Return true (success) when all vertices are generated
  */
-int SpotShadow::convertPolysToVerticesPerRay(
+int convertPolysToVerticesPerRay(
         bool hasOccludedUmbraArea, const Vector2* poly2d, int polyLength,
         const Vector2* umbra, int umbraLength, const Vector2* penumbra,
         int penumbraLength, const Vector2& centroid,
@@ -1277,10 +1369,10 @@ int SpotShadow::convertPolysToVerticesPerRay(
             penumbraAngleList, "penumbra");
 
     if (!isUmbraCW || !isPenumbraCW || !isPolyCW) {
-#if DEBUG_SHADOW
-        ALOGE("One polygon is not CW isUmbraCW %d isPenumbraCW %d isPolyCW %d",
-                isUmbraCW, isPenumbraCW, isPolyCW);
-#endif
+        if (kDebugShadow) {
+            ALOGE("One polygon is not CW isUmbraCW %d isPenumbraCW %d isPolyCW %d",
+                    isUmbraCW, isPenumbraCW, isPolyCW);
+        }
         return false;
     }
 
@@ -1320,10 +1412,10 @@ int SpotShadow::convertPolysToVerticesPerRay(
                     penumbra[startPenumbraIndex],
                     penumbra[(startPenumbraIndex + 1) % penumbraLength]);
             if (distanceToIntersectPenumbra < 0) {
-#if DEBUG_SHADOW
-                ALOGW("convertPolyToRayDist for penumbra failed rayAngle %f dx %f dy %f",
-                        rayAngle, dx, dy);
-#endif
+                if (kDebugShadow) {
+                    ALOGW("convertPolyToRayDist for penumbra failed rayAngle %f dx %f dy %f",
+                            rayAngle, dx, dy);
+                }
                 distanceToIntersectPenumbra = 0;
             }
             penumbraVerticesPerRay[i].x = centroid.x + dx * distanceToIntersectPenumbra;
@@ -1340,10 +1432,10 @@ int SpotShadow::convertPolysToVerticesPerRay(
             distanceToIntersectUmbra = rayIntersectPoints(centroid, dx, dy,
                     umbra[startUmbraIndex], umbra[(startUmbraIndex + 1) % umbraLength]);
             if (distanceToIntersectUmbra < 0) {
-#if DEBUG_SHADOW
-                ALOGW("convertPolyToRayDist for umbra failed rayAngle %f dx %f dy %f",
-                        rayAngle, dx, dy);
-#endif
+                if (kDebugShadow) {
+                    ALOGW("convertPolyToRayDist for umbra failed rayAngle %f dx %f dy %f",
+                            rayAngle, dx, dy);
+                }
                 distanceToIntersectUmbra = 0;
             }
             umbraVerticesPerRay[i].x = centroid.x + dx * distanceToIntersectUmbra;
@@ -1366,11 +1458,11 @@ int SpotShadow::convertPolysToVerticesPerRay(
         }
     }
 
-#if DEBUG_SHADOW
-    verifyAngleData(totalRayNumber, allVerticesAngleData, offsetToInner,
-            offsetToOuter,  umbraAngleList, maxUmbraAngleIndex,  umbraLength,
-            penumbraAngleList,  maxPenumbraAngleIndex, penumbraLength);
-#endif
+    if (kDebugShadow) {
+        verifyAngleData(totalRayNumber, allVerticesAngleData, offsetToInner,
+                offsetToOuter,  umbraAngleList, maxUmbraAngleIndex,  umbraLength,
+                penumbraAngleList,  maxPenumbraAngleIndex, penumbraLength);
+    }
     return true; // success
 
 }
@@ -1378,7 +1470,7 @@ int SpotShadow::convertPolysToVerticesPerRay(
 /**
  * Generate a triangle strip given two convex polygon
 **/
-void SpotShadow::generateTriangleStrip(bool isCasterOpaque, float shadowStrengthScale,
+void generateTriangleStrip(bool isCasterOpaque, float shadowStrengthScale,
         Vector2* penumbra, int penumbraLength, Vector2* umbra, int umbraLength,
         const Vector3* poly, int polyLength, VertexBuffer& shadowTriangleStrip,
         const Vector2& centroid) {
@@ -1509,17 +1601,17 @@ void SpotShadow::generateTriangleStrip(bool isCasterOpaque, float shadowStrength
         indexBuffer[indexBufferIndex++] = lastCentroidIndex;
     }
 
-#if DEBUG_SHADOW
-    ALOGD("allocated IB %d allocated VB is %d", totalIndexCount, totalVertexCount);
-    ALOGD("IB index %d VB index is %d", indexBufferIndex, vertexBufferIndex);
-    for (int i = 0; i < vertexBufferIndex; i++) {
-        ALOGD("vertexBuffer i %d, (%f, %f %f)", i, shadowVertices[i].x, shadowVertices[i].y,
-                shadowVertices[i].alpha);
+    if (kDebugShadow) {
+        ALOGD("allocated IB %d allocated VB is %d", totalIndexCount, totalVertexCount);
+        ALOGD("IB index %d VB index is %d", indexBufferIndex, vertexBufferIndex);
+        for (int i = 0; i < vertexBufferIndex; i++) {
+            ALOGD("vertexBuffer i %d, (%f, %f %f)", i, shadowVertices[i].x, shadowVertices[i].y,
+                    shadowVertices[i].alpha);
+        }
+        for (int i = 0; i < indexBufferIndex; i++) {
+            ALOGD("indexBuffer i %d, indexBuffer[i] %d", i, indexBuffer[i]);
+        }
     }
-    for (int i = 0; i < indexBufferIndex; i++) {
-        ALOGD("indexBuffer i %d, indexBuffer[i] %d", i, indexBuffer[i]);
-    }
-#endif
 
     // At the end, update the real index and vertex buffer size.
     shadowTriangleStrip.updateVertexCount(vertexBufferIndex);
@@ -1531,13 +1623,11 @@ void SpotShadow::generateTriangleStrip(bool isCasterOpaque, float shadowStrength
     shadowTriangleStrip.computeBounds<AlphaVertex>();
 }
 
-#if DEBUG_SHADOW
-
 #define TEST_POINT_NUMBER 128
 /**
  * Calculate the bounds for generating random test points.
  */
-void SpotShadow::updateBound(const Vector2 inVector, Vector2& lowerBound,
+void updateBound(const Vector2 inVector, Vector2& lowerBound,
         Vector2& upperBound) {
     if (inVector.x < lowerBound.x) {
         lowerBound.x = inVector.x;
@@ -1559,7 +1649,7 @@ void SpotShadow::updateBound(const Vector2 inVector, Vector2& lowerBound,
 /**
  * For debug purpose, when things go wrong, dump the whole polygon data.
  */
-void SpotShadow::dumpPolygon(const Vector2* poly, int polyLength, const char* polyName) {
+void dumpPolygon(const Vector2* poly, int polyLength, const char* polyName) {
     for (int i = 0; i < polyLength; i++) {
         ALOGD("polygon %s i %d x %f y %f", polyName, i, poly[i].x, poly[i].y);
     }
@@ -1568,7 +1658,7 @@ void SpotShadow::dumpPolygon(const Vector2* poly, int polyLength, const char* po
 /**
  * For debug purpose, when things go wrong, dump the whole polygon data.
  */
-void SpotShadow::dumpPolygon(const Vector3* poly, int polyLength, const char* polyName) {
+void dumpPolygon(const Vector3* poly, int polyLength, const char* polyName) {
     for (int i = 0; i < polyLength; i++) {
         ALOGD("polygon %s i %d x %f y %f", polyName, i, poly[i].x, poly[i].y);
     }
@@ -1577,7 +1667,7 @@ void SpotShadow::dumpPolygon(const Vector3* poly, int polyLength, const char* po
 /**
  * Test whether the polygon is convex.
  */
-bool SpotShadow::testConvex(const Vector2* polygon, int polygonLength,
+bool testConvex(const Vector2* polygon, int polygonLength,
         const char* name) {
     bool isConvex = true;
     for (int i = 0; i < polygonLength; i++) {
@@ -1605,7 +1695,7 @@ bool SpotShadow::testConvex(const Vector2* polygon, int polygonLength,
  * Using Marte Carlo method, we generate a random point, and if it is inside the
  * intersection, then it must be inside both source polygons.
  */
-void SpotShadow::testIntersection(const Vector2* poly1, int poly1Length,
+void testIntersection(const Vector2* poly1, int poly1Length,
         const Vector2* poly2, int poly2Length,
         const Vector2* intersection, int intersectionLength) {
     // Find the min and max of x and y.
@@ -1657,7 +1747,6 @@ void SpotShadow::testIntersection(const Vector2* poly1, int poly1Length,
         dumpPolygon(poly2, poly2Length, "poly 2");
     }
 }
-#endif
 
 }; // namespace uirenderer
 }; // namespace android
