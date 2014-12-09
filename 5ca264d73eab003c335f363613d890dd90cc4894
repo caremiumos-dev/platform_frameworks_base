@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "648022c5_5f0927d1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1057059
+      },
+      "writtenOn": "2014-12-09T16:02:53Z",
+      "side": 1,
+      "message": "Please limit your commit message lines to 60 characters or less.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 126
+      },
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e4ba529b_4af2d3fd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1057059
+      },
+      "writtenOn": "2014-12-09T16:02:53Z",
+      "side": 1,
+      "message": "The system is in a bad state if/and when this happens, so we should let the exception through so the caller is notified of what is going on.",
+      "range": {
+        "startLine": 10,
+        "startChar": 168,
+        "endLine": 10,
+        "endChar": 203
+      },
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "040206f8_a1503aa1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1057059
+      },
+      "writtenOn": "2014-12-09T16:02:53Z",
+      "side": 1,
+      "message": "The caller shouldn\u0027t be passing in a file name that is null, so we shouldn\u0027t be catching it here. Should be returned to the caller to handle or fix.",
+      "range": {
+        "startLine": 10,
+        "startChar": 123,
+        "endLine": 10,
+        "endChar": 164
+      },
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "040206f8_21bc2a5d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1057059
+      },
+      "writtenOn": "2014-12-09T16:02:53Z",
+      "side": 1,
+      "message": "In general we avoid catching all generic exceptions in the framework as it can lead to other issues where there is a bug in the callers code that should be fixed.",
+      "range": {
+        "startLine": 17,
+        "startChar": 4,
+        "endLine": 17,
+        "endChar": 13
+      },
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
