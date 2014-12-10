@@ -139,6 +139,30 @@
       "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a4077a51_9084949e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1057059
+      },
+      "writtenOn": "2014-12-10T06:54:04Z",
+      "side": 1,
+      "message": "Since null is not a valid input to this method, we should add checks at the call point in the system server to make sure null will not be passed to this RPC. Fro example, AMS.dumpHeap() already checks to make sure fd is not null. We can also add a check there for file path isn\u0027t null and throw an illegal argument exception if it is.",
+      "parentUuid": "24fb8a87_0cfd377c",
+      "range": {
+        "startLine": 17,
+        "startChar": 4,
+        "endLine": 17,
+        "endChar": 13
+      },
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
