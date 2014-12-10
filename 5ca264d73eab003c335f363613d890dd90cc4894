@@ -163,6 +163,24 @@
       "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e426d2f7_ed9b814d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1023708
+      },
+      "writtenOn": "2014-12-10T14:18:20Z",
+      "side": 1,
+      "message": "Thanks your feedback, but I found in AMS.dumpHeap(), will pass to ActivityThread.dumpHeap() to dump heap by message, if any exception thrown, it could not be caught in AMS side.\nBeside, even doing fd check is fine in AMS side, it may also have chance to fail in native side due to fd leak or dup fd fail for some reasons. (i.e. storage full.), RuntimeException still can not be prevented to throw back.\nso I change another way to catch RuntimeException, then check if caller is non-system process, still throw back to process, only catch exception for caller is system process to prevent system crash.",
+      "parentUuid": "a4077a51_9084949e",
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
