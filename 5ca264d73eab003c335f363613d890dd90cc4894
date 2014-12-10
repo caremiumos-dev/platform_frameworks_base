@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "04f84689_cb8e753c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1023708
+      },
+      "writtenOn": "2014-12-10T04:24:33Z",
+      "side": 1,
+      "message": "thanks your reminder, I\u0027ve been changed my commit message length.",
+      "parentUuid": "648022c5_5f0927d1",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 126
+      },
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e4ba529b_4af2d3fd",
         "filename": "/COMMIT_MSG",
         "patchSetId": 2
@@ -82,6 +106,30 @@
       "writtenOn": "2014-12-09T16:02:53Z",
       "side": 1,
       "message": "In general we avoid catching all generic exceptions in the framework as it can lead to other issues where there is a bug in the callers code that should be fixed.",
+      "range": {
+        "startLine": 17,
+        "startChar": 4,
+        "endLine": 17,
+        "endChar": 13
+      },
+      "revId": "5ca264d73eab003c335f363613d890dd90cc4894",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "24fb8a87_0cfd377c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1023708
+      },
+      "writtenOn": "2014-12-10T04:24:33Z",
+      "side": 1,
+      "message": "thanks your suggestion, but I have a question about if caller is system server, throwing uncaught exception will let system server died, how do you think if any other way to prevent such case? shall we need to judge if caller is system server than catch exception \u0026 re-throw exception for other process?",
+      "parentUuid": "040206f8_21bc2a5d",
       "range": {
         "startLine": 17,
         "startChar": 4,
