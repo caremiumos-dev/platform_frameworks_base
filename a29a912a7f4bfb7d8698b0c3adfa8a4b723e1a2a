@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "e426d2f7_2df2b9fc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1023708
+      },
+      "writtenOn": "2014-12-10T07:44:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a4077a51_d0a73c42",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 81
+      },
+      "revId": "a29a912a7f4bfb7d8698b0c3adfa8a4b723e1a2a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "64f102a2_11c26e65",
         "filename": "/COMMIT_MSG",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2014-12-10T06:54:13Z",
       "side": 1,
       "message": "Whitespace here and 5 other places below.",
+      "range": {
+        "startLine": 9,
+        "startChar": 43,
+        "endLine": 9,
+        "endChar": 44
+      },
+      "revId": "a29a912a7f4bfb7d8698b0c3adfa8a4b723e1a2a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e426d2f7_cde5dd34",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1023708
+      },
+      "writtenOn": "2014-12-10T07:44:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "64f102a2_11c26e65",
       "range": {
         "startLine": 9,
         "startChar": 43,
