@@ -650,7 +650,9 @@ void OpenGLRenderer::calculateLayerBoundsAndClip(Rect& bounds, Rect& clip, bool 
 
 void OpenGLRenderer::updateSnapshotIgnoreForLayer(const Rect& bounds, const Rect& clip,
         bool fboLayer, int alpha) {
-    if (bounds.isEmpty() || bounds.getWidth() > mCaches.maxTextureSize ||
+    if (bounds.isEmpty()) {
+        mSnapshot->empty = true;
+    } else if (bounds.getWidth() > mCaches.maxTextureSize ||
             bounds.getHeight() > mCaches.maxTextureSize ||
             (fboLayer && clip.isEmpty())) {
         mSnapshot->empty = fboLayer;
