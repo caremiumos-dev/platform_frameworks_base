@@ -89,6 +89,6 @@ public class KeyStoreLruCache<V> {
 
     /** Trims the cache to a specific size */
     final void trimToSize(int cacheSize) {
-        mCache.resize(cacheSize);
+        mCache.trimToSize(cacheSize);
     }
 }
