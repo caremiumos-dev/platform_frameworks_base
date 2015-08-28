@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "849451c2_78fa3837",
+        "filename": "tools/aidl/Android.mk",
+        "patchSetId": 2
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2015-08-28T23:15:54Z",
+      "side": 1,
+      "message": "you shouldn\u0027t need this if you\u0027re linking with libgtest_host.",
+      "revId": "106794f573749caceb6010fc8985bcbb60f32f4f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
