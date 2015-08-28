@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c4700952_c445cdcd",
+        "filename": "tools/aidl/Android.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1057759
+      },
+      "writtenOn": "2015-08-28T23:00:32Z",
+      "side": 1,
+      "message": "Let\u0027s call this aidl_unittests or something.  aidl is a host tool, we\u0027ll probably never write a target specific set of tests",
+      "range": {
+        "startLine": 31,
+        "startChar": 16,
+        "endLine": 31,
+        "endChar": 30
+      },
+      "revId": "98667fa5795285135d8bafde80aab1cbd053b3dc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4485f957_8826f441",
+        "filename": "tools/aidl/Android.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1057759
+      },
+      "writtenOn": "2015-08-28T23:00:32Z",
+      "side": 1,
+      "message": "Don\u0027t the static libraries export those headers?",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 34,
+        "endChar": 23
+      },
+      "revId": "98667fa5795285135d8bafde80aab1cbd053b3dc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
