@@ -1,0 +1,464 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "249486c0_3bc0b764",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Typo?",
+      "range": {
+        "startLine": 73,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 7
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0465c2c3_1a185db0",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Ideally, it seems like this whole section should be moved to an appendix, or at least further down in the document.",
+      "range": {
+        "startLine": 104,
+        "startChar": 30,
+        "endLine": 104,
+        "endChar": 72
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "848ff2ac_1ea92d5f",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "The phrasing in terms of \"processors\", and similarly below in terms of \"CPU architectures\", is troublesome. Programmers should normally be thinking in terms of the *platform* (whose abstraction boundary is the compiler), not the CPU. It\u0027s OK for this section since it\u0027s fairly CPU-centric, but as you state below, the concept of \"sequential consistency\" is the only thing that really matters beyond this section, so it\u0027d be better if it were phrased at the level of abstraction people are programming on.",
+      "range": {
+        "startLine": 123,
+        "startChar": 31,
+        "endLine": 123,
+        "endChar": 40
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "84a1b20e_d1da2602",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Maybe a better way to phrase this would be to say that the litmus tests below are written in the assembly language of our hypothetical CPU?",
+      "range": {
+        "startLine": 127,
+        "startChar": 3,
+        "endLine": 127,
+        "endChar": 27
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e467cecb_d906f35b",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "If you take my earlier suggestion to describe the code above as assembly language, you could rephrase this as something like \"When programming in a higher-level language, the compiler can reorder instructions just like the hardware can\", and then present a fresh example that parallels the one above, but doesn\u0027t talk about things like registers that aren\u0027t available in higher-level languages.",
+      "range": {
+        "startLine": 217,
+        "startChar": 3,
+        "endLine": 218,
+        "endChar": 22
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8478d270_f6bd80ee",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "This has no matching (",
+      "range": {
+        "startLine": 247,
+        "startChar": 33,
+        "endLine": 247,
+        "endChar": 34
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e467cecb_79940731",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Nitpick: it\u0027s \"the C++ standard library\". The \"STL\" was a third-party library whose design was adopted as one part of the C++ standard library.",
+      "range": {
+        "startLine": 297,
+        "startChar": 71,
+        "endLine": 297,
+        "endChar": 74
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c45e4afd_f8dad101",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Did you mean std::mutex, or am I misunderstanding something?",
+      "range": {
+        "startLine": 324,
+        "startChar": 13,
+        "endLine": 324,
+        "endChar": 39
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6473de94_d5b87c01",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 362,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Consider saying atomic\u003cbool\u003e to avoid confusion; you\u0027ve introduced atomic\u003cT\u003e but not atomic_T.",
+      "range": {
+        "startLine": 362,
+        "startChar": 28,
+        "endLine": 362,
+        "endChar": 39
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e467cecb_79024715",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "reordering?",
+      "range": {
+        "startLine": 387,
+        "startChar": 60,
+        "endLine": 387,
+        "endChar": 68
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "848ff2ac_1e2ccd75",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 454,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "I suspect that data races more commonly arise from missing locks, rather than missing atomic/volatile declarations.",
+      "range": {
+        "startLine": 454,
+        "startChar": 0,
+        "endLine": 454,
+        "endChar": 30
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0465c2c3_9a69cdc5",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 495,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Here again, do you mean std::mutex?",
+      "range": {
+        "startLine": 495,
+        "startChar": 44,
+        "endLine": 495,
+        "endChar": 51
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8478d270_36f8d883",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 597,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Nitpick: this should be \u003cem\u003e, not \u003ci\u003e",
+      "range": {
+        "startLine": 597,
+        "startChar": 20,
+        "endLine": 597,
+        "endChar": 23
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "848ff2ac_9e2c5d64",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 801,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "The other way I\u0027ve often heard these expressed is that locking a mutex costs less than an L2 cache miss, so if you haven\u0027t optimized for cache locality, it\u0027s not yet time to optimize by removing mutexes.",
+      "range": {
+        "startLine": 800,
+        "startChar": 58,
+        "endLine": 801,
+        "endChar": 64
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6473de94_b59dc05d",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 822,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "This phrasing is somewhat Java-specific; in C++ I would express it as \"make your shared objects const\".",
+      "range": {
+        "startLine": 822,
+        "startChar": 3,
+        "endLine": 822,
+        "endChar": 67
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8478d270_769ed023",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 844,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "\"...guard *accesses to* any field...\"?\n\nI\u0027d describe the mutex rather than the lock_guard as guarding the field itself.",
+      "range": {
+        "startLine": 843,
+        "startChar": 69,
+        "endLine": 844,
+        "endChar": 9
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "249486c0_fb3baf98",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 852,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "This is good advice in C++ too. Even if it doesn\u0027t lead to data races, it can make the constructor non-atomic, and that\u0027s usually bad news.",
+      "range": {
+        "startLine": 852,
+        "startChar": 3,
+        "endLine": 852,
+        "endChar": 48
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "848ff2ac_de842596",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 871,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Don\u0027t capitalize the \"m\", even though this is the beginning of a sentence. Same goes for \"Memory_order_consume\", for now.",
+      "range": {
+        "startLine": 871,
+        "startChar": 52,
+        "endLine": 871,
+        "endChar": 72
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "249486c0_fb52cfd8",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 882,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "Typo: \"declared\"",
+      "range": {
+        "startLine": 882,
+        "startChar": 31,
+        "endLine": 882,
+        "endChar": 39
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c45e4afd_182b0519",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 1138,
+      "author": {
+        "id": 1081378
+      },
+      "writtenOn": "2015-09-11T21:16:37Z",
+      "side": 1,
+      "message": "\"and\" instead of \",\"",
+      "range": {
+        "startLine": 1137,
+        "startChar": 53,
+        "endLine": 1138,
+        "endChar": 26
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
