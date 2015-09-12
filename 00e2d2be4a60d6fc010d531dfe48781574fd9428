@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "e467cecb_9cb2a93f",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Thanks.  The preceding paragraph should also really go.",
+      "parentUuid": "249486c0_3bc0b764",
+      "range": {
+        "startLine": 73,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 7
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0465c2c3_1a185db0",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -36,6 +60,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "Ideally, it seems like this whole section should be moved to an appendix, or at least further down in the document.",
+      "range": {
+        "startLine": 104,
+        "startChar": 30,
+        "endLine": 104,
+        "endChar": 72
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "44725a92_3a8a790f",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "This is an attempt to maintain some continuity with the original.  I\u0027m inclined to leave it this way for this iteration.",
+      "parentUuid": "0465c2c3_1a185db0",
       "range": {
         "startLine": 104,
         "startChar": 30,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "848ff2ac_846b2ae4",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "848ff2ac_1ea92d5f",
+      "range": {
+        "startLine": 123,
+        "startChar": 31,
+        "endLine": 123,
+        "endChar": 40
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "84a1b20e_d1da2602",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -82,6 +154,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "Maybe a better way to phrase this would be to say that the litmus tests below are written in the assembly language of our hypothetical CPU?",
+      "range": {
+        "startLine": 127,
+        "startChar": 3,
+        "endLine": 127,
+        "endChar": 27
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "44725a92_5a6e55f6",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "I\u0027m not sure ...",
+      "parentUuid": "84a1b20e_d1da2602",
       "range": {
         "startLine": 127,
         "startChar": 3,
@@ -140,6 +236,30 @@
     },
     {
       "key": {
+        "uuid": "249486c0_a1373ac7",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8478d270_f6bd80ee",
+      "range": {
+        "startLine": 247,
+        "startChar": 33,
+        "endLine": 247,
+        "endChar": 34
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e467cecb_79940731",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -151,6 +271,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "Nitpick: it\u0027s \"the C++ standard library\". The \"STL\" was a third-party library whose design was adopted as one part of the C++ standard library.",
+      "range": {
+        "startLine": 297,
+        "startChar": 71,
+        "endLine": 297,
+        "endChar": 74
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "44725a92_baebe9b1",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e467cecb_79940731",
       "range": {
         "startLine": 297,
         "startChar": 71,
@@ -186,6 +330,30 @@
     },
     {
       "key": {
+        "uuid": "6473de94_589e61cc",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c45e4afd_f8dad101",
+      "range": {
+        "startLine": 324,
+        "startChar": 13,
+        "endLine": 324,
+        "endChar": 39
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6473de94_d5b87c01",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -197,6 +365,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "Consider saying atomic\u003cbool\u003e to avoid confusion; you\u0027ve introduced atomic\u003cT\u003e but not atomic_T.",
+      "range": {
+        "startLine": 362,
+        "startChar": 28,
+        "endLine": 362,
+        "endChar": 39
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "648afea0_63fd3632",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 362,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Changed it to give both alternatives.  We probably still have some C programmers.",
+      "parentUuid": "6473de94_d5b87c01",
       "range": {
         "startLine": 362,
         "startChar": 28,
@@ -232,6 +424,30 @@
     },
     {
       "key": {
+        "uuid": "c45e4afd_a1310426",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e467cecb_79024715",
+      "range": {
+        "startLine": 387,
+        "startChar": 60,
+        "endLine": 387,
+        "endChar": 68
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "848ff2ac_1e2ccd75",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -243,6 +459,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "I suspect that data races more commonly arise from missing locks, rather than missing atomic/volatile declarations.",
+      "range": {
+        "startLine": 454,
+        "startChar": 0,
+        "endLine": 454,
+        "endChar": 30
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "848ff2ac_a482e6c8",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 454,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Agreed.  Added.",
+      "parentUuid": "848ff2ac_1e2ccd75",
       "range": {
         "startLine": 454,
         "startChar": 0,
@@ -278,6 +518,30 @@
     },
     {
       "key": {
+        "uuid": "6473de94_384fe5ff",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 495,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0465c2c3_9a69cdc5",
+      "range": {
+        "startLine": 495,
+        "startChar": 44,
+        "endLine": 495,
+        "endChar": 51
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8478d270_36f8d883",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -289,6 +553,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "Nitpick: this should be \u003cem\u003e, not \u003ci\u003e",
+      "range": {
+        "startLine": 597,
+        "startChar": 20,
+        "endLine": 597,
+        "endChar": 23
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "848ff2ac_0492ba19",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 597,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8478d270_36f8d883",
       "range": {
         "startLine": 597,
         "startChar": 20,
@@ -324,6 +612,30 @@
     },
     {
       "key": {
+        "uuid": "8478d270_7c9eb123",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 801,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Good observation.  Added some of that.",
+      "parentUuid": "848ff2ac_9e2c5d64",
+      "range": {
+        "startLine": 800,
+        "startChar": 58,
+        "endLine": 801,
+        "endChar": 64
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6473de94_b59dc05d",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -335,6 +647,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "This phrasing is somewhat Java-specific; in C++ I would express it as \"make your shared objects const\".",
+      "range": {
+        "startLine": 822,
+        "startChar": 3,
+        "endLine": 822,
+        "endChar": 67
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8478d270_fc6801be",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 822,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Changed it to what\u0027s hopefully slightly more neutral and correct phrasing.",
+      "parentUuid": "6473de94_b59dc05d",
       "range": {
         "startLine": 822,
         "startChar": 3,
@@ -370,6 +706,30 @@
     },
     {
       "key": {
+        "uuid": "c45e4afd_a17f44a8",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 844,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8478d270_769ed023",
+      "range": {
+        "startLine": 843,
+        "startChar": 69,
+        "endLine": 844,
+        "endChar": 9
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "249486c0_fb3baf98",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -393,6 +753,30 @@
     },
     {
       "key": {
+        "uuid": "848ff2ac_644ffe55",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 852,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "249486c0_fb3baf98",
+      "range": {
+        "startLine": 852,
+        "startChar": 3,
+        "endLine": 852,
+        "endChar": 48
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "848ff2ac_de842596",
         "filename": "docs/html/training/articles/smp.jd",
         "patchSetId": 5
@@ -404,6 +788,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "Don\u0027t capitalize the \"m\", even though this is the beginning of a sentence. Same goes for \"Memory_order_consume\", for now.",
+      "range": {
+        "startLine": 871,
+        "startChar": 52,
+        "endLine": 871,
+        "endChar": 72
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "44725a92_7ac79123",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 871,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Did that.  I wouldn\u0027t be surprised if somebody changed it back.  Seems to be controversial?",
+      "parentUuid": "848ff2ac_de842596",
       "range": {
         "startLine": 871,
         "startChar": 52,
@@ -450,6 +858,30 @@
       "writtenOn": "2015-09-11T21:16:37Z",
       "side": 1,
       "message": "\"and\" instead of \",\"",
+      "range": {
+        "startLine": 1137,
+        "startChar": 53,
+        "endLine": 1138,
+        "endChar": 26
+      },
+      "revId": "00e2d2be4a60d6fc010d531dfe48781574fd9428",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e467cecb_9f237bea",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 5
+      },
+      "lineNbr": 1138,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2015-09-12T01:25:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c45e4afd_182b0519",
       "range": {
         "startLine": 1137,
         "startChar": 53,
