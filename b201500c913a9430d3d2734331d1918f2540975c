@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f465d6c4_faf1de84",
+        "filename": "services/core/java/com/android/server/audio/AudioService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 3743,
+      "author": {
+        "id": 1040213
+      },
+      "writtenOn": "2016-02-01T22:53:55Z",
+      "side": 1,
+      "message": "could use a switch() here.",
+      "range": {
+        "startLine": 3743,
+        "startChar": 16,
+        "endLine": 3743,
+        "endChar": 28
+      },
+      "revId": "b201500c913a9430d3d2734331d1918f2540975c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "749006cb_fb556804",
+        "filename": "services/core/java/com/android/server/audio/AudioService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 3748,
+      "author": {
+        "id": 1040213
+      },
+      "writtenOn": "2016-02-01T22:53:55Z",
+      "side": 1,
+      "message": "with rounding, this is\n(mIndexMax + 10) / 20",
+      "range": {
+        "startLine": 3748,
+        "startChar": 28,
+        "endLine": 3748,
+        "endChar": 55
+      },
+      "revId": "b201500c913a9430d3d2734331d1918f2540975c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5422228b_5a3f415d",
+        "filename": "services/core/java/com/android/server/audio/AudioService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 3751,
+      "author": {
+        "id": 1040213
+      },
+      "writtenOn": "2016-02-01T22:53:55Z",
+      "side": 1,
+      "message": "with rounding this is (mIndexMask * 3 + 20) / 40;",
+      "range": {
+        "startLine": 3751,
+        "startChar": 27,
+        "endLine": 3751,
+        "endChar": 56
+      },
+      "revId": "b201500c913a9430d3d2734331d1918f2540975c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "349a0eef_88a17464",
+        "filename": "services/core/java/com/android/server/audio/AudioService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 3754,
+      "author": {
+        "id": 1040213
+      },
+      "writtenOn": "2016-02-01T22:53:55Z",
+      "side": 1,
+      "message": "btw, seems mIndexMax is a multiple of 10, but rounding is ok to be sure.",
+      "range": {
+        "startLine": 3754,
+        "startChar": 28,
+        "endLine": 3754,
+        "endChar": 47
+      },
+      "revId": "b201500c913a9430d3d2734331d1918f2540975c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
