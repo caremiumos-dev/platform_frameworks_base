@@ -336,7 +336,7 @@ public final class CachedBluetoothDevice implements Comparable<CachedBluetoothDe
     }
 
     public int getProfileConnectionState(LocalBluetoothProfile profile) {
-        if (mProfileConnectionState == null ||
+        if (mProfileConnectionState.isEmpty() ||
                 mProfileConnectionState.get(profile) == null) {
             // If cache is empty make the binder call to get the state
             int state = profile.getConnectionStatus(mDevice);
