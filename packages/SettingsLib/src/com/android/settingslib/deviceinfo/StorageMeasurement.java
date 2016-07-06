@@ -139,21 +139,14 @@ public class StorageMeasurement {
     private final VolumeInfo mVolume;
     private final VolumeInfo mSharedVolume;
 
-    private final MainHandler mMainHandler;
-    private final MeasurementHandler mMeasurementHandler;
+    private MainHandler mMainHandler;
+    private MeasurementHandler mMeasurementHandler;
 
     public StorageMeasurement(Context context, VolumeInfo volume, VolumeInfo sharedVolume) {
         mContext = context.getApplicationContext();
 
         mVolume = volume;
         mSharedVolume = sharedVolume;
-
-        // Start the thread that will measure the disk usage.
-        final HandlerThread handlerThread = new HandlerThread("MemoryMeasurement");
-        handlerThread.start();
-
-        mMainHandler = new MainHandler();
-        mMeasurementHandler = new MeasurementHandler(handlerThread.getLooper());
     }
 
     public void setReceiver(MeasurementReceiver receiver) {
@@ -171,6 +164,15 @@ public class StorageMeasurement {
         if (!mMeasurementHandler.hasMessages(MeasurementHandler.MSG_MEASURE)) {
             mMeasurementHandler.sendEmptyMessage(MeasurementHandler.MSG_MEASURE);
         }
+    }
+
+    public void onCreate() {
+        // Start the thread that will measure the disk usage.
+        final HandlerThread handlerThread = new HandlerThread("MemoryMeasurement");
+        handlerThread.start();
+
+        mMainHandler = new MainHandler();
+        mMeasurementHandler = new MeasurementHandler(handlerThread.getLooper());
     }
 
     public void onDestroy() {
@@ -331,6 +333,7 @@ public class StorageMeasurement {
                             mContext.unbindService(mDefContainerConn);
                         }
                     }
+                    getLooper().quit();
                     break;
                 }
                 case MSG_COMPLETED: {
