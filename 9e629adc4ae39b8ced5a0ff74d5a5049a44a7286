@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "145606ee_8fc7b56b",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 8
+      },
+      "lineNbr": 1189,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T21:28:04Z",
+      "side": 1,
+      "message": "ah, right: that\u0027s definitely always been confusing.",
+      "range": {
+        "startLine": 1186,
+        "startChar": 41,
+        "endLine": 1189,
+        "endChar": 11
+      },
+      "revId": "9e629adc4ae39b8ced5a0ff74d5a5049a44a7286",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
