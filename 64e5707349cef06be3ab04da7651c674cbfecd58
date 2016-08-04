@@ -1,0 +1,268 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "34894a78_994bbfb7",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "next time we revise this document, i think we can remove most of this section and just assume that no one remembers a time when Android devices were single-core :-)",
+      "range": {
+        "startLine": 73,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 15
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_196fcffc",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "missing \u003cp\u003e here and next paragraph?",
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_195d8f1c",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 482,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "thread",
+      "range": {
+        "startLine": 482,
+        "startChar": 72,
+        "endLine": 482,
+        "endChar": 79
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_d985c76c",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 549,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "missing \u003cp\u003es again",
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_f9944b8e",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 786,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "remove this, since that\u0027s always an option?",
+      "range": {
+        "startLine": 786,
+        "startChar": 11,
+        "endLine": 786,
+        "endChar": 56
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_b9e00326",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 1014,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "this example mixes T * and T* throughout",
+      "range": {
+        "startLine": 1014,
+        "startChar": 17,
+        "endLine": 1014,
+        "endChar": 19
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_79d37b5a",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 1049,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "here too",
+      "range": {
+        "startLine": 1049,
+        "startChar": 6,
+        "endLine": 1049,
+        "endChar": 14
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_39cdf3b5",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 1077,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "missing space",
+      "range": {
+        "startLine": 1077,
+        "startChar": 30,
+        "endLine": 1077,
+        "endChar": 32
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_994e5f3e",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 1167,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "in that\n\n\nor, given the next paragraph, replace \"suffice\" here with \"ensure\"?",
+      "range": {
+        "startLine": 1167,
+        "startChar": 54,
+        "endLine": 1167,
+        "endChar": 58
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_396093a8",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 1184,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "(why is this confusing? i always picture a picket fence so \"barrier\" seems more sensible to me, since you can\u0027t see through any obvious real-world \"barrier\".)",
+      "range": {
+        "startLine": 1184,
+        "startChar": 19,
+        "endLine": 1184,
+        "endChar": 30
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_5980f727",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 1278,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "unless you\u0027re reading the page source, you can\u0027t tell which of the references that is :-)",
+      "range": {
+        "startLine": 1278,
+        "startChar": 15,
+        "endLine": 1278,
+        "endChar": 43
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34894a78_d91627fe",
+        "filename": "docs/html/training/articles/smp.jd",
+        "patchSetId": 7
+      },
+      "lineNbr": 1363,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-08-04T02:24:25Z",
+      "side": 1,
+      "message": "oh, i guess you can :-)\n\n(do non-europeans know that cam.ac.uk \u003d\u003d Cambridge?)",
+      "range": {
+        "startLine": 1363,
+        "startChar": 0,
+        "endLine": 1363,
+        "endChar": 53
+      },
+      "revId": "64e5707349cef06be3ab04da7651c674cbfecd58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
