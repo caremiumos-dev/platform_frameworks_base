@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "116e1d0e_6b89217b",
+        "filename": "core/java/android/view/accessibility/AccessibilityManager.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 1092253
+      },
+      "writtenOn": "2016-08-31T17:21:26Z",
+      "side": 1,
+      "message": "Here\u0027s the synchronization used when accessibility is disabled by another process. We\u0027re already synchronizing it to the main thread.",
+      "revId": "11947e943d106f94632ed5672f2e1f3a0589f59a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
