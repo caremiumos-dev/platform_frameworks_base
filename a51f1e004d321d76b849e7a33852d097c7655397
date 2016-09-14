@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8be1fa42_f7100261",
+        "filename": "wifi/java/android/net/wifi/WifiScanner.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1079753
+      },
+      "writtenOn": "2016-09-14T00:05:56Z",
+      "side": 1,
+      "message": "do we need a priority here. can we just do it based on order?",
+      "revId": "a51f1e004d321d76b849e7a33852d097c7655397",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
