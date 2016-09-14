@@ -34,6 +34,24 @@
       "revId": "a51f1e004d321d76b849e7a33852d097c7655397",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8be1fa42_f8e3ce9a",
+        "filename": "wifi/java/android/net/wifi/WifiScanner.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1074459
+      },
+      "writtenOn": "2016-09-14T16:31:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8be1fa42_7825fe1a",
+      "revId": "a51f1e004d321d76b849e7a33852d097c7655397",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
