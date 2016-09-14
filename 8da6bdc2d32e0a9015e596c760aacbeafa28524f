@@ -16,6 +16,24 @@
       "revId": "8da6bdc2d32e0a9015e596c760aacbeafa28524f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8be1fa42_d88c0a92",
+        "filename": "wifi/java/android/net/wifi/WifiScanner.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1074459
+      },
+      "writtenOn": "2016-09-14T16:59:49Z",
+      "side": 1,
+      "message": "Yeah. We just had a discussion about this. Probably not. \nBut, it kind of feels symmetric with the PnoNetwork class we already have.",
+      "parentUuid": "8be1fa42_186672f1",
+      "revId": "8da6bdc2d32e0a9015e596c760aacbeafa28524f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
