@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8be1fa42_186672f1",
+        "filename": "wifi/java/android/net/wifi/WifiScanner.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1079753
+      },
+      "writtenOn": "2016-09-14T16:54:22Z",
+      "side": 1,
+      "message": "Don\u0027t have a huge issue with it, but do we ever envision having more data than just the SSID here? If not do we need to wrap it in a class?",
+      "revId": "8da6bdc2d32e0a9015e596c760aacbeafa28524f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
