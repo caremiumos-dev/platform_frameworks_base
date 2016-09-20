@@ -609,10 +609,10 @@ public class TelecomManager {
 
     /**
      * Returns the current SIM call manager. Apps must be prepared for this method to return
-     * {@code null}, indicating that there currently exists no user-chosen default
+     * {@code null}, indicating that there currently exists no SIM call manager
      * {@code PhoneAccount}.
      *
-     * @return The phone account handle of the current sim call manager.
+     * @return The phone account handle of the current  SIM call manager.
      */
     public PhoneAccountHandle getSimCallManager() {
         try {
