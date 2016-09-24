@@ -716,6 +716,15 @@ public final class ShutdownThread extends Thread {
         }
         if (!done[0]) {
             Log.w(TAG, "Timed out waiting for uncrypt.");
+            final int kUncryptTimeoutError = 100;
+            String timeoutMessage = String.format("uncrypt_time: %d\n",
+                    MAX_UNCRYPT_WAIT_TIME / 1000);
+            timeoutMessage += String.format("uncrypt_error: %d\n", kUncryptTimeout);
+            try {
+                FileUtils.stringToFile(RecoverySystem.UNCRYPT_STATUS_FILE, timeoutMessage);
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to write timeout message to uncrypt status", e);
+            }
         }
     }
 }
