@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b0938fd9_d6f31364",
+        "filename": "core/java/android/os/RecoverySystem.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1056365
+      },
+      "writtenOn": "2016-09-25T23:56:15Z",
+      "side": 1,
+      "message": "put @hide annotation, otherwise it becomes public API",
+      "range": {
+        "startLine": 95,
+        "startChar": 4,
+        "endLine": 95,
+        "endChar": 92
+      },
+      "revId": "c2d645981d2da74b3d1c82262a102517674909e0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b0938fd9_96f98b48",
+        "filename": "services/core/java/com/android/server/power/ShutdownThread.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 719,
+      "author": {
+        "id": 1056365
+      },
+      "writtenOn": "2016-09-25T23:56:15Z",
+      "side": 1,
+      "message": "i think this is c++ naming convention",
+      "range": {
+        "startLine": 719,
+        "startChar": 22,
+        "endLine": 719,
+        "endChar": 42
+      },
+      "revId": "c2d645981d2da74b3d1c82262a102517674909e0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b0938fd9_56b1c397",
+        "filename": "services/core/java/com/android/server/power/ShutdownThread.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 720,
+      "author": {
+        "id": 1056365
+      },
+      "writtenOn": "2016-09-25T23:56:15Z",
+      "side": 1,
+      "message": "no need to use String.format()?",
+      "range": {
+        "startLine": 720,
+        "startChar": 36,
+        "endLine": 720,
+        "endChar": 49
+      },
+      "revId": "c2d645981d2da74b3d1c82262a102517674909e0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
