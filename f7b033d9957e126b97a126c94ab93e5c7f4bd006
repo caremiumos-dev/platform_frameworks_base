@@ -46,6 +46,30 @@
       "revId": "f7b033d9957e126b97a126c94ab93e5c7f4bd006",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a5bc2f98_6adb1745",
+        "filename": "services/core/java/com/android/server/power/ShutdownThread.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 722,
+      "author": {
+        "id": 1056365
+      },
+      "writtenOn": "2016-09-26T18:38:05Z",
+      "side": 1,
+      "message": "Narayan, do we have to use String.format()? We\u0027re not using any format specific outputs here. Doesn\u0027t using String.format() in such a cases increase unnecessary overhead (creating a Formatter etc)?",
+      "parentUuid": "a56eefe7_5a17f5b8",
+      "range": {
+        "startLine": 720,
+        "startChar": 11,
+        "endLine": 722,
+        "endChar": 88
+      },
+      "revId": "f7b033d9957e126b97a126c94ab93e5c7f4bd006",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
