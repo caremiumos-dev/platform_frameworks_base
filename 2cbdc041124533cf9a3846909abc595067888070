@@ -46,6 +46,30 @@
       "revId": "2cbdc041124533cf9a3846909abc595067888070",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e5c1c7c3_04cc762c",
+        "filename": "services/core/java/com/android/server/power/ShutdownThread.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 720,
+      "author": {
+        "id": 1088085
+      },
+      "writtenOn": "2016-09-27T20:37:19Z",
+      "side": 1,
+      "message": "done, verified on master.",
+      "parentUuid": "05d89b6b_2cbca6b0",
+      "range": {
+        "startLine": 720,
+        "startChar": 50,
+        "endLine": 720,
+        "endChar": 93
+      },
+      "revId": "2cbdc041124533cf9a3846909abc595067888070",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
