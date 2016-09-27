@@ -22,6 +22,30 @@
       "revId": "2cbdc041124533cf9a3846909abc595067888070",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "05d89b6b_2cbca6b0",
+        "filename": "services/core/java/com/android/server/power/ShutdownThread.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 720,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2016-09-27T19:32:21Z",
+      "side": 1,
+      "message": "yeah, this will fail at runtime because \"uncrypt_error: %d\\n\" is a string, but the format string (the first argument) is looking for an integer (%d). use + instead of , here.\n\n(and make sure you\u0027ve tested the code before adding verified+1, because we\u0027ll be cherrypicking this straight away...)",
+      "parentUuid": "a5bc2f98_0ac7fb5d",
+      "range": {
+        "startLine": 720,
+        "startChar": 50,
+        "endLine": 720,
+        "endChar": 93
+      },
+      "revId": "2cbdc041124533cf9a3846909abc595067888070",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
