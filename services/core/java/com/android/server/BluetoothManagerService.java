@@ -217,6 +217,7 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                                 mBluetoothLock.readLock().lock();
                                 if (mBluetooth != null) {
                                     mBluetooth.onBrEdrDown();
+                                    mEnable = false;
                                     mEnableExternal = false;
                                 }
                             } catch (RemoteException e) {
@@ -451,6 +452,9 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
 
     @Override
     public boolean isBleScanAlwaysAvailable() {
+        if (isAirplaneModeOn() && !mEnable) {
+            return false;
+        }
         try {
             return (Settings.Global.getInt(mContentResolver,
                     Settings.Global.BLE_SCAN_ALWAYS_AVAILABLE)) != 0;
