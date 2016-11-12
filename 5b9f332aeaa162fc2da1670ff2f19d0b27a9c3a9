@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cb669bd0_37d8c436",
+        "filename": "native/android/Android.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1077068
+      },
+      "writtenOn": "2016-11-12T04:55:49Z",
+      "side": 1,
+      "message": "I\u0027d love to do this but it doesn\u0027t work.\n\nthe net.c symbols are not used by the libandroid library, and are not exported by the libandroid library, the linker of a program linking against libandroid will not know about the symbols exported by libandroid_net. This, in pkg-config language, is the difference between \"Libs\" and \"Libs.private\", I want \"Libs\" but \"LOCAL_SHARED_LIBRARIES\" only provides the \"Libs.private\" equivalent.\n\nThere\u0027s LOCAL_EXPORT_SHARED_LIBRARY_HEADERS which solves this transitive problem for include dirs, but there\u0027s no way to do that for libraries. So the options are:\n\n* Keep net.c in this library and not link against libandroid_net. libandroid_net is just a subset of libandroid.\n\n* Convert libandroid.so into a linker script like \"GROUP ( AS_NEEDED ( -landroid_base -landroid_net ))\" and rename the libandroid module to libandroid_base . I don\u0027t think there\u0027s a precedent for this in Android nor that the build system would like that.",
+      "range": {
+        "startLine": 24,
+        "startChar": 4,
+        "endLine": 24,
+        "endChar": 18
+      },
+      "revId": "5b9f332aeaa162fc2da1670ff2f19d0b27a9c3a9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
