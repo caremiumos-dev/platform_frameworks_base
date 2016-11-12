@@ -22,6 +22,24 @@
       "revId": "5b9f332aeaa162fc2da1670ff2f19d0b27a9c3a9",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cb669bd0_629358e4",
+        "filename": "native/android/Android.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1074628
+      },
+      "writtenOn": "2016-11-12T17:57:16Z",
+      "side": 1,
+      "message": "Yeah, we don\u0027t support exporting shared libraries -- we\u0027re considering it for static libraries, but haven\u0027t considered it for shared libraries. Currently the answer is to add libandroid_net to anyone that is linking libandroid and also needs libandroid_net.\n\nBut even if we did, this still wouldn\u0027t fix prebuilts that currently need this to be in libandroid. We don\u0027t have any way to detect or fix those automatically, but we\u0027re looking into some options.\n\nYou could move this to a static library and use LOCAL_WHOLE_STATIC_LIBRARIES -- that at least keeps the code separated, but wouldn\u0027t share the library on the device, and can run into ODR problems if both do end up in the same process.",
+      "parentUuid": "cb669bd0_37d8c436",
+      "revId": "5b9f332aeaa162fc2da1670ff2f19d0b27a9c3a9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
