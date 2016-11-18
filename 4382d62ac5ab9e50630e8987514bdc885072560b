@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "30040898_acd7870d",
+        "filename": "core/jni/android_util_EventLog.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1032276
+      },
+      "writtenOn": "2016-11-18T21:30:55Z",
+      "side": 1,
+      "message": "This is no longer needed here, the implementation detail is built into the the event log list library.",
+      "range": {
+        "startLine": 26,
+        "startChar": 1,
+        "endLine": 27,
+        "endChar": 70
+      },
+      "revId": "4382d62ac5ab9e50630e8987514bdc885072560b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
