@@ -1329,6 +1329,16 @@
          device is data-only. -->
     <bool name="config_voice_capable">true</bool>
 
+    <!-- Flag indicating whether the current device is "data capable".
+         If true, this means that the device supports data connection.
+
+         Note: This flag has been introduced to handle few CTS cases which always
+         assume that a device with PackageManager.FEATURE_TELEPHONY system feature
+         enabled has data capabilities. However, this may not be true for some
+         products which uses telephony for Bluetooth calls but don't have any data
+         connection.  -->
+    <bool name="config_data_capable">true</bool>
+
     <!-- Flag indicating that an outbound call must have a call capable phone account
          that has declared it can process the call's handle. -->
     <bool name="config_requireCallCapableAccountForHandle">false</bool>
