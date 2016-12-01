@@ -4710,6 +4710,11 @@ public class ConnectivityService extends IConnectivityManager.Stub
         } else {
             // If the requestable capabilities have changed or the score changed, we can't have been
             // called by rematchNetworkAndRequests, so it's safe to start a rematch.
+            try {
+                mPolicyManager.onNetworkCapabilitiesChanged();
+            } catch (RemoteException e) {
+                loge("Exception in PolicyManager.onNetworkCapabilitiesChanged: " + e);
+            }
             rematchAllNetworksAndRequests(nai, oldScore);
             notifyNetworkCallbacks(nai, ConnectivityManager.CALLBACK_CAP_CHANGED);
         }
