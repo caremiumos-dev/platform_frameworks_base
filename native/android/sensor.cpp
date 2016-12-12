@@ -113,6 +113,12 @@ int ASensorEventQueue_registerSensor(ASensorEventQueue* queue, ASensor const* se
                     maxBatchReportLatencyUs, 0);
 }
 
+int ASensorEventQueue_unregisterSensor(ASensorEventQueue* queue, ASensor const* sensor)
+{
+    return static_cast<SensorEventQueue*>(queue)->disableSensor(
+            static_cast<Sensor const*>(sensor));
+}
+
 int ASensorEventQueue_enableSensor(ASensorEventQueue* queue, ASensor const* sensor)
 {
     return static_cast<SensorEventQueue*>(queue)->enableSensor(
