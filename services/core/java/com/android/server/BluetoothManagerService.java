@@ -335,12 +335,14 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
 
     /**
      *  Save the Bluetooth on/off state
-     *
      */
     private void persistBluetoothSetting(int value) {
+        // waive WRITE_SECURE_SETTINGS permission check
+        long callingIdentity = Binder.clearCallingIdentity();
         Settings.Global.putInt(mContext.getContentResolver(),
                                Settings.Global.BLUETOOTH_ON,
                                value);
+        Binder.restoreCallingIdentity(callingIdentity);
     }
 
     /**
@@ -611,14 +613,15 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
         if (DBG) Slog.d(TAG,"BluetoothGatt Service is Up");
         try {
             mBluetoothLock.readLock().lock();
-            if (isBleAppPresent() == false && mBluetooth != null
-                  && mBluetooth.getState() == BluetoothAdapter.STATE_BLE_ON) {
+            if (mBluetooth == null) {
+                if (DBG) Slog.w(TAG, "onBluetoothServiceUp: mBluetooth is null!");
+                return;
+            }
+            if (mBluetooth.getState() == BluetoothAdapter.STATE_BLE_ON
+                && (isBluetoothPersistedStateOnBluetooth() || !isBleAppPresent()) {
+                // This triggers transition to STATE_ON
                 mBluetooth.onLeServiceUp();
-
-                // waive WRITE_SECURE_SETTINGS permission check
-                long callingIdentity = Binder.clearCallingIdentity();
                 persistBluetoothSetting(BLUETOOTH_ON_BLUETOOTH);
-                Binder.restoreCallingIdentity(callingIdentity);
             }
         } catch (RemoteException e) {
             Slog.e(TAG,"Unable to call onServiceUp", e);
@@ -758,10 +761,7 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
 
         synchronized(mReceiver) {
             if (persist) {
-                // waive WRITE_SECURE_SETTINGS permission check
-                long callingIdentity = Binder.clearCallingIdentity();
                 persistBluetoothSetting(BLUETOOTH_OFF);
-                Binder.restoreCallingIdentity(callingIdentity);
             }
             mEnableExternal = false;
             sendDisableMsg();
