@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a3d9950f_28eaf15b",
+        "filename": "telephony/java/com/android/ims/ImsReasonInfo.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 314,
+      "author": {
+        "id": 1043723
+      },
+      "writtenOn": "2017-01-12T08:14:04Z",
+      "side": 1,
+      "message": "CODE_IKEv2_AUTH_FAILURE",
+      "range": {
+        "startLine": 314,
+        "startChar": 28,
+        "endLine": 314,
+        "endChar": 46
+      },
+      "revId": "98ba4302718dbad524d4fb99cf39d461e9b3a482",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
