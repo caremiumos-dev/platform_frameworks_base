@@ -2020,14 +2020,15 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
 
             writer.println("Enable log:");
             for (ActiveLog log : mActiveLogs) {
-                writer.println(log);
+                writer.println("  " + log);
             }
 
             writer.println("\n" + mBleApps.size() + " BLE Apps registered:");
             for (ClientDeathRecipient app : mBleApps.values()) {
-                writer.println(app.getPackageName());
+                writer.println("  " + app.getPackageName());
             }
 
+            writer.println("");
             writer.flush();
             if (args.length == 0) {
               // Add arg to produce output
