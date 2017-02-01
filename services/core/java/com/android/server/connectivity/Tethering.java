@@ -59,6 +59,11 @@ import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.telephony.CarrierConfigManager;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.ArrayMap;
@@ -91,6 +96,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -336,6 +342,93 @@ public class Tethering extends BaseNetworkObserver implements IControlsTethering
         return (provisionApp.length == 2);
     }
 
+    public void doesCarrierAllowTethering(int type, final ResultReceiver receiver) {
+        if (!isTetherProvisioningRequired()) {
+            receiver.send(ConnectivityManager.TETHER_PROVISIONING_SUCCESS, null);
+            return;
+        }
+
+        // First check cell data connectivity. Without it, the entitlement
+        // request is going to fail anyway.
+        if (!isCellDataAvailable()) {
+            receiver.send(ConnectivityManager.TETHER_PROVISIONING_UNKNOWN, null);
+            return;
+        }
+
+        ResultReceiver resultCodeTranslator = new ResultReceiver(null) {
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                int provisioningResult = (resultCode == ConnectivityManager.TETHER_ERROR_NO_ERROR)
+                        ? ConnectivityManager.TETHER_PROVISIONING_SUCCESS
+                        : ConnectivityManager.TETHER_PROVISIONING_FAIL;
+                receiver.send(provisioningResult, null);
+            }
+        };
+        ResultReceiver proxyReceiver = getCrossProcessReceiver(resultCodeTranslator);
+        sendSilentTetherProvisionIntent(type, proxyReceiver);
+    }
+
+    private boolean isCellDataAvailable() {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            // TODO: Simplify this logic and remove hasCellSignalStrength once
+            // TelephonyManager provides a more streamlined API.
+            ConnectivityManager connectivityManager = getConnectivityManager();
+            TelephonyManager telephonyManager = mContext.getSystemService(TelephonyManager.class);
+
+            if (!hasCellSignalStrength() || !telephonyManager.getDataEnabled()) {
+                return false;
+            }
+
+            // When wifi is connected, dataState is always DATA_DISCONNECTED.
+            NetworkInfo wifiNetworkInfo =
+                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            boolean isWifiConnected = wifiNetworkInfo != null && wifiNetworkInfo.isConnected();
+            if (!isWifiConnected
+                    && telephonyManager.getDataState() != TelephonyManager.DATA_CONNECTED) {
+                return false;
+            }
+
+            return true;
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    private boolean hasCellSignalStrength() {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        List<CellInfo> cellInfos = telephonyManager.getAllCellInfo();
+
+        if (cellInfos == null) {
+            return false;
+        }
+
+        List<CellInfo> registeredCellInfos = new ArrayList<>();
+        for (CellInfo cellInfo : cellInfos) {
+            if (!cellInfo.isRegistered()) {
+                continue;
+            }
+
+            int connectionLevel = 0;
+            if (cellInfo instanceof CellInfoLte) {
+                connectionLevel = ((CellInfoLte) cellInfo).getCellSignalStrength().getLevel();
+            } else if (cellInfo instanceof CellInfoWcdma) {
+                connectionLevel = ((CellInfoWcdma) cellInfo).getCellSignalStrength().getLevel();
+            } else if (cellInfo instanceof CellInfoCdma) {
+                connectionLevel = ((CellInfoCdma) cellInfo).getCellSignalStrength().getLevel();
+            } else if (cellInfo instanceof CellInfoGsm) {
+                connectionLevel = ((CellInfoGsm) cellInfo).getCellSignalStrength().getLevel();
+            }
+
+            if (connectionLevel > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Enables or disables tethering for the given type. This should only be called once
      * provisioning has succeeded or is not necessary. It will also schedule provisioning rechecks
@@ -448,16 +541,20 @@ public class Tethering extends BaseNetworkObserver implements IControlsTethering
                 // If provisioning is successful, enable tethering, otherwise just send the error.
                 if (resultCode == ConnectivityManager.TETHER_ERROR_NO_ERROR) {
                     enableTetheringInternal(type, true, receiver);
-                } else {
-                    sendTetherResult(receiver, resultCode);
                 }
             }
         };
 
-        // The following is necessary to avoid unmarshalling issues when sending the receiver
-        // across processes.
+        return getCrossProcessReceiver(rr);
+    }
+
+    /**
+     * This function is necessary to avoid unmarshalling issues when sending the receiver
+     * across processes.
+     */
+    private ResultReceiver getCrossProcessReceiver(ResultReceiver originalReceiver) {
         Parcel parcel = Parcel.obtain();
-        rr.writeToParcel(parcel,0);
+        originalReceiver.writeToParcel(parcel,0);
         parcel.setDataPosition(0);
         ResultReceiver receiverForSending = ResultReceiver.CREATOR.createFromParcel(parcel);
         parcel.recycle();

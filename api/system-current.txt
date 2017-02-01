@@ -25579,6 +25579,7 @@ package android.net {
   public class ConnectivityManager {
     method public void addDefaultNetworkActiveListener(android.net.ConnectivityManager.OnNetworkActiveListener);
     method public boolean bindProcessToNetwork(android.net.Network);
+    method public void doesCarrierAllowTethering(int, android.net.ConnectivityManager.TetherProvisioningCheckedListener, android.os.Handler);
     method public android.net.Network getActiveNetwork();
     method public android.net.NetworkInfo getActiveNetworkInfo();
     method public deprecated android.net.NetworkInfo[] getAllNetworkInfo();
@@ -25609,8 +25610,8 @@ package android.net {
     method public void reportNetworkConnectivity(android.net.Network, boolean);
     method public boolean requestBandwidthUpdate(android.net.Network);
     method public void requestNetwork(android.net.NetworkRequest, android.net.ConnectivityManager.NetworkCallback);
-    method public void requestNetwork(android.net.NetworkRequest, int, android.net.ConnectivityManager.NetworkCallback);
     method public void requestNetwork(android.net.NetworkRequest, android.net.ConnectivityManager.NetworkCallback, android.os.Handler);
+    method public void requestNetwork(android.net.NetworkRequest, int, android.net.ConnectivityManager.NetworkCallback);
     method public void requestNetwork(android.net.NetworkRequest, int, android.net.ConnectivityManager.NetworkCallback, android.os.Handler);
     method public void requestNetwork(android.net.NetworkRequest, android.app.PendingIntent);
     method public deprecated boolean requestRouteToHost(int, int);
@@ -25645,6 +25646,9 @@ package android.net {
     field public static final int TETHERING_BLUETOOTH = 2; // 0x2
     field public static final int TETHERING_USB = 1; // 0x1
     field public static final int TETHERING_WIFI = 0; // 0x0
+    field public static final int TETHER_PROVISIONING_FAIL = 2; // 0x2
+    field public static final int TETHER_PROVISIONING_SUCCESS = 1; // 0x1
+    field public static final int TETHER_PROVISIONING_UNKNOWN = 0; // 0x0
     field public static final int TYPE_BLUETOOTH = 7; // 0x7
     field public static final int TYPE_DUMMY = 8; // 0x8
     field public static final int TYPE_ETHERNET = 9; // 0x9
@@ -25676,6 +25680,10 @@ package android.net {
     ctor public ConnectivityManager.OnStartTetheringCallback();
     method public void onTetheringFailed();
     method public void onTetheringStarted();
+  }
+
+  public static abstract interface ConnectivityManager.TetherProvisioningCheckedListener {
+    method public abstract void onTetherProvisioningChecked(int);
   }
 
   public final class ConnectivityMetricsEvent implements android.os.Parcelable {
