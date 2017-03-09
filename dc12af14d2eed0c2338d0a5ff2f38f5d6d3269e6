@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "ed6ef05d_309ed1cc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-09T08:05:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1b0bc8d8_24a1b9a7",
+      "range": {
+        "startLine": 9,
+        "startChar": 48,
+        "endLine": 9,
+        "endChar": 49
+      },
+      "revId": "dc12af14d2eed0c2338d0a5ff2f38f5d6d3269e6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c41077e2_b8b843d8",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "e069bed8_4ab9d0bd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-09T08:05:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c41077e2_b8b843d8",
+      "range": {
+        "startLine": 15,
+        "startChar": 6,
+        "endLine": 15,
+        "endChar": 7
+      },
+      "revId": "dc12af14d2eed0c2338d0a5ff2f38f5d6d3269e6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e16f8119_c131d05d",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -59,6 +107,30 @@
       "writtenOn": "2017-03-07T08:00:51Z",
       "side": 1,
       "message": "Can you explain how? Did you use tcpdump to see what we actually send on the wire? Or did you add logging code...?",
+      "range": {
+        "startLine": 18,
+        "startChar": 6,
+        "endLine": 18,
+        "endChar": 21
+      },
+      "revId": "dc12af14d2eed0c2338d0a5ff2f38f5d6d3269e6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1eb3a7f1_68aade5c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-09T08:05:33Z",
+      "side": 1,
+      "message": "Yeah I added some logging of the request header like we have already for the response, but removed it before uploading.\n\nI put it back, thinking twice about it it will be useful for future bug reports.",
+      "parentUuid": "e16f8119_c131d05d",
       "range": {
         "startLine": 18,
         "startChar": 6,
