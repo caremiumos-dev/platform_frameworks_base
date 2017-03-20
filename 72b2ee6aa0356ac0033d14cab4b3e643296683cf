@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fdd83397_6a4e2360",
+        "filename": "telephony/java/android/telephony/SubscriptionManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1231,
+      "author": {
+        "id": 1081638
+      },
+      "writtenOn": "2017-03-20T18:21:37Z",
+      "side": 1,
+      "message": "rename",
+      "range": {
+        "startLine": 1231,
+        "startChar": 67,
+        "endLine": 1231,
+        "endChar": 70
+      },
+      "revId": "72b2ee6aa0356ac0033d14cab4b3e643296683cf",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
