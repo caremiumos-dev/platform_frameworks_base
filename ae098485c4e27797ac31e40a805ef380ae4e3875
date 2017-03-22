@@ -1,0 +1,113 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "58bcb617_63baca37",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 3928,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-22T02:39:15Z",
+      "side": 1,
+      "message": "It seems new and loadAlwaysOnPackage always happen together.\n\nDoes it makes sense to have loadAlwaysOnPackage be part of the ctor ? Is there a use for creating the Vpn object but not loading and set the config from settings secure ?",
+      "range": {
+        "startLine": 3927,
+        "startChar": 0,
+        "endLine": 3928,
+        "endChar": 42
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c3d30f42_0d74bfb6",
+        "filename": "services/core/java/com/android/server/connectivity/SystemServicesImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-22T02:39:15Z",
+      "side": 1,
+      "message": "This class probably needs a class level explanation about its purpose.\n\nOtherwise consider defining it inside Vpn closer to SystemServices definition itself. Then it becomes obvious what it is.",
+      "range": {
+        "startLine": 26,
+        "startChar": 13,
+        "endLine": 26,
+        "endChar": 31
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6ac88e66_71be529e",
+        "filename": "services/core/java/com/android/server/connectivity/SystemServicesImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-22T02:39:15Z",
+      "side": 1,
+      "message": "extra line",
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "afc20e81_39b876d5",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 280,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-22T02:39:15Z",
+      "side": 1,
+      "message": "Just checking: can an runtime exception here happens and mess up the state consistency if saveAlwaysOnPackage does not succeed ?",
+      "range": {
+        "startLine": 279,
+        "startChar": 12,
+        "endLine": 280,
+        "endChar": 34
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "37509371_02f78236",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1323,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-22T02:39:15Z",
+      "side": 1,
+      "message": "+1 for passing in dependencies explicitly as ctor arguments. IMO that\u0027s the way to go for testing.\n\nIf this is the system api that VPN needs, shouldn\u0027t the default Impl be declared closer to VPN ?\n\nI suggest declaring SystemServicesImpl here as a nested static class in the interface or just below it.\n\nAnother alternative is to remove the interface altogether and only have the class. As long as it is not final and does not have final or private methods, Mockito can mock it as well as an interface, and that saves you the interface declaration.",
+      "range": {
+        "startLine": 1323,
+        "startChar": 14,
+        "endLine": 1323,
+        "endChar": 28
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
