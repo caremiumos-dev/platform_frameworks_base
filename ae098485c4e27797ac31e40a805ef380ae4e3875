@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "727b5ca3_8b234f3f",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 3928,
+      "author": {
+        "id": 1045544
+      },
+      "writtenOn": "2017-03-26T23:54:29Z",
+      "side": 1,
+      "message": "SGTM, done. The load and save calls are both only used inside Vpn.java now, so I\u0027ve made them private and removed the synchronization (they are marked as @GuardedBy(\"this\") instead like a few other methods)",
+      "parentUuid": "58bcb617_63baca37",
+      "range": {
+        "startLine": 3927,
+        "startChar": 0,
+        "endLine": 3928,
+        "endChar": 42
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c3d30f42_0d74bfb6",
         "filename": "services/core/java/com/android/server/connectivity/SystemServicesImpl.java",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2017-03-22T02:39:15Z",
       "side": 1,
       "message": "This class probably needs a class level explanation about its purpose.\n\nOtherwise consider defining it inside Vpn closer to SystemServices definition itself. Then it becomes obvious what it is.",
+      "range": {
+        "startLine": 26,
+        "startChar": 13,
+        "endLine": 26,
+        "endChar": 31
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "262b108a_03d9624e",
+        "filename": "services/core/java/com/android/server/connectivity/SystemServicesImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1045544
+      },
+      "writtenOn": "2017-03-26T23:54:29Z",
+      "side": 1,
+      "message": "Folded it back into Vpn.java. Mockito is still happy as long as everything stays public in the SystemServices class.",
+      "parentUuid": "c3d30f42_0d74bfb6",
       "range": {
         "startLine": 26,
         "startChar": 13,
@@ -88,6 +136,30 @@
     },
     {
       "key": {
+        "uuid": "2036fbb5_3353b2b5",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 280,
+      "author": {
+        "id": 1045544
+      },
+      "writtenOn": "2017-03-26T23:54:29Z",
+      "side": 1,
+      "message": "If SettingsProvider falls over (only thing that could cause RuntimeException here), that\u0027s going to kill ConnectivityService as well so there won\u0027t be any internal state left.",
+      "parentUuid": "afc20e81_39b876d5",
+      "range": {
+        "startLine": 279,
+        "startChar": 12,
+        "endLine": 280,
+        "endChar": 34
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "37509371_02f78236",
         "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
         "patchSetId": 1
@@ -99,6 +171,30 @@
       "writtenOn": "2017-03-22T02:39:15Z",
       "side": 1,
       "message": "+1 for passing in dependencies explicitly as ctor arguments. IMO that\u0027s the way to go for testing.\n\nIf this is the system api that VPN needs, shouldn\u0027t the default Impl be declared closer to VPN ?\n\nI suggest declaring SystemServicesImpl here as a nested static class in the interface or just below it.\n\nAnother alternative is to remove the interface altogether and only have the class. As long as it is not final and does not have final or private methods, Mockito can mock it as well as an interface, and that saves you the interface declaration.",
+      "range": {
+        "startLine": 1323,
+        "startChar": 14,
+        "endLine": 1323,
+        "endChar": 28
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e13d6427_4193bbe8",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1323,
+      "author": {
+        "id": 1045544
+      },
+      "writtenOn": "2017-03-26T23:54:29Z",
+      "side": 1,
+      "message": "Done. It\u0027s a concrete class now, not an interface. This also means tests don\u0027t need to override the whole interface, just the bits they need (whether that\u0027s good or bad is up to the viewer)",
+      "parentUuid": "37509371_02f78236",
       "range": {
         "startLine": 1323,
         "startChar": 14,
