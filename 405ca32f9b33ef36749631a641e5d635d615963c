@@ -22,6 +22,30 @@
       "revId": "405ca32f9b33ef36749631a641e5d635d615963c",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "12b06521_ccd2bfe9",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1045544
+      },
+      "writtenOn": "2017-03-27T12:43:10Z",
+      "side": 1,
+      "message": "Actually, probably want it right at the end of the constructor to be safe. Moved.",
+      "parentUuid": "ce1cf4d1_f460f1dc",
+      "range": {
+        "startLine": 229,
+        "startChar": 8,
+        "endLine": 229,
+        "endChar": 27
+      },
+      "revId": "405ca32f9b33ef36749631a641e5d635d615963c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
