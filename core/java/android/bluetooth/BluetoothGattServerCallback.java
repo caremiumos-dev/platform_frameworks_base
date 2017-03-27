@@ -159,7 +159,7 @@ public abstract class BluetoothGattServerCallback {
     }
 
     /**
-     * Callback triggered as result of {@link BluetoothGattServer#setPreferredPhy}, or as a result
+     * Callback triggered as result of {@link BluetoothGattServer#setPhy}, or as a result
      * of remote device changing the PHY.
      *
      * @param device The remote device

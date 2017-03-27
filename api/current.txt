@@ -7155,7 +7155,7 @@ package android.bluetooth {
     method public boolean requestConnectionPriority(int);
     method public boolean requestMtu(int);
     method public boolean setCharacteristicNotification(android.bluetooth.BluetoothGattCharacteristic, boolean);
-    method public void setPreferredPhy(int, int, int);
+    method public void setPhy(int, int, int);
     method public boolean writeCharacteristic(android.bluetooth.BluetoothGattCharacteristic);
     method public boolean writeDescriptor(android.bluetooth.BluetoothGattDescriptor);
     field public static final int CONNECTION_PRIORITY_BALANCED = 0; // 0x0
@@ -7280,7 +7280,7 @@ package android.bluetooth {
     method public void readPhy(android.bluetooth.BluetoothDevice);
     method public boolean removeService(android.bluetooth.BluetoothGattService);
     method public boolean sendResponse(android.bluetooth.BluetoothDevice, int, int, int, byte[]);
-    method public void setPreferredPhy(android.bluetooth.BluetoothDevice, int, int, int);
+    method public void setPhy(android.bluetooth.BluetoothDevice, int, int, int);
   }
 
   public abstract class BluetoothGattServerCallback {

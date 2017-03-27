@@ -22,7 +22,7 @@ package android.bluetooth;
 public abstract class BluetoothGattCallback{
 
     /**
-     * Callback triggered as result of {@link BluetoothGatt#setPreferredPhy}, or as a result of
+     * Callback triggered as result of {@link BluetoothGatt#setPhy}, or as a result of
      * remote device changing the PHY.
      *
      * @param gatt GATT client

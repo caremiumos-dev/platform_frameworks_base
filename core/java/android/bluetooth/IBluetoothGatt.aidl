@@ -71,7 +71,7 @@ interface IBluetoothGatt {
     void unregisterClient(in int clientIf);
     void clientConnect(in int clientIf, in String address, in boolean isDirect, in int transport, in int phy);
     void clientDisconnect(in int clientIf, in String address);
-    void clientSetPreferredPhy(in int clientIf, in String address, in int txPhy, in int rxPhy, in int phyOptions);
+    void clientSetPhy(in int clientIf, in String address, in int txPhy, in int rxPhy, in int phyOptions);
     void clientReadPhy(in int clientIf, in String address);
     void refreshDevice(in int clientIf, in String address);
     void discoverServices(in int clientIf, in String address);
@@ -92,7 +92,7 @@ interface IBluetoothGatt {
     void unregisterServer(in int serverIf);
     void serverConnect(in int serverIf, in String address, in boolean isDirect, in int transport);
     void serverDisconnect(in int serverIf, in String address);
-    void serverSetPreferredPhy(in int clientIf, in String address, in int txPhy, in int rxPhy, in int phyOptions);
+    void serverSetPhy(in int clientIf, in String address, in int txPhy, in int rxPhy, in int phyOptions);
     void serverReadPhy(in int clientIf, in String address);
     void addService(in int serverIf, in BluetoothGattService service);
     void removeService(in int serverIf, in int handle);

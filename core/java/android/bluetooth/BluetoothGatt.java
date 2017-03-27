@@ -777,8 +777,8 @@ public final class BluetoothGatt implements BluetoothProfile {
     }
 
     /**
-     * Set the preferred connection PHY for this app. Please note that this is just a
-     * recommendation, wether the PHY change will happen depends on other applications peferences,
+     * Set the connection PHY for this app. Please note that this is just a recommendation,
+     * wether the PHY change will happen depends on other applications peferences,
      * local and remote controller capabilities. Controller can override these settings.
      * <p>
      * {@link BluetoothGattCallback#onPhyUpdate} will be triggered as a result of this call, even
@@ -794,10 +794,9 @@ public final class BluetoothGatt implements BluetoothProfile {
      *             of {@link BluetoothDevice#PHY_OPTION_NO_PREFERRED},
      *             {@link BluetoothDevice#PHY_OPTION_S2} or {@link BluetoothDevice#PHY_OPTION_S8}
      */
-    public void setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+    public void setPhy(int txPhy, int rxPhy, int phyOptions) {
         try {
-            mService.clientSetPreferredPhy(mClientIf, mDevice.getAddress(), txPhy, rxPhy,
-                                           phyOptions);
+            mService.clientSetPhy(mClientIf, mDevice.getAddress(), txPhy, rxPhy, phyOptions);
         } catch (RemoteException e) {
             Log.e(TAG,"",e);
         }
