@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "0b246611_c08c74ce",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 3928,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-27T05:07:43Z",
+      "side": 1,
+      "message": "SG.",
+      "parentUuid": "727b5ca3_8b234f3f",
+      "range": {
+        "startLine": 3927,
+        "startChar": 0,
+        "endLine": 3928,
+        "endChar": 42
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c3d30f42_0d74bfb6",
         "filename": "services/core/java/com/android/server/connectivity/SystemServicesImpl.java",
         "patchSetId": 1
@@ -84,6 +108,30 @@
       "side": 1,
       "message": "Folded it back into Vpn.java. Mockito is still happy as long as everything stays public in the SystemServices class.",
       "parentUuid": "c3d30f42_0d74bfb6",
+      "range": {
+        "startLine": 26,
+        "startChar": 13,
+        "endLine": 26,
+        "endChar": 31
+      },
+      "revId": "ae098485c4e27797ac31e40a805ef380ae4e3875",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "01c56a64_346de0ce",
+        "filename": "services/core/java/com/android/server/connectivity/SystemServicesImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2017-03-27T05:07:43Z",
+      "side": 1,
+      "message": "Mockito is usually happy with anything as long as it is neither final nor private.",
+      "parentUuid": "262b108a_03d9624e",
       "range": {
         "startLine": 26,
         "startChar": 13,
