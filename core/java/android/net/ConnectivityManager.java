@@ -302,7 +302,8 @@ public class ConnectivityManager {
     /**
      * Broadcast Action: A tetherable connection has come or gone.
      * Uses {@code ConnectivityManager.EXTRA_AVAILABLE_TETHER},
-     * {@code ConnectivityManager.EXTRA_ACTIVE_TETHER} and
+     * {@code ConnectivityManager.EXTRA_ACTIVE_TETHER},
+     * {@code ConnectivityManager.EXTRA_ACTIVE_LOCAL_HOTSPOT} and
      * {@code ConnectivityManager.EXTRA_ERRORED_TETHER} to indicate
      * the current state of tethering.  Each include a list of
      * interface names in that state (may be empty).
@@ -322,9 +323,16 @@ public class ConnectivityManager {
     /**
      * @hide
      * gives a String[] listing all the interfaces currently tethered
-     * (ie, has dhcp support and packets potentially forwarded/NATed)
+     * (ie, has DHCPv4 support and packets potentially forwarded/NATed)
      */
-    public static final String EXTRA_ACTIVE_TETHER = "activeArray";
+    public static final String EXTRA_ACTIVE_TETHER = "tetherArray";
+
+    /**
+     * @hide
+     * gives a String[] listing all the interfaces currently in local-only
+     * hotspot mode (ie, has DHCPv4+IPv6-ULA support and no packet forwarding)
+     */
+    public static final String EXTRA_ACTIVE_LOCAL_HOTSPOT = "hotspotArray";
 
     /**
      * @hide
