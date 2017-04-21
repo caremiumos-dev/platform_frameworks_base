@@ -16,6 +16,24 @@
       "revId": "ab7d2e64c919e64451c526a30ff3abedcd8682a1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "46f6890c_a62e5088",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 5582,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2017-04-21T09:35:27Z",
+      "side": 1,
+      "message": "FWIW, I\u0027m fine with toBool() and toInt().",
+      "parentUuid": "d7e790c2_0de5c8c4",
+      "revId": "ab7d2e64c919e64451c526a30ff3abedcd8682a1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
