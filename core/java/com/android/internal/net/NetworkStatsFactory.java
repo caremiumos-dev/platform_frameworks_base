@@ -192,48 +192,47 @@ public class NetworkStatsFactory {
             NetworkStats lastStats) throws IOException {
         final NetworkStats stats =
               readNetworkStatsDetailInternal(limitUid, limitIfaces, limitTag, lastStats);
-        NetworkStats.Entry entry = null; // for recycling
-
+        final ArrayMap<String, String> stackedIfaces;
         synchronized (sStackedIfaces) {
-            // For 464xlat traffic, xt_qtaguid sees every IPv4 packets twice, once as an IPv4 packet
-            // unwrapped on the stacked interface, and once as wrapped inside an IPv6 packet on the
-            // base interface. For correct stats accounting on the base interface, every 464xlat
-            // packets needs to be subtracted for the root UID on the base interface both for tx
-            // and rx traffic (http://b/12249687, http:/b/33681750).
-            final int size = sStackedIfaces.size();
-            for (int i = 0; i < size; i++) {
-                final String stackedIface = sStackedIfaces.keyAt(i);
-                final String baseIface = sStackedIfaces.valueAt(i);
-
-                NetworkStats.Entry adjust =
-                    new NetworkStats.Entry(baseIface, 0, 0, 0, 0L, 0L, 0L, 0L, 0L);
-                for (int j = 0; j < stats.size(); j++) {
-                    entry = stats.getValues(j, entry);
-                    if (Objects.equals(entry.iface, stackedIface)) {
-                        adjust.rxBytes -= (entry.rxBytes + entry.rxPackets * IPV4V6_HEADER_DELTA);
-                        adjust.txBytes -= (entry.txBytes + entry.txPackets * IPV4V6_HEADER_DELTA);
-                        adjust.rxPackets -= entry.rxPackets;
-                        adjust.txPackets -= entry.txPackets;
-                        // TODO: does Entry#operations need to be adjusted too ?
-                    }
-                }
-                stats.combineValues(adjust);
-            }
+            String> stackedIfaces = new ArrayMap<>(sStackedIfaces);
         }
 
-        // For 464xlat traffic, xt_qtaguid only counts the bytes of the inner IPv4 packet sent on
-        // the stacked interface with prefix "v4-" and drops the IPv6 header size after unwrapping.
-        // To account correctly for on-the-wire traffic, adds the 20 additional bytes difference
-        // for all packets (http://b/12249687, http:/b/33681750).
-        for (int i = 0; i < stats.size(); i++) {
-            entry = stats.getValues(i, entry);
-            if (entry.iface != null && entry.iface.startsWith(CLATD_INTERFACE_PREFIX)) {
-                entry.rxBytes = entry.rxPackets * IPV4V6_HEADER_DELTA;
-                entry.txBytes = entry.txPackets * IPV4V6_HEADER_DELTA;
-                entry.rxPackets = 0;
-                entry.txPackets = 0;
-                stats.combineValues(entry);
+        NetworkStats.Entry entry = null; // for recycling
+
+        // For 464xlat traffic, xt_qtaguid sees every IPv4 packets twice, once as an IPv4 packet
+        // unwrapped on the stacked interface, and once as wrapped inside an IPv6 packet on the
+        // base interface. For correct stats accounting on the base interface, every 464xlat
+        // packets needs to be subtracted for the root UID on the base interface both for tx
+        // and rx traffic (http://b/12249687, http:/b/33681750).
+        for (int j = 0; j < stats.size(); j++) {
+            entry = stats.getValues(j, entry);
+            if (entry.iface == null || !entry.iface.startsWith(CLATD_INTERFACE_PREFIX)) {
+                continue;
             }
+            final String baseIface = stackedIfaces.get(entry.iface);
+            //if (entry.iface != null && entry.iface.startsWith(CLATD_INTERFACE_PREFIX)) { // keep this ?
+            if (baseIface == null) {
+                continue;
+            }
+
+            NetworkStats.Entry adjust =
+                    new NetworkStats.Entry(baseIface, 0, 0, 0, 0L, 0L, 0L, 0L, 0L);
+            adjust.rxBytes -= (entry.rxBytes + entry.rxPackets * IPV4V6_HEADER_DELTA);
+            adjust.txBytes -= (entry.txBytes + entry.txPackets * IPV4V6_HEADER_DELTA);
+            adjust.rxPackets -= entry.rxPackets;
+            adjust.txPackets -= entry.txPackets;
+            // TODO: does Entry#operations need to be adjusted too ?
+            stats.combineValues(adjust);
+
+            // For 464xlat traffic, xt_qtaguid only counts the bytes of the inner IPv4 packet sent on
+            // the stacked interface with prefix "v4-" and drops the IPv6 header size after unwrapping.
+            // To account correctly for on-the-wire traffic, adds the 20 additional bytes difference
+            // for all packets (http://b/12249687, http:/b/33681750).
+            entry.rxBytes = entry.rxPackets * IPV4V6_HEADER_DELTA;
+            entry.txBytes = entry.txPackets * IPV4V6_HEADER_DELTA;
+            entry.rxPackets = 0;
+            entry.txPackets = 0;
+            stats.combineValues(entry);
         }
 
         return stats;
