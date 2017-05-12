@@ -26,6 +26,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.util.Log;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 import dalvik.system.CloseGuard;
 import java.io.IOException;
