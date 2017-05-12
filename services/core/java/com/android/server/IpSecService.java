@@ -46,6 +46,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -95,6 +96,11 @@ public class IpSecService extends IIpSecService.Stub {
     @GuardedBy("this")
     private final ManagedResourceArray<UdpSocketRecord> mUdpSocketRecords =
             new ManagedResourceArray<>();
+
+    /**
+     * Injected netd
+     */
+    INetd mINetd = null;
 
     /**
      * The ManagedResource class provides a facility to cleanly and reliably release system
@@ -416,6 +422,9 @@ public class IpSecService extends IIpSecService.Stub {
     }
 
     INetd getNetdInstance() throws RemoteException {
+        if (mINetd != null) {
+            return mINetd;
+        }
         final INetd netd = NetdService.getInstance();
         if (netd == null) {
             throw new RemoteException("Failed to Get Netd Instance");
@@ -721,5 +730,16 @@ public class IpSecService extends IIpSecService.Stub {
         pw.println("IpSecService Log:");
         pw.println("NetdNativeService Connection: " + (isNetdAlive() ? "alive" : "dead"));
         pw.println();
+    }
+
+    /**
+     * setIpSecService injects an IIpSecService for testing purpose
+     *
+     * @param IIpSecService Injected IIpSecService
+     * @hide
+     */
+    @VisibleForTesting
+    void setINetd(INetd iNetd) {
+        this.mINetd = iNetd;
     }
 }
