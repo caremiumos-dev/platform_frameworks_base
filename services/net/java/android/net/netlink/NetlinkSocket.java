@@ -43,8 +43,9 @@ import java.nio.ByteOrder;
  */
 public class NetlinkSocket implements Closeable {
     private static final String TAG = "NetlinkSocket";
-    private static final int SOCKET_RECV_BUFSIZE = 64 * 1024;
-    private static final int DEFAULT_RECV_BUFSIZE = 8 * 1024;
+
+    public static final int DEFAULT_RECV_BUFSIZE = 8 * 1024;
+    public static final int SOCKET_RECV_BUFSIZE = 64 * 1024;
 
     final private FileDescriptor mDescriptor;
     private NetlinkSocketAddress mAddr;
@@ -92,13 +93,16 @@ public class NetlinkSocket implements Closeable {
         }
     }
 
-    public NetlinkSocket(int nlProto) throws ErrnoException {
-        mDescriptor = Os.socket(
+    public static FileDescriptor forProtocol(int nlProto) throws ErrnoException {
+        final FileDescriptor fd = Os.socket(
                 OsConstants.AF_NETLINK, OsConstants.SOCK_DGRAM, nlProto);
-
         Os.setsockoptInt(
-                mDescriptor, OsConstants.SOL_SOCKET,
-                OsConstants.SO_RCVBUF, SOCKET_RECV_BUFSIZE);
+                fd, OsConstants.SOL_SOCKET, OsConstants.SO_RCVBUF, SOCKET_RECV_BUFSIZE);
+        return fd;
+    }
+
+    public NetlinkSocket(int nlProto) throws ErrnoException {
+        mDescriptor = forProtocol(nlProto);
     }
 
     public NetlinkSocketAddress getLocalAddress() throws ErrnoException {
