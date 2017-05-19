@@ -1266,6 +1266,7 @@ public class IpManager extends StateMachine {
             mIpReachabilityMonitor = new IpReachabilityMonitor(
                     mContext,
                     mInterfaceName,
+                    getHandler(),
                     mLog,
                     new IpReachabilityMonitor.Callback() {
                         @Override
