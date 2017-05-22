@@ -18,6 +18,7 @@ package android.net;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+import java.lang.StringBuilder;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -47,6 +48,19 @@ public final class IpSecConfig implements Parcelable {
 
         // Authentication Algorithm
         IpSecAlgorithm authentication;
+
+        @Override
+        public String toString() {
+            return new StringBuilder()
+                    .append("{spiResourceId=")
+                    .append(spiResourceId)
+                    .append(", encryption=")
+                    .append(encryption)
+                    .append(", authentication=")
+                    .append(authentication)
+                    .append("}")
+                    .toString();
+        }
     }
 
     Flow[] flow = new Flow[] {new Flow(), new Flow()};
@@ -164,6 +178,35 @@ public final class IpSecConfig implements Parcelable {
         encapType = in.readInt();
         encapLocalPortResourceId = in.readInt();
         encapRemotePort = in.readInt();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder
+                .append("{mode=")
+                .append(mode == IpSecTransform.MODE_TUNNEL ? "TUNNEL" : "TRANSPORT")
+                .append(", localAddress=")
+                .append(localAddress)
+                .append(", remoteAddress=")
+                .append(remoteAddress)
+                .append(", network=")
+                .append(network)
+                .append(", encapType=")
+                .append(encapType)
+                .append(", encapLocalPortResourceId=")
+                .append(encapLocalPortResourceId)
+                .append(", encapRemotePort=")
+                .append(encapRemotePort)
+                .append(", nattKeepaliveInterval=")
+                .append(nattKeepaliveInterval)
+                .append(", flow[OUT]=")
+                .append(flow[IpSecTransform.DIRECTION_OUT])
+                .append(", flow[IN]=")
+                .append(flow[IpSecTransform.DIRECTION_IN])
+                .append("}");
+
+        return strBuilder.toString();
     }
 
     public static final Parcelable.Creator<IpSecConfig> CREATOR =
