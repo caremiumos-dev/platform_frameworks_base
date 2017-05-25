@@ -16,9 +16,13 @@
 
 package com.android.server.pm;
 
+import static com.android.server.pm.InstructionSets.getAppDexInstructionSets;
+import static com.android.server.pm.InstructionSets.getDexCodeInstructionSets;
 import static com.android.server.pm.PackageManagerService.DEBUG_DEXOPT;
+import static com.android.server.pm.PackageManagerService.REASON_INSTALL;
+import static com.android.server.pm.PackageManagerServiceCompilerMapping.getCompilerFilterForReason;
+import static dalvik.system.DexFile.NO_DEXOPT_NEEDED;
 
-import android.app.AlarmManager;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
@@ -27,6 +31,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageParser.Package;
 import android.os.BatteryManager;
 import android.os.Environment;
 import android.os.ServiceManager;
@@ -37,7 +42,14 @@ import android.util.Log;
 
 import com.android.server.pm.dex.DexManager;
 
+import com.android.server.pm.dex.PackageDexUsage;
+import dalvik.system.DexFile;
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.TimeUnit;
 
@@ -70,6 +82,12 @@ public class BackgroundDexOptService extends JobService {
     private static final int OPTIMIZE_ABORT_BY_JOB_SCHEDULER = 2;
     // Optimizations should be aborted. No space left on device.
     private static final int OPTIMIZE_ABORT_NO_SPACE_LEFT = 3;
+    // System property to hold threshold required for filtering unused apps.
+    private static final String UNOPTIMIZE_UNUSED_APPS_THRSHOLD_SYS_PROP =
+        "pm.dexopt.unopt_after_inactive_days";
+    // Threshold for unoptimize unused apps.
+    private static final long UNOPTIMIZE_UNUSED_APPS_THRESHOLD_IN_MILLIS =
+        getUnoptimizeUnusedAppsThresholdInMillis();
 
     /**
      * Set of failed packages remembered across job runs.
@@ -265,7 +283,69 @@ public class BackgroundDexOptService extends JobService {
     private int optimizePackages(PackageManagerService pm, ArraySet<String> pkgs,
             long lowStorageThreshold, boolean is_for_primary_dex,
             ArraySet<String> failedPackageNames) {
+        Collection<Package> packages = pm.mPackages.values();
+        Set<String> inactivePackagesUnOptRequired = new HashSet<>();
+        Set<String> inactivePackagesNoUnOptRequired = new HashSet<>();
+
+        // Prepare a list of packages which haven't been used for 30 days in foreground.
+        long currentTimeInMillis = System.currentTimeMillis();
+        PackageDexUsage packageDexUsage = new PackageDexUsage();
+        for (Package pkg : packages) {
+            // If the app was active in foreground during the threshold period.
+            boolean isActiveInForeground = (currentTimeInMillis
+                - pkg.getLatestForegroundPackageUseTimeInMills())
+                > UNOPTIMIZE_UNUSED_APPS_THRESHOLD_IN_MILLIS;
+
+            // If the app was active in background during the threshold period and was used
+            // by other packages.
+            boolean isActiveInBackgroundAndUsedByOtherPackages = ((currentTimeInMillis
+                - pkg.getLatestPackageUseTimeInMills())
+                > UNOPTIMIZE_UNUSED_APPS_THRESHOLD_IN_MILLIS)
+                && packageDexUsage.getPackageUseInfo(pkg.packageName).isUsedByOtherApps();
+
+            boolean isActive = isActiveInBackgroundAndUsedByOtherPackages || isActiveInForeground;
+            if (!isActive) {
+                boolean unoptRequired = false;
+                List<String> paths = pkg.getAllCodePathsExcludingResourceOnly();
+                String[] instructionSets = getAppDexInstructionSets(pkg.applicationInfo);
+                String[] dexCodeInstructionSets = getDexCodeInstructionSets(instructionSets);
+                for (String instructionSet : dexCodeInstructionSets) {
+                    if (unoptRequired) {
+                        // If we are sure that unopt is required, we don't have to analyse
+                        // other dex files.
+                        break;
+                    }
+                    for (String path : paths) {
+                        try {
+                            int status = DexFile.getDexOptNeeded(path,
+                                instructionSet,
+                                getCompilerFilterForReason(REASON_INSTALL),
+                                false,
+                                /*strict*/ true);
+                            if (status != NO_DEXOPT_NEEDED) {
+                                unoptRequired = true;
+                                break;
+                            }
+                        } catch (IOException ioe) {
+                            unoptRequired = true;
+                            Log.e(TAG,"[Exception]: " + ioe.getMessage());
+                        }
+                    }
+                }
+                if (unoptRequired) {
+                    inactivePackagesUnOptRequired.add(pkg.packageName);
+                } else {
+                    inactivePackagesNoUnOptRequired.add(pkg.packageName);
+                }
+            }
+        }
+
         for (String pkg : pkgs) {
+            if (inactivePackagesNoUnOptRequired.contains(pkg)) {
+                // Already unoptimized.
+                continue;
+            }
+
             int abort_code = abortIdleOptimizations(lowStorageThreshold);
             if (abort_code != OPTIMIZE_CONTINUE) {
                 return abort_code;
@@ -282,16 +362,27 @@ public class BackgroundDexOptService extends JobService {
                 }
             }
 
+            int reason;
+            boolean forceCompile;
+            // Restore unused packages to their install state to save space.
+            if (inactivePackagesUnOptRequired.contains(pkg)) {
+                reason = PackageManagerService.REASON_INSTALL;
+                forceCompile = true;
+            } else {
+                reason = PackageManagerService.REASON_BACKGROUND_DEXOPT;
+                forceCompile = false;
+            }
+
             // Optimize package if needed. Note that there can be no race between
             // concurrent jobs because PackageDexOptimizer.performDexOpt is synchronized.
             boolean success = is_for_primary_dex
                     ? pm.performDexOpt(pkg,
                             /* checkProfiles */ true,
-                            PackageManagerService.REASON_BACKGROUND_DEXOPT,
-                            /* force */ false)
+                            reason,
+                            forceCompile)
                     : pm.performDexOptSecondary(pkg,
-                            PackageManagerService.REASON_BACKGROUND_DEXOPT,
-                            /* force */ false);
+                            reason,
+                            forceCompile);
             if (success) {
                 // Dexopt succeeded, remove package from the list of failing ones.
                 synchronized (failedPackageNames) {
@@ -385,5 +476,20 @@ public class BackgroundDexOptService extends JobService {
             mAbortIdleOptimization.set(true);
         }
         return false;
+    }
+
+    private static long getUnoptimizeUnusedAppsThresholdInMillis() {
+        String sysPropValue = SystemProperties.get(UNOPTIMIZE_UNUSED_APPS_THRSHOLD_SYS_PROP);
+        if (sysPropValue == null || sysPropValue.isEmpty()) {
+            Log.e(TAG, "SysProp UNOPTIMIZE_UNUSED_APPS_THRSHOLD_SYS_PROP not set");
+            return Long.MAX_VALUE;
+        }
+        try {
+            return Long.valueOf(sysPropValue);
+        } catch (NumberFormatException nfe) {
+            Log.e(TAG, "Illegal value for UNOPTIMIZE_UNUSED_APPS_THRSHOLD_SYS_PROP: " +
+                sysPropValue);
+            return Long.MAX_VALUE;
+        }
     }
 }
