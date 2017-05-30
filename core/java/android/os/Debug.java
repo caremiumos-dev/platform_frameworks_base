@@ -44,7 +44,6 @@ import org.apache.harmony.dalvik.ddmc.Chunk;
 import org.apache.harmony.dalvik.ddmc.ChunkHandler;
 import org.apache.harmony.dalvik.ddmc.DdmServer;
 
-import dalvik.bytecode.OpcodeInfo;
 import dalvik.system.VMDebug;
 
 
@@ -1895,13 +1894,7 @@ public final class Debug
      */
     @Deprecated
     public static class InstructionCount {
-        private static final int NUM_INSTR =
-            OpcodeInfo.MAXIMUM_PACKED_VALUE + 1;
-
-        private int[] mCounts;
-
         public InstructionCount() {
-            mCounts = new int[NUM_INSTR];
         }
 
         /**
@@ -1911,13 +1904,7 @@ public final class Debug
          * @return true if counting was started
          */
         public boolean resetAndStart() {
-            try {
-                VMDebug.startInstructionCounting();
-                VMDebug.resetInstructionCount();
-            } catch (UnsupportedOperationException uoe) {
-                return false;
-            }
-            return true;
+            return false;
         }
 
         /**
@@ -1925,13 +1912,7 @@ public final class Debug
          * counting process.
          */
         public boolean collect() {
-            try {
-                VMDebug.stopInstructionCounting();
-                VMDebug.getInstructionCount(mCounts);
-            } catch (UnsupportedOperationException uoe) {
-                return false;
-            }
-            return true;
+            return false;
         }
 
         /**
@@ -1939,13 +1920,7 @@ public final class Debug
          * all threads).
          */
         public int globalTotal() {
-            int count = 0;
-
-            for (int i = 0; i < NUM_INSTR; i++) {
-                count += mCounts[i];
-            }
-
-            return count;
+            return 0;
         }
 
         /**
@@ -1953,15 +1928,7 @@ public final class Debug
          * executed globally.
          */
         public int globalMethodInvocations() {
-            int count = 0;
-
-            for (int i = 0; i < NUM_INSTR; i++) {
-                if (OpcodeInfo.isInvoke(i)) {
-                    count += mCounts[i];
-                }
-            }
-
-            return count;
+            return 0;
         }
     }
 
