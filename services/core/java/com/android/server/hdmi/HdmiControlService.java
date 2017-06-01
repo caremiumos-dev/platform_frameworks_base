@@ -90,6 +90,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+// MStar Android Patch Begin
+import com.mstar.android.MIntent;
+// MStar Android Patch End
+
 /**
  * Provides a service for sending and processing HDMI control messages,
  * HDMI-CEC and MHL control command, and providing the information on both standard.
@@ -170,6 +174,14 @@ public final class HdmiControlService extends SystemService {
                         onStandby(STANDBY_SHUTDOWN);
                     }
                     break;
+                // MStar Android Patch Begin
+                case MIntent.ACTION_MENU_REQUEST:
+                    if (isTvDeviceEnabled()) {
+                        int mMenuRequestType = intent.getIntExtra("MenuRequestType", Constants.MENU_STATE_ACTIVATED);
+                        tv().startMenuRequestAction(mMenuRequestType);
+                    }
+                    break;
+                // MStar Android Patch End
             }
         }
 
@@ -421,6 +433,9 @@ public final class HdmiControlService extends SystemService {
             filter.addAction(Intent.ACTION_SCREEN_ON);
             filter.addAction(Intent.ACTION_SHUTDOWN);
             filter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
+            // MStar Android Patch Begin
+            filter.addAction(MIntent.ACTION_MENU_REQUEST);
+            // MStar Android Patch End
             getContext().registerReceiver(mHdmiControlBroadcastReceiver, filter);
 
             // Register ContentObserver to monitor the settings change.

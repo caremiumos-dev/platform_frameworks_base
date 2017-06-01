@@ -663,6 +663,12 @@ final class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
                 activeSource.physicalAddress, deviceType));
     }
 
+    // MStar Android Patch Begin
+    void startMenuRequestAction(int mMenuRequestType) {
+        addAndStartAction(new MenuRequestAction(this, findKeyReceiverAddress(), mMenuRequestType));
+    }
+    // MStar Android Patch End
+
     private boolean handleNewDeviceAtTheTailOfActivePath(int path) {
         // Seq #22
         if (isTailOfActivePath(path, getActivePath())) {
