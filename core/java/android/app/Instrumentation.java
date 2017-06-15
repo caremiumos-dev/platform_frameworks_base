@@ -31,7 +31,6 @@ import android.os.Debug;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.os.PerformanceCollector;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
@@ -101,8 +100,6 @@ public class Instrumentation {
     private List<ActivityMonitor> mActivityMonitors;
     private IInstrumentationWatcher mWatcher;
     private IUiAutomationConnection mUiAutomationConnection;
-    private boolean mAutomaticPerformanceSnapshots = false;
-    private PerformanceCollector mPerformanceCollector;
     private Bundle mPerfMetrics = new Bundle();
     private UiAutomation mUiAutomation;
 
@@ -197,9 +194,6 @@ public class Instrumentation {
      *                instrumentation.
      */
     public void finish(int resultCode, Bundle results) {
-        if (mAutomaticPerformanceSnapshots) {
-            endPerformanceSnapshot();
-        }
         if (mPerfMetrics != null) {
             if (results == null) {
                 results = new Bundle();
@@ -212,22 +206,23 @@ public class Instrumentation {
         }
         mThread.finishInstrumentation(resultCode, results);
     }
-    
+
+    /**
+     * Does nothing
+     */
     public void setAutomaticPerformanceSnapshots() {
-        mAutomaticPerformanceSnapshots = true;
-        mPerformanceCollector = new PerformanceCollector();
     }
 
+    /**
+     * Does nothing
+     */
     public void startPerformanceSnapshot() {
-        if (!isProfiling()) {
-            mPerformanceCollector.beginSnapshot(null);
-        }
     }
     
+    /**
+     * Does nothing
+     */
     public void endPerformanceSnapshot() {
-        if (!isProfiling()) {
-            mPerfMetrics = mPerformanceCollector.endSnapshot();
-        }
     }
     
     /**
@@ -1925,9 +1920,6 @@ public class Instrumentation {
             } catch (RuntimeException e) {
                 Log.w(TAG, "Exception setting priority of instrumentation thread "
                         + Process.myTid(), e);
-            }
-            if (mAutomaticPerformanceSnapshots) {
-                startPerformanceSnapshot();
             }
             onStart();
         }
