@@ -57,7 +57,7 @@ public final class AdvertisingSetParameters implements Parcelable {
     /**
      * Maximum value for advertising interval.
      */
-    public static final int INTERVAL_MAX = 16777215;
+    public static final int INTERVAL_MAX = 16777165;
 
     /**
      * Advertise using the lowest transmission (TX) power level. Low transmission
@@ -349,7 +349,9 @@ public final class AdvertisingSetParameters implements Parcelable {
          * Set advertising interval.
          *
          * @param interval Bluetooth LE Advertising interval, in 0.625ms unit. Valid
-         *            range is from 160 (100ms) to 16777215 (10,485.759375 s).
+         *            value is from 160 (100ms) to 16777165 (10,485.728125 s).
+         *            Actual value used would be from range [interval,
+         *            interval+31.25ms].
          *            Recommended values are:
          *            {@link AdvertisingSetParameters#INTERVAL_LOW},
          *            {@link AdvertisingSetParameters#INTERVAL_MEDIUM}, or
