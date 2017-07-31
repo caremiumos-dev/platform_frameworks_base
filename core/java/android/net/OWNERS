@@ -4,3 +4,37 @@ jsharkey@google.com
 lorenzo@google.com
 satk@google.com
 silberst@google.com
+
+# Catch all that allows directory owners to also be per-file owners
+# similar to the Google3 behavior. See the discussion at:
+# https://groups.google.com/a/google.com/d/topic/android-chatty-eng/nzKwCLWcZPU/discussion
+per-file *=ek@google.com
+per-file *=hugobenichi@google.com
+per-file *=jsharkey@google.com
+per-file *=lorenzo@google.com
+per-file *=satk@google.com
+per-file *=silberst@google.com
+
+per-file *NetworkRecommendationProvider.*=jjoslin@google.com
+per-file *NetworkRecommendationProvider.*=jlapenna@google.com
+
+per-file INetworkScoreCache.aidl=jjoslin@google.com
+per-file INetworkScoreCache.aidl=jlapenna@google.com
+
+per-file INetworkScoreService.aidl=jjoslin@google.com
+per-file INetworkScoreService.aidl=jlapenna@google.com
+
+per-file NetworkKey.*=jjoslin@google.com
+per-file NetworkKey.*=jlapenna@google.com
+
+per-file NetworkScoreManager.java=jjoslin@google.com
+per-file NetworkScoreManager.java=jlapenna@google.com
+
+per-file NetworkScorerAppData.*=jjoslin@google.com
+per-file NetworkScorerAppData.*=jlapenna@google.com
+
+per-file RssiCurve.java=jjoslin@google.com
+per-file RssiCurve.java=jlapenna@google.com
+
+per-file ScoredNetwork.*=jjoslin@google.com
+per-file ScoredNetwork.*=jlapenna@google.com
