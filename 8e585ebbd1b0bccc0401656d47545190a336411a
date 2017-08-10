@@ -16,6 +16,29 @@
       "revId": "8e585ebbd1b0bccc0401656d47545190a336411a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e987655a_be78974b",
+        "filename": "core/java/android/os/StrictMode.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1354,
+      "author": {
+        "id": 1038039
+      },
+      "writtenOn": "2017-08-10T14:25:00Z",
+      "side": 1,
+      "message": "I think you\u0027ve copied a bad comment. It\u0027s unclear what the comment is trying to say.\n\nMy assumption:\n\n\"// Not part of BlockGuard.Policy; just part of StrictMode:\"\n\nwas there to explain the presence of a method that wasn\u0027t part of policy. It was explained by StrictMode, hence \"just\".\n\nThen the comment was copied, but because it *was* part of blockguard, the \"Not\" was removed. The \"just\" should have been removed or the comment removed or re-worded entirely.\n\nPlease reword both if there\u0027s something useful to communicate or remove entirely.",
+      "range": {
+        "startLine": 1354,
+        "startChar": 11,
+        "endLine": 1354,
+        "endChar": 15
+      },
+      "revId": "8e585ebbd1b0bccc0401656d47545190a336411a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
