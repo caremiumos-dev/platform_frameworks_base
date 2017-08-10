@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2f923f18_5254bc6a",
+        "filename": "api/current.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 29943,
+      "author": {
+        "id": 1006497
+      },
+      "writtenOn": "2017-08-10T14:22:31Z",
+      "side": 1,
+      "message": "nit: detectExplicitGc\n\nhttps://source.android.com/source/code-style#treat-acronyms-as-words",
+      "revId": "8e585ebbd1b0bccc0401656d47545190a336411a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
