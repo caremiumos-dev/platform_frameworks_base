@@ -305,7 +305,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
         if (DBG) log("connect(" + device + ")");
         try {
             mServiceLock.readLock().lock();
-            if (mService != null && isEnabled() && isValidDevice(device)) {
+            if (mService != null && isEnabled() && BluetoothDevice.isValidDevice(device)) {
                 return mService.connect(device);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -347,7 +347,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
         if (DBG) log("disconnect(" + device + ")");
         try {
             mServiceLock.readLock().lock();
-            if (mService != null && isEnabled() && isValidDevice(device)) {
+            if (mService != null && isEnabled() && BluetoothDevice.isValidDevice(device)) {
                 return mService.disconnect(device);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -411,7 +411,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
         try {
             mServiceLock.readLock().lock();
             if (mService != null && isEnabled()
-                    && isValidDevice(device)) {
+                    && BluetoothDevice.isValidDevice(device)) {
                 return mService.getConnectionState(device);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -444,7 +444,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
         try {
             mServiceLock.readLock().lock();
             if (mService != null && isEnabled()
-                    && isValidDevice(device)) {
+                    && BluetoothDevice.isValidDevice(device)) {
                 if (priority != BluetoothProfile.PRIORITY_OFF
                         && priority != BluetoothProfile.PRIORITY_ON) {
                     return false;
@@ -478,7 +478,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
         try {
             mServiceLock.readLock().lock();
             if (mService != null && isEnabled()
-                    && isValidDevice(device)) {
+                    && BluetoothDevice.isValidDevice(device)) {
                 return mService.getPriority(device);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -574,7 +574,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
         try {
             mServiceLock.readLock().lock();
             if (mService != null && isEnabled()
-                    && isValidDevice(device)) {
+                    && BluetoothDevice.isValidDevice(device)) {
                 return mService.isA2dpPlaying(device);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -595,7 +595,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
      * @hide
      */
     public boolean shouldSendVolumeKeys(BluetoothDevice device) {
-        if (isEnabled() && isValidDevice(device)) {
+        if (isEnabled() && BluetoothDevice.isValidDevice(device)) {
             ParcelUuid[] uuids = device.getUuids();
             if (uuids == null) return false;
 
@@ -712,7 +712,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
     public int supportsOptionalCodecs(BluetoothDevice device) {
         try {
             mServiceLock.readLock().lock();
-            if (mService != null && isEnabled() && isValidDevice(device)) {
+            if (mService != null && isEnabled() && BluetoothDevice.isValidDevice(device)) {
                 return mService.supportsOptionalCodecs(device);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -736,7 +736,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
     public int getOptionalCodecsEnabled(BluetoothDevice device) {
         try {
             mServiceLock.readLock().lock();
-            if (mService != null && isEnabled() && isValidDevice(device)) {
+            if (mService != null && isEnabled() && BluetoothDevice.isValidDevice(device)) {
                 return mService.getOptionalCodecsEnabled(device);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -768,7 +768,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
             }
             mServiceLock.readLock().lock();
             if (mService != null && isEnabled()
-                    && isValidDevice(device)) {
+                    && BluetoothDevice.isValidDevice(device)) {
                 mService.setOptionalCodecsEnabled(device, value);
             }
             if (mService == null) Log.w(TAG, "Proxy not attached to service");
@@ -837,15 +837,7 @@ public final class BluetoothA2dp implements BluetoothProfile {
     };
 
     private boolean isEnabled() {
-        if (mAdapter.getState() == BluetoothAdapter.STATE_ON) return true;
-        return false;
-    }
-
-    private boolean isValidDevice(BluetoothDevice device) {
-        if (device == null) return false;
-
-        if (BluetoothAdapter.checkBluetoothAddress(device.getAddress())) return true;
-        return false;
+        return mAdapter.getState() == BluetoothAdapter.STATE_ON;
     }
 
     private static void log(String msg) {

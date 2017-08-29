@@ -177,17 +177,17 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public boolean isConnected(BluetoothDevice device) {
         if (VDBG) Log.d(TAG, "isConnected(" + device + ")");
         final IBluetoothMapClient service = mService;
-        if (service != null) {
-            try {
-                return service.isConnected(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
+        if (service == null) {
             Log.w(TAG, "Proxy not attached to service");
             if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
         }
-        return false;
+        try {
+            return service.isConnected(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, e.toString());
+            return false;
+        }
     }
 
     /**
@@ -197,17 +197,17 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public boolean connect(BluetoothDevice device) {
         if (DBG) Log.d(TAG, "connect(" + device + ")" + "for MAPS MCE");
         final IBluetoothMapClient service = mService;
-        if (service != null) {
-            try {
-                return service.connect(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
+        if (service == null) {
             Log.w(TAG, "Proxy not attached to service");
             if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
         }
-        return false;
+        try {
+            return service.connect(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, e.toString());
+            return false;
+        }
     }
 
     /**
@@ -219,15 +219,15 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public boolean disconnect(BluetoothDevice device) {
         if (DBG) Log.d(TAG, "disconnect(" + device + ")");
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.disconnect(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-            }
+        if (!argumentCheck("disconnect", service, device)) {
+            return false;
         }
-        if (service == null) Log.w(TAG, "Proxy not attached to service");
-        return false;
+        try {
+            return service.disconnect(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
+        }
     }
 
     /**
@@ -239,16 +239,15 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public List<BluetoothDevice> getConnectedDevices() {
         if (DBG) Log.d(TAG, "getConnectedDevices()");
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled()) {
-            try {
-                return service.getConnectedDevices();
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return new ArrayList<>();
-            }
+        if (!argumentCheck("getConnectedDevices", service)) {
+            return new ArrayList<>();
         }
-        if (service == null) Log.w(TAG, "Proxy not attached to service");
-        return new ArrayList<>();
+        try {
+            return service.getConnectedDevices();
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -258,18 +257,17 @@ public final class BluetoothMapClient implements BluetoothProfile {
      */
     @Override
     public List<BluetoothDevice> getDevicesMatchingConnectionStates(int[] states) {
-        if (DBG) Log.d(TAG, "getDevicesMatchingStates()");
+        if (DBG) Log.d(TAG, "getDevicesMatchingConnectionStates()");
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled()) {
-            try {
-                return service.getDevicesMatchingConnectionStates(states);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return new ArrayList<>();
-            }
+        if (!argumentCheck("getDevicesMatchingConnectionStates", service)) {
+            return new ArrayList<>();
         }
-        if (service == null) Log.w(TAG, "Proxy not attached to service");
-        return new ArrayList<>();
+        try {
+            return service.getDevicesMatchingConnectionStates(states);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -281,16 +279,15 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public int getConnectionState(BluetoothDevice device) {
         if (DBG) Log.d(TAG, "getConnectionState(" + device + ")");
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.getConnectionState(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return BluetoothProfile.STATE_DISCONNECTED;
-            }
+        if (!argumentCheck("getConnectionState", service, device)) {
+            return BluetoothProfile.STATE_DISCONNECTED;
         }
-        if (service == null) Log.w(TAG, "Proxy not attached to service");
-        return BluetoothProfile.STATE_DISCONNECTED;
+        try {
+            return service.getConnectionState(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return BluetoothProfile.STATE_DISCONNECTED;
+        }
     }
 
     /**
@@ -305,20 +302,20 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public boolean setPriority(BluetoothDevice device, int priority) {
         if (DBG) Log.d(TAG, "setPriority(" + device + ", " + priority + ")");
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            if (priority != BluetoothProfile.PRIORITY_OFF
-                    && priority != BluetoothProfile.PRIORITY_ON) {
-                return false;
-            }
-            try {
-                return service.setPriority(device, priority);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return false;
-            }
+        if (!argumentCheck("setPriority", service, device)) {
+            return false;
         }
-        if (service == null) Log.w(TAG, "Proxy not attached to service");
-        return false;
+        if (priority != BluetoothProfile.PRIORITY_OFF
+                && priority != BluetoothProfile.PRIORITY_ON) {
+            Log.w(TAG, "setPriority, bad priority=" + priority);
+            return false;
+        }
+        try {
+            return service.setPriority(device, priority);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
+        }
     }
 
     /**
@@ -334,16 +331,15 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public int getPriority(BluetoothDevice device) {
         if (VDBG) Log.d(TAG, "getPriority(" + device + ")");
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.getPriority(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return PRIORITY_OFF;
-            }
+        if (!argumentCheck("getPriority", service, device)) {
+            return PRIORITY_OFF;
         }
-        if (service == null) Log.w(TAG, "Proxy not attached to service");
-        return PRIORITY_OFF;
+        try {
+            return service.getPriority(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return PRIORITY_OFF;
+        }
     }
 
     /**
@@ -362,15 +358,15 @@ public final class BluetoothMapClient implements BluetoothProfile {
             PendingIntent sentIntent, PendingIntent deliveredIntent) {
         if (DBG) Log.d(TAG, "sendMessage(" + device + ", " + contacts + ", " + message);
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.sendMessage(device, contacts, message, sentIntent, deliveredIntent);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return false;
-            }
+        if (!argumentCheck("sendMessage", service, device)) {
+            return false;
         }
-        return false;
+        try {
+            return service.sendMessage(device, contacts, message, sentIntent, deliveredIntent);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
+        }
     }
 
     /**
@@ -382,15 +378,15 @@ public final class BluetoothMapClient implements BluetoothProfile {
     public boolean getUnreadMessages(BluetoothDevice device) {
         if (DBG) Log.d(TAG, "getUnreadMessages(" + device + ")");
         final IBluetoothMapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.getUnreadMessages(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return false;
-            }
+        if (!argumentCheck("getUnreadMessages", service, device)) {
+            return false;
         }
-        return false;
+        try {
+            return service.getUnreadMessages(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
+        }
     }
 
     private final ServiceConnection mConnection = new ServiceConnection() {
@@ -412,15 +408,34 @@ public final class BluetoothMapClient implements BluetoothProfile {
         }
     };
 
+    private boolean argumentCheck(String methodName, final IBluetoothMapClient service) {
+        if (service == null) {
+            Log.w(TAG, methodName + ": proxy is null");
+            return false;
+        }
+        if (!isEnabled()) {
+            Log.w(TAG, methodName + ": adapter not enabled");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean argumentCheck(String methodName, final IBluetoothMapClient service,
+            BluetoothDevice device) {
+        if (!argumentCheck(methodName, service)) {
+            return false;
+        }
+        if (!BluetoothDevice.isValidDevice(device)) {
+            Log.w(TAG, methodName + ": not a valid device [" + device + "]");
+            return false;
+        }
+        return true;
+    }
+
     private boolean isEnabled() {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter != null && adapter.getState() == BluetoothAdapter.STATE_ON) return true;
         if (DBG) Log.d(TAG, "Bluetooth is Not enabled");
         return false;
     }
-
-    private static boolean isValidDevice(BluetoothDevice device) {
-        return device != null && BluetoothAdapter.checkBluetoothAddress(device.getAddress());
-    }
-
 }

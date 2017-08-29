@@ -213,19 +213,19 @@ public class BluetoothPbap {
      * connected to the Pbap service.
      */
     public int getState() {
-        if (VDBG) log("getState()");
+        vlog("getState()");
         final IBluetoothPbap service = mService;
-        if (service != null) {
-            try {
-                return service.getState();
-            } catch (RemoteException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) log(Log.getStackTraceString(new Throwable()));
+        if (service == null) {
+            Log.w(TAG, "Proxy is null");
+            if (DBG) Log.d(TAG,  Log.getStackTraceString(new Throwable()));
+            return BluetoothPbap.STATE_ERROR;
         }
-        return BluetoothPbap.STATE_ERROR;
+        try {
+            return service.getState();
+        } catch (RemoteException e) {
+            Log.e(TAG, e.toString());
+            return BluetoothPbap.STATE_ERROR;
+        }
     }
 
     /**
@@ -235,19 +235,19 @@ public class BluetoothPbap {
      * this proxy object is not connected to the Pbap service.
      */
     public BluetoothDevice getClient() {
-        if (VDBG) log("getClient()");
+        vlog("getClient()");
         final IBluetoothPbap service = mService;
-        if (service != null) {
-            try {
-                return service.getClient();
-            } catch (RemoteException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) log(Log.getStackTraceString(new Throwable()));
+        if (service == null) {
+            Log.w(TAG, "Proxy is null");
+            if (DBG) Log.d(TAG,  Log.getStackTraceString(new Throwable()));
+            return null;
         }
-        return null;
+        try {
+            return service.getClient();
+        } catch (RemoteException e) {
+            Log.e(TAG, e.toString());
+            return null;
+        }
     }
 
     /**
@@ -256,19 +256,19 @@ public class BluetoothPbap {
      * object is not currently connected to the Pbap service.
      */
     public boolean isConnected(BluetoothDevice device) {
-        if (VDBG) log("isConnected(" + device + ")");
+        vlog("isConnected(" + device + ")");
         final IBluetoothPbap service = mService;
-        if (service != null) {
-            try {
-                return service.isConnected(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) log(Log.getStackTraceString(new Throwable()));
+        if (service == null) {
+            Log.w(TAG, "Proxy is null");
+            if (DBG) Log.d(TAG,  Log.getStackTraceString(new Throwable()));
+            return false;
         }
-        return false;
+        try {
+            return service.isConnected(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, e.toString());
+            return false;
+        }
     }
 
     /**
@@ -277,20 +277,20 @@ public class BluetoothPbap {
      * not currently connected to the Pbap service.
      */
     public boolean disconnect() {
-        if (DBG) log("disconnect()");
+        dlog("disconnect()");
         final IBluetoothPbap service = mService;
-        if (service != null) {
-            try {
-                service.disconnect();
-                return true;
-            } catch (RemoteException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) log(Log.getStackTraceString(new Throwable()));
+        if (service == null) {
+            Log.w(TAG, "Proxy is null");
+            if (DBG) Log.d(TAG,  Log.getStackTraceString(new Throwable()));
+            return false;
         }
-        return false;
+        try {
+            service.disconnect();
+            return true;
+        } catch (RemoteException e) {
+            Log.e(TAG, e.toString());
+            return false;
+        }
     }
 
     /**
@@ -316,7 +316,7 @@ public class BluetoothPbap {
 
     private final ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            if (DBG) log("Proxy object connected");
+            dlog("Proxy object connected");
             mService = IBluetoothPbap.Stub.asInterface(service);
             if (mServiceListener != null) {
                 mServiceListener.onServiceConnected(BluetoothPbap.this);
@@ -324,7 +324,7 @@ public class BluetoothPbap {
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            if (DBG) log("Proxy object disconnected");
+            dlog("Proxy object disconnected");
             mService = null;
             if (mServiceListener != null) {
                 mServiceListener.onServiceDisconnected();
@@ -332,7 +332,11 @@ public class BluetoothPbap {
         }
     };
 
-    private static void log(String msg) {
-        Log.d(TAG, msg);
+    private static void vlog(String msg) {
+        if (VDBG) Log.d(TAG, msg);
+    }
+
+    private static void dlog(String msg) {
+        if (DBG) Log.d(TAG, msg);
     }
 }

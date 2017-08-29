@@ -174,18 +174,15 @@ public final class BluetoothPbapClient implements BluetoothProfile {
             log("connect(" + device + ") for PBAP Client.");
         }
         final IBluetoothPbapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.connect(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return false;
-            }
+        if (!argumentCheck("connect", service, device)) {
+            return false;
         }
-        if (service == null) {
-            Log.w(TAG, "Proxy not attached to service");
+        try {
+            return service.connect(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
         }
-        return false;
     }
 
     /**
@@ -199,19 +196,16 @@ public final class BluetoothPbapClient implements BluetoothProfile {
             log("disconnect(" + device + ")" + new Exception());
         }
         final IBluetoothPbapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                service.disconnect(device);
-                return true;
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return false;
-            }
+        if (!argumentCheck("disconnect", service, device)) {
+            return false;
         }
-        if (service == null) {
-            Log.w(TAG, "Proxy not attached to service");
+        try {
+            service.disconnect(device);
+            return true;
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
         }
-        return false;
     }
 
     /**
@@ -226,18 +220,15 @@ public final class BluetoothPbapClient implements BluetoothProfile {
             log("getConnectedDevices()");
         }
         final IBluetoothPbapClient service = mService;
-        if (service != null && isEnabled()) {
-            try {
-                return service.getConnectedDevices();
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return new ArrayList<BluetoothDevice>();
-            }
+        if (!argumentCheck("getConnectedDevices", service)) {
+            return new ArrayList<>();
         }
-        if (service == null) {
-            Log.w(TAG, "Proxy not attached to service");
+        try {
+            return service.getConnectedDevices();
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return new ArrayList<BluetoothDevice>();
         }
-        return new ArrayList<BluetoothDevice>();
     }
 
     /**
@@ -248,21 +239,18 @@ public final class BluetoothPbapClient implements BluetoothProfile {
     @Override
     public List<BluetoothDevice> getDevicesMatchingConnectionStates(int[] states) {
         if (DBG) {
-            log("getDevicesMatchingStates()");
+            log("getDevicesMatchingConnectionStates()");
         }
         final IBluetoothPbapClient service = mService;
-        if (service != null && isEnabled()) {
-            try {
-                return service.getDevicesMatchingConnectionStates(states);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return new ArrayList<BluetoothDevice>();
-            }
+        if (!argumentCheck("getDevicesMatchingConnectionStates", service)) {
+            return new ArrayList<>();
         }
-        if (service == null) {
-            Log.w(TAG, "Proxy not attached to service");
+        try {
+            return service.getDevicesMatchingConnectionStates(states);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return new ArrayList<BluetoothDevice>();
         }
-        return new ArrayList<BluetoothDevice>();
     }
 
     /**
@@ -276,18 +264,15 @@ public final class BluetoothPbapClient implements BluetoothProfile {
             log("getConnectionState(" + device + ")");
         }
         final IBluetoothPbapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.getConnectionState(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return BluetoothProfile.STATE_DISCONNECTED;
-            }
+        if (!argumentCheck("getConnectionState", service, device)) {
+            return BluetoothProfile.STATE_DISCONNECTED;
         }
-        if (service == null) {
-            Log.w(TAG, "Proxy not attached to service");
+        try {
+            return service.getConnectionState(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return BluetoothProfile.STATE_DISCONNECTED;
         }
-        return BluetoothProfile.STATE_DISCONNECTED;
     }
 
     private final ServiceConnection mConnection = new ServiceConnection() {
@@ -326,10 +311,6 @@ public final class BluetoothPbapClient implements BluetoothProfile {
         return false;
     }
 
-    private static boolean isValidDevice(BluetoothDevice device) {
-        return device != null && BluetoothAdapter.checkBluetoothAddress(device.getAddress());
-    }
-
     /**
      * Set priority of the profile
      *
@@ -346,22 +327,20 @@ public final class BluetoothPbapClient implements BluetoothProfile {
             log("setPriority(" + device + ", " + priority + ")");
         }
         final IBluetoothPbapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            if (priority != BluetoothProfile.PRIORITY_OFF
-                    && priority != BluetoothProfile.PRIORITY_ON) {
-                return false;
-            }
-            try {
-                return service.setPriority(device, priority);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return false;
-            }
+        if (!argumentCheck("setPriority", service, device)) {
+            return false;
         }
-        if (service == null) {
-            Log.w(TAG, "Proxy not attached to service");
+        if (priority != BluetoothProfile.PRIORITY_OFF
+                && priority != BluetoothProfile.PRIORITY_ON) {
+            Log.w(TAG, "setPriority, bad priority=" + priority);
+            return false;
         }
-        return false;
+        try {
+            return service.setPriority(device, priority);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return false;
+        }
     }
 
     /**
@@ -379,17 +358,38 @@ public final class BluetoothPbapClient implements BluetoothProfile {
             log("getPriority(" + device + ")");
         }
         final IBluetoothPbapClient service = mService;
-        if (service != null && isEnabled() && isValidDevice(device)) {
-            try {
-                return service.getPriority(device);
-            } catch (RemoteException e) {
-                Log.e(TAG, Log.getStackTraceString(new Throwable()));
-                return PRIORITY_OFF;
-            }
+        if (!argumentCheck("getPriority", service, device)) {
+            return PRIORITY_OFF;
         }
+        try {
+            return service.getPriority(device);
+        } catch (RemoteException e) {
+            Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            return PRIORITY_OFF;
+        }
+    }
+
+    private boolean argumentCheck(String methodName, final IBluetoothPbapClient service) {
         if (service == null) {
-            Log.w(TAG, "Proxy not attached to service");
+            Log.w(TAG, methodName + ": proxy not connected");
+            return false;
         }
-        return PRIORITY_OFF;
+        if (!isEnabled()) {
+            Log.w(TAG, methodName + ": adapter not enabled");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean argumentCheck(String methodName, final IBluetoothPbapClient service,
+            BluetoothDevice device) {
+        if (!argumentCheck(methodName, service)) {
+            return false;
+        }
+        if (!BluetoothDevice.isValidDevice(device)) {
+            Log.w(TAG, methodName + ": not a valid device [" + device + "]");
+            return false;
+        }
+        return true;
     }
 }
