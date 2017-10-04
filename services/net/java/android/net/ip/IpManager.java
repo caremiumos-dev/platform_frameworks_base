@@ -26,6 +26,7 @@ import android.net.IpPrefix;
 import android.net.LinkAddress;
 import android.net.LinkProperties.ProvisioningChange;
 import android.net.LinkProperties;
+import android.net.Network;
 import android.net.ProxyInfo;
 import android.net.RouteInfo;
 import android.net.StaticIpConfiguration;
@@ -348,6 +349,11 @@ public class IpManager extends StateMachine {
                 return this;
             }
 
+            public Builder withDisplayName(String displayName) {
+                mConfig.mDisplayName = displayName;
+                return this;
+            }
+
             public ProvisioningConfiguration build() {
                 return new ProvisioningConfiguration(mConfig);
             }
@@ -362,6 +368,7 @@ public class IpManager extends StateMachine {
         /* package */ ApfCapabilities mApfCapabilities;
         /* package */ int mProvisioningTimeoutMs = DEFAULT_TIMEOUT_MS;
         /* package */ int mIPv6AddrGenMode = INetd.IPV6_ADDR_GEN_MODE_STABLE_PRIVACY;
+        /* package */ String mDisplayName = null;
 
         public ProvisioningConfiguration() {} // used by Builder
 
@@ -532,8 +539,9 @@ public class IpManager extends StateMachine {
     private static final int CMD_UPDATE_TCP_BUFFER_SIZES          = 7;
     private static final int CMD_UPDATE_HTTP_PROXY                = 8;
     private static final int CMD_SET_MULTICAST_FILTER             = 9;
-    private static final int EVENT_PROVISIONING_TIMEOUT           = 10;
-    private static final int EVENT_DHCPACTION_TIMEOUT             = 11;
+    private static final int CMD_SET_NETWORK                      = 10;
+    private static final int EVENT_PROVISIONING_TIMEOUT           = 11;
+    private static final int EVENT_DHCPACTION_TIMEOUT             = 12;
 
     private static final int MAX_LOG_RECORDS = 500;
     private static final int MAX_PACKET_RECORDS = 100;
@@ -788,6 +796,10 @@ public class IpManager extends StateMachine {
      */
     public void setMulticastFilter(boolean enabled) {
         sendMessage(CMD_SET_MULTICAST_FILTER, enabled);
+    }
+
+    public void setNetwork(int netId) {
+        sendMessage(CMD_SET_NETWORK, netId);
     }
 
     public void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
@@ -1437,14 +1449,15 @@ public class IpManager extends StateMachine {
     class RunningState extends State {
         private ConnectivityPacketTracker mPacketTracker;
         private boolean mDhcpActionInFlight;
+        private Network mNetwork;
 
         @Override
         public void enter() {
             // Get the Configuration for ApfFilter from Context
-            boolean filter802_3Frames =
+            final boolean filter802_3Frames =
                     mContext.getResources().getBoolean(R.bool.config_apfDrop802_3Frames);
 
-            int[] ethTypeBlackList = mContext.getResources().getIntArray(
+            final int[] ethTypeBlackList = mContext.getResources().getIntArray(
                     R.array.config_apfEthTypeBlackList);
 
             mApfFilter = ApfFilter.maybeCreate(mConfiguration.mApfCapabilities, mNetworkInterface,
@@ -1456,7 +1469,9 @@ public class IpManager extends StateMachine {
             }
 
             mPacketTracker = createPacketTracker();
-            if (mPacketTracker != null) mPacketTracker.start();
+            if (mPacketTracker != null) mPacketTracker.start(mConfiguration.mDisplayName);
+
+            mNetwork = null;
 
             if (mConfiguration.mEnableIPv6 && !startIPv6()) {
                 doImmediateProvisioningFailure(IpManagerEvent.ERROR_STARTING_IPV6);
@@ -1470,7 +1485,7 @@ public class IpManager extends StateMachine {
                 return;
             }
 
-            InitialConfiguration config = mConfiguration.mInitialConfig;
+            final InitialConfiguration config = mConfiguration.mInitialConfig;
             if ((config != null) && !applyInitialConfig(config)) {
                 // TODO introduce a new IpManagerEvent constant to distinguish this error case.
                 doImmediateProvisioningFailure(IpManagerEvent.ERROR_INVALID_PROVISIONING);
@@ -1499,6 +1514,8 @@ public class IpManager extends StateMachine {
                 mDhcpClient.sendMessage(DhcpClient.CMD_STOP_DHCP);
                 mDhcpClient.doQuit();
             }
+
+            mNetwork = null;
 
             if (mPacketTracker != null) {
                 mPacketTracker.stop();
@@ -1595,6 +1612,15 @@ public class IpManager extends StateMachine {
                     } else {
                         mCallback.setFallbackMulticastFilter(mMulticastFiltering);
                     }
+                    break;
+                }
+
+                case CMD_SET_NETWORK: {
+                    final Network network = new Network((int) msg.obj);
+                    if (mNetwork != null && mNetwork != network) {
+                        mLog.e("Changing networks while running is BAD (tm)");
+                    }
+                    mNetwork = network;
                     break;
                 }
 
