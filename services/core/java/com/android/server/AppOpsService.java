@@ -981,6 +981,8 @@ public class AppOpsService extends IAppOpsService.Stub {
     }
 
     private boolean isPackageSuspendedForUser(String pkg, int uid) {
+        if ("android".equals(pks))
+            return false;
         try {
             return AppGlobals.getPackageManager().isPackageSuspendedForUser(
                     pkg, UserHandle.getUserId(uid));
