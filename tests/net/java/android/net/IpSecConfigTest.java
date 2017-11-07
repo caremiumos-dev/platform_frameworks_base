@@ -19,6 +19,7 @@ package android.net;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.os.Parcel;
 import android.support.test.filters.SmallTest;
@@ -31,6 +32,105 @@ import org.junit.runners.JUnit4;
 @SmallTest
 @RunWith(JUnit4.class)
 public class IpSecConfigTest {
+
+    private static final byte[] AEAD_KEY = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+        0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+        0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+        0x73, 0x61, 0x6C, 0x74
+    };
+    private static final byte[] CRYPT_KEY = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+        0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+        0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
+    };
+    private static final byte[] AUTH_KEY = {
+        0x7A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F,
+        0x7A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F
+    };
+
+    private static final IpSecAlgorithm AUTH_ALGO =
+            new IpSecAlgorithm(IpSecAlgorithm.AUTH_HMAC_SHA256, AUTH_KEY, AUTH_KEY.length * 4);
+    private static final IpSecAlgorithm CRYPT_ALGO =
+            new IpSecAlgorithm(IpSecAlgorithm.CRYPT_AES_CBC, CRYPT_KEY);
+    private static final IpSecAlgorithm AEAD_ALGO =
+            new IpSecAlgorithm(IpSecAlgorithm.AUTH_CRYPT_AES_GCM, AEAD_KEY, 128);
+
+    @Test
+    public void testSetAuthenticationValidation() {
+        // Validate that correct algorithm type succeeds
+        IpSecConfig config = new IpSecConfig();
+        config.setAuthentication(IpSecTransform.DIRECTION_IN, AUTH_ALGO);
+        config.validateAlgorithmTypes();
+
+        // Validate that incorrect algorithm types fails
+        for (IpSecAlgorithm algo : new IpSecAlgorithm[] {CRYPT_ALGO, AEAD_ALGO}) {
+            config = new IpSecConfig();
+            try {
+                config.setAuthentication(IpSecTransform.DIRECTION_IN, algo);
+                config.validateAlgorithmTypes();
+                fail("Did not throw exception on invalid algorithm type");
+            } catch (IllegalArgumentException expected) {
+            }
+        }
+    }
+
+    @Test
+    public void testSetEncryptionValidation() {
+        // Validate that correct algorithm type succeeds
+        IpSecConfig config = new IpSecConfig();
+        config.setEncryption(IpSecTransform.DIRECTION_IN, CRYPT_ALGO);
+        config.validateAlgorithmTypes();
+
+        // Validate that incorrect algorithm types fails
+        for (IpSecAlgorithm algo : new IpSecAlgorithm[] {AUTH_ALGO, AEAD_ALGO}) {
+            config = new IpSecConfig();
+            try {
+                config.setEncryption(IpSecTransform.DIRECTION_IN, algo);
+                config.validateAlgorithmTypes();
+                fail("Did not throw exception on invalid algorithm type");
+            } catch (IllegalArgumentException expected) {
+            }
+        }
+    }
+
+    @Test
+    public void testSetAuthenticatedEncryptionValidation() {
+        // Validate that correct algorithm type succeeds
+        IpSecConfig config = new IpSecConfig();
+        config.setAuthenticatedEncryption(IpSecTransform.DIRECTION_IN, AEAD_ALGO);
+        config.validateAlgorithmTypes();
+
+        // Validate that incorrect algorithm types fails
+        for (IpSecAlgorithm algo : new IpSecAlgorithm[] {AUTH_ALGO, CRYPT_ALGO}) {
+            config = new IpSecConfig();
+            try {
+                config.setAuthenticatedEncryption(IpSecTransform.DIRECTION_IN, algo);
+                config.validateAlgorithmTypes();
+                fail("Did not throw exception on invalid algorithm type");
+            } catch (IllegalArgumentException expected) {
+            }
+        }
+    }
+
+    @Test
+    public void testUnparcelInvalidAlgorithm() throws Exception {
+        IpSecConfig config = new IpSecConfig();
+        config.setEncryption(IpSecTransform.DIRECTION_IN, AEAD_ALGO);
+
+        try {
+            Parcel p = Parcel.obtain();
+            config.writeToParcel(p, 0);
+            p.setDataPosition(0);
+            IpSecConfig.CREATOR.createFromParcel(p);
+            fail("Did not throw exception on invalid algorithm type");
+        } catch (IllegalArgumentException expected) {
+        }
+    }
 
     @Test
     public void testDefaults() throws Exception {

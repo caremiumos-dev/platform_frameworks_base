@@ -19,6 +19,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.Preconditions;
 
 /** @hide */
 public final class IpSecConfig implements Parcelable {
@@ -113,17 +114,31 @@ public final class IpSecConfig implements Parcelable {
         mFlow[direction].mSpiResourceId = resourceId;
     }
 
-    /** Set the encryption algorithm for a given direction */
+    /**
+     * Set the encryption algorithm for a given direction
+     *
+     * @throws IllegalArgumentException if provided IpSecAlgorithm is not an encryption algorithm
+     */
     public void setEncryption(int direction, IpSecAlgorithm encryption) {
         mFlow[direction].mEncryption = encryption;
     }
 
-    /** Set the authentication algorithm for a given direction */
+    /**
+     * Set the authentication algorithm for a given direction
+     *
+     * @throws IllegalArgumentException if provided IpSecAlgorithm is not an authentication
+     *     algorithm
+     */
     public void setAuthentication(int direction, IpSecAlgorithm authentication) {
         mFlow[direction].mAuthentication = authentication;
     }
 
-    /** Set the authenticated encryption algorithm for a given direction */
+    /**
+     * Set the authenticated encryption algorithm for a given direction
+     *
+     * @throws IllegalArgumentException if provided IpSecAlgorithm is not an authenticated
+     *     encryption algorithm
+     */
     public void setAuthenticatedEncryption(int direction, IpSecAlgorithm authenticatedEncryption) {
         mFlow[direction].mAuthenticatedEncryption = authenticatedEncryption;
     }
@@ -204,6 +219,28 @@ public final class IpSecConfig implements Parcelable {
         return 0;
     }
 
+    /** Validates that all set algorithms are of the correct types */
+    @VisibleForTesting
+    public void validateAlgorithmTypes() {
+        for (int direction :
+                new int[] {IpSecTransform.DIRECTION_IN, IpSecTransform.DIRECTION_OUT}) {
+            IpSecAlgorithm encryption = mFlow[direction].mEncryption;
+            IpSecAlgorithm authentication = mFlow[direction].mAuthentication;
+            IpSecAlgorithm authenticatedEncryption = mFlow[direction].mAuthenticatedEncryption;
+
+            Preconditions.checkArgument(
+                    encryption == null || encryption.isSupportedCryptAlgo(),
+                    "Unsupported algorithm for Encryption");
+            Preconditions.checkArgument(
+                    authentication == null || authentication.isSupportedAuthAlgo(),
+                    "Unsupported algorithm for Authentication");
+            Preconditions.checkArgument(
+                    authenticatedEncryption == null
+                            || authenticatedEncryption.isSupportedAeadAlgo(),
+                    "Unsupported algorithm for Authenticated Encryption");
+        }
+    }
+
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(mMode);
@@ -250,6 +287,8 @@ public final class IpSecConfig implements Parcelable {
         mEncapSocketResourceId = in.readInt();
         mEncapRemotePort = in.readInt();
         mNattKeepaliveInterval = in.readInt();
+
+        validateAlgorithmTypes();
     }
 
     @Override
