@@ -55,6 +55,15 @@ public final class BluetoothHidDeviceAppQosSettings implements Parcelable {
         this.delayVariation = delayVariation;
     }
 
+    private BluetoothHidDeviceAppQosSettings(Builder builder) {
+        this.serviceType = builder.mServiceType;
+        this.tokenRate = builder.mTokenRate;
+        this.tokenBucketSize = builder.mTokenBucketSize;
+        this.peakBandwidth = builder.mPeakBandwidth;
+        this.latency = builder.mLatency;
+        this.delayVariation = builder.mDelayVariation;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof BluetoothHidDeviceAppQosSettings) {
@@ -105,5 +114,81 @@ public final class BluetoothHidDeviceAppQosSettings implements Parcelable {
         return new int[] {
                 serviceType, tokenRate, tokenBucketSize, peakBandwidth, latency, delayVariation
         };
+    }
+
+    /**
+     * A helper to build the BluetoothHidDeviceAppQosSettings object.
+     */
+    public static class Builder {
+        // Required parameter
+        private final int mServiceType;
+
+        // Optional parameters - initialized to default values
+        private int mTokenRate = 0;
+        private int mTokenBucketSize = 0;
+        private int mPeakBandwidth = 0;
+        private int mLatency = 0;
+        private int mDelayVariation = 0;
+
+        public Builder(int serviceType) {
+            this.mServiceType = serviceType;
+        }
+
+        /**
+         * Set the token rate.
+         * @param val token rate
+         * @return BluetoothHidDeviceAppQosSettings Builder with specified token rate.
+         */
+        public Builder tokenRate(int val) {
+            mTokenRate = val;
+            return this;
+        }
+
+        /**
+         * Set the bucket size.
+         * @param val bucket size
+         * @return BluetoothHidDeviceAppQosSettings Builder with specified bucket size.
+         */
+        public Builder tokenBucketSize(int val) {
+            mTokenBucketSize = val;
+            return this;
+        }
+
+        /**
+         * Set the peak bandwidth.
+         * @param val peak bandwidth
+         * @return BluetoothHidDeviceAppQosSettings Builder with specified peak bandwidth.
+         */
+        public Builder peakBandwidth(int val) {
+            mPeakBandwidth = val;
+            return this;
+        }
+        /**
+         * Set the latency.
+         * @param val latency
+         * @return BluetoothHidDeviceAppQosSettings Builder with specified latency.
+         */
+        public Builder latency(int val) {
+            mLatency = val;
+            return this;
+        }
+
+        /**
+         * Set the delay variation.
+         * @param val delay variation
+         * @return BluetoothHidDeviceAppQosSettings Builder with specified delay variation.
+         */
+        public Builder delayVariation(int val) {
+            mDelayVariation = val;
+            return this;
+        }
+
+        /**
+         * Build the BluetoothHidDeviceAppQosSettings object.
+         * @return BluetoothHidDeviceAppQosSettings object with current settings.
+         */
+        public BluetoothHidDeviceAppQosSettings build() {
+            return new BluetoothHidDeviceAppQosSettings(this);
+        }
     }
 }
