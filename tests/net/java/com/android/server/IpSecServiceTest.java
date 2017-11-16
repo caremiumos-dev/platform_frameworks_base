@@ -247,7 +247,7 @@ public class IpSecServiceTest {
         for (String address : invalidAddresses) {
             try {
                 IpSecSpiResponse spiResp =
-                        mIpSecService.reserveSecurityParameterIndex(
+                        mIpSecService.allocateSecurityParameterIndex(
                                 IpSecTransform.DIRECTION_OUT, address, DROID_SPI, new Binder());
                 fail("Invalid address was passed through IpSecService validation: " + address);
             } catch (IllegalArgumentException e) {
