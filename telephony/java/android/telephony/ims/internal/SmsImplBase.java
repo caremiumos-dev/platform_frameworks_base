@@ -14,19 +14,23 @@
  * limitations under the License
  */
 
-package android.telephony.ims.feature;
+package android.telephony.ims.internal;
 
 import android.annotation.SystemApi;
 import android.os.RemoteException;
-import com.android.ims.internal.IImsSmsFeature;
-import com.android.ims.internal.ISmsListener;
+import android.telephony.ims.internal.feature.MmTelFeature;
+import android.util.Log;
 
 /**
- * Base implementation of SMS over IMS functionality.
+ * Base implementation for SMS over IMS.
  *
+ * Any service wishing to provide SMS over IMS should extend this class and implement all methods
+ * that the service supports.
  * @hide
  */
-public class SmsFeature extends ImsFeature {
+public class SmsImplBase {
+  private static final String LOG_TAG = "SmsImplBase";
+
   /**
    * SMS over IMS format is 3gpp.
    */
@@ -70,51 +74,49 @@ public class SmsFeature extends ImsFeature {
    */
   public static final int DELIVER_STATUS_ERROR = 2;
 
+  /**
+   * Status Report was set successfully.
+   */
+  public static final int STATUS_REPORT_STATUS_OK = 1;
+
+  /**
+   * Error while setting status report.
+   */
+  public static final int STATUS_REPORT_STATUS_ERROR = 2;
+
+
   // Lock for feature synchronization
   private final Object mLock = new Object();
-  private ISmsListener mSmsListener;
+  private final int mSmsFormat;
+  private IImsSmsListener mListener;
 
-  private final IImsSmsFeature mIImsSmsBinder = new IImsSmsFeature.Stub() {
-    @Override
-    public void registerSmsListener(ISmsListener listener) {
-      synchronized (mLock) {
-        SmsFeature.this.registerSmsListener(listener);
-      }
-    }
+  /**
+   * Constructor that defaults to using {@linhk #IMS_SMS_FORMAT_3GPP}.
+   */
+  public SmsImplBase() {
+    this(IMS_SMS_FORMAT_3GPP);
+  }
 
-    @Override
-    public void sendSms(int format, int messageRef, boolean retry, byte[] pdu) {
-      synchronized (mLock) {
-        SmsFeature.this.sendSms(format, messageRef, retry, pdu);
-      }
-    }
-
-    @Override
-    public void acknowledgeSms(int messageRef, int result) {
-      synchronized (mLock) {
-        SmsFeature.this.acknowledgeSms(messageRef, result);
-      }
-    }
-
-    @Override
-    public int getSmsFormat() {
-      synchronized (mLock) {
-        return SmsFeature.this.getSmsFormat();
-      }
-    }
-  };
+  /**
+   * Constructor.
+   *
+   * @param smsFormat sms format.
+   */
+  public SmsImplBase(int smsFormat) {
+    mSmsFormat = smsFormat;
+  }
 
   /**
    * Registers a listener responsible for handling tasks like delivering messages.
-
+   *
    * @param listener listener to register.
    *
    * @hide
    */
   @SystemApi
-  public final void registerSmsListener(ISmsListener listener) {
+  public void registerSmsListener(IImsSmsListener listener) {
     synchronized (mLock) {
-      mSmsListener = listener;
+      mListener = listener;
     }
   }
 
@@ -126,20 +128,21 @@ public class SmsFeature extends ImsFeature {
    * @param format the format of the message. One of {@link #IMS_SMS_FORMAT_3GPP} or
    *                {@link #IMS_SMS_FORMAT_3GPP2}
    * @param messageRef the message reference.
-   * @param retry whether it is a retry of an already attempted message or not.
+   * @param isRetry whether it is a retry of an already attempted message or not.
    * @param pdu PDUs representing the contents of the message.
    */
   public void sendSms(int format, int messageRef, boolean isRetry, byte[] pdu) {
+    onSendSmsResult(messageRef, SEND_STATUS_ERROR);
   }
 
   /**
-   * This method will be triggered by the platform after {@link #deliverSms(int, byte[])} has been
-   * called to deliver the result to the IMS provider. It will also be triggered after
-   * {@link #setSentSmsResult(int, int)} has been called to provide the result of the operation.
+   * This method will be triggered by the platform after {@link #onSmsReceived(int, byte[])} has
+   * been called to deliver the result to the IMS provider. It will also be triggered after
+   * {@link #onSendSmsResult(int, int)} has been called to provide the result of the operation.
    *
    * @param result Should be {@link #DELIVER_STATUS_OK} if the message was delivered successfully,
    * {@link #DELIVER_STATUS_ERROR} otherwise.
-   * @param messageRef the message reference.
+   * @param messageRef the message reference or -1 of unavailable.
    */
   public void acknowledgeSms(int messageRef, int result) {
 
@@ -148,21 +151,27 @@ public class SmsFeature extends ImsFeature {
   /**
    * This method should be triggered by the IMS providers when there is an incoming message. The
    * platform will deliver the message to the messages database and notify the IMS provider of the
-   * result by calling {@link #acknowledgeSms(int)}.
+   * result by calling {@link #acknowledgeSms(int, int)}.
    *
-   * This method must not be called before {@link #onFeatureReady()} is called.
+   * This method must not be called before {@link MmTelFeature#onFeatureReady()} is called.
    *
    * @param format the format of the message.One of {@link #IMS_SMS_FORMAT_3GPP} or
    *                {@link #IMS_SMS_FORMAT_3GPP2}
    * @param pdu PDUs representing the contents of the message.
-   * @throws IllegalStateException if called before {@link #onFeatureReady()}
+   * @throws IllegalStateException if called before {@link MmTelFeature#onFeatureReady()}
    */
-  public final void deliverSms(int format, byte[] pdu) throws IllegalStateException {
-    // TODO: Guard against NPE/ Check if feature is ready and thrown an exception
-    // otherwise.
-    try {
-      mSmsListener.deliverSms(format, pdu);
-    } catch (RemoteException e) {
+  public final void onSmsReceived(int format, byte[] pdu) throws IllegalStateException {
+    synchronized (mLock) {
+      if (mListener == null) {
+        throw new IllegalStateException("Feature not ready.");
+      }
+      try {
+        mListener.onSmsReceived(format, pdu);
+        acknowledgeSms(-1, DELIVER_STATUS_OK);
+      } catch (RemoteException e) {
+        Log.e(LOG_TAG, "Can not deliver sms: " + e.getMessage());
+        acknowledgeSms(-1, DELIVER_STATUS_ERROR);
+      }
     }
   }
 
@@ -170,35 +179,43 @@ public class SmsFeature extends ImsFeature {
    * This method should be triggered by the IMS providers to pass the result of the sent message
    * to the platform.
    *
-   * This method must not be called before {@link #onFeatureReady()} is called.
+   * This method must not be called before {@link MmTelFeature#onFeatureReady()} is called.
    *
    * @param messageRef the message reference.
    * @param result One of {@link #SEND_STATUS_OK}, {@link #SEND_STATUS_ERROR},
    *                {@link #SEND_STATUS_ERROR_RETRY}, {@link #SEND_STATUS_ERROR_FALLBACK}
-   * @throws IllegalStateException if called before {@link #onFeatureReady()}
+   * @throws IllegalStateException if called before {@link MmTelFeature#onFeatureReady()}
+   * @throws RemoteException
    */
-  public final void setSentSmsResult(int messageRef, int result) throws IllegalStateException {
-    // TODO: Guard against NPE/ Check if feature is ready and thrown an exception
-    // otherwise.
-    try {
-      mSmsListener.setSentSmsResult(messageRef, result);
-    } catch (RemoteException e) {
+  public final void onSendSmsResult(int messageRef, int result) throws IllegalStateException {
+    synchronized (mLock) {
+      if (mListener == null) {
+        throw new IllegalStateException("Feature not ready.");
+      }
+      mListener.onSendSmsResult(messageRef, result);
     }
   }
 
   /**
    * Sets the status report of the sent message.
    *
+   * @param messageRef the message reference.
    * @param format Should be {@link #IMS_SMS_FORMAT_3GPP} or {@link #IMS_SMS_FORMAT_3GPP2}
    * @param pdu PDUs representing the content of the status report.
-   * @throws IllegalStateException if called before {@link #onFeatureReady()}
+   * @throws IllegalStateException if called before {@link MmTelFeature#onFeatureReady()}
    */
-  public final void setSentSmsStatusReport(int format, byte[] pdu) {
-    // TODO: Guard against NPE/ Check if feature is ready and thrown an exception
-    // otherwise.
-    try {
-      mSmsListener.setSentSmsStatusReport(format, pdu);
-    } catch (RemoteException e) {
+  public final void onSmsStatusReportReceived(int messageRef, int format, byte[] pdu) {
+    synchronized (mLock) {
+      if (mListener == null) {
+        throw new IllegalStateException("Feature not ready.");
+      }
+      try {
+        mListener.onSmsStatusReportReceived(messageRef, format, pdu);
+        acknowledgeSms(messageRef, STATUS_REPORT_STATUS_OK);
+      } catch (RemoteException e) {
+        Log.e(LOG_TAG, "Can not process sms status report: " + e.getMessage());
+        acknowledgeSms(messageRef, STATUS_REPORT_STATUS_ERROR);
+      }
     }
   }
 
@@ -208,30 +225,8 @@ public class SmsFeature extends ImsFeature {
    *
    * @return sms format.
    */
-  public int getSmsFormat() {
-    return IMS_SMS_FORMAT_3GPP;
+  public final int getSmsFormat() {
+    return mSmsFormat;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public void onFeatureReady() {
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void onFeatureRemoved() {
-
-  }
-
-  /**
-   * @hide
-   */
-  @Override
-  public final IImsSmsFeature getBinder() {
-    return mIImsSmsBinder;
-  }
 }

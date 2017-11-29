@@ -361,4 +361,3 @@ public class ImsCallSessionListener {
         mListener.callSessionRttMessageReceived(rttMessage);
     }
 }
-

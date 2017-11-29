@@ -21,10 +21,12 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.telecom.TelecomManager;
 import android.telephony.ims.internal.ImsCallSessionListener;
+import android.telephony.ims.internal.SmsImplBase;
 import android.telephony.ims.internal.aidl.IImsCallSessionListener;
 import android.telephony.ims.internal.aidl.IImsCapabilityCallback;
 import android.telephony.ims.internal.aidl.IImsMmTelFeature;
 import android.telephony.ims.internal.aidl.IImsMmTelListener;
+import android.telephony.ims.internal.aidl.IImsSmsListener;
 import android.telephony.ims.stub.ImsEcbmImplBase;
 import android.telephony.ims.stub.ImsMultiEndpointImplBase;
 import android.telephony.ims.stub.ImsUtImplBase;
@@ -56,6 +58,13 @@ public class MmTelFeature extends ImsFeature {
         public void setListener(IImsMmTelListener l) throws RemoteException {
             synchronized (mLock) {
                 MmTelFeature.this.setListener(l);
+            }
+        }
+
+        @Override
+        public void setSmsListener(IImsSmsListener l) throws RemoteException {
+            synchronized (mLock) {
+                MmTelFeature.this.setSmsListener(l);
             }
         }
 
@@ -165,69 +174,97 @@ public class MmTelFeature extends ImsFeature {
         public long queryCapabilityStatus() throws RemoteException {
             return MmTelFeature.this.queryCapabilityStatus().mCapabilities;
         }
+
+        @Override
+        public void sendSms(int format, int messageRef, boolean retry, byte[] pdu) {
+            synchronized (mLock) {
+                MmTelFeature.this.sendSms(format, messageRef, retry, pdu);
+            }
+        }
+
+        @Override
+        public void acknowledgeSms(int messageRef, int result) {
+            synchronized (mLock) {
+                MmTelFeature.this.acknowledgeSms(messageRef, result);
+            }
+        }
+
+        @Override
+        public int getSmsFormat() {
+            synchronized (mLock) {
+                return MmTelFeature.this.getSmsFormat();
+            }
+        }
     };
 
-    /**
-     * Contains the capabilities defined and supported by a MmTelFeature in the form of a Bitmask.
-     * The capabilities that are used in MmTelFeature are defined by {@link MMTelCapability}.
-     *
-     * The capabilities of this MmTelFeature will be set by the framework and can be queried with
-     * {@link #queryCapabilities()}.
-     *
-     * This MmTelFeature can then return the status of each of these capabilities (enabled or not)
-     * by sending a {@link #notifyCapabilitiesStatusChanged} callback to the framework. The current
-     * status can also be queried using {@link #queryCapabilityStatus()}.
-     */
-    public static class MmTelCapabilityConfiguration extends CapabilityConfiguration {
+  /**
+   * Contains the capabilities defined and supported by a MmTelFeature in the form of a Bitmask.
+   * The capabilities that are used in MmTelFeature are defined by {@link MMTelCapability}.
+   *
+   * The capabilities of this MmTelFeature will be set by the framework and can be queried with
+   * {@link #queryCapabilities()}.
+   *
+   * This MmTelFeature can then return the status of each of these capabilities (enabled or not)
+   * by sending a {@link #notifyCapabilitiesStatusChanged} callback to the framework. The current
+   * status can also be queried using {@link #queryCapabilityStatus()}.
+   */
+  public static class MmTelCapabilityConfiguration extends CapabilityConfiguration {
 
-        @VisibleForTesting
-        public MmTelCapabilityConfiguration() {
-            super();
-        }
-
-        public MmTelCapabilityConfiguration(CapabilityConfiguration c) {
-            mCapabilities = c.mCapabilities;
-        }
-
-        @IntDef(flag = true,
-                value = {
-                        CAPABILITY_TYPE_VOICE,
-                        CAPABILITY_TYPE_VIDEO,
-                        CAPABILITY_TYPE_UT
-                })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface MMTelCapability {}
-
-        /**
-         * This MmTelFeature supports Voice calling (IR.92)
-         */
-        public static final int CAPABILITY_TYPE_VOICE = 1 << 0;
-        /**
-         * This MmTelFeature supports Video (IR.94)
-         */
-        public static final int CAPABILITY_TYPE_VIDEO = 1 << 1;
-        /**
-         * This MmTelFeature supports XCAP over Ut (IR.92)
-         */
-        public static final int CAPABILITY_TYPE_UT = 1 << 2;
-
-        @Override
-        public final void addCapabilities(@MMTelCapability long capabilities) {
-            super.addCapabilities(capabilities);
-        }
-
-        @Override
-        public final void removeCapabilities(@MMTelCapability long capability) {
-            super.removeCapabilities(capability);
-        }
-
-        @Override
-        public final boolean isCapable(@MMTelCapability long capabilities) {
-            return super.isCapable(capabilities);
-        }
+    @VisibleForTesting
+    public MmTelCapabilityConfiguration() {
+      super();
     }
 
-    public static class Listener extends IImsMmTelListener.Stub {
+    public MmTelCapabilityConfiguration(CapabilityConfiguration c) {
+      mCapabilities = c.mCapabilities;
+    }
+
+    @IntDef(flag = true,
+        value = {
+            CAPABILITY_TYPE_VOICE,
+            CAPABILITY_TYPE_VIDEO,
+            CAPABILITY_TYPE_UT,
+            CAPABILITY_TYPE_SMS
+        })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface MMTelCapability {}
+
+    /**
+     * This MmTelFeature supports Voice calling (IR.92)
+     */
+    public static final int CAPABILITY_TYPE_VOICE = 1 << 0;
+    /**
+     * This MmTelFeature supports Video (IR.94)
+     */
+    public static final int CAPABILITY_TYPE_VIDEO = 1 << 1;
+    /**
+     * This MmTelFeature supports XCAP over Ut (IR.92)
+     */
+    public static final int CAPABILITY_TYPE_UT = 1 << 2;
+
+    /**
+     * This MmTelFeature supports SMS (IR.94)
+     */
+    public static final int CAPABILITY_TYPE_SMS = 1 << 3;
+
+
+    @Override
+    public final void addCapabilities(@MMTelCapability long capabilities) {
+      super.addCapabilities(capabilities);
+    }
+
+    @Override
+    public final void removeCapabilities(@MMTelCapability long capability) {
+      super.removeCapabilities(capability);
+    }
+
+    @Override
+    public final boolean isCapable(@MMTelCapability long capabilities) {
+      return super.isCapable(capabilities);
+    }
+  }
+
+  public static class Listener extends IImsMmTelListener.Stub {
 
         @Override
         public final void onIncomingCall(IImsCallSession c) {
@@ -252,6 +289,12 @@ public class MmTelFeature extends ImsFeature {
         }
     }
 
+    private void setSmsListener(IImsSmsListener listener) {
+        synchronized (mLock) {
+            getSmsImplementation().registerSmsListener(listener);
+        }
+    }
+
     /**
      * The current MmTelFeature capabilities defined by the framework. These are the capabilities
      * that the framework has defined are POSSIBLE for the MmTelFeature to have. The MmTelFeature
@@ -264,19 +307,19 @@ public class MmTelFeature extends ImsFeature {
         return new MmTelCapabilityConfiguration(super.queryCapabilities());
     }
 
-    /**
-     * The current capability status that this MmTelFeature has defined is available. This
-     * configuration will be used by the platform to figure out which capabilities are CURRENTLY
-     * available to be used.
-     *
-     * Should be a subset of the capabilities that are set by the framework in
-     * {@link #queryCapabilities()}.
-     * @return A copy of the current MmTelFeature capability status.
-     */
-    @Override
-    public final MmTelCapabilityConfiguration queryCapabilityStatus() {
-        return new MmTelCapabilityConfiguration(super.queryCapabilityStatus());
-    }
+  /**
+   * The current capability status that this MmTelFeature has defined is available. This
+   * configuration will be used by the platform to figure out which capabilities are CURRENTLY
+   * available to be used.
+   *
+   * Should be a subset of the capabilities that are set by the framework in
+   * {@link #queryCapabilities()}.
+   * @return A copy of the current MmTelFeature capability status.
+   */
+  @Override
+  public final MmTelCapabilityConfiguration queryCapabilityStatus() {
+    return new MmTelCapabilityConfiguration(super.queryCapabilityStatus());
+  }
 
     @Override
     public final int onSetCapabilityValues(CapabilityConfiguration capabilities) {
@@ -424,6 +467,28 @@ public class MmTelFeature extends ImsFeature {
      */
     void setUiTtyMode(int mode, Message onCompleteMessage) {
         // Base Implementation - Should be overridden
+    }
+
+    private void sendSms(int format, int messageRef, boolean isRetry, byte[] pdu) {
+        getSmsImplementation().sendSms(format, messageRef, isRetry, pdu);
+    }
+
+    private void acknowledgeSms(int messageRef, int result) {
+        getSmsImplementation().acknowledgeSms(messageRef, result);
+    }
+
+    private int getSmsFormat() {
+        return getSmsImplementation().getSmsFormat();
+    }
+
+    /**
+     * Must be overridden by IMS Provider to be able to support SMS over IMS. Otherwise a default
+     * non-functional implementation is returned.
+     *
+     * @return an instance of {@link SmsImplBase} which should be implemented by the IMS Provider.
+     */
+    protected SmsImplBase getSmsImplementation() {
+        return new SmsImplBase();
     }
 
     /**{@inheritDoc}*/

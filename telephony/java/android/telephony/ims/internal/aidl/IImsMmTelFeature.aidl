@@ -50,4 +50,8 @@ interface IImsMmTelFeature {
     oneway void removeCapability(long capability, IImsCapabilityCallback c);
     long queryCapabilities();
     long queryCapabilityStatus();
+    // SMS APIs
+    void sendSms(in int format, in int messageRef, in boolean retry, in byte[] pdu);
+    void acknowledgeSms(in int messageRef, in int result);
+    int getSmsFormat();
 }
