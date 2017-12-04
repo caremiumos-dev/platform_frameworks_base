@@ -32,6 +32,7 @@ import android.os.SystemProperties;
 import android.os.storage.StorageManager;
 import android.provider.Downloads;
 import android.util.AtomicFile;
+import android.util.EventLog;
 import android.util.Slog;
 import android.util.Xml;
 
@@ -105,6 +106,9 @@ public class BootReceiver extends BroadcastReceiver {
     private static final String LAST_SHUTDOWN_TIME_PATTERN =
             "powerctl_shutdown_time_ms:([0-9]+):([0-9]+)";
     private static final int UMOUNT_STATUS_NOT_AVAILABLE = 4; // should match with init/reboot.h
+
+    //81002 dropbox_file_copy (FileName|3), (Size|1), (Tag|3)
+    private static final int LOG_DROPBOX_FILE_COPY = 81002;
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -291,6 +295,7 @@ public class BootReceiver extends BroadcastReceiver {
         Slog.i(TAG, "Copying " + filename + " to DropBox (" + tag + ")");
         db.addText(tag, headers + FileUtils.readTextFile(file, maxSize, "[[TRUNCATED]]\n") +
                 footers);
+        EventLog.writeEvent(LOG_DROPBOX_FILE_COPY, filename, maxSize, tag);
     }
 
     private static void addAuditErrorsToDropBox(DropBoxManager db,

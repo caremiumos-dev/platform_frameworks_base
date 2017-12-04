@@ -1,0 +1,8 @@
+# See system/core/logcat/event.logtags for a description of the format of this file.
+
+option java_package com.android.server;
+
+# -----------------------------
+# BootReceiver.java
+# -----------------------------
+81002 dropbox_file_copy (FileName|3), (Size|1), (Tag|3)
