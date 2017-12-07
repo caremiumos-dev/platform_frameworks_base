@@ -25,6 +25,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.system.ErrnoException;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -32,10 +33,12 @@ import com.android.internal.util.Preconditions;
 
 import dalvik.system.CloseGuard;
 
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 /**
  * This class represents a transform, which roughly corresponds to an IPsec Security Association.
@@ -128,13 +131,6 @@ public final class IpSecTransform implements AutoCloseable {
                 int status = result.status;
                 checkResultStatus(status);
                 mResourceId = result.resourceId;
-
-                /* Keepalive will silently fail if not needed by the config; but, if needed and
-                 * it fails to start, we need to bail because a transform will not be reliable
-                 * to use if keepalive is expected to offload and fails.
-                 */
-                // FIXME: if keepalive fails, we need to fail spectacularly
-                startKeepalive(mContext);
                 Log.d(TAG, "Added Transform with Id " + mResourceId);
                 mCloseGuard.open("build");
             } catch (RemoteException e) {
@@ -164,10 +160,6 @@ public final class IpSecTransform implements AutoCloseable {
             return;
         }
         try {
-            /* Order matters here because the keepalive is best-effort but could fail in some
-             * horrible way to be removed if the wifi (or cell) subsystem has crashed, and we
-             * still want to clear out the transform.
-             */
             IIpSecService svc = getIpSecService();
             svc.deleteTransform(mResourceId);
             stopKeepalive();
@@ -198,42 +190,32 @@ public final class IpSecTransform implements AutoCloseable {
     private final Context mContext;
     private final CloseGuard mCloseGuard = CloseGuard.get();
     private ConnectivityManager.PacketKeepalive mKeepalive;
-    private int mKeepaliveStatus = ConnectivityManager.PacketKeepalive.NO_KEEPALIVE;
-    private Object mKeepaliveSyncLock = new Object();
-    private ConnectivityManager.PacketKeepaliveCallback mKeepaliveCallback =
+    private final ConnectivityManager.PacketKeepaliveCallback mKeepaliveCallback =
             new ConnectivityManager.PacketKeepaliveCallback() {
 
                 @Override
                 public void onStarted() {
-                    synchronized (mKeepaliveSyncLock) {
-                        mKeepaliveStatus = ConnectivityManager.PacketKeepalive.SUCCESS;
-                        mKeepaliveSyncLock.notifyAll();
-                    }
+                    if (mUserKeepaliveCallback != null) mUserKeepaliveCallback.onStarted();
                 }
 
                 @Override
                 public void onStopped() {
-                    synchronized (mKeepaliveSyncLock) {
-                        mKeepaliveStatus = ConnectivityManager.PacketKeepalive.NO_KEEPALIVE;
-                        mKeepaliveSyncLock.notifyAll();
+                    synchronized (this) {
+                        mKeepalive = null;
                     }
+                    if (mUserKeepaliveCallback != null) mUserKeepaliveCallback.onStopped();
                 }
 
                 @Override
                 public void onError(int error) {
-                    synchronized (mKeepaliveSyncLock) {
-                        mKeepaliveStatus = error;
-                        mKeepaliveSyncLock.notifyAll();
+                    synchronized (this) {
+                        mKeepalive = null;
                     }
+                    if (mUserKeepaliveCallback != null) mUserKeepaliveCallback.onError(error);
                 }
             };
 
-    /* Package */
-    void startKeepalive(Context c) {
-        if (mConfig.getNattKeepaliveInterval() != 0) {
-            Log.wtf(TAG, "Keepalive not yet supported.");
-        }
-    }
+    private ConnectivityManager.PacketKeepaliveCallback mUserKeepaliveCallback;
 
     /** @hide */
     @VisibleForTesting
@@ -241,9 +223,48 @@ public final class IpSecTransform implements AutoCloseable {
         return mResourceId;
     }
 
-    /* Package */
-    void stopKeepalive() {
-        return;
+    /** @hide */
+    void startNattKeepalive(FileDescriptor socket,
+            ConnectivityManager.PacketKeepaliveCallback userCallback,
+            int intervalSeconds) throws IOException {
+        if (mConfig.getMode() != MODE_TRANSPORT) {
+            throw new IllegalArgumentException("Socket keepalive cannot be used in Tunnel mode");
+        }
+        if (mResourceId == INVALID_RESOURCE_ID) {
+            throw new IllegalStateException(
+                    "Packet keepalive cannot be started for an inactive transform");
+        }
+        synchronized (mKeepaliveCallback) {
+            if (mKeepaliveCallback != null) {
+                throw new IllegalStateException("Keepalive already active");
+            }
+
+            InetSocketAddress localAddr = null;
+            try {
+                localAddr = (InetSocketAddress) android.system.Os.getsockname(socket);
+            } catch (ErrnoException e) {
+                throw e.rethrowAsIOException();
+            }
+            mUserKeepaliveCallback = userCallback;
+
+            ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(
+                    Context.CONNECTIVITY_SERVICE);
+            mKeepalive = cm.startNattKeepalive(
+                    mConfig.getNetwork(), intervalSeconds, mKeepaliveCallback,
+                    localAddr.getAddress(), localAddr.getPort(),
+                    NetworkUtils.numericToInetAddress(mConfig.getRemoteAddress()));
+        }
+    }
+
+    /** @hide */
+    void stopNattKeepalive() {
+        synchronized (mKeepaliveCallback) {
+            if (mKeepalive == null) {
+                Log.e(TAG, "No active keepalive to stop");
+                return;
+            }
+            mKeepalive.stop();
+        }
     }
 
     /** This class is used to build {@link IpSecTransform} objects. */
@@ -299,6 +320,15 @@ public final class IpSecTransform implements AutoCloseable {
         }
 
         /**
+         * FIXME: Remove this as soon as API updating is working in AOSP.
+         * @hide
+         */
+        @SystemApi
+        public IpSecTransform.Builder setNattKeepalive(int remove) {
+            throw new UnsupportedOperationException("setNattKeepalive will not be implemented");
+        }
+
+        /**
          * Add UDP encapsulation to an IPv4 transform.
          *
          * <p>This allows IPsec traffic to pass through a NAT.
@@ -320,26 +350,6 @@ public final class IpSecTransform implements AutoCloseable {
             }
             mConfig.setEncapSocketResourceId(localSocket.getResourceId());
             mConfig.setEncapRemotePort(remotePort);
-            return this;
-        }
-
-        // TODO: Decrease the minimum keepalive to maybe 10?
-        // TODO: Probably a better exception to throw for NATTKeepalive failure
-        // TODO: Specify the needed NATT keepalive permission.
-        /**
-         * Set NAT-T keepalives to be sent with a given interval.
-         *
-         * <p>This will set power-efficient keepalive packets to be sent by the system. If NAT-T
-         * keepalive is requested but cannot be activated, then creation of an {@link
-         * IpSecTransform} will fail when calling the build method.
-         *
-         * @param intervalSeconds the maximum number of seconds between keepalive packets. Must be
-         *     between 20s and 3600s.
-         * @hide
-         */
-        @SystemApi
-        public IpSecTransform.Builder setNattKeepalive(int intervalSeconds) {
-            mConfig.setNattKeepaliveInterval(intervalSeconds);
             return this;
         }
 
