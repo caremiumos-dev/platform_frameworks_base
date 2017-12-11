@@ -3285,7 +3285,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             DevicePolicyData policy = getUserData(userHandle);
             final int N = policy.mAdminList.size();
             if (N <= 0) {
-                return null;
+                return Collections.EMPTY_LIST;
             }
             ArrayList<ComponentName> res = new ArrayList<ComponentName>(N);
             for (int i=0; i<N; i++) {
