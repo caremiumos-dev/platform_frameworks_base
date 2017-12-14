@@ -66,7 +66,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -175,30 +174,31 @@ public class IpConnectivityMetricsTest {
     }
 
     @Test
-    @Ignore
     public void testDefaultNetworkEvents() throws Exception {
         final long cell = BitUtils.packBits(new int[]{NetworkCapabilities.TRANSPORT_CELLULAR});
         final long wifi = BitUtils.packBits(new int[]{NetworkCapabilities.TRANSPORT_WIFI});
 
         NetworkAgentInfo[][] defaultNetworks = {
             // nothing -> cell
-            {null, makeNai(100, 10, false, true, cell)},
+            {null, makeNai(100, 10, IP.V6, cell)},
             // cell -> wifi
-            {makeNai(100, 50, true, true, cell), makeNai(101, 20, true, false, wifi)},
+            {makeNai(100, 50, IP.DUAL, cell), makeNai(101, 20, IP.V4, wifi)},
             // wifi -> nothing
-            {makeNai(101, 60, true, false, wifi), null},
+            {makeNai(101, 60, IP.V4, wifi), null},
             // nothing -> cell
-            {null, makeNai(102, 10, true, true, cell)},
+            {null, makeNai(102, 10, IP.DUAL, cell)},
             // cell -> wifi
-            {makeNai(102, 50, true, true, cell), makeNai(103, 20, true, false, wifi)},
+            {makeNai(102, 50, IP.DUAL, cell), makeNai(103, 20, IP.V4, wifi)},
         };
 
         long timeMs = mService.mDefaultNetworkMetrics.creationTimeMs;
         long durationMs = 1001;
         for (NetworkAgentInfo[] pair : defaultNetworks) {
+            NetworkAgentInfo oldNai = pair[0];
+            NetworkAgentInfo newNai = pair[1];
             timeMs += durationMs;
             durationMs += durationMs;
-            mService.mDefaultNetworkMetrics.logDefaultNetworkEvent(timeMs, pair[1], pair[0]);
+            mService.mDefaultNetworkMetrics.logDefaultNetworkEvent(timeMs, newNai, oldNai);
         }
 
         String want = String.join("\n",
@@ -294,7 +294,6 @@ public class IpConnectivityMetricsTest {
     }
 
     @Test
-    @Ignore
     public void testEndToEndLogging() throws Exception {
         // TODO: instead of comparing textpb to textpb, parse textpb and compare proto to proto.
         IpConnectivityLog logger = new IpConnectivityLog(mService.impl);
@@ -376,8 +375,8 @@ public class IpConnectivityMetricsTest {
         long timeMs = mService.mDefaultNetworkMetrics.creationTimeMs;
         final long cell = BitUtils.packBits(new int[]{NetworkCapabilities.TRANSPORT_CELLULAR});
         final long wifi = BitUtils.packBits(new int[]{NetworkCapabilities.TRANSPORT_WIFI});
-        NetworkAgentInfo cellNai = makeNai(100, 50, false, true, cell);
-        NetworkAgentInfo wifiNai = makeNai(101, 60, true, false, wifi);
+        NetworkAgentInfo cellNai = makeNai(100, 50, IP.V6, cell);
+        NetworkAgentInfo wifiNai = makeNai(101, 60, IP.V4, wifi);
         mService.mDefaultNetworkMetrics.logDefaultNetworkEvent(timeMs + 200, cellNai, null);
         mService.mDefaultNetworkMetrics.logDefaultNetworkEvent(timeMs + 300, wifiNai, cellNai);
 
@@ -629,20 +628,28 @@ public class IpConnectivityMetricsTest {
         mNetdListener.onWakeupEvent(prefix, uid, ether, ip, mac, srcIp, dstIp, sport, dport, now);
     }
 
-    NetworkAgentInfo makeNai(int netId, int score, boolean ipv4, boolean ipv6, long transports) {
+    enum IP {
+        NONE,
+        V4,
+        V6,
+        DUAL
+    }
+
+    NetworkAgentInfo makeNai(int netId, int score, IP ip, long transports) {
         NetworkAgentInfo nai = mock(NetworkAgentInfo.class);
         when(nai.network()).thenReturn(new Network(netId));
         when(nai.getCurrentScore()).thenReturn(score);
         nai.linkProperties = new LinkProperties();
         nai.networkCapabilities = new NetworkCapabilities();
+        nai.lastValidated = true;
         for (int t : BitUtils.unpackBits(transports)) {
             nai.networkCapabilities.addTransportType(t);
         }
-        if (ipv4) {
+        if (ip == IP.V4 || ip == IP.DUAL) {
             nai.linkProperties.addLinkAddress(new LinkAddress("192.0.2.12/24"));
             nai.linkProperties.addRoute(new RouteInfo(new IpPrefix("0.0.0.0/0")));
         }
-        if (ipv6) {
+        if (ip == IP.V6 || ip == IP.DUAL) {
             nai.linkProperties.addLinkAddress(new LinkAddress("2001:db8:dead:beef:f00::a0/64"));
             nai.linkProperties.addRoute(new RouteInfo(new IpPrefix("::/0")));
         }
