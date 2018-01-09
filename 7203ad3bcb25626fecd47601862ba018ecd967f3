@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f70ab762_07d142ea",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 880,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2018-01-09T01:16:13Z",
+      "side": 1,
+      "message": "Just checking: how many UidRange are we typically going to have per set ? If more than a few, I would suggest double checking the performance of this.",
+      "range": {
+        "startLine": 880,
+        "startChar": 8,
+        "endLine": 880,
+        "endChar": 43
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4030220d_e8f6b29f",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 892,
+      "author": {
+        "id": 1107893
+      },
+      "writtenOn": "2018-01-09T01:16:13Z",
+      "side": 1,
+      "message": "Is this actually the behavior we want ?\n\nI would suggest that maybe we need to look into some way to normalize a set of int ranges so that a sane equals method can be written.",
+      "range": {
+        "startLine": 890,
+        "startChar": 75,
+        "endLine": 892,
+        "endChar": 36
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
