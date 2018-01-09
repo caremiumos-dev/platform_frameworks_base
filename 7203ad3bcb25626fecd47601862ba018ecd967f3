@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "b7b952da_bc49b170",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 880,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-09T02:02:38Z",
+      "side": 1,
+      "message": "This is almost certainly fine for multiple reasons :\n・For all non-VPN networks mAllowedUids is null.\n・There can only be one active VPN at a time.\n・This is what the current code does, but in another place.\n・VPN apps will typically add one or two of these ranges. If a VPN app adds many it can be viewed as its own responsibility for making things slow.\n\nThat being said, it\u0027s true that this may constitute a possible DoS attack against the system as this code is being run by the connectivity service. It\u0027s local and there would be a very obvious culprit in the active VPN app, and I really wonder what an app would stand to get from such an attack - maybe some ransomware ? Maybe we want to add a check in l.860 for some reasonably maximum number of ranges to counter that possibility, what do you think ?\n\nIn any case this should not be making things worse ; the attack, if relevant, already exists in the current code.",
+      "parentUuid": "f70ab762_07d142ea",
+      "range": {
+        "startLine": 880,
+        "startChar": 8,
+        "endLine": 880,
+        "endChar": 43
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4030220d_e8f6b29f",
         "filename": "core/java/android/net/NetworkCapabilities.java",
         "patchSetId": 6
@@ -45,6 +69,30 @@
       "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "94a9e144_07c60c84",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 892,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-09T02:02:38Z",
+      "side": 1,
+      "message": "Positively, for this change, this is the behavior we want. The reason for this is that this is exactly what the current code does, plus comments to explain how counter-intuitive it is. I did worry about the same thing and raised it with Lorenzo, and we thought this was the best course of action for the time being.\n\nThat being said I do agree that it is counter-intuitive and it should be addressed in followup changes. But this will not be very trivial, it will need encapsulation and serious unit testing. At the very least we don\u0027t want to put this into this change which is complex enough as it is, so we thought keeping the current behavior was the safer bet for the time being.",
+      "parentUuid": "4030220d_e8f6b29f",
+      "range": {
+        "startLine": 890,
+        "startChar": 75,
+        "endLine": 892,
+        "endChar": 36
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
