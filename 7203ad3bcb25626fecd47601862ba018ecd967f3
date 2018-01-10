@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "ae9db9b4_041235e1",
+        "filename": "core/java/android/net/NetworkAgent.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-10T15:57:06Z",
+      "side": 1,
+      "message": "Now that the UID ranges are in the NetworkCapabilities themselves, can we just entirely get rid of addUidRanges and EVENT_UID_RANGES_ADDED?\n\nOn the producer side, addUidRanges only seems to be called by Vpn.java. We could just replace that with code to set the NetworkCapabilities appropriately, and I think some or all of that is already done in this CL.\n\nOn the consumer side (ConnectivityService), processing UID ranges could simply be done when processing EVENT_NETWORK_CAPABILITIES_CHANGED. For the initial connect, I think we could do it right after we call mNetd.createVirtualNetwork() or mNetd.createPhysicalNetwork().",
+      "range": {
+        "startLine": 229,
+        "startChar": 0,
+        "endLine": 232,
+        "endChar": 9
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9d25419a_1cb653d1",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 834,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-10T15:57:06Z",
+      "side": 1,
+      "message": "Actually, the word \"allowed\" in the VPN code/docs is a misnomer. This list is the list of UIDs that by default will use the VPN. (Those UIDs have the option of opting out if they are privileged or if the VPN app allows it.)",
+      "range": {
+        "startLine": 834,
+        "startChar": 33,
+        "endLine": 834,
+        "endChar": 48
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f70ab762_07d142ea",
         "filename": "core/java/android/net/NetworkCapabilities.java",
         "patchSetId": 6
@@ -37,6 +83,30 @@
       "side": 1,
       "message": "This is almost certainly fine for multiple reasons :\n・For all non-VPN networks mAllowedUids is null.\n・There can only be one active VPN at a time.\n・This is what the current code does, but in another place.\n・VPN apps will typically add one or two of these ranges. If a VPN app adds many it can be viewed as its own responsibility for making things slow.\n\nThat being said, it\u0027s true that this may constitute a possible DoS attack against the system as this code is being run by the connectivity service. It\u0027s local and there would be a very obvious culprit in the active VPN app, and I really wonder what an app would stand to get from such an attack - maybe some ransomware ? Maybe we want to add a check in l.860 for some reasonably maximum number of ranges to counter that possibility, what do you think ?\n\nIn any case this should not be making things worse ; the attack, if relevant, already exists in the current code.",
       "parentUuid": "f70ab762_07d142ea",
+      "range": {
+        "startLine": 880,
+        "startChar": 8,
+        "endLine": 880,
+        "endChar": 43
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "97085b89_fb76531e",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 880,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-10T15:57:06Z",
+      "side": 1,
+      "message": "Good point. It seems reasonable to enforce a limit on how many UID ranges VPNs can request. Since the DoS vector is no worse than it was before, it\u0027s probably not something that needs to go into this CL.\n\nHowever, once we start using this for rematching in ConnectivityService, we should think about performance. It\u0027s true that the impact will be limited because there will be at most one VPN network per macro-user.\n\nAny limit should be high enough that an app can individually allow, or individually disallow, every app on the system. 500? 1000?",
+      "parentUuid": "b7b952da_bc49b170",
       "range": {
         "startLine": 880,
         "startChar": 8,
@@ -93,6 +163,52 @@
       "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "94d1ea78_d6d74a70",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 901,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-10T15:57:06Z",
+      "side": 1,
+      "message": "Out of curiosity, did you consider making this a sorted set? That would avoid this copy.\n\nThat said - I think this is only used in #equals, and I don\u0027t think we call that very often. So this is not by itself a reason to use a sorted set.",
+      "range": {
+        "startLine": 901,
+        "startChar": 23,
+        "endLine": 901,
+        "endChar": 43
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ceaeb379_059c4044",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 1125,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-10T15:57:06Z",
+      "side": 1,
+      "message": "I didn\u0027t know that Parcelable supports sets directly. Cool!",
+      "range": {
+        "startLine": 1125,
+        "startChar": 62,
+        "endLine": 1125,
+        "endChar": 74
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
