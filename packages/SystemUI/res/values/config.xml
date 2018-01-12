@@ -833,4 +833,7 @@
     <!-- Whether the floating rotation button should be on the left/right in the device's natural
          orientation -->
     <bool name="floating_rotation_button_position_left">true</bool>
+
+     <!-- Move status bar and navigation bar to prevent burn in when screen is powered on -->
+    <bool name="config_enableMoveSystemBars">false</bool>
 </resources>

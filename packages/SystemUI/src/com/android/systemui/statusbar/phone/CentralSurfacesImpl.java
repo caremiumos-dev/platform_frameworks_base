@@ -293,6 +293,11 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
      */
     private static final int HINT_RESET_DELAY_MS = 1200;
 
+    /**
+     * The threshold sleep time of moving system bars to avoid burn in.
+     */
+    private static final int THRESHOLD_SLEEP_TIME_MILLIS = 10000;
+
     private static final UiEventLogger sUiEventLogger = new UiEventLoggerImpl();
 
     private final Context mContext;
@@ -893,6 +898,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         }
     }
 
+    // move nav and system bar to prevent burn in at screen on
+    private boolean mIsMoveSystemBarsEnabled;
+
     @Override
     public void start() {
         mScreenLifecycle.addObserver(mScreenObserver);
@@ -1121,6 +1129,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     }
                 }, OverlayPlugin.class, true /* Allow multiple plugins */);
 
+        mIsMoveSystemBarsEnabled = mContext.getResources()
+                .getBoolean(R.bool.config_enableMoveSystemBars);
         mStartingSurfaceOptional.ifPresent(startingSurface -> startingSurface.setSysuiProxy(
                 (requestTopUi, componentTag) -> mMainExecutor.execute(() ->
                         mNotificationShadeWindowController.setRequestTopUi(
@@ -3459,6 +3469,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     @VisibleForTesting
     final WakefulnessLifecycle.Observer mWakefulnessObserver = new WakefulnessLifecycle.Observer() {
+        private long mStartSleepTime;
+
         @Override
         public void onFinishedGoingToSleep() {
             mCameraLauncherLazy.get().setLaunchingAffordance(false);
@@ -3488,6 +3500,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                         () -> mCommandQueueCallbacks.onEmergencyActionLaunchGestureDetected());
             }
             updateIsKeyguard();
+
+            mStartSleepTime = SystemClock.uptimeMillis();
         }
 
         @Override
@@ -3580,6 +3594,18 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
             });
             DejankUtils.stopDetectingBlockingIpcs(tag);
+
+            if (mIsMoveSystemBarsEnabled) {
+                mStatusBarView.moveStatusBar();
+                NavigationBarView navigationBarView =
+                        mNavigationBarController.getDefaultNavigationBarView();
+                if (SystemClock.uptimeMillis() - mStartSleepTime >= THRESHOLD_SLEEP_TIME_MILLIS) {
+                    mStatusBarView.moveStatusBar();
+                    if (navigationBarView != null) {
+                        navigationBarView.moveNavigationBar();
+                    }
+                }
+            }
         }
 
         @Override
