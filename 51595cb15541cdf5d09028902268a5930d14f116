@@ -1,0 +1,142 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba258497_f5b3ee6c",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 843,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-17T08:41:52Z",
+      "side": 1,
+      "message": "Nit: I think in this case the two apps will be in different macro-users (UserHandle), which cannot (currently?) be served by the same VPN, since there is one VPN per profile.",
+      "range": {
+        "startLine": 843,
+        "startChar": 28,
+        "endLine": 843,
+        "endChar": 61
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df060aa0_7cebb59f",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 897,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-17T08:41:52Z",
+      "side": 1,
+      "message": "Might want to say that this method is not very optimized, but that we don\u0027t use it very often.",
+      "range": {
+        "startLine": 897,
+        "startChar": 35,
+        "endLine": 897,
+        "endChar": 36
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7bf8a45_f73ff231",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 939,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-17T08:41:52Z",
+      "side": 1,
+      "message": "s",
+      "range": {
+        "startLine": 939,
+        "startChar": 63,
+        "endLine": 939,
+        "endChar": 64
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e9007f97_ab10cba2",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 958,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-17T08:41:52Z",
+      "side": 1,
+      "message": "Nit: should the word \"currently\" move after the word \"network\"?",
+      "range": {
+        "startLine": 958,
+        "startChar": 19,
+        "endLine": 958,
+        "endChar": 28
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "61c9f4fb_cff61b00",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 1122,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-17T08:41:52Z",
+      "side": 1,
+      "message": "While you\u0027re at it, maybe add a comment that this is the entire range for that user, and so could be something like 0-99999?",
+      "range": {
+        "startLine": 1122,
+        "startChar": 69,
+        "endLine": 1122,
+        "endChar": 70
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dfd57a94_888fd435",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 1145,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-17T08:41:52Z",
+      "side": 1,
+      "message": "This is a bit hard to follow. Is it the case that a simple unit test could be added for this to VpnTest.java? Doesn\u0027t need to be in this CL.",
+      "range": {
+        "startLine": 1145,
+        "startChar": 32,
+        "endLine": 1145,
+        "endChar": 93
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
