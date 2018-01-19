@@ -474,6 +474,13 @@ key ESCAPE {
     ctrl:                               fallback MENU
 }
 
+### Arrow keys ###
+    
+key DPAD_LEFT {
+    base:                               none
+    alt, meta:                          fallback BACK
+}
+
 ### Gamepad buttons ###
 
 key BUTTON_A {
