@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "cf411239_110709dd",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 843,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "Clarified the comment.",
+      "parentUuid": "ba258497_f5b3ee6c",
+      "range": {
+        "startLine": 843,
+        "startChar": 28,
+        "endLine": 843,
+        "endChar": 61
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "df060aa0_7cebb59f",
         "filename": "core/java/android/net/NetworkCapabilities.java",
         "patchSetId": 7
@@ -45,6 +69,30 @@
       "revId": "51595cb15541cdf5d09028902268a5930d14f116",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7cb70e07_4ecb9ee7",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 897,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "df060aa0_7cebb59f",
+      "range": {
+        "startLine": 897,
+        "startChar": 35,
+        "endLine": 897,
+        "endChar": 36
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "a8d9a3c9_5024b92b",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 939,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c7bf8a45_f73ff231",
+      "range": {
+        "startLine": 939,
+        "startChar": 63,
+        "endLine": 939,
+        "endChar": 64
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e9007f97_ab10cba2",
         "filename": "core/java/android/net/NetworkCapabilities.java",
         "patchSetId": 7
@@ -91,6 +163,30 @@
       "revId": "51595cb15541cdf5d09028902268a5930d14f116",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9818a885_48dcdaa5",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 958,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "I need to learn to read",
+      "parentUuid": "e9007f97_ab10cba2",
+      "range": {
+        "startLine": 958,
+        "startChar": 19,
+        "endLine": 958,
+        "endChar": 28
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "bed51cc7_2a7dc79f",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 1122,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "61c9f4fb_cff61b00",
+      "range": {
+        "startLine": 1122,
+        "startChar": 69,
+        "endLine": 1122,
+        "endChar": 70
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dfd57a94_888fd435",
         "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
         "patchSetId": 7
@@ -137,6 +257,30 @@
       "revId": "51595cb15541cdf5d09028902268a5930d14f116",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d399cc98_b559e99f",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 1145,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "I tried doing this but all of this depends on mConfig, which is set on establish and nothing is set up to be able to do that in VpnTest, so it will need some serious new mocking over there. Let\u0027s do it in another patch",
+      "parentUuid": "dfd57a94_888fd435",
+      "range": {
+        "startLine": 1145,
+        "startChar": 32,
+        "endLine": 1145,
+        "endChar": 93
+      },
+      "revId": "51595cb15541cdf5d09028902268a5930d14f116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }

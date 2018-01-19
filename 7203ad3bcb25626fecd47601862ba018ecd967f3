@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "c61c5b7e_f6f6c8d8",
+        "filename": "core/java/android/net/NetworkAgent.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "Done. As for the initial connect I did it in registerNetworkAgent, as it\u0027s called just here.\n\nThis does imply some ugly diffing code between the old and new UidRanges, and it caused a diff that is comparable in size to this change, so I put it in a separate change. Let me know what you think.",
+      "parentUuid": "ae9db9b4_041235e1",
+      "range": {
+        "startLine": 229,
+        "startChar": 0,
+        "endLine": 232,
+        "endChar": 9
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9d25419a_1cb653d1",
         "filename": "core/java/android/net/NetworkCapabilities.java",
         "patchSetId": 6
@@ -45,6 +69,30 @@
       "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6394216c_88f40884",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 834,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "Reworded.",
+      "parentUuid": "9d25419a_1cb653d1",
+      "range": {
+        "startLine": 834,
+        "startChar": 33,
+        "endLine": 834,
+        "endChar": 48
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -189,6 +237,30 @@
     },
     {
       "key": {
+        "uuid": "f3acd401_85714645",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 901,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": "It would be annoying for multiple reasons. The most obvious of them is that the concrete type of this is android.util.ArraySet which does not implement SortedSet, but no SortedSet is already parcelable so we\u0027d have to parcel it ourselves.\nAlso we\u0027d have to have a way to compare UidRanges. Writing a natural ordering for UidRange is a bad idea because there is no obviously right way to do it that won\u0027t surprise any user of that class at the worst possible time, so instead we\u0027d want to create that sorted set with a comparator. That we\u0027d... have to parcel, or create on the other side assuming it was the right one.",
+      "parentUuid": "94d1ea78_d6d74a70",
+      "range": {
+        "startLine": 901,
+        "startChar": 23,
+        "endLine": 901,
+        "endChar": 43
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ceaeb379_059c4044",
         "filename": "core/java/android/net/NetworkCapabilities.java",
         "patchSetId": 6
@@ -209,6 +281,30 @@
       "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9862dcf8_28949169",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 1125,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-19T08:29:12Z",
+      "side": 1,
+      "message": ":)",
+      "parentUuid": "ceaeb379_059c4044",
+      "range": {
+        "startLine": 1125,
+        "startChar": 62,
+        "endLine": 1125,
+        "endChar": 74
+      },
+      "revId": "7203ad3bcb25626fecd47601862ba018ecd967f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
