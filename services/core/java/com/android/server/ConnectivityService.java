@@ -150,11 +150,7 @@ import com.android.server.connectivity.tethering.TetheringDependencies;
 import com.android.server.net.BaseNetworkObserver;
 import com.android.server.net.LockdownVpnTracker;
 import com.android.server.net.NetworkPolicyManagerInternal;
-
 import com.google.android.collect.Lists;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -176,6 +172,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * @hide
@@ -453,8 +452,8 @@ public class ConnectivityService extends IConnectivityManager.Stub
     private LingerMonitor mLingerMonitor;
 
     // sequence number for Networks; keep in sync with system/netd/NetworkController.cpp
-    private final static int MIN_NET_ID = 100; // some reserved marks
-    private final static int MAX_NET_ID = 65535;
+    private static final int MIN_NET_ID = 100; // some reserved marks
+    private static final int MAX_NET_ID = 65535 - 0x0400; // Top 1024 bits reserved by IpSecService
     private int mNextNetId = MIN_NET_ID;
 
     // sequence number of NetworkRequests
