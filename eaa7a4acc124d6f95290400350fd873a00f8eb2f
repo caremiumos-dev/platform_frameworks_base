@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "96d6c3f1_50d55e84",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-01-22T10:48:49Z",
+      "side": 1,
+      "message": "Should this set mUids to null as well?",
+      "range": {
+        "startLine": 82,
+        "startChar": 4,
+        "endLine": 82,
+        "endChar": 5
+      },
+      "revId": "eaa7a4acc124d6f95290400350fd873a00f8eb2f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
