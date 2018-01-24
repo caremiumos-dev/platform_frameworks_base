@@ -700,6 +700,10 @@ public class PhoneStateListener {
         public void onCarrierNetworkChange(boolean active) {
             send(LISTEN_CARRIER_NETWORK_CHANGE, 0, 0, active);
         }
+
+        public void onPhysicalChannelConfigurationChanged(List<PhysicalChannelConfig> configs) {
+            send(LISTEN_PHYSICAL_CHANNEL_CONFIGURATION, 0, 0, configs);
+        }
     }
 
     IPhoneStateListener callback = new IPhoneStateListenerStub(this);
