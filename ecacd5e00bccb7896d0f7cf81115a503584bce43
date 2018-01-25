@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "65104fd8_b27d6800",
+        "filename": "core/java/android/net/NetworkCapabilities.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 1133,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-01-25T00:47:27Z",
+      "side": 1,
+      "message": "This is inconsistent with l.1148, because a null mUids will marshall and then unmarshall into an empty array. null mUids and empty array mUids essentially have opposite meanings so this is bad. Making a fix.",
+      "revId": "ecacd5e00bccb7896d0f7cf81115a503584bce43",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
