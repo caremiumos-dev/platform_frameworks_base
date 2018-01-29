@@ -56,7 +56,8 @@ LOCAL_JNI_SHARED_LIBRARIES := \
     libvndksupport \
     libtinyxml2 \
     libunwindstack \
-    libutilscallstack
+    libutilscallstack \
+    libdexfile
 
 LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
