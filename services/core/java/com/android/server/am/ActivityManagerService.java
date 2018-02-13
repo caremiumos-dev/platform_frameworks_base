@@ -3632,8 +3632,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             ProcessRecord proc = startProcessLocked(processName, info /* info */,
                     false /* knownToBeDead */, 0 /* intentFlags */, ""  /* hostingType */,
                     null /* hostingName */, true /* allowWhileBooting */, true /* isolated */,
-                    uid, true /* keepIfLarge */, abiOverride, entryPoint, entryPointArgs,
-                    crashHandler);
+                    uid, true /* keepIfLarge */, true /* hidden API checks */, abiOverride,
+                    entryPoint, entryPointArgs, crashHandler);
             return proc != null ? proc.pid : 0;
         }
     }
@@ -3644,14 +3644,15 @@ public class ActivityManagerService extends IActivityManager.Stub
             boolean isolated, boolean keepIfLarge) {
         return startProcessLocked(processName, info, knownToBeDead, intentFlags, hostingType,
                 hostingName, allowWhileBooting, isolated, 0 /* isolatedUid */, keepIfLarge,
-                null /* ABI override */, null /* entryPoint */, null /* entryPointArgs */,
-                null /* crashHandler */);
+                true /* hidden API checks */, null /* ABI override */, null /* entryPoint */,
+                null /* entryPointArgs */, null /* crashHandler */);
     }
 
     final ProcessRecord startProcessLocked(String processName, ApplicationInfo info,
             boolean knownToBeDead, int intentFlags, String hostingType, ComponentName hostingName,
             boolean allowWhileBooting, boolean isolated, int isolatedUid, boolean keepIfLarge,
-            String abiOverride, String entryPoint, String[] entryPointArgs, Runnable crashHandler) {
+            boolean hiddenApiChecks, String abiOverride, String entryPoint, String[] entryPointArgs,
+            Runnable crashHandler) {
         long startTime = SystemClock.elapsedRealtime();
         ProcessRecord app;
         if (!isolated) {
@@ -3754,7 +3755,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         checkTime(startTime, "startProcess: stepping in to startProcess");
         startProcessLocked(
-                app, hostingType, hostingNameStr, abiOverride, entryPoint, entryPointArgs);
+                app, hostingType, hostingNameStr, hiddenApiChecks, abiOverride, entryPoint,
+                entryPointArgs);
         checkTime(startTime, "startProcess: done starting proc!");
         return (app.pid != 0) ? app : null;
     }
@@ -3765,12 +3767,13 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     private final void startProcessLocked(ProcessRecord app,
             String hostingType, String hostingNameStr) {
-        startProcessLocked(app, hostingType, hostingNameStr, null /* abiOverride */,
-                null /* entryPoint */, null /* entryPointArgs */);
+        startProcessLocked(app, hostingType, hostingNameStr, true /* hidden API checks */,
+                null /* abiOverride */, null /* entryPoint */, null /* entryPointArgs */);
     }
 
     private final void startProcessLocked(ProcessRecord app, String hostingType,
-            String hostingNameStr, String abiOverride, String entryPoint, String[] entryPointArgs) {
+            String hostingNameStr, boolean hiddenApiChecks, String abiOverride, String entryPoint,
+            String[] entryPointArgs) {
         long startTime = SystemClock.elapsedRealtime();
         if (app.pid > 0 && app.pid != MY_PID) {
             checkTime(startTime, "startProcess: removing from pids map");
@@ -3891,10 +3894,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 runtimeFlags |= Zygote.ONLY_USE_SYSTEM_OAT_FILES;
             }
 
-            if (app.info.isAllowedToUseHiddenApi()) {
-                // This app is allowed to use undocumented and private APIs. Set
-                // up its runtime with the appropriate flag.
-                runtimeFlags |= Zygote.DISABLE_HIDDEN_API_CHECKS;
+            if (!app.info.isAllowedToUseHiddenApi()) {
+                // This app is not allowed to use undocumented and private APIs.
+                // Set up its runtime with the appropriate flag.
+                runtimeFlags |= Zygote.ENABLE_HIDDEN_API_CHECKS;
             }
 
             String invokeWith = null;
@@ -6854,7 +6857,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             handleAppDiedLocked(app, willRestart, allowRestart);
             if (willRestart) {
                 removeLruProcessLocked(app);
-                addAppLocked(app.info, null, false, null /* ABI override */);
+                addAppLocked(app.info, null, false, null /* ABI override */,
+                        true /* hidden API checks */);
             }
         } else {
             mRemovedProcesses.add(app);
@@ -12203,7 +12207,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                         .getPersistentApplications(STOCK_PM_FLAGS | matchFlags).getList();
                 for (ApplicationInfo app : apps) {
                     if (!"android".equals(app.packageName)) {
-                        addAppLocked(app, null, false, null /* ABI override */);
+                        addAppLocked(app, null, false, null /* ABI override */,
+                                true /* hidden API checks */);
                     }
                 }
             } catch (RemoteException ex) {
@@ -12413,7 +12418,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     final ProcessRecord addAppLocked(ApplicationInfo info, String customProcess, boolean isolated,
-            String abiOverride) {
+            String abiOverride, boolean hiddenApiChecks) {
         ProcessRecord app;
         if (!isolated) {
             app = getProcessRecordLocked(customProcess != null ? customProcess : info.processName,
@@ -12445,8 +12450,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (app.thread == null && mPersistentStartingProcesses.indexOf(app) < 0) {
             mPersistentStartingProcesses.add(app);
             startProcessLocked(app, "added application",
-                    customProcess != null ? customProcess : app.processName, abiOverride,
-                    null /* entryPoint */, null /* entryPointArgs */);
+                    customProcess != null ? customProcess : app.processName, hiddenApiChecks,
+                    abiOverride, null /* entryPoint */, null /* entryPointArgs */);
         }
 
         return app;
@@ -20037,7 +20042,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     public boolean startInstrumentation(ComponentName className,
             String profileFile, int flags, Bundle arguments,
             IInstrumentationWatcher watcher, IUiAutomationConnection uiAutomationConnection,
-            int userId, String abiOverride) {
+            int userId, String abiOverride, boolean hiddenApiChecks) {
         enforceNotIsolatedCaller("startInstrumentation");
         userId = mUserController.handleIncomingUser(Binder.getCallingPid(), Binder.getCallingUid(),
                 userId, false, ALLOW_FULL_ONLY, "startInstrumentation", null);
@@ -20109,7 +20114,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             // Instrumentation can kill and relaunch even persistent processes
             forceStopPackageLocked(ii.targetPackage, -1, true, false, true, true, false, userId,
                     "start instr");
-            ProcessRecord app = addAppLocked(ai, defProcess, false, abiOverride);
+            ProcessRecord app = addAppLocked(ai, defProcess, false, abiOverride, hiddenApiChecks);
             app.instr = activeInstr;
             activeInstr.mFinished = false;
             activeInstr.mRunningProcesses.add(app);
@@ -23432,7 +23437,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                     mRemovedProcesses.remove(i);
 
                     if (app.persistent) {
-                        addAppLocked(app.info, null, false, null /* ABI override */);
+                        addAppLocked(app.info, null, false, null /* ABI override */,
+                                true /* hiddenApiChecks API checks */);
                     }
                 }
             }

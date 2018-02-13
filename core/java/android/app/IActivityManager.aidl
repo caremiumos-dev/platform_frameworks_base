@@ -142,7 +142,7 @@ interface IActivityManager {
     boolean startInstrumentation(in ComponentName className, in String profileFile,
             int flags, in Bundle arguments, in IInstrumentationWatcher watcher,
             in IUiAutomationConnection connection, int userId,
-            in String abiOverride);
+            in String abiOverride, boolean hiddenApiChecks);
     void addInstrumentationResults(in IApplicationThread target, in Bundle results);
     void finishInstrumentation(in IApplicationThread target, int resultCode,
             in Bundle results);

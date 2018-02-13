@@ -52,6 +52,7 @@ public class Instrument {
     public boolean rawMode = false;
     public boolean proto = false;
     public boolean noWindowAnimation = false;
+    public boolean noHiddenApiChecks = false;
     public String abi = null;
     public int userId = UserHandle.USER_CURRENT;
     public Bundle args = new Bundle();
@@ -417,7 +418,7 @@ public class Instrument {
 
             // Start the instrumentation
             if (!mAm.startInstrumentation(cn, profileFile, 0, args, watcher, connection, userId,
-                        abi)) {
+                        abi, !noHiddenApiChecks)) {
                 throw new AndroidException("INSTRUMENTATION_FAILED: " + cn.flattenToString());
             }
 

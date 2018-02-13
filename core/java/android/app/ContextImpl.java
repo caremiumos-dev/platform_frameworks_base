@@ -1656,7 +1656,7 @@ class ContextImpl extends Context {
             }
             return ActivityManager.getService().startInstrumentation(
                     className, profileFile, 0, arguments, null, null, getUserId(),
-                    null /* ABI override */);
+                    null /* ABI override */, true /* hidden API checks */);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
