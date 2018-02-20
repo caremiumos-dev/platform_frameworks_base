@@ -5408,6 +5408,19 @@ package android.telephony.data {
     field public static final int RESULT_SUCCESS = 0; // 0x0
   }
 
+  public abstract class QualifiedNetworksService extends android.app.Service {
+    ctor public QualifiedNetworksService();
+    method public abstract android.telephony.data.QualifiedNetworksService.NetworkAvailabilityUpdater createNetworkAvailabilityUpdater(int);
+    field public static final java.lang.String QUALIFIED_NETWORKS_SERVICE_INTERFACE = "android.telephony.data.QualifiedNetworksService";
+  }
+
+  public class QualifiedNetworksService.NetworkAvailabilityUpdater {
+    ctor public QualifiedNetworksService.NetworkAvailabilityUpdater(int);
+    method public final int getSlotId();
+    method protected void onDestroy();
+    method public final void updateQualifiedNetworks(int, int[]);
+  }
+
 }
 
 package android.telephony.euicc {
