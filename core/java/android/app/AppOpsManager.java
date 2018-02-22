@@ -20,6 +20,7 @@ import android.Manifest;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.media.AudioAttributes.AttributeUsage;
@@ -252,10 +253,18 @@ public class AppOpsManager {
     public static final int OP_INSTANT_APP_START_FOREGROUND = 68;
     /** @hide Answer incoming phone calls */
     public static final int OP_ANSWER_PHONE_CALLS = 69;
+    /** @hide Run jobs when in background */
+    public static final int OP_RUN_ANY_IN_BACKGROUND = 70;
+    /** @hide Change Wi-Fi connectivity state */
+    public static final int OP_CHANGE_WIFI_STATE = 71;
+    /** @hide Request package deletion through package installer */
+    public static final int OP_REQUEST_DELETE_PACKAGES = 72;
+    /** @hide Bind an accessibility service. */
+    public static final int OP_BIND_ACCESSIBILITY_SERVICE = 73;
     /** @hide Continue handover of a call from another app */
-    public static final int OP_ACCEPT_HANDOVER = 70;
+    public static final int OP_ACCEPT_HANDOVER = 74;
     /** @hide */
-    public static final int _NUM_OP = 71;
+    public static final int _NUM_OP = 75;
 
     /** Access to coarse location information. */
     public static final String OPSTR_COARSE_LOCATION = "android:coarse_location";
@@ -367,6 +376,21 @@ public class AppOpsManager {
     /** Answer incoming phone calls */
     public static final String OPSTR_ANSWER_PHONE_CALLS
             = "android:answer_phone_calls";
+    /** @hide */
+    @SystemApi @TestApi
+    public static final String OPSTR_REQUEST_INSTALL_PACKAGES = "android:request_install_packages";
+    /** @hide */
+    @SystemApi @TestApi
+    public static final String OPSTR_RUN_ANY_IN_BACKGROUND = "android:run_any_in_background";
+    /** @hide */
+    @SystemApi @TestApi
+    public static final String OPSTR_CHANGE_WIFI_STATE = "change_wifi_state";
+    /** @hide */
+    @SystemApi @TestApi
+    public static final String OPSTR_REQUEST_DELETE_PACKAGES = "request_delete_packages";
+    /** @hide */
+    @SystemApi @TestApi
+    public static final String OPSTR_BIND_ACCESSIBILITY_SERVICE = "bind_accessibility_service";
     /***
      * Accept call handover
      * @hide
@@ -502,7 +526,11 @@ public class AppOpsManager {
             OP_PICTURE_IN_PICTURE,
             OP_INSTANT_APP_START_FOREGROUND,
             OP_ANSWER_PHONE_CALLS,
-            OP_ACCEPT_HANDOVER
+            OP_RUN_ANY_IN_BACKGROUND,
+            OP_CHANGE_WIFI_STATE,
+            OP_REQUEST_DELETE_PACKAGES,
+            OP_BIND_ACCESSIBILITY_SERVICE,
+            OP_ACCEPT_HANDOVER,
     };
 
     /**
@@ -580,7 +608,11 @@ public class AppOpsManager {
             OPSTR_PICTURE_IN_PICTURE,
             OPSTR_INSTANT_APP_START_FOREGROUND,
             OPSTR_ANSWER_PHONE_CALLS,
-            OPSTR_ACCEPT_HANDOVER
+            OPSTR_RUN_ANY_IN_BACKGROUND,
+            OPSTR_CHANGE_WIFI_STATE,
+            OPSTR_REQUEST_DELETE_PACKAGES,
+            OPSTR_BIND_ACCESSIBILITY_SERVICE,
+            OPSTR_ACCEPT_HANDOVER,
     };
 
     /**
@@ -658,7 +690,11 @@ public class AppOpsManager {
             "PICTURE_IN_PICTURE",
             "INSTANT_APP_START_FOREGROUND",
             "ANSWER_PHONE_CALLS",
-            "ACCEPT_HANDOVER"
+            "RUN_ANY_IN_BACKGROUND",
+            "CHANGE_WIFI_STATE",
+            "REQUEST_DELETE_PACKAGES",
+            "BIND_ACCESSIBILITY_SERVICE",
+            "ACCEPT_HANDOVER",
     };
 
     /**
@@ -736,7 +772,11 @@ public class AppOpsManager {
             null, // no permission for entering picture-in-picture on hide
             Manifest.permission.INSTANT_APP_FOREGROUND_SERVICE,
             Manifest.permission.ANSWER_PHONE_CALLS,
-            Manifest.permission.ACCEPT_HANDOVER
+            null, // no permission for OP_RUN_ANY_IN_BACKGROUND
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.REQUEST_DELETE_PACKAGES,
+            Manifest.permission.BIND_ACCESSIBILITY_SERVICE,
+            Manifest.permission.ACCEPT_HANDOVER,
     };
 
     /**
@@ -815,7 +855,12 @@ public class AppOpsManager {
             null, // ENTER_PICTURE_IN_PICTURE_ON_HIDE
             null, // INSTANT_APP_START_FOREGROUND
             null, // ANSWER_PHONE_CALLS
+            null, // OP_RUN_ANY_IN_BACKGROUND
+            null, // OP_CHANGE_WIFI_STATE
+            null, // REQUEST_DELETE_PACKAGES
+            null, // OP_BIND_ACCESSIBILITY_SERVICE
             null, // ACCEPT_HANDOVER
+
     };
 
     /**
@@ -893,6 +938,10 @@ public class AppOpsManager {
             false, // ENTER_PICTURE_IN_PICTURE_ON_HIDE
             false, // INSTANT_APP_START_FOREGROUND
             false, // ANSWER_PHONE_CALLS
+            false, // OP_RUN_ANY_IN_BACKGROUND
+            false, // OP_CHANGE_WIFI_STATE
+            false, // OP_REQUEST_DELETE_PACKAGES
+            false, // OP_BIND_ACCESSIBILITY_SERVICE
             false, // ACCEPT_HANDOVER
     };
 
@@ -970,7 +1019,11 @@ public class AppOpsManager {
             AppOpsManager.MODE_ALLOWED,  // OP_PICTURE_IN_PICTURE
             AppOpsManager.MODE_DEFAULT,  // OP_INSTANT_APP_START_FOREGROUND
             AppOpsManager.MODE_ALLOWED, // ANSWER_PHONE_CALLS
-            AppOpsManager.MODE_ALLOWED, // ACCEPT_HANDOVER
+            AppOpsManager.MODE_ALLOWED,  // OP_RUN_ANY_IN_BACKGROUND
+            AppOpsManager.MODE_ALLOWED,  // OP_CHANGE_WIFI_STATE
+            AppOpsManager.MODE_ALLOWED,  // REQUEST_DELETE_PACKAGES
+            AppOpsManager.MODE_ALLOWED,  // OP_BIND_ACCESSIBILITY_SERVICE
+            AppOpsManager.MODE_ALLOWED,  // ACCEPT_HANDOVER
     };
 
     /**
@@ -1051,6 +1104,10 @@ public class AppOpsManager {
             false, // OP_PICTURE_IN_PICTURE
             false,
             false, // ANSWER_PHONE_CALLS
+            false, // OP_RUN_ANY_IN_BACKGROUND
+            false, // OP_CHANGE_WIFI_STATE
+            false, // OP_REQUEST_DELETE_PACKAGES
+            false, // OP_BIND_ACCESSIBILITY_SERVICE
             false, // ACCEPT_HANDOVER
     };
 

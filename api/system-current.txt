@@ -248,6 +248,11 @@ package android.app {
   public class AppOpsManager {
     method public void setUidMode(java.lang.String, int, int);
     field public static final java.lang.String OPSTR_ACTIVATE_VPN = "android:activate_vpn";
+    field public static final java.lang.String OPSTR_BIND_ACCESSIBILITY_SERVICE = "bind_accessibility_service";
+    field public static final java.lang.String OPSTR_CHANGE_WIFI_STATE = "change_wifi_state";
+    field public static final java.lang.String OPSTR_REQUEST_DELETE_PACKAGES = "request_delete_packages";
+    field public static final java.lang.String OPSTR_REQUEST_INSTALL_PACKAGES = "android:request_install_packages";
+    field public static final java.lang.String OPSTR_RUN_ANY_IN_BACKGROUND = "android:run_any_in_background";
   }
 
   public class BroadcastOptions {
