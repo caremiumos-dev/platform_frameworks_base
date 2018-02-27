@@ -3479,6 +3479,16 @@
         android:description="@string/permdesc_bindCarrierServices"
         android:protectionLevel="signature|privileged" />
 
+    <!-- The system process that is allowed to bind to services in seac apps will
+         have this permission. Seac apps should use this permission to protect
+         their services that only the system is allowed to bind to.
+         <p>Protection level: system|signature
+    -->
+    <permission android:name="android.permission.BIND_SESETTINGS_SERVICES"
+        android:label="@string/permlab_bindSeSettingsServices"
+        android:description="@string/permdesc_bindSeSettingsServices"
+        android:protectionLevel="signature|privileged" />
+
     <!-- Allows an application to query whether DO_NOT_ASK_CREDENTIALS_ON_BOOT
          flag is set.
          @hide -->

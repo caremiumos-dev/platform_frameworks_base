@@ -202,6 +202,7 @@ java_library {
         "core/java/android/nfc/INfcUnlockHandler.aidl",
         "core/java/android/nfc/INfcDta.aidl",
         "core/java/android/nfc/ITagRemovedCallback.aidl",
+        "core/java/android/nfc/cardemulation/ISeSettingsService.aidl",
         "core/java/android/se/omapi/ISecureElementService.aidl",
         "core/java/android/se/omapi/ISecureElementListener.aidl",
         "core/java/android/se/omapi/ISecureElementChannel.aidl",

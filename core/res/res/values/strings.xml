@@ -1445,6 +1445,11 @@
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_bindCarrierServices">Allows the holder to bind to carrier services. Should never be needed for normal apps.</string>
 
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_bindSeSettingsServices">bind to sesettings services</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_bindSeSettingsServices">Allows the holder to bind to sesettings services. Should never be needed for normal apps.</string>
+
     <!-- Title of an application permission, for applications that wish to access notification policy. -->
     <string name="permlab_access_notification_policy">access Do Not Disturb</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
