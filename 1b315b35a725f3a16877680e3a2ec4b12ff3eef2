@@ -22,6 +22,30 @@
       "revId": "1b315b35a725f3a16877680e3a2ec4b12ff3eef2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "21ccf39a_9447d0fc",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-03-03T10:43:53Z",
+      "side": 1,
+      "message": "The things that can send udpate messages to the SM or post runnables to the Handler can access mConfig same in the knowledge it\u0027s non-null.\n\nThere was technically an NPE lurking here, but we never really hit it because all this stuff runs at boot time, way before any update messages might get triggered and sent.\n\nBut I figured better to fix it...",
+      "parentUuid": "eaba6e41_ee2c68dd",
+      "range": {
+        "startLine": 246,
+        "startChar": 8,
+        "endLine": 246,
+        "endChar": 33
+      },
+      "revId": "1b315b35a725f3a16877680e3a2ec4b12ff3eef2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
