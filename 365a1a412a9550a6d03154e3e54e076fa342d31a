@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9fd3eeb3_ddd22386",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-03-05T09:29:06Z",
+      "side": 1,
+      "message": "Restored previous code.",
+      "parentUuid": "e16e0bb4_4551112f",
+      "range": {
+        "startLine": 230,
+        "startChar": 36,
+        "endLine": 230,
+        "endChar": 47
+      },
+      "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b8ad693d_31ecf8db",
         "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
         "patchSetId": 8
@@ -39,6 +63,24 @@
       "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a80f2b4c_f7613133",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-03-05T09:29:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b8ad693d_31ecf8db",
+      "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -62,6 +104,30 @@
       "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3762144e_6ba81a81",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 1169,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-03-05T09:29:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "de64de26_ee2171da",
+      "range": {
+        "startLine": 1169,
+        "startChar": 21,
+        "endLine": 1169,
+        "endChar": 49
+      },
+      "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
