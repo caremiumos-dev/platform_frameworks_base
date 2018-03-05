@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "49ec9ae6_9a5c548e",
+        "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1138358
+      },
+      "writtenOn": "2018-03-05T16:16:23Z",
+      "side": 1,
+      "message": "nit: should we defend against Resources.NotFoundException too?",
+      "range": {
+        "startLine": 108,
+        "startChar": 8,
+        "endLine": 108,
+        "endChar": 23
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
