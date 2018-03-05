@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e16e0bb4_4551112f",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-03-05T09:24:23Z",
+      "side": 1,
+      "message": "Changing the time here looks a bit scary. Is there an alternative?",
+      "range": {
+        "startLine": 230,
+        "startChar": 36,
+        "endLine": 230,
+        "endChar": 47
+      },
+      "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b8ad693d_31ecf8db",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-03-05T09:24:23Z",
+      "side": 1,
+      "message": "The previous code would fetch this value from resources, but this is fetching it from the cached copy inside mConfig. Should this update mConfig?",
+      "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de64de26_ee2171da",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 1169,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-03-05T09:24:23Z",
+      "side": 1,
+      "message": "The previous version of hasMobileHotspotProvisionApp() was fetching the value from resources, but this new version only fetches it from the configuration object, which may have been updated in the past. Should this method update the configuration?",
+      "range": {
+        "startLine": 1169,
+        "startChar": 21,
+        "endLine": 1169,
+        "endChar": 49
+      },
+      "revId": "365a1a412a9550a6d03154e3e54e076fa342d31a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
