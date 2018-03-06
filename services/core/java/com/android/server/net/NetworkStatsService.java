@@ -27,6 +27,7 @@ import static android.net.ConnectivityManager.ACTION_TETHER_STATE_CHANGED;
 import static android.net.ConnectivityManager.isNetworkTypeMobile;
 import static android.net.NetworkStats.DEFAULT_NETWORK_ALL;
 import static android.net.NetworkStats.IFACE_ALL;
+import static android.net.NetworkStats.INTERFACES_ALL;
 import static android.net.NetworkStats.METERED_ALL;
 import static android.net.NetworkStats.ROAMING_ALL;
 import static android.net.NetworkStats.SET_ALL;
@@ -34,6 +35,7 @@ import static android.net.NetworkStats.SET_DEFAULT;
 import static android.net.NetworkStats.SET_FOREGROUND;
 import static android.net.NetworkStats.STATS_PER_IFACE;
 import static android.net.NetworkStats.STATS_PER_UID;
+import static android.net.NetworkStats.TAG_ALL;
 import static android.net.NetworkStats.TAG_NONE;
 import static android.net.NetworkStats.UID_ALL;
 import static android.net.NetworkStatsHistory.FIELD_ALL;
@@ -68,6 +70,7 @@ import static com.android.server.NetworkManagementService.LIMIT_GLOBAL_ALERT;
 import static com.android.server.NetworkManagementSocketTagger.resetKernelUidStats;
 import static com.android.server.NetworkManagementSocketTagger.setKernelCounterSet;
 
+import android.annotation.Nullable;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.usage.NetworkStatsManager;
@@ -143,6 +146,7 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Collect and persist detailed network statistics, and provide this data to
@@ -245,6 +249,10 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
     /** Set of any ifaces associated with mobile networks since boot. */
     @GuardedBy("mStatsLock")
     private String[] mMobileIfaces = new String[0];
+
+    /** (Stacked interface) -> (base interface) association for all connected ifaces since boot. */
+    @GuardedBy("mStatsLock")
+    private ArrayMap<String, String> mStackedIfaces = new ArrayMap<>();
 
     /** Set of all ifaces currently used by traffic that does not explicitly specify a Network. */
     @GuardedBy("mStatsLock")
@@ -726,7 +734,8 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
         final long token = Binder.clearCallingIdentity();
         final NetworkStats networkLayer;
         try {
-            networkLayer = mNetworkManager.getNetworkStatsUidDetail(uid);
+            networkLayer = mNetworkManager.getNetworkStatsUidDetail(uid,
+                    NetworkStats.INTERFACES_ALL);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -745,6 +754,20 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
         }
 
         return dataLayer;
+    }
+
+    @Override
+    public NetworkStats getDetailedUidStats(String[] requiredIfaces) {
+        try {
+            final String[] ifacesToQuery;
+            synchronized (mStatsLock) {
+                ifacesToQuery = augmentWithStackedInterfacesLocked(requiredIfaces);
+            }
+            return getNetworkStatsUidDetail(ifacesToQuery);
+        } catch (RemoteException e) {
+            Log.wtf(TAG, "Error compiling UID stats", e);
+            return new NetworkStats(0L, 0);
+        }
     }
 
     @Override
@@ -1109,6 +1132,8 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
                         if (isMobile) {
                             mobileIfaces.add(stackedIface);
                         }
+
+                        mStackedIfaces.put(stackedIface, baseIface);
                     }
                 }
             }
@@ -1130,7 +1155,7 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
     private void recordSnapshotLocked(long currentTime) throws RemoteException {
         // snapshot and record current counters; read UID stats first to
         // avoid over counting dev stats.
-        final NetworkStats uidSnapshot = getNetworkStatsUidDetail();
+        final NetworkStats uidSnapshot = getNetworkStatsUidDetail(INTERFACES_ALL);
         final NetworkStats xtSnapshot = getNetworkStatsXt();
         final NetworkStats devSnapshot = mNetworkManager.getNetworkStatsSummaryDev();
 
@@ -1464,12 +1489,18 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
      * Return snapshot of current UID statistics, including any
      * {@link TrafficStats#UID_TETHERING}, video calling data usage, and {@link #mUidOperations}
      * values.
+     *
+     * @param ifaces Only obtain data for the specified interfaces.
      */
-    private NetworkStats getNetworkStatsUidDetail() throws RemoteException {
-        final NetworkStats uidSnapshot = mNetworkManager.getNetworkStatsUidDetail(UID_ALL);
+    private NetworkStats getNetworkStatsUidDetail(@Nullable String[] ifaces)
+            throws RemoteException {
+
+        final NetworkStats uidSnapshot = mNetworkManager.getNetworkStatsUidDetail(UID_ALL,
+                ifaces);
 
         // fold tethering stats and operations into uid snapshot
         final NetworkStats tetherSnapshot = getNetworkStatsTethering(STATS_PER_UID);
+        tetherSnapshot.filter(UID_ALL, ifaces, TAG_ALL);
         uidSnapshot.combineAllValues(tetherSnapshot);
 
         final TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(
@@ -1478,11 +1509,39 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
         // fold video calling data usage stats into uid snapshot
         final NetworkStats vtStats = telephonyManager.getVtDataUsage(STATS_PER_UID);
         if (vtStats != null) {
+            vtStats.filter(UID_ALL, ifaces, TAG_ALL);
             uidSnapshot.combineAllValues(vtStats);
         }
+
         uidSnapshot.combineAllValues(mUidOperations);
 
+        // TODO: apply tethering & VC 464xlat adjustments here
+
         return uidSnapshot;
+    }
+
+    /**
+     * Get a set of interfaces containing specified ifaces and stacked interfaces.
+     *
+     * <p>The added stacked interfaces are ifaces stacked on top of the specified ones, or ifaces
+     * on which the specified ones are stacked.
+     */
+    private String[] augmentWithStackedInterfacesLocked(@Nullable String[] requiredIfaces) {
+        if (requiredIfaces == null) {
+            return null;
+        }
+
+        HashSet<String> relatedIfaces = new HashSet<>(Arrays.asList(requiredIfaces));
+        for (Map.Entry<String, String> entry : mStackedIfaces.entrySet()) {
+            if (relatedIfaces.contains(entry.getKey())) {
+                relatedIfaces.add(entry.getValue());
+            } else if (relatedIfaces.contains(entry.getValue())) {
+                relatedIfaces.add(entry.getKey());
+            }
+        }
+
+        String[] outArray = new String[relatedIfaces.size()];
+        return relatedIfaces.toArray(outArray);
     }
 
     /**
