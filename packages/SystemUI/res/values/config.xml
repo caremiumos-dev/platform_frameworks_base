@@ -928,4 +928,14 @@
 
     <!-- Flag controlling whether visual query attention detection has been enabled. -->
     <bool name="config_enableVisualQueryAttentionDetection">false</bool>
+
+    <!-- Timeout until Navigation Bar auto dim function is started -->
+    <integer name="navbar_auto_dim_timeout">2250</integer>
+    <!-- Duration time of NavigationBar auto dim function -->
+    <integer name="navbar_auto_dim_duration">1500</integer>
+    <!-- Alpha value of dark NavigationBar Button after auto dim -->
+    <item name="navbar_dim_dark_button_alpha" format="float" type="integer">0.7</item>
+    <!-- Alpha value of light NavigationBar Button after auto dim -->
+    <item name="navbar_dim_light_button_alpha" format="float" type="integer">0.6</item>
+
 </resources>
