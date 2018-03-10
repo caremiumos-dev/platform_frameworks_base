@@ -25,7 +25,6 @@ import static android.system.OsConstants.SOCK_DGRAM;
 import static com.android.internal.util.Preconditions.checkNotNull;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
 import android.net.IIpSecService;
 import android.net.INetd;
 import android.net.IpSecAlgorithm;
@@ -581,6 +580,7 @@ public class IpSecService extends IIpSecService.Stub {
         private final IpSecConfig mConfig;
         private final SpiRecord mSpi;
         private final EncapSocketRecord mSocket;
+        private boolean mHasIptablesExemption = false;
 
         TransformRecord(
                 int resourceId, IpSecConfig config, SpiRecord spi, EncapSocketRecord socket) {
@@ -604,6 +604,29 @@ public class IpSecService extends IIpSecService.Stub {
             return mSocket;
         }
 
+        public void setIptablesExemptionIfNeeded(int direction) {
+            if (direction == IpSecManager.DIRECTION_IN
+                    && mConfig.getMode() == IpSecTransform.MODE_TUNNEL
+                    && mSocket != null
+                    && !mHasIptablesExemption) {
+                int spi = mSpi.getSpi();
+                int port = mSocket.getPort();
+                try {
+
+                    mSrvConfig
+                            .getNetdInstance()
+                            .ipsecAddTunnelUdpEncapExemption(
+                                    mConfig.getDestinationAddress(), port, spi);
+                } catch (ServiceSpecificException e) {
+                    // FIXME: get the error code and throw as an IOException from Errno Exception
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Failed to add UDP encap exemption for spi: " + spi);
+                }
+
+                mHasIptablesExemption = true;
+            }
+        }
+
         /** always guarded by IpSecService#this */
         @Override
         public void freeUnderlyingResources() {
@@ -618,6 +641,20 @@ public class IpSecService extends IIpSecService.Stub {
                                 spi,
                                 mConfig.getMarkValue(),
                                 mConfig.getMarkMask());
+
+                if (mHasIptablesExemption) {
+                    int port = mSocket.getPort();
+                    try {
+                        mSrvConfig
+                                .getNetdInstance()
+                                .ipsecRemoveTunnelUdpEncapExemption(
+                                        mConfig.getDestinationAddress(), port, spi);
+                    } catch (ServiceSpecificException e) {
+                        // FIXME: get the error code and throw as an IOException from ErrnoException
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "Failed to remove UDP encap exemption for port: " + port);
+                    }
+                }
             } catch (ServiceSpecificException e) {
                 // FIXME: get the error code and throw is at an IOException from Errno Exception
             } catch (RemoteException e) {
@@ -1679,6 +1716,7 @@ public class IpSecService extends IIpSecService.Stub {
 
             // Update SA with tunnel mark (ikey or okey based on direction)
             createOrUpdateTransform(c, transformResourceId, spiRecord, socketRecord);
+            transformInfo.setIptablesExemptionIfNeeded(direction);
         } catch (ServiceSpecificException e) {
             if (e.errorCode == EINVAL) {
                 throw new IllegalArgumentException(e.toString());
