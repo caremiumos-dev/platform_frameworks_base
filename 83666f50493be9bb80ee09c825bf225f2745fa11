@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "344c73cb_f2461d31",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 376,
+      "author": {
+        "id": 1288034
+      },
+      "writtenOn": "2018-03-19T06:32:00Z",
+      "side": 1,
+      "message": "updateConfiguration has a note saying that it is always called from the mLooper thread, but isTetherProvisioningRequired is called by startTethering() which is public. Maybe we can ensure that updateConfiguration works regardless of the caller thread (and remove the note) ?",
+      "range": {
+        "startLine": 376,
+        "startChar": 8,
+        "endLine": 376,
+        "endChar": 27
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "49ec9ae6_9a5c548e",
         "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
         "patchSetId": 10
@@ -18,6 +41,29 @@
         "startChar": 8,
         "endLine": 108,
         "endChar": 23
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da1a229f_2f2aa266",
+        "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1288034
+      },
+      "writtenOn": "2018-03-19T06:32:00Z",
+      "side": 1,
+      "message": "Typo \"provisioning\" ?",
+      "range": {
+        "startLine": 277,
+        "startChar": 26,
+        "endLine": 277,
+        "endChar": 47
       },
       "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
