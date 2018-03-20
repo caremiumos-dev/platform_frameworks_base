@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7881e2b1_cd9fd15b",
+        "filename": "core/java/android/net/IpSecManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 684,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-03-20T22:51:07Z",
+      "side": 1,
+      "message": "Given that this is documented as throwing IOException, this code should probably catch SSE as well, and turn it into IOException. Not necessarily in this CL.",
+      "range": {
+        "startLine": 684,
+        "startChar": 12,
+        "endLine": 684,
+        "endChar": 13
+      },
+      "revId": "a83601a511c3f11470109d78d1a736acdb9c6bd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
