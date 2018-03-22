@@ -254,8 +254,10 @@ public class AppOpsManager {
     public static final int OP_ANSWER_PHONE_CALLS = 69;
     /** @hide Continue handover of a call from another app */
     public static final int OP_ACCEPT_HANDOVER = 70;
+    /** @hide Use the face authentication API. */
+    public static final int OP_USE_FACE_AUTHENTICATION = 71;
     /** @hide */
-    public static final int _NUM_OP = 71;
+    public static final int _NUM_OP = 72;
 
     /** Access to coarse location information. */
     public static final String OPSTR_COARSE_LOCATION = "android:coarse_location";
@@ -373,6 +375,11 @@ public class AppOpsManager {
      */
     public static final String OPSTR_ACCEPT_HANDOVER
             = "android:accept_handover";
+
+    /** @hide Use the face authentication API. */
+    public static final String OPSTR_USE_FACE_AUTHENTICATION = "android:use_face_authentication";
+
+
 
     // Warning: If an permission is added here it also has to be added to
     // com.android.packageinstaller.permission.utils.EventLogger
@@ -502,7 +509,8 @@ public class AppOpsManager {
             OP_PICTURE_IN_PICTURE,
             OP_INSTANT_APP_START_FOREGROUND,
             OP_ANSWER_PHONE_CALLS,
-            OP_ACCEPT_HANDOVER
+            OP_ACCEPT_HANDOVER,
+            OP_USE_FACE_AUTHENTICATION
     };
 
     /**
@@ -580,7 +588,8 @@ public class AppOpsManager {
             OPSTR_PICTURE_IN_PICTURE,
             OPSTR_INSTANT_APP_START_FOREGROUND,
             OPSTR_ANSWER_PHONE_CALLS,
-            OPSTR_ACCEPT_HANDOVER
+            OPSTR_ACCEPT_HANDOVER,
+            OPSTR_USE_FACE_AUTHENTICATION
     };
 
     /**
@@ -658,7 +667,8 @@ public class AppOpsManager {
             "PICTURE_IN_PICTURE",
             "INSTANT_APP_START_FOREGROUND",
             "ANSWER_PHONE_CALLS",
-            "ACCEPT_HANDOVER"
+            "ACCEPT_HANDOVER",
+            "USE_FACE_AUTHENTICATION"
     };
 
     /**
@@ -736,7 +746,8 @@ public class AppOpsManager {
             null, // no permission for entering picture-in-picture on hide
             Manifest.permission.INSTANT_APP_FOREGROUND_SERVICE,
             Manifest.permission.ANSWER_PHONE_CALLS,
-            Manifest.permission.ACCEPT_HANDOVER
+            Manifest.permission.ACCEPT_HANDOVER,
+            Manifest.permission.USE_FACE_AUTHENTICATION
     };
 
     /**
@@ -816,6 +827,7 @@ public class AppOpsManager {
             null, // INSTANT_APP_START_FOREGROUND
             null, // ANSWER_PHONE_CALLS
             null, // ACCEPT_HANDOVER
+            null, // USE_FACE_AUTHENTICATION
     };
 
     /**
@@ -894,6 +906,7 @@ public class AppOpsManager {
             false, // INSTANT_APP_START_FOREGROUND
             false, // ANSWER_PHONE_CALLS
             false, // ACCEPT_HANDOVER
+            false, // USE_FACE_AUTHENTICATION
     };
 
     /**
@@ -971,6 +984,7 @@ public class AppOpsManager {
             AppOpsManager.MODE_DEFAULT,  // OP_INSTANT_APP_START_FOREGROUND
             AppOpsManager.MODE_ALLOWED, // ANSWER_PHONE_CALLS
             AppOpsManager.MODE_ALLOWED, // ACCEPT_HANDOVER
+            AppOpsManager.MODE_ALLOWED, // USE_FACE_AUTHENTICATION
     };
 
     /**
@@ -1052,6 +1066,7 @@ public class AppOpsManager {
             false,
             false, // ANSWER_PHONE_CALLS
             false, // ACCEPT_HANDOVER
+            false, // USE_FACE_AUTHENTICATION
     };
 
     /**

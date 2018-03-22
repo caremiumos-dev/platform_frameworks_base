@@ -28,6 +28,7 @@ java_library_static {
         "time_zone_distro",
         "time_zone_distro_installer",
         "android.hardware.weaver-V1.0-java",
+        "android.hardware.biometrics.face_authentication-V1.0-java",
         "android.hardware.biometrics.fingerprint-V2.1-java",
         "android.hardware.oemlock-V1.0-java",
         "android.hardware.tetheroffload.control-V1.0-java",

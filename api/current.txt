@@ -141,6 +141,7 @@ package android {
     field public static final java.lang.String TRANSMIT_IR = "android.permission.TRANSMIT_IR";
     field public static final java.lang.String UNINSTALL_SHORTCUT = "com.android.launcher.permission.UNINSTALL_SHORTCUT";
     field public static final java.lang.String UPDATE_DEVICE_STATS = "android.permission.UPDATE_DEVICE_STATS";
+    field public static final java.lang.String USE_FACE_AUTHENTICATION = "android.permission.USE_FACE_AUTHENTICATION";
     field public static final java.lang.String USE_FINGERPRINT = "android.permission.USE_FINGERPRINT";
     field public static final java.lang.String USE_SIP = "android.permission.USE_SIP";
     field public static final java.lang.String VIBRATE = "android.permission.VIBRATE";
@@ -10794,6 +10795,7 @@ package android.content.pm {
     field public static final java.lang.String FEATURE_DEVICE_ADMIN = "android.software.device_admin";
     field public static final java.lang.String FEATURE_EMBEDDED = "android.hardware.type.embedded";
     field public static final java.lang.String FEATURE_ETHERNET = "android.hardware.ethernet";
+    field public static final java.lang.String FEATURE_FACE = "android.hardware.face_authentication";
     field public static final java.lang.String FEATURE_FAKETOUCH = "android.hardware.faketouch";
     field public static final java.lang.String FEATURE_FAKETOUCH_MULTITOUCH_DISTINCT = "android.hardware.faketouch.multitouch.distinct";
     field public static final java.lang.String FEATURE_FAKETOUCH_MULTITOUCH_JAZZHAND = "android.hardware.faketouch.multitouch.jazzhand";
@@ -15143,6 +15145,21 @@ package android.hardware {
 
 }
 
+package android.hardware.biometrics {
+
+  public final class BiometricSourceType extends java.lang.Enum implements android.os.Parcelable {
+    method public int describeContents();
+    method public static android.hardware.biometrics.BiometricSourceType valueOf(java.lang.String);
+    method public static final android.hardware.biometrics.BiometricSourceType[] values();
+    method public void writeToParcel(android.os.Parcel, int);
+    enum_constant public static final android.hardware.biometrics.BiometricSourceType FACE;
+    enum_constant public static final android.hardware.biometrics.BiometricSourceType FINGERPRINT;
+    enum_constant public static final android.hardware.biometrics.BiometricSourceType IRIS;
+    field public static final android.os.Parcelable.Creator<android.hardware.biometrics.BiometricSourceType> CREATOR;
+  }
+
+}
+
 package android.hardware.camera2 {
 
   public class CameraAccessException extends android.util.AndroidException {
@@ -15903,6 +15920,60 @@ package android.hardware.display {
     method public void onPaused();
     method public void onResumed();
     method public void onStopped();
+  }
+
+}
+
+package android.hardware.face {
+
+  public class FaceAuthenticationManager {
+    method public void authenticate(android.hardware.face.FaceAuthenticationManager.CryptoObject, android.os.CancellationSignal, int, android.hardware.face.FaceAuthenticationManager.AuthenticationCallback, android.os.Handler);
+    method public boolean hasEnrolledFace();
+    method public boolean isHardwareDetected();
+    field public static final int FACE_ACQUIRED_GOOD = 0; // 0x0
+    field public static final int FACE_ACQUIRED_INSUFFICIENT = 1; // 0x1
+    field public static final int FACE_ACQUIRED_NOT_DETECTED = 11; // 0xb
+    field public static final int FACE_ACQUIRED_POOR_GAZE = 10; // 0xa
+    field public static final int FACE_ACQUIRED_TOO_BRIGHT = 2; // 0x2
+    field public static final int FACE_ACQUIRED_TOO_CLOSE = 4; // 0x4
+    field public static final int FACE_ACQUIRED_TOO_DARK = 3; // 0x3
+    field public static final int FACE_ACQUIRED_TOO_FAR = 5; // 0x5
+    field public static final int FACE_ACQUIRED_TOO_HIGH = 6; // 0x6
+    field public static final int FACE_ACQUIRED_TOO_LEFT = 9; // 0x9
+    field public static final int FACE_ACQUIRED_TOO_LOW = 7; // 0x7
+    field public static final int FACE_ACQUIRED_TOO_RIGHT = 8; // 0x8
+    field public static final int FACE_ERROR_CANCELED = 5; // 0x5
+    field public static final int FACE_ERROR_HW_NOT_PRESENT = 12; // 0xc
+    field public static final int FACE_ERROR_HW_UNAVAILABLE = 1; // 0x1
+    field public static final int FACE_ERROR_LOCKOUT = 7; // 0x7
+    field public static final int FACE_ERROR_LOCKOUT_PERMANENT = 9; // 0x9
+    field public static final int FACE_ERROR_NOT_ENROLLED = 11; // 0xb
+    field public static final int FACE_ERROR_NO_SPACE = 4; // 0x4
+    field public static final int FACE_ERROR_TIMEOUT = 3; // 0x3
+    field public static final int FACE_ERROR_UNABLE_TO_PROCESS = 2; // 0x2
+    field public static final int FACE_ERROR_USER_CANCELED = 10; // 0xa
+    field public static final int FACE_ERROR_VENDOR = 8; // 0x8
+  }
+
+  public static abstract class FaceAuthenticationManager.AuthenticationCallback {
+    ctor public FaceAuthenticationManager.AuthenticationCallback();
+    method public void onAuthenticationError(int, java.lang.CharSequence);
+    method public void onAuthenticationFailed();
+    method public void onAuthenticationHelp(int, java.lang.CharSequence);
+    method public void onAuthenticationSucceeded(android.hardware.face.FaceAuthenticationManager.AuthenticationResult);
+  }
+
+  public static class FaceAuthenticationManager.AuthenticationResult {
+    method public android.hardware.face.FaceAuthenticationManager.CryptoObject getCryptoObject();
+  }
+
+  public static final class FaceAuthenticationManager.CryptoObject {
+    ctor public FaceAuthenticationManager.CryptoObject(java.security.Signature);
+    ctor public FaceAuthenticationManager.CryptoObject(javax.crypto.Cipher);
+    ctor public FaceAuthenticationManager.CryptoObject(javax.crypto.Mac);
+    method public javax.crypto.Cipher getCipher();
+    method public javax.crypto.Mac getMac();
+    method public java.security.Signature getSignature();
   }
 
 }

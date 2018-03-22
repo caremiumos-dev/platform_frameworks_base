@@ -17,12 +17,14 @@
 package com.android.systemui.statusbar;
 
 import android.app.admin.DevicePolicyManager;
+import android.hardware.biometrics.BiometricSourceType;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.hardware.face.FaceAuthenticationManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.BatteryManager;
 import android.os.BatteryStats;
@@ -61,8 +63,8 @@ public class KeyguardIndicationController {
     private static final boolean DEBUG_CHARGING_SPEED = false;
 
     private static final int MSG_HIDE_TRANSIENT = 1;
-    private static final int MSG_CLEAR_FP_MSG = 2;
-    private static final long TRANSIENT_FP_ERROR_TIMEOUT = 1300;
+    private static final int MSG_CLEAR_BIO_MSG = 2;
+    private static final long TRANSIENT_BIO_ERROR_TIMEOUT = 1300;
 
     private final Context mContext;
     private ViewGroup mIndicationArea;
@@ -394,7 +396,7 @@ public class KeyguardIndicationController {
         public void handleMessage(Message msg) {
             if (msg.what == MSG_HIDE_TRANSIENT) {
                 hideTransientIndication();
-            } else if (msg.what == MSG_CLEAR_FP_MSG) {
+            } else if (msg.what == MSG_CLEAR_BIO_MSG) {
                 mLockIcon.setTransientFpError(false);
             }
         }
@@ -441,9 +443,9 @@ public class KeyguardIndicationController {
         }
 
         @Override
-        public void onFingerprintHelp(int msgId, String helpString) {
+        public void onBiometricHelp(int msgId, String helpString, BiometricSourceType biometricSourceType) {
             KeyguardUpdateMonitor updateMonitor = KeyguardUpdateMonitor.getInstance(mContext);
-            if (!updateMonitor.isUnlockingWithFingerprintAllowed()) {
+            if (!updateMonitor.isUnlockingWithBiometricAllowed()) {
                 return;
             }
             int errorColor = Utils.getColorError(mContext);
@@ -452,10 +454,10 @@ public class KeyguardIndicationController {
             } else if (updateMonitor.isScreenOn()) {
                 mLockIcon.setTransientFpError(true);
                 showTransientIndication(helpString, errorColor);
-                hideTransientIndicationDelayed(TRANSIENT_FP_ERROR_TIMEOUT);
-                mHandler.removeMessages(MSG_CLEAR_FP_MSG);
-                mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_CLEAR_FP_MSG),
-                        TRANSIENT_FP_ERROR_TIMEOUT);
+                hideTransientIndicationDelayed(TRANSIENT_BIO_ERROR_TIMEOUT);
+                mHandler.removeMessages(MSG_CLEAR_BIO_MSG);
+                mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_CLEAR_BIO_MSG),
+                        TRANSIENT_BIO_ERROR_TIMEOUT);
             }
             // Help messages indicate that there was actually a try since the last error, so those
             // are not two successive error messages anymore.
@@ -463,16 +465,14 @@ public class KeyguardIndicationController {
         }
 
         @Override
-        public void onFingerprintError(int msgId, String errString) {
+        public void onBiometricError(int msgId, String errString, BiometricSourceType biometricSourceType) {
             KeyguardUpdateMonitor updateMonitor = KeyguardUpdateMonitor.getInstance(mContext);
-            if ((!updateMonitor.isUnlockingWithFingerprintAllowed()
-                    && msgId != FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT)
-                    || msgId == FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
+            if (shouldSuppressBiometricError(msgId, biometricSourceType, updateMonitor)) {
                 return;
             }
             int errorColor = Utils.getColorError(mContext);
             if (mStatusBarKeyguardViewManager.isBouncerShowing()) {
-                // When swiping up right after receiving a fingerprint error, the bouncer calls
+                // When swiping up right after receiving a biometric error, the bouncer calls
                 // authenticate leading to the same message being shown again on the bouncer.
                 // We want to avoid this, as it may confuse the user when the message is too
                 // generic.
@@ -489,6 +489,27 @@ public class KeyguardIndicationController {
             mLastSuccessiveErrorMessage = msgId;
         }
 
+        private boolean shouldSuppressBiometricError(int msgId,
+                BiometricSourceType biometricSourceType, KeyguardUpdateMonitor updateMonitor) {
+            if (biometricSourceType == BiometricSourceType.FINGERPRINT)
+                return shouldSuppressFingerError(msgId, updateMonitor);
+            if (biometricSourceType == BiometricSourceType.FACE)
+                return shouldSuppressFaceError(msgId, updateMonitor);
+            return false;
+        }
+
+        private boolean shouldSuppressFingerError(int msgId, KeyguardUpdateMonitor updateMonitor) {
+            return ((!updateMonitor.isUnlockingWithBiometricAllowed()
+                    && msgId != FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT)
+                    || msgId == FingerprintManager.FINGERPRINT_ERROR_CANCELED);
+        }
+
+        private boolean shouldSuppressFaceError(int msgId, KeyguardUpdateMonitor updateMonitor) {
+            return ((!updateMonitor.isUnlockingWithBiometricAllowed()
+                    && msgId != FaceAuthenticationManager.FACE_ERROR_LOCKOUT_PERMANENT)
+                    || msgId == FaceAuthenticationManager.FACE_ERROR_CANCELED);
+        }
+
         @Override
         public void onScreenTurnedOn() {
             if (mMessageToShowOnScreenOn != null) {
@@ -501,21 +522,21 @@ public class KeyguardIndicationController {
         }
 
         @Override
-        public void onFingerprintRunningStateChanged(boolean running) {
+        public void onBiometricRunningStateChanged(boolean running, BiometricSourceType biometricSourceType) {
             if (running) {
                 mMessageToShowOnScreenOn = null;
             }
         }
 
         @Override
-        public void onFingerprintAuthenticated(int userId) {
-            super.onFingerprintAuthenticated(userId);
+        public void onBiometricAuthenticated(int userId, BiometricSourceType biometricSourceType) {
+            super.onBiometricAuthenticated(userId, biometricSourceType);
             mLastSuccessiveErrorMessage = -1;
         }
 
         @Override
-        public void onFingerprintAuthFailed() {
-            super.onFingerprintAuthFailed();
+        public void onBiometricAuthFailed(BiometricSourceType biometricSourceType) {
+            super.onBiometricAuthFailed(biometricSourceType);
             mLastSuccessiveErrorMessage = -1;
         }
 

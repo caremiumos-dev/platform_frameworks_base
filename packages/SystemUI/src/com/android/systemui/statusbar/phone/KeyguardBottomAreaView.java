@@ -27,6 +27,7 @@ import static com.android.systemui.tuner.LockscreenFragment.LOCKSCREEN_RIGHT_UNL
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.admin.DevicePolicyManager;
+import android.hardware.biometrics.BiometricSourceType;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -750,7 +751,7 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
                 }
 
                 @Override
-                public void onFingerprintRunningStateChanged(boolean running) {
+                public void onBiometricRunningStateChanged(boolean running, BiometricSourceType biometricSourceType) {
                     mLockIcon.update();
                 }
 

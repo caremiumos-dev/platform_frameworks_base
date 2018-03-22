@@ -212,6 +212,7 @@ public class FingerprintService extends SystemService implements IHwBinder.Death
 
     public FingerprintService(Context context) {
         super(context);
+        if (DEBUG) Slog.v(TAG, "gbretter: in FingerprintService Ctor");
         mContext = context;
         mKeyguardPackage = ComponentName.unflattenFromString(context.getResources().getString(
                 com.android.internal.R.string.config_keyguardComponent)).getPackageName();

@@ -30,6 +30,7 @@ import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.StatusBarManager;
+import android.hardware.biometrics.BiometricSourceType;
 import android.app.trust.TrustManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -85,7 +86,7 @@ import com.android.systemui.UiOffloadThread;
 import com.android.systemui.classifier.FalsingManager;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.recents.misc.SystemServicesProxy;
-import com.android.systemui.statusbar.phone.FingerprintUnlockController;
+import com.android.systemui.statusbar.phone.BiometricUnlockController;
 import com.android.systemui.statusbar.phone.StatusBar;
 import com.android.systemui.statusbar.phone.ScrimController;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
@@ -517,18 +518,18 @@ public class KeyguardViewMediator extends SystemUI {
         }
 
         @Override
-        public void onFingerprintAuthFailed() {
+        public void onBiometricAuthFailed(BiometricSourceType biometricSourceType) {
             final int currentUser = KeyguardUpdateMonitor.getCurrentUser();
             if (mLockPatternUtils.isSecure(currentUser)) {
-                mLockPatternUtils.getDevicePolicyManager().reportFailedFingerprintAttempt(
+                mLockPatternUtils.getDevicePolicyManager().reportFailedBiometricAttempt(
                         currentUser);
             }
         }
 
         @Override
-        public void onFingerprintAuthenticated(int userId) {
+        public void onBiometricAuthenticated(int userId, BiometricSourceType biometricSourceType) {
             if (mLockPatternUtils.isSecure(userId)) {
-                mLockPatternUtils.getDevicePolicyManager().reportSuccessfulFingerprintAttempt(
+                mLockPatternUtils.getDevicePolicyManager().reportSuccessfulBiometricAttempt(
                         userId);
             }
         }
@@ -1604,7 +1605,7 @@ public class KeyguardViewMediator extends SystemUI {
         }
 
         mUpdateMonitor.clearFailedUnlockAttempts();
-        mUpdateMonitor.clearFingerprintRecognized();
+        mUpdateMonitor.clearBiometricRecognized();
 
         if (mGoingToSleep) {
             Log.i(TAG, "Device is going to sleep, aborting keyguardDone");
@@ -2008,9 +2009,9 @@ public class KeyguardViewMediator extends SystemUI {
     public StatusBarKeyguardViewManager registerStatusBar(StatusBar statusBar,
             ViewGroup container,
             ScrimController scrimController,
-            FingerprintUnlockController fingerprintUnlockController) {
+            BiometricUnlockController biometricUnlockController) {
         mStatusBarKeyguardViewManager.registerStatusBar(statusBar, container,
-                scrimController, fingerprintUnlockController,
+                scrimController, biometricUnlockController,
                 mDismissCallbackRegistry);
         return mStatusBarKeyguardViewManager;
     }

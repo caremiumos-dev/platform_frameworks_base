@@ -19,6 +19,8 @@ import android.app.admin.DevicePolicyManager;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.SystemClock;
+import android.hardware.biometrics.BiometricSourceType;
+import android.hardware.face.FaceAuthenticationManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.telephony.TelephonyManager;
 import android.view.WindowManagerPolicy;
@@ -212,38 +214,44 @@ public class KeyguardUpdateMonitorCallback {
     public void onTrustGrantedWithFlags(int flags, int userId) { }
 
     /**
-     * Called when a finger has been acquired.
+     * Called when a biometric sample has been acquired.
      * <p>
-     * It is guaranteed that either {@link #onFingerprintAuthenticated} or
-     * {@link #onFingerprintAuthFailed()} is called after this method eventually.
+     * It is guaranteed that either {@link #onBiometricAuthenticated} or
+     * {@link #onBiometricAuthFailed()} is called after this method eventually.
+     * @param biometricSourceType
      */
-    public void onFingerprintAcquired() { }
+    public void onBiometricAcquired(BiometricSourceType biometricSourceType) { }
 
     /**
-     * Called when a fingerprint couldn't be authenticated.
+     * Called when a biometric sample couldn't be authenticated.
+     * @param biometricSourceType
      */
-    public void onFingerprintAuthFailed() { }
+    public void onBiometricAuthFailed(BiometricSourceType biometricSourceType) { }
 
     /**
-     * Called when a fingerprint is recognized.
-     * @param userId the user id for which the fingerprint was authenticated
+     * Called when a biometric sample is recognized.
+     * @param userId the user id for which the biometric sample was authenticated
+     * @param biometricSourceType
      */
-    public void onFingerprintAuthenticated(int userId) { }
+    public void onBiometricAuthenticated(int userId, BiometricSourceType biometricSourceType) { }
 
     /**
-     * Called when fingerprint provides help string (e.g. "Try again")
+     * Called when biometric authentication provides help string (e.g. "Try again")
      * @param msgId
      * @param helpString
+     * @param biometricSourceType
      */
-    public void onFingerprintHelp(int msgId, String helpString) { }
+    public void onBiometricHelp(int msgId, String helpString, BiometricSourceType biometricSourceType) { }
 
     /**
-     * Called when fingerprint provides an semi-permanent error message
-     * (e.g. "Hardware not available").
+     * Called when a biometric authentication method provides a semi-permanent
+     * error message (e.g. "Hardware not available").
      * @param msgId one of the error messages listed in {@link FingerprintManager}
+     *        {@link FaceAuthenticationManager}
      * @param errString
+     * @param biometricSourceType
      */
-    public void onFingerprintError(int msgId, String errString) { }
+    public void onBiometricError(int msgId, String errString, BiometricSourceType biometricSourceType) { }
 
     /**
      * Called when the state of face unlock changed.
@@ -251,9 +259,9 @@ public class KeyguardUpdateMonitorCallback {
     public void onFaceUnlockStateChanged(boolean running, int userId) { }
 
     /**
-     * Called when the fingerprint running state changed.
+     * Called when a biometric running state changed.
      */
-    public void onFingerprintRunningStateChanged(boolean running) { }
+    public void onBiometricRunningStateChanged(boolean running, BiometricSourceType biometricSourceType) { }
 
     /**
      * Called when the state that the user hasn't used strong authentication since quite some time

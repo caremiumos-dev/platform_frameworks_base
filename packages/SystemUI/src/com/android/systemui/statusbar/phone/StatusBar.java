@@ -414,7 +414,7 @@ public class StatusBar extends SystemUI implements DemoMode,
 
     VolumeComponent mVolumeComponent;
     BrightnessMirrorController mBrightnessMirrorController;
-    protected FingerprintUnlockController mFingerprintUnlockController;
+    protected BiometricUnlockController mBiometricUnlockController;
     LightBarController mLightBarController;
     protected LockscreenWallpaper mLockscreenWallpaper;
 
@@ -1553,15 +1553,15 @@ public class StatusBar extends SystemUI implements DemoMode,
     protected void startKeyguard() {
         Trace.beginSection("StatusBar#startKeyguard");
         KeyguardViewMediator keyguardViewMediator = getComponent(KeyguardViewMediator.class);
-        mFingerprintUnlockController = new FingerprintUnlockController(mContext,
+        mBiometricUnlockController = new BiometricUnlockController(mContext,
                 mDozeScrimController, keyguardViewMediator,
                 mScrimController, this, UnlockMethodCache.getInstance(mContext));
         mStatusBarKeyguardViewManager = keyguardViewMediator.registerStatusBar(this,
                 getBouncerContainer(), mScrimController,
-                mFingerprintUnlockController);
+                mBiometricUnlockController);
         mKeyguardIndicationController
                 .setStatusBarKeyguardViewManager(mStatusBarKeyguardViewManager);
-        mFingerprintUnlockController.setStatusBarKeyguardViewManager(mStatusBarKeyguardViewManager);
+        mBiometricUnlockController.setStatusBarKeyguardViewManager(mStatusBarKeyguardViewManager);
         mRemoteInputController.addCallback(mStatusBarKeyguardViewManager);
 
         mRemoteInputController.addCallback(new RemoteInputController.Callback() {
@@ -1584,7 +1584,7 @@ public class StatusBar extends SystemUI implements DemoMode,
         });
 
         mKeyguardViewMediatorCallback = keyguardViewMediator.getViewMediatorCallback();
-        mLightBarController.setFingerprintUnlockController(mFingerprintUnlockController);
+        mLightBarController.setBiometricUnlockController(mBiometricUnlockController);
         Trace.endSection();
     }
 
@@ -2473,8 +2473,8 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         if ((hasArtwork || DEBUG_MEDIA_FAKE_ARTWORK)
                 && (mState != StatusBarState.SHADE || allowWhenShade)
-                && mFingerprintUnlockController.getMode()
-                        != FingerprintUnlockController.MODE_WAKE_AND_UNLOCK_PULSING
+                && mBiometricUnlockController.getMode()
+                        != BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING
                 && !hideBecauseOccluded) {
             // time to show some art!
             if (mBackdrop.getVisibility() != View.VISIBLE) {
@@ -2538,8 +2538,8 @@ public class StatusBar extends SystemUI implements DemoMode,
                 if (DEBUG_MEDIA) {
                     Log.v(TAG, "DEBUG_MEDIA: Fading out album artwork");
                 }
-                if (mFingerprintUnlockController.getMode()
-                        == FingerprintUnlockController.MODE_WAKE_AND_UNLOCK_PULSING
+                if (mBiometricUnlockController.getMode()
+                        == BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING
                         || hideBecauseOccluded) {
 
                     // We are unlocking directly - no animation!
@@ -3245,8 +3245,8 @@ public class StatusBar extends SystemUI implements DemoMode,
         return mGestureRec;
     }
 
-    public FingerprintUnlockController getFingerprintUnlockController() {
-        return mFingerprintUnlockController;
+    public BiometricUnlockController getBiometricUnlockController() {
+        return mBiometricUnlockController;
     }
 
     @Override // CommandQueue
@@ -3594,8 +3594,8 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         DozeLog.dump(pw);
 
-        if (mFingerprintUnlockController != null) {
-            mFingerprintUnlockController.dump(pw);
+        if (mBiometricUnlockController != null) {
+            mBiometricUnlockController.dump(pw);
         }
 
         if (mScrimController != null) {
@@ -3861,10 +3861,10 @@ public class StatusBar extends SystemUI implements DemoMode,
                 && mUnlockMethodCache.canSkipBouncer()
                 && !mLeaveOpenOnKeyguardHide
                 && isPulsing()) {
-            // Reuse the fingerprint wake-and-unlock transition if we dismiss keyguard from a pulse.
-            // TODO: Factor this transition out of FingerprintUnlockController.
-            mFingerprintUnlockController.startWakeAndUnlock(
-                    FingerprintUnlockController.MODE_WAKE_AND_UNLOCK_PULSING);
+            // Reuse the biometric wake-and-unlock transition if we dismiss keyguard from a pulse.
+            // TODO: Factor this transition out of BiometricUnlockController.
+            mBiometricUnlockController.startWakeAndUnlock(
+                    BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING);
         }
         if (mStatusBarKeyguardViewManager.isShowing()) {
             mStatusBarKeyguardViewManager.dismissWithAction(action, cancelAction,
@@ -4314,8 +4314,8 @@ public class StatusBar extends SystemUI implements DemoMode,
     }
 
     private boolean updateIsKeyguard() {
-        boolean wakeAndUnlocking = mFingerprintUnlockController.getMode()
-                == FingerprintUnlockController.MODE_WAKE_AND_UNLOCK;
+        boolean wakeAndUnlocking = mBiometricUnlockController.getMode()
+                == BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
 
         // For dozing, keyguard needs to be shown whenever the device is non-interactive. Otherwise
         // there's no surface we can show to the user. Note that the device goes fully interactive
@@ -4362,8 +4362,8 @@ public class StatusBar extends SystemUI implements DemoMode,
     }
 
     private void updatePanelExpansionForKeyguard() {
-        if (mState == StatusBarState.KEYGUARD && mFingerprintUnlockController.getMode()
-                != FingerprintUnlockController.MODE_WAKE_AND_UNLOCK) {
+        if (mState == StatusBarState.KEYGUARD && mBiometricUnlockController.getMode()
+                != BiometricUnlockController.MODE_WAKE_AND_UNLOCK) {
             instantExpandNotificationsPanel();
         } else if (mState == StatusBarState.FULLSCREEN_USER_SWITCHER) {
             instantCollapseNotificationPanel();
@@ -5457,7 +5457,7 @@ public class StatusBar extends SystemUI implements DemoMode,
                 || mScreenLifecycle.getScreenState() == ScreenLifecycle.SCREEN_ON;
     }
 
-    public void notifyFpAuthModeChanged() {
+    public void notifyBiometricAuthModeChanged() {
         updateDozing();
     }
 
@@ -5465,12 +5465,12 @@ public class StatusBar extends SystemUI implements DemoMode,
         Trace.beginSection("StatusBar#updateDozing");
         // When in wake-and-unlock while pulsing, keep dozing state until fully unlocked.
         mDozing = mDozingRequested && mState == StatusBarState.KEYGUARD
-                || mFingerprintUnlockController.getMode()
-                        == FingerprintUnlockController.MODE_WAKE_AND_UNLOCK_PULSING;
+                || mBiometricUnlockController.getMode()
+                        == BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING;
         // When in wake-and-unlock we may not have received a change to mState
         // but we still should not be dozing, manually set to false.
-        if (mFingerprintUnlockController.getMode() ==
-                FingerprintUnlockController.MODE_WAKE_AND_UNLOCK) {
+        if (mBiometricUnlockController.getMode() ==
+                BiometricUnlockController.MODE_WAKE_AND_UNLOCK) {
             mDozing = false;
         }
         mStatusBarWindowManager.setDozing(mDozing);
@@ -5601,8 +5601,8 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         @Override
         public boolean isPulsingBlocked() {
-            return mFingerprintUnlockController.getMode()
-                    == FingerprintUnlockController.MODE_WAKE_AND_UNLOCK;
+            return mBiometricUnlockController.getMode()
+                    == BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
         }
 
         @Override
@@ -5613,7 +5613,7 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         @Override
         public boolean isBlockingDoze() {
-            if (mFingerprintUnlockController.hasPendingAuthentication()) {
+            if (mBiometricUnlockController.hasPendingAuthentication()) {
                 Log.i(TAG, "Blocking AOD because fingerprint has authenticated");
                 return true;
             }

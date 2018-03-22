@@ -1460,8 +1460,16 @@ public class LockPatternUtils {
      * @see StrongAuthTracker#isFingerprintAllowedForUser
      */
     public boolean isFingerprintAllowedForUser(int userId) {
-        return (getStrongAuthForUser(userId) & ~StrongAuthTracker.ALLOWING_FINGERPRINT) == 0;
+        return (getStrongAuthForUser(userId) & ~StrongAuthTracker.ALLOWING_BIOMETRIC) == 0;
     }
+
+    /**
+     * @see StrongAuthTracker#isFaceAllowedForUser
+     */
+    public boolean isFaceAllowedForUser(int userId) {
+        return (getStrongAuthForUser(userId) & ~StrongAuthTracker.ALLOWING_BIOMETRIC) == 0;
+    }
+
 
     private ICheckCredentialProgressCallback wrapCallback(
             final CheckCredentialProgressCallback callback) {
@@ -1651,11 +1659,11 @@ public class LockPatternUtils {
         public static final int STRONG_AUTH_REQUIRED_AFTER_TIMEOUT = 0x10;
 
         /**
-         * Strong auth flags that do not prevent fingerprint from being accepted as auth.
+         * Strong auth flags that do not prevent biometric methods from being accepted as auth.
          *
-         * If any other flags are set, fingerprint is disabled.
+         * If any other flags are set, biometric authenticaion is disabled.
          */
-        private static final int ALLOWING_FINGERPRINT = STRONG_AUTH_NOT_REQUIRED
+        private static final int ALLOWING_BIOMETRIC = STRONG_AUTH_NOT_REQUIRED
                 | SOME_AUTH_REQUIRED_AFTER_USER_REQUEST;
 
         private final SparseIntArray mStrongAuthRequiredForUser = new SparseIntArray();
@@ -1702,11 +1710,11 @@ public class LockPatternUtils {
         }
 
         /**
-         * @return true if unlocking with fingerprint alone is allowed for {@param userId} by the
-         * current strong authentication requirements.
+         * @return true if unlocking with a biometric method alone is allowed for {@param userId}
+         * by the current strong authentication requirements.
          */
-        public boolean isFingerprintAllowedForUser(int userId) {
-            return (getStrongAuthForUser(userId) & ~ALLOWING_FINGERPRINT) == 0;
+        public boolean isBiometricAllowedForUser(int userId) {
+            return (getStrongAuthForUser(userId) & ~ALLOWING_BIOMETRIC) == 0;
         }
 
         /**

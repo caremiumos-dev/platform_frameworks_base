@@ -1,0 +1,64 @@
+/*
+ * Copyright (C) 2015 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.hardware.face;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+/**
+ * Container for face metadata.
+ *
+ * @hide
+ */
+public final class Face implements Parcelable {
+    private long mDeviceId; // physical device this face is associated with
+
+    public Face(long deviceId) {
+        mDeviceId = deviceId;
+    }
+
+    private Face(Parcel in) {
+        mDeviceId = in.readLong();
+    }
+
+    /**
+     * Device this face belongs to.
+     *
+     * @hide
+     */
+    public long getDeviceId() {
+        return mDeviceId;
+    }
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeLong(mDeviceId);
+    }
+
+    public static final Parcelable.Creator<Face> CREATOR = new Parcelable.Creator<Face>() {
+            public Face createFromParcel(Parcel in) {
+                return new Face(in);
+            }
+
+            public Face[] newArray(int size) {
+                return new Face[size];
+            }
+    };
+}

@@ -2942,6 +2942,7 @@ public abstract class Context {
             NSD_SERVICE,
             AUDIO_SERVICE,
             FINGERPRINT_SERVICE,
+            //@hide: FACE_SERVICE,
             MEDIA_ROUTER_SERVICE,
             TELEPHONY_SERVICE,
             TELEPHONY_SUBSCRIPTION_SERVICE,
@@ -3518,6 +3519,17 @@ public abstract class Context {
      * @see android.hardware.fingerprint.FingerprintManager
      */
     public static final String FINGERPRINT_SERVICE = "fingerprint";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve a
+     * {@link android.hardware.face.FaceAuthenticationManager} for handling management
+     * of face authentication.
+     *
+     * @hide
+     * @see #getSystemService
+     * @see android.hardware.face.FaceAuthenticationManager
+     */
+    public static final String FACE_SERVICE = "face_authentication";
 
     /**
      * Use with {@link #getSystemService} to retrieve a

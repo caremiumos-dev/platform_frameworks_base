@@ -2977,8 +2977,8 @@ public class DevicePolicyManager {
 
     /**
      * Called by a device/profile owner to set the timeout after which unlocking with secondary, non
-     * strong auth (e.g. fingerprint, trust agents) times out, i.e. the user has to use a strong
-     * authentication method like password, pin or pattern.
+     * strong auth (e.g. fingerprint, face, trust agents) times out, i.e. the user has to use a
+     * strong authentication method like password, pin or pattern.
      *
      * <p>This timeout is used internally to reset the timer to require strong auth again after
      * specified timeout each time it has been successfully used.
@@ -3378,6 +3378,12 @@ public class DevicePolicyManager {
     public static final int KEYGUARD_DISABLE_REMOTE_INPUT = 1 << 6;
 
     /**
+     * Disable face authentication on keyguard secure screens (e.g. PIN/Pattern/Password).
+     * @hide
+     */
+    public static final int KEYGUARD_DISABLE_FACE = 1 << 8;
+
+    /**
      * Disable all current and future keyguard customizations.
      */
     public static final int KEYGUARD_DISABLE_FEATURES_ALL = 0x7fffffff;
@@ -3391,7 +3397,8 @@ public class DevicePolicyManager {
      */
     public static final int PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER =
             DevicePolicyManager.KEYGUARD_DISABLE_TRUST_AGENTS
-            | DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT;
+            | DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT
+            | DevicePolicyManager.KEYGUARD_DISABLE_FACE;
 
     /**
      * Called by an application that is administering the device to request that the storage system
@@ -4241,7 +4248,8 @@ public class DevicePolicyManager {
      *            {@link #KEYGUARD_DISABLE_SECURE_NOTIFICATIONS},
      *            {@link #KEYGUARD_DISABLE_TRUST_AGENTS},
      *            {@link #KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS},
-     *            {@link #KEYGUARD_DISABLE_FINGERPRINT}, {@link #KEYGUARD_DISABLE_FEATURES_ALL}
+     *            {@link #KEYGUARD_DISABLE_FINGERPRINT},
+     *            {@link #KEYGUARD_DISABLE_FEATURES_ALL}
      * @throws SecurityException if {@code admin} is not an active administrator or does not user
      *             {@link DeviceAdminInfo#USES_POLICY_DISABLE_KEYGUARD_FEATURES}
      */
@@ -4374,10 +4382,10 @@ public class DevicePolicyManager {
     /**
      * @hide
      */
-    public void reportFailedFingerprintAttempt(int userHandle) {
+    public void reportFailedBiometricAttempt(int userHandle) {
         if (mService != null) {
             try {
-                mService.reportFailedFingerprintAttempt(userHandle);
+                mService.reportFailedBiometricAttempt(userHandle);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -4387,10 +4395,10 @@ public class DevicePolicyManager {
     /**
      * @hide
      */
-    public void reportSuccessfulFingerprintAttempt(int userHandle) {
+    public void reportSuccessfulBiometricAttempt(int userHandle) {
         if (mService != null) {
             try {
-                mService.reportSuccessfulFingerprintAttempt(userHandle);
+                mService.reportSuccessfulBiometricAttempt(userHandle);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
