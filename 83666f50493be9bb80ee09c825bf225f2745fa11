@@ -25,6 +25,29 @@
     },
     {
       "key": {
+        "uuid": "8c54988d_443c24cd",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 1167,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-04-06T08:05:25Z",
+      "side": 1,
+      "message": "Maybe updateConfigAndReevaluate... ?\nI don\u0027t think there is anything wrong with this really, but the name does not really suggest this method will update the entire configuration (and it didn\u0027t use to) ; more than callers expecting it not to, I\u0027m worried callers may call updateConfiguration() just beforehand, which would be a waste.",
+      "range": {
+        "startLine": 1167,
+        "startChar": 17,
+        "endLine": 1167,
+        "endChar": 46
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "49ec9ae6_9a5c548e",
         "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
         "patchSetId": 10
@@ -41,6 +64,29 @@
         "startChar": 8,
         "endLine": 108,
         "endChar": 23
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "355fe270_9c9ce6c6",
+        "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-04-06T08:05:25Z",
+      "side": 1,
+      "message": "s/Povision/Provision",
+      "range": {
+        "startLine": 110,
+        "startChar": 30,
+        "endLine": 110,
+        "endChar": 51
       },
       "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
