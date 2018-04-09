@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "4e04b244_ebf09e07",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 376,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-04-09T01:35:08Z",
+      "side": 1,
+      "message": "Actually, I think removing this here is probably best.  The root issue was, I believe, the sticky broadcast and the fact that we were starting a carrier config listener each and every tethering/untethering cycle.  This extra check here is superfluous.",
+      "parentUuid": "344c73cb_f2461d31",
+      "range": {
+        "startLine": 376,
+        "startChar": 8,
+        "endLine": 376,
+        "endChar": 27
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8c54988d_443c24cd",
         "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
         "patchSetId": 10
@@ -45,6 +69,30 @@
       "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "89e2c361_3ca1a66a",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 1167,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-04-09T01:35:08Z",
+      "side": 1,
+      "message": "I moved it up to the only call site for this method instead.",
+      "parentUuid": "8c54988d_443c24cd",
+      "range": {
+        "startLine": 1167,
+        "startChar": 17,
+        "endLine": 1167,
+        "endChar": 46
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "3259e3c5_3c89dcde",
+        "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-04-09T01:35:08Z",
+      "side": 1,
+      "message": "Done (though the old didn\u0027t bother, I think)",
+      "parentUuid": "49ec9ae6_9a5c548e",
+      "range": {
+        "startLine": 108,
+        "startChar": 8,
+        "endLine": 108,
+        "endChar": 23
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "355fe270_9c9ce6c6",
         "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
         "patchSetId": 10
@@ -94,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "fc3c98fe_0f0f120e",
+        "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-04-09T01:35:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "355fe270_9c9ce6c6",
+      "range": {
+        "startLine": 110,
+        "startChar": 30,
+        "endLine": 110,
+        "endChar": 51
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da1a229f_2f2aa266",
         "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
         "patchSetId": 10
@@ -114,6 +210,30 @@
       "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9b183cf_a5ad8b50",
+        "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-04-09T01:35:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da1a229f_2f2aa266",
+      "range": {
+        "startLine": 277,
+        "startChar": 26,
+        "endLine": 277,
+        "endChar": 47
+      },
+      "revId": "83666f50493be9bb80ee09c825bf225f2745fa11",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
