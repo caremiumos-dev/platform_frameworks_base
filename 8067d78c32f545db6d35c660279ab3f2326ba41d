@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "5246a1d3_29f6e04f",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 1367,
+      "author": {
+        "id": 1000451
+      },
+      "writtenOn": "2018-04-09T08:34:40Z",
+      "side": 1,
+      "message": "Yeah, this is a consequence of the incremental refactoring from the old code circa 2+ years ago.\n\nSome of this is ... \u003credacted\u003e, if you ask me, and finishing the refactoring a high personal priority.",
+      "parentUuid": "5224aed9_0baa7a09",
+      "range": {
+        "startLine": 1367,
+        "startChar": 12,
+        "endLine": 1367,
+        "endChar": 24
+      },
+      "revId": "8067d78c32f545db6d35c660279ab3f2326ba41d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "328bef65_a2eed227",
         "filename": "services/core/java/com/android/server/connectivity/tethering/TetheringConfiguration.java",
         "patchSetId": 11
