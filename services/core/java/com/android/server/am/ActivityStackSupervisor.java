@@ -2072,7 +2072,7 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
         // makes sense to.
         if (r.app != null && fgApp != null && r.app != fgApp
                 && r.lastVisibleTime > mService.mPreviousProcessVisibleTime
-                && r.app != mService.mHomeProcess) {
+                && r.app != mService.mHomeProcess && !r.isRecentsActivity()) {
             mService.mPreviousProcess = r.app;
             mService.mPreviousProcessVisibleTime = r.lastVisibleTime;
         }
