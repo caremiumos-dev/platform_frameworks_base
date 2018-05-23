@@ -506,6 +506,21 @@ public class HdmiCecMessageBuilder {
     }
 
     /**
+     * Build &lt;Menu Request&gt; command.
+     *
+     * @param src source address of command
+     * @param dest destination address of command
+     * @param menuRequestType request menu type of the device
+     * @return newly created {@link HdmiCecMessage}
+     */
+    static HdmiCecMessage buildMenuRequest(int src, int dest, int menuRequestType) {
+        byte[] param = new byte[] {
+                (byte) (menuRequestType & 0xFF)
+        };
+        return buildCommand(src, dest, Constants.MESSAGE_MENU_REQUEST, param);
+    }
+
+    /**
      * Build &lt;Set Analogue Timer&gt; command.
      *
      * @param src source address of command

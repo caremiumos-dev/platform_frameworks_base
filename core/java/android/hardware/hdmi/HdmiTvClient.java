@@ -239,6 +239,32 @@ public final class HdmiTvClient extends HdmiClient {
         }
     }
 
+    /**
+     * Sends a Menu Request command to other device.
+     *
+     * @param menuRequestType Specifies whether to activate or deactive a
+     *         devcie's menu or simply query its current menu status.
+     */
+    public void sendMenuRequest(int menuRequestType) {
+        try {
+            mService.sendMenuRequest(menuRequestType);
+        } catch (RemoteException e) {
+            Log.e(TAG, "sendMenuRequest threw exception ", e);
+        }
+    }
+
+    /**
+     * Return device's menu state.
+     */
+    public boolean getMenuState() {
+        try {
+            return mService.getMenuState();
+        } catch (RemoteException e) {
+            Log.e(TAG, "getMenuState threw exception ", e);
+            return false;
+        }
+    }
+
     private static IHdmiRecordListener getListenerWrapper(final HdmiRecordListener callback) {
         return new IHdmiRecordListener.Stub() {
             @Override

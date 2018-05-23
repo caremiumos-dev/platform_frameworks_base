@@ -63,6 +63,7 @@ abstract class HdmiCecLocalDevice {
     static class ActiveSource {
         int logicalAddress;
         int physicalAddress;
+        boolean menuActivated;
 
         public ActiveSource() {
             invalidate();

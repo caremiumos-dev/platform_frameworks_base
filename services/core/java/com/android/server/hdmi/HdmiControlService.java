@@ -1574,6 +1574,30 @@ public final class HdmiControlService extends SystemService {
         }
 
         @Override
+        public void sendMenuRequest(int menuRequestType) {
+            enforceAccessPermission();
+            runOnServiceThread(new Runnable() {
+                @Override
+                public void run() {
+                    HdmiCecLocalDeviceTv tv = tv();
+                    if (tv == null) {
+                        Slog.w(TAG, "Local tv device not available");
+                        return;
+                    }
+                    tv.sendMenuRequest(menuRequestType);
+                }
+            });
+        }
+
+        @Override
+        public boolean getMenuState() {
+            HdmiCecLocalDeviceTv tv = tv();
+            synchronized (mLock) {
+                return (tv == null) ? true : tv.getMenuState();
+            }
+        }
+
+        @Override
         public void setHdmiRecordListener(IHdmiRecordListener listener) {
             enforceAccessPermission();
             HdmiControlService.this.setHdmiRecordListener(listener);

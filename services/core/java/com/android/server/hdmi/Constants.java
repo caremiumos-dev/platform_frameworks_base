@@ -179,6 +179,11 @@ final class Constants {
     static final int MENU_STATE_ACTIVATED = 0;
     static final int MENU_STATE_DEACTIVATED = 1;
 
+    // [Menu Request Type]
+    static final int MENU_REQUEST_TYPE_ACTIVATED = 0;
+    static final int MENU_REQUEST_TYPE_DEACTIVATED = 1;
+    static final int MENU_REQUEST_TYPE_QUERY = 2;
+
     // Bit mask used to get the routing path of the top level device.
     // When &'d with the path 1.2.2.0 (0x1220), for instance, gives 1.0.0.0.
     static final int ROUTING_PATH_TOP_MASK = 0xF000;

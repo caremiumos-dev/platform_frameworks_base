@@ -192,7 +192,7 @@ public final class HdmiCecMessage {
             case Constants.MESSAGE_GIVE_DEVICE_VENDOR_ID:
                 return "Give Device Vendor Id";
             case Constants.MESSAGE_MENU_REQUEST:
-                return "Menu REquest";
+                return "Menu Request";
             case Constants.MESSAGE_MENU_STATUS:
                 return "Menu Status";
             case Constants.MESSAGE_GIVE_DEVICE_POWER_STATUS:
