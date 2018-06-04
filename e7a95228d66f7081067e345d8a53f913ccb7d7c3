@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "954590b3_0f695671",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1273909
+      },
+      "writtenOn": "2018-06-04T05:00:00Z",
+      "side": 1,
+      "message": "Removed.",
+      "parentUuid": "2fe045d5_8bf4afa9",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 68
+      },
+      "revId": "e7a95228d66f7081067e345d8a53f913ccb7d7c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c6ce0282_eb67849a",
         "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
         "patchSetId": 1
@@ -45,6 +69,30 @@
       "revId": "e7a95228d66f7081067e345d8a53f913ccb7d7c3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c198c9a_a8f96262",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1273909
+      },
+      "writtenOn": "2018-06-04T05:00:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c6ce0282_eb67849a",
+      "range": {
+        "startLine": 120,
+        "startChar": 0,
+        "endLine": 120,
+        "endChar": 26
+      },
+      "revId": "e7a95228d66f7081067e345d8a53f913ccb7d7c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }

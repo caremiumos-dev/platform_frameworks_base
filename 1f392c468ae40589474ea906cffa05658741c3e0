@@ -16,6 +16,24 @@
       "revId": "1f392c468ae40589474ea906cffa05658741c3e0",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "95ef46e8_0c8dd354",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1273909
+      },
+      "writtenOn": "2018-06-04T05:00:00Z",
+      "side": 0,
+      "message": "Ah, restored the blank line.",
+      "parentUuid": "95c73574_c90e4ab0",
+      "revId": "1f392c468ae40589474ea906cffa05658741c3e0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
