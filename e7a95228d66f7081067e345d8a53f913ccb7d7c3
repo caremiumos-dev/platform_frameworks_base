@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "2fe045d5_8bf4afa9",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-06-04T04:41:36Z",
+      "side": 1,
+      "message": "Is that commit merged, or about to be merged? If not, remove this line; then, if you merge that commit after this one, add a \"(cherry picked from \u003cthis commit\u003e)\" line before merging it.",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 68
+      },
+      "revId": "e7a95228d66f7081067e345d8a53f913ccb7d7c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c6ce0282_eb67849a",
         "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
         "patchSetId": 1
