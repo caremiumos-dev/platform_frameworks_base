@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b7414b4a_e5461d76",
+        "filename": "services/core/jni/com_android_server_tv_TvInputHal.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 400,
+      "author": {
+        "id": 1018606
+      },
+      "writtenOn": "2018-06-04T16:59:05Z",
+      "side": 1,
+      "message": "sidebandStream \u003d native_handle_clone(handle);",
+      "range": {
+        "startLine": 393,
+        "startChar": 24,
+        "endLine": 400,
+        "endChar": 25
+      },
+      "revId": "c090b7f5c084de8592145d713220ecad32d2889b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
