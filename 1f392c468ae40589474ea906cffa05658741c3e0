@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "95c73574_c90e4ab0",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2018-06-04T04:40:12Z",
+      "side": 0,
+      "message": "Why remove this? Generally I think blank lines are encouraged between import sections. Also, the imports are often where merge conflicts happen, so making changes there is generally more painful than elsewhere.",
+      "revId": "1f392c468ae40589474ea906cffa05658741c3e0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
