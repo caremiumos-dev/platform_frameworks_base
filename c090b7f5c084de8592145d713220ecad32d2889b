@@ -22,6 +22,30 @@
       "revId": "c090b7f5c084de8592145d713220ecad32d2889b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9c23d4a_bf92d3c8",
+        "filename": "services/core/jni/com_android_server_tv_TvInputHal.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 400,
+      "author": {
+        "id": 1026966
+      },
+      "writtenOn": "2018-06-04T18:25:21Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "b7414b4a_e5461d76",
+      "range": {
+        "startLine": 393,
+        "startChar": 24,
+        "endLine": 400,
+        "endChar": 25
+      },
+      "revId": "c090b7f5c084de8592145d713220ecad32d2889b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
