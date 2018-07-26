@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4cb5dd0b_9cb5d0bc",
+        "filename": "services/core/jni/com_android_server_tv_TvInputHal.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1026966
+      },
+      "writtenOn": "2018-07-26T23:25:53Z",
+      "side": 1,
+      "message": "According to the hal documentation, the implementation should return a handle when it returns OK. So, I think this case deserves error case handling like L401~L403.",
+      "range": {
+        "startLine": 396,
+        "startChar": 28,
+        "endLine": 396,
+        "endChar": 50
+      },
+      "revId": "964446178853a21cb0245755a5b6d8c71092ad0f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
