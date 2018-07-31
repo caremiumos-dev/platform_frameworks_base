@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "45ae9719_3742284e",
+        "filename": "services/core/jni/com_android_server_tv_TvInputHal.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 1026966
+      },
+      "writtenOn": "2018-07-31T16:22:57Z",
+      "side": 1,
+      "message": "I am not sure how returning within lambda works here. Can you check this compiles?\n\nYou can just simply do \"result \u003d Result::UNKNOWN;\" to make this case fall into L402.",
+      "range": {
+        "startLine": 396,
+        "startChar": 28,
+        "endLine": 398,
+        "endChar": 49
+      },
+      "revId": "613f3d1d2bb07f383cd4a2cb60a326271fa466cd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
