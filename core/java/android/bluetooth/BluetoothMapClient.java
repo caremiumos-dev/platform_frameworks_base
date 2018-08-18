@@ -395,6 +395,34 @@ public final class BluetoothMapClient implements BluetoothProfile {
         return false;
     }
 
+    /**
+     * Returns the "Uploading" feature bit value from the SDP record's
+     * MapSupportedFeatures field (see Bluetooth MAP 1.4 spec, page 114).
+     * @param device The Bluetooth device to get this value for.
+     * @return The Uploading bit value SDP record's MapSupportedFeatures field. Returns -1
+     *         if any error.
+     */
+    public int remoteSupportsUploading(BluetoothDevice device) {
+        if (DBG) Log.d(TAG, "in BluetoothMapClient, getSupportedFeatures(" + device + ")");
+
+        final IBluetoothMapClient service = mService;
+        if (service != null && isEnabled() && isValidDevice(device)) {
+            try {
+                int value = service.getSupportedFeatures(device);
+                value &= 0x08;
+                if (DBG) Log.d(TAG, "returning in remoteSupportsUploading: " + value);
+                return value;
+            } catch (RemoteException e) {
+                Log.e(TAG, e.getMessage());
+            }
+        }
+        if (DBG) {
+            Log.d(TAG,
+                    "returning 0 in remoteSupportsUploading because device/service is not valid");
+        }
+        return -1;
+    }
+
     private final ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             if (DBG) Log.d(TAG, "Proxy object connected");
