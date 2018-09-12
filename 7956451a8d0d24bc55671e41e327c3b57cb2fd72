@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b8e9336b_b32f72d7",
+        "filename": "packages/SystemUI/res/layout/operator_name.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1146169
+      },
+      "writtenOn": "2018-09-12T18:41:07Z",
+      "side": 1,
+      "message": "This should use android:paddingEnd instead of paddingRight in order to support RTL layouts",
+      "revId": "7956451a8d0d24bc55671e41e327c3b57cb2fd72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
