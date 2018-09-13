@@ -364,7 +364,10 @@ public class NetworkMonitor extends StateMachine {
 
     @Override
     protected void log(String s) {
-        if (DBG) Log.d(TAG + "/" + mNetworkAgentInfo.name(), s);
+        if (DBG) {
+            Log.d(TAG + "/" + (mNetworkAgentInfo == null
+                    ? "Network Agent Info is null" : mNetworkAgentInfo.name()), s);
+        }
     }
 
     private void validationLog(int probeType, Object url, String msg) {

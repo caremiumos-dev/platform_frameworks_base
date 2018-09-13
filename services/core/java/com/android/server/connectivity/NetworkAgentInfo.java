@@ -16,7 +16,6 @@
 
 package com.android.server.connectivity;
 
-import static android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED;
 
 import android.content.Context;
 import android.net.LinkProperties;
@@ -29,7 +28,6 @@ import android.net.NetworkState;
 import android.os.Handler;
 import android.os.INetworkManagementService;
 import android.os.Messenger;
-import android.os.RemoteException;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseArray;
@@ -37,11 +35,8 @@ import android.util.SparseArray;
 import com.android.internal.util.AsyncChannel;
 import com.android.internal.util.WakeupMessage;
 import com.android.server.ConnectivityService;
-import com.android.server.connectivity.NetworkMonitor;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -431,7 +426,8 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
         // selected and we're trying to see what its score could be. This ensures that we don't tear
         // down an explicitly selected network before the user gets a chance to prefer it when
         // a higher-scoring network (e.g., Ethernet) is available.
-        if (networkMisc.explicitlySelected && (networkMisc.acceptUnvalidated || pretendValidated)) {
+        if (networkMisc != null && networkMisc.explicitlySelected
+                && (networkMisc.acceptUnvalidated || pretendValidated)) {
             return ConnectivityConstants.MAXIMUM_NETWORK_SCORE;
         }
 
@@ -596,18 +592,19 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
     }
 
     public String toString() {
-        return "NetworkAgentInfo{ ni{" + networkInfo + "}  " +
-                "network{" + network + "}  nethandle{" + network.getNetworkHandle() + "}  " +
-                "lp{" + linkProperties + "}  " +
-                "nc{" + networkCapabilities + "}  Score{" + getCurrentScore() + "}  " +
-                "everValidated{" + everValidated + "}  lastValidated{" + lastValidated + "}  " +
-                "created{" + created + "} lingering{" + isLingering() + "} " +
-                "explicitlySelected{" + networkMisc.explicitlySelected + "} " +
-                "acceptUnvalidated{" + networkMisc.acceptUnvalidated + "} " +
-                "everCaptivePortalDetected{" + everCaptivePortalDetected + "} " +
-                "lastCaptivePortalDetected{" + lastCaptivePortalDetected + "} " +
-                "clat{" + clatd + "} " +
-                "}";
+        return "NetworkAgentInfo{ ni{" + networkInfo + "}  "
+                + "network{" + network + "}  nethandle{" + network.getNetworkHandle() + "}  "
+                + "lp{" + linkProperties + "}  "
+                + "nc{" + networkCapabilities + "}  Score{" + getCurrentScore() + "}  "
+                + "everValidated{" + everValidated + "}  lastValidated{" + lastValidated + "}  "
+                + "created{" + created + "} lingering{" + isLingering() + "} "
+                + "explicitlySelected{"
+                + (networkMisc == null ? "NULL" : networkMisc.explicitlySelected) + "} "
+                + "acceptUnvalidated{"
+                + (networkMisc == null ? "NULL" : networkMisc.acceptUnvalidated) + "} "
+                + "everCaptivePortalDetected{" + everCaptivePortalDetected + "} "
+                + "lastCaptivePortalDetected{" + lastCaptivePortalDetected + "} "
+                + "clat{" + clatd + "} " + "}";
     }
 
     public String name() {
