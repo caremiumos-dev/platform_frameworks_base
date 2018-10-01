@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba332b8c_43dd2222",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1138679
+      },
+      "writtenOn": "2018-10-01T18:25:22Z",
+      "side": 1,
+      "message": "Can you address the following info here:\n\n1. What is the wrong?\n2. Why this CL fix it",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 0
+      },
+      "revId": "3d8dd1ae2c5b7aad91594062e53ef3bc2db7212e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fbadd168_66d7bd7b",
+        "filename": "packages/SettingsLib/src/com/android/settingslib/bluetooth/CachedBluetoothDeviceManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1138679
+      },
+      "writtenOn": "2018-10-01T18:25:22Z",
+      "side": 1,
+      "message": "I am not sure how this CL fix the issue.\n\nIt seems it always get the other device and show its summary, are you sure this is the correct behaviour? Is it possible that this device has correct summary, not the other device?",
+      "range": {
+        "startLine": 165,
+        "startChar": 0,
+        "endLine": 169,
+        "endChar": 9
+      },
+      "revId": "3d8dd1ae2c5b7aad91594062e53ef3bc2db7212e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "697d7a98_8f8a3164",
+        "filename": "packages/SettingsLib/tests/robotests/src/com/android/settingslib/bluetooth/LocalBluetoothProfileManagerTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 1138679
+      },
+      "writtenOn": "2018-10-01T18:25:22Z",
+      "side": 1,
+      "message": "is this valid syncId?",
+      "range": {
+        "startLine": 213,
+        "startChar": 77,
+        "endLine": 213,
+        "endChar": 78
+      },
+      "revId": "3d8dd1ae2c5b7aad91594062e53ef3bc2db7212e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
