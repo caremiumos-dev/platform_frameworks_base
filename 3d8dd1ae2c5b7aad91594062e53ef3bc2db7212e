@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "d5c66121_074cb58a",
+        "filename": "packages/SettingsLib/src/com/android/settingslib/bluetooth/CachedBluetoothDeviceManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1152864
+      },
+      "writtenOn": "2018-10-01T20:28:05Z",
+      "side": 1,
+      "message": "I added more comments.\nThis method is to return the \"Device Summary\" of the other side and the previous comments are not clear. The previous method of checking the other side in the mHearingAidDevicesNotAddedInCache does not works in this case: When both devices are not connected and CachedBluetoothDeviceManager randomly choose one side as the primary (in cache) device. The user is in \"Device Detail\" page, and then the other side (not in cache) connects. At this time, the CachedBluetoothDevice parameter, device, that is passed into this method  may not be the one that CachedBluetoothDeviceManager has chosen to be the primary (in cache) one.\nUsing the getHearingAidOtherDevice() method is clearer and more reliable.",
+      "parentUuid": "fbadd168_66d7bd7b",
+      "range": {
+        "startLine": 165,
+        "startChar": 0,
+        "endLine": 169,
+        "endChar": 9
+      },
+      "revId": "3d8dd1ae2c5b7aad91594062e53ef3bc2db7212e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "697d7a98_8f8a3164",
         "filename": "packages/SettingsLib/tests/robotests/src/com/android/settingslib/bluetooth/LocalBluetoothProfileManagerTest.java",
         "patchSetId": 1
