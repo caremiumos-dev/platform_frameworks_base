@@ -543,13 +543,15 @@ public final class PermissionsState {
 
         List<PermissionState> permissionStates = new ArrayList<>();
 
-        final int permissionCount = mPermissions.size();
-        for (int i = 0; i < permissionCount; i++) {
-            PermissionData permissionData = mPermissions.valueAt(i);
+        synchronized (mPermissions) {
+            final int permissionCount = mPermissions.size();
+            for (int i = 0; i < permissionCount; i++) {
+                PermissionData permissionData = mPermissions.valueAt(i);
 
-            PermissionState permissionState = permissionData.getPermissionState(userId);
-            if (permissionState != null) {
-                permissionStates.add(permissionState);
+                PermissionState permissionState = permissionData.getPermissionState(userId);
+                if (permissionState != null) {
+                    permissionStates.add(permissionState);
+                }
             }
         }
 
@@ -630,21 +632,25 @@ public final class PermissionsState {
         if (mPermissions == null) {
             mPermissions = new ArrayMap<>();
         }
-        PermissionData permissionData = mPermissions.get(permName);
-        if (permissionData == null) {
-            permissionData = new PermissionData(permission);
-            mPermissions.put(permName, permissionData);
+        synchronized (mPermissions) {
+            PermissionData permissionData = mPermissions.get(permName);
+            if (permissionData == null) {
+                permissionData = new PermissionData(permission);
+                mPermissions.put(permName, permissionData);
+            }
+            return permissionData;
         }
-        return permissionData;
     }
 
     private void ensureNoPermissionData(String name) {
         if (mPermissions == null) {
             return;
         }
-        mPermissions.remove(name);
-        if (mPermissions.isEmpty()) {
-            mPermissions = null;
+        synchronized (mPermissions) {
+            mPermissions.remove(name);
+            if (mPermissions.isEmpty()) {
+                mPermissions = null;
+            }
         }
     }
 
