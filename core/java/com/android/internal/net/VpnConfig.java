@@ -102,6 +102,10 @@ public class VpnConfig implements Parcelable {
     public boolean allowIPv4;
     public boolean allowIPv6;
     public Network[] underlyingNetworks;
+    // These keys will be transfered to ConnectivityService to handle default proxy.
+    // They are not handled to vpn native layer.
+    public String proxyHost;
+    public String proxyPort;
 
     public void updateAllowedFamilies(InetAddress address) {
         if (address instanceof Inet4Address) {
@@ -162,6 +166,8 @@ public class VpnConfig implements Parcelable {
         out.writeInt(allowIPv4 ? 1 : 0);
         out.writeInt(allowIPv6 ? 1 : 0);
         out.writeTypedArray(underlyingNetworks, flags);
+        out.writeString(proxyHost);
+        out.writeString(proxyPort);
     }
 
     public static final Parcelable.Creator<VpnConfig> CREATOR =
@@ -187,6 +193,8 @@ public class VpnConfig implements Parcelable {
             config.allowIPv4 = in.readInt() != 0;
             config.allowIPv6 = in.readInt() != 0;
             config.underlyingNetworks = in.createTypedArray(Network.CREATOR);
+            config.proxyHost = in.readString();
+            config.proxyPort = in.readString();
             return config;
         }
 

@@ -446,6 +446,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     // track the current default http proxy - tell the world if we get a new one (real change)
     private volatile ProxyInfo mDefaultProxy = null;
+    private volatile ProxyInfo mVPNProxy = null;
     private Object mProxyLock = new Object();
     private boolean mDefaultProxyDisabled = false;
 
@@ -3354,7 +3355,18 @@ public class ConnectivityService extends IConnectivityManager.Stub
         // enforceAccessPermission();
         synchronized (mProxyLock) {
             ProxyInfo ret = mGlobalProxy;
-            if ((ret == null) && !mDefaultProxyDisabled) ret = mDefaultProxy;
+            if (ret == null) {
+                if(!mDefaultProxyDisabled) {
+                    ret = mDefaultProxy;
+                    if (DBG) log("getProxy: mDefaultProxy return");
+                } else {
+                    ret = mVPNProxy;
+                    if (DBG) log("getProxy: mVPNProxy return");
+                }
+            } else {
+                if (DBG) log("getProxy: mGlobalProxy return");
+            }
+
             return ret;
         }
     }
@@ -5594,11 +5606,34 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
             if (networkAgent.isVPN()) {
                 // Temporarily disable the default proxy (not global).
+                // VPN proxy Setting (not global).
                 synchronized (mProxyLock) {
                     if (!mDefaultProxyDisabled) {
                         mDefaultProxyDisabled = true;
-                        if (mGlobalProxy == null && mDefaultProxy != null) {
-                            sendProxyBroadcast(null);
+                        if (mGlobalProxy == null) {
+                            int user = UserHandle.getUserId(Binder.getCallingUid());
+                            VpnConfig legacyVpnConfig;
+                            synchronized(mVpns) {
+                                legacyVpnConfig = mVpns.get(user).getLegacyVpnConfig();
+                            }
+
+                            //Initialization
+                            mVPNProxy = null;
+                            if (legacyVpnConfig != null) {
+                                String proxyHost = legacyVpnConfig.proxyHost;
+                                String proxyPort = legacyVpnConfig.proxyPort;
+                                if (!TextUtils.isEmpty(proxyHost) &&
+                                        !TextUtils.isEmpty(proxyPort)) {
+                                    // vpn proxy with empty blacklist
+                                    mVPNProxy = new ProxyInfo(proxyHost,
+                                                         Integer.parseInt(proxyPort), "");
+                                }
+                            }
+
+                            // Not broadcast when VPN Proxy and Default Proxy is null
+                            if (mVPNProxy != null || mDefaultProxy != null) {
+                                sendProxyBroadcast(mVPNProxy);
+                            }
                         }
                     }
                 }
@@ -5626,10 +5661,16 @@ public class ConnectivityService extends IConnectivityManager.Stub
                 synchronized (mProxyLock) {
                     if (mDefaultProxyDisabled) {
                         mDefaultProxyDisabled = false;
-                        if (mGlobalProxy == null && mDefaultProxy != null) {
-                            sendProxyBroadcast(mDefaultProxy);
+                        if (mGlobalProxy == null) {
+                            // Not broadcast when VPN Proxy and Default Proxy is null
+                            if (mVPNProxy != null || mDefaultProxy != null) {
+                                sendProxyBroadcast(mDefaultProxy);
+                            }
                         }
                     }
+
+                    // Clean up VPN Proxy when VPN is disconnected.
+                    mVPNProxy = null;
                 }
                 updateUids(networkAgent, networkAgent.networkCapabilities, null);
             }

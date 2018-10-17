@@ -61,6 +61,8 @@ public class VpnProfile implements Cloneable, Parcelable {
     public String ipsecUserCert = "";  // 12
     public String ipsecCaCert = "";    // 13
     public String ipsecServerCert = "";// 14
+    public String proxyHost = "";//15
+    public String proxyPort = "";//16
 
     // Helper fields.
     public boolean saveLogin = false;
@@ -87,6 +89,10 @@ public class VpnProfile implements Cloneable, Parcelable {
         ipsecCaCert = in.readString();
         ipsecServerCert = in.readString();
         saveLogin = in.readInt() != 0;
+
+        // VPN Proxy
+        proxyHost = in.readString();
+        proxyPort = in.readString();
     }
 
     @Override
@@ -108,6 +114,10 @@ public class VpnProfile implements Cloneable, Parcelable {
         out.writeString(ipsecCaCert);
         out.writeString(ipsecServerCert);
         out.writeInt(saveLogin ? 1 : 0);
+
+        // VPN Proxy
+        out.writeString(proxyHost);
+        out.writeString(proxyPort);
     }
 
     public static VpnProfile decode(String key, byte[] value) {
@@ -117,8 +127,8 @@ public class VpnProfile implements Cloneable, Parcelable {
             }
 
             String[] values = new String(value, StandardCharsets.UTF_8).split("\0", -1);
-            // There can be 14 or 15 values in ICS MR1.
-            if (values.length < 14 || values.length > 15) {
+            // There can be 14 - 17 Bytes in values.length.
+            if (values.length < 14 || values.length > 17) {
                 return null;
             }
 
@@ -141,6 +151,8 @@ public class VpnProfile implements Cloneable, Parcelable {
             profile.ipsecUserCert = values[12];
             profile.ipsecCaCert = values[13];
             profile.ipsecServerCert = (values.length > 14) ? values[14] : "";
+            profile.proxyHost = (values.length > 15) ? values[15] : "";
+            profile.proxyPort = (values.length > 16) ? values[16] : "";
 
             profile.saveLogin = !profile.username.isEmpty() || !profile.password.isEmpty();
             return profile;
@@ -166,6 +178,8 @@ public class VpnProfile implements Cloneable, Parcelable {
         builder.append('\0').append(ipsecUserCert);
         builder.append('\0').append(ipsecCaCert);
         builder.append('\0').append(ipsecServerCert);
+        builder.append('\0').append(proxyHost);
+        builder.append('\0').append(proxyPort);
         return builder.toString().getBytes(StandardCharsets.UTF_8);
     }
 
