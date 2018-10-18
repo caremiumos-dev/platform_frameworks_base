@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cb48e85c_fab22dac",
+        "filename": "services/core/java/com/android/server/audio/AudioService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 6955,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2018-10-18T16:03:54Z",
+      "side": 1,
+      "message": "can be changed to an int if not used for synchronization anymore.",
+      "range": {
+        "startLine": 6955,
+        "startChar": 12,
+        "endLine": 6955,
+        "endChar": 19
+      },
+      "revId": "ee5085431513fb44524f8e1f175e3e67788721b9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
