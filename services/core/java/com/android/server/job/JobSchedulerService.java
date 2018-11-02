@@ -1583,6 +1583,9 @@ public class JobSchedulerService extends com.android.server.SystemService
                 if (!mReadyToRock) {
                     return;
                 }
+
+                boolean abortCheckJob = false;
+
                 switch (message.what) {
                     case MSG_JOB_EXPIRED: {
                         JobStatus runNow = (JobStatus) message.obj;
@@ -1594,6 +1597,7 @@ public class JobSchedulerService extends com.android.server.SystemService
                         } else {
                             queueReadyJobsForExecutionLocked();
                         }
+                        abortCheckJob = true;
                     } break;
                     case MSG_CHECK_JOB:
                         if (mReportedActive) {
@@ -1603,13 +1607,16 @@ public class JobSchedulerService extends com.android.server.SystemService
                             // Check the list of jobs and run some of them if we feel inclined.
                             maybeQueueReadyJobsForExecutionLocked();
                         }
+                        abortCheckJob = true;
                         break;
                     case MSG_CHECK_JOB_GREEDY:
                         queueReadyJobsForExecutionLocked();
+                        abortCheckJob = true;
                         break;
                     case MSG_STOP_JOB:
                         cancelJobImplLocked((JobStatus) message.obj, null,
                                 "app no longer allowed to run");
+                        abortCheckJob = true;
                         break;
 
                     case MSG_UID_STATE_CHANGED: {
@@ -1652,7 +1659,9 @@ public class JobSchedulerService extends com.android.server.SystemService
                 }
                 maybeRunPendingJobsLocked();
                 // Don't remove JOB_EXPIRED in case one came along while processing the queue.
-                removeMessages(MSG_CHECK_JOB);
+                if (abortCheckJob) {
+                    removeMessages(MSG_CHECK_JOB);
+                }
             }
         }
     }
