@@ -188,7 +188,8 @@ public final class Zygote {
         // Resets nice priority for zygote process.
         resetNicePriority();
         int pid = nativeForkSystemServer(
-                uid, gid, gids, runtimeFlags, rlimits, permittedCapabilities, effectiveCapabilities);
+                uid, gid, gids, runtimeFlags, rlimits,
+                permittedCapabilities, effectiveCapabilities);
         // Enable tracing as soon as we enter the system_server.
         if (pid == 0) {
             Trace.setTracingEnabled(true, runtimeFlags);
@@ -210,6 +211,26 @@ public final class Zygote {
      * This method is called once.
      */
     native protected static void nativeUnmountStorageOnInit();
+
+    /**
+     * Fetch socket file descriptors (opened by init) from the environment and
+     * store them for access from native code later.
+     */
+    public static void fetchSocketFDs(boolean isPrimary) {
+        nativeFetchSocketFDs(isPrimary);
+    }
+
+    native protected static void nativeFetchSocketFDs(boolean isPrimary);
+
+    /**
+     * Initialize the blastula pool and fill it with the desired number of
+     * processes.
+     */
+    public static void initBlastulaPool() {
+        nativeInitBlastulaPool();
+    }
+
+    native protected static void nativeInitBlastulaPool();
 
     private static void callPostForkSystemServerHooks() {
         // SystemServer specific post fork hooks run before child post fork hooks.

@@ -777,7 +777,13 @@ public class ZygoteInit {
                 throw new RuntimeException("No ABI list supplied.");
             }
 
-            zygoteServer.registerServerSocketFromEnv(socketName);
+            // TODO (chriswailes): Wrap these three calls in a helper function?
+            zygoteServer.createZygoteSocket(socketName);
+            zygoteServer.createBlastulaSocket(
+                socketName.equals("zygote") ? "blastula_pool" : "blastula_secondary_pool");
+
+            Zygote.fetchSocketFDs(socketName.equals("zygote"));
+
             // In some configurations, we avoid preloading resources and classes eagerly.
             // In such cases, we will preload things prior to our first fork.
             if (!enableLazyPreload) {
@@ -819,6 +825,8 @@ public class ZygoteInit {
                     return;
                 }
             }
+
+            Zygote.initBlastulaPool();
 
             Log.i(TAG, "Accepting command socket connections");
 

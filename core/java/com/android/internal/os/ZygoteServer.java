@@ -47,11 +47,16 @@ class ZygoteServer {
     /**
      * Listening socket that accepts new server connections.
      */
-    private LocalServerSocket mServerSocket;
+    private LocalServerSocket mZygoteSocket;
 
     /**
-     * Whether or not mServerSocket's underlying FD should be closed directly.
-     * If mServerSocket is created with an existing FD, closing the socket does
+     * Listening socket that accepts new Blastula connections.
+     */
+    private LocalServerSocket mBlastulaSocket;
+
+    /**
+     * Whether or not mZygoteSocket's underlying FD should be closed directly.
+     * If mZygoteSocket is created with an existing FD, closing the socket does
      * not close the FD and it must be closed explicitly. If the socket is created
      * with a name instead, then closing the socket will close the underlying FD
      * and it should not be double-closed.
@@ -71,31 +76,60 @@ class ZygoteServer {
     }
 
     /**
-     * Registers a server socket for zygote command connections. This locates the server socket
-     * file descriptor through an ANDROID_SOCKET_ environment variable.
+     * Creates a managed object representing the Zygote socket that has already
+     * been initialized and bound by init.
+     *
+     * TODO (chriswailes): Move the name selection logic into this function.
      *
      * @throws RuntimeException when open fails
      */
-    void registerServerSocketFromEnv(String socketName) {
-        if (mServerSocket == null) {
-            int fileDesc;
-            final String fullSocketName = ANDROID_SOCKET_PREFIX + socketName;
-            try {
-                String env = System.getenv(fullSocketName);
-                fileDesc = Integer.parseInt(env);
-            } catch (RuntimeException ex) {
-                throw new RuntimeException(fullSocketName + " unset or invalid", ex);
-            }
+    void createZygoteSocket(String socketName) {
+        if (mZygoteSocket == null) {
+            mZygoteSocket = createManagedSocketFromInitSocket(socketName);
+            mCloseSocketFd = true;
+        }
+    }
 
-            try {
-                FileDescriptor fd = new FileDescriptor();
-                fd.setInt$(fileDesc);
-                mServerSocket = new LocalServerSocket(fd);
-                mCloseSocketFd = true;
-            } catch (IOException ex) {
-                throw new RuntimeException(
-                        "Error binding to local socket '" + fileDesc + "'", ex);
-            }
+    /**
+     * Creates a managed object representing the Blastula pool socket that has
+     * already been initialized and bound by init.
+     *
+     * TODO (chriswailes): Move the name selection logic into this function.
+     *
+     * @throws RuntimeException when open fails
+     */
+    void createBlastulaSocket(String socketName) {
+        if (mBlastulaSocket == null) {
+            mBlastulaSocket = createManagedSocketFromInitSocket(socketName);
+        }
+    }
+
+    /**
+     * Creates a managed LocalServerSocket object using a file descriptor
+     * created by an init.rc script.  The init scripts that specify the
+     * sockets name can be found in system/core/rootdir.  The socket is bound
+     * to the file system in the /dev/sockets/ directory, and the file
+     * descriptor is shared via the ANDROID_SOCKET_<socketName> environment
+     * variable.
+     */
+    private static LocalServerSocket createManagedSocketFromInitSocket(String socketName) {
+        int fileDesc;
+        final String fullSocketName = ANDROID_SOCKET_PREFIX + socketName;
+
+        try {
+            String env = System.getenv(fullSocketName);
+            fileDesc = Integer.parseInt(env);
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Socket unset or invalid: " + fullSocketName, ex);
+        }
+
+        try {
+            FileDescriptor fd = new FileDescriptor();
+            fd.setInt$(fileDesc);
+            return new LocalServerSocket(fd);
+        } catch (IOException ex) {
+            throw new RuntimeException(
+                "Error building socket from file descriptor: " + fileDesc, ex);
         }
     }
 
@@ -104,9 +138,9 @@ class ZygoteServer {
      * at the specified name in the abstract socket namespace.
      */
     void registerServerSocketAtAbstractName(String socketName) {
-        if (mServerSocket == null) {
+        if (mZygoteSocket == null) {
             try {
-                mServerSocket = new LocalServerSocket(socketName);
+                mZygoteSocket = new LocalServerSocket(socketName);
                 mCloseSocketFd = false;
             } catch (IOException ex) {
                 throw new RuntimeException(
@@ -121,7 +155,7 @@ class ZygoteServer {
      */
     private ZygoteConnection acceptCommandPeer(String abiList) {
         try {
-            return createNewConnection(mServerSocket.accept(), abiList);
+            return createNewConnection(mZygoteSocket.accept(), abiList);
         } catch (IOException ex) {
             throw new RuntimeException(
                     "IOException during accept()", ex);
@@ -139,9 +173,9 @@ class ZygoteServer {
      */
     void closeServerSocket() {
         try {
-            if (mServerSocket != null) {
-                FileDescriptor fd = mServerSocket.getFileDescriptor();
-                mServerSocket.close();
+            if (mZygoteSocket != null) {
+                FileDescriptor fd = mZygoteSocket.getFileDescriptor();
+                mZygoteSocket.close();
                 if (fd != null && mCloseSocketFd) {
                     Os.close(fd);
                 }
@@ -152,7 +186,7 @@ class ZygoteServer {
             Log.e(TAG, "Zygote:  error closing descriptor", ex);
         }
 
-        mServerSocket = null;
+        mZygoteSocket = null;
     }
 
     /**
@@ -161,8 +195,8 @@ class ZygoteServer {
      * closure after a child process is forked off.
      */
 
-    FileDescriptor getServerSocketFileDescriptor() {
-        return mServerSocket.getFileDescriptor();
+    FileDescriptor getZygoteSocketFileDescriptor() {
+        return mZygoteSocket.getFileDescriptor();
     }
 
     /**
@@ -174,7 +208,7 @@ class ZygoteServer {
         ArrayList<FileDescriptor> fds = new ArrayList<FileDescriptor>();
         ArrayList<ZygoteConnection> peers = new ArrayList<ZygoteConnection>();
 
-        fds.add(mServerSocket.getFileDescriptor());
+        fds.add(mZygoteSocket.getFileDescriptor());
         peers.add(null);
 
         while (true) {

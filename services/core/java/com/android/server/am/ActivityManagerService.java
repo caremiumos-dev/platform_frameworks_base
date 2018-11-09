@@ -677,6 +677,11 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     private static final int NATIVE_DUMP_TIMEOUT_MS = 2000; // 2 seconds;
 
+    /**
+     * The maximum size the blastula pools should be allowed to reach.
+     */
+    static final int MAX_BLASTULA_POOL_SIZE = 10;
+
     /** All system services */
     SystemServiceManager mSystemServiceManager;
 

@@ -82,6 +82,9 @@ using android::base::GetBoolProperty;
 #define CREATE_ERROR(...) StringPrintf("%s:%d: ", __FILE__, __LINE__). \
                               append(StringPrintf(__VA_ARGS__))
 
+// This type is duplicated in fd_utils.h
+typedef const std::function<void(std::string)>& fail_fn_t;
+
 static pid_t gSystemServerPid = 0;
 
 static const char kZygoteClassName[] = "com/android/internal/os/Zygote";
@@ -90,6 +93,79 @@ static jmethodID gCallPostForkSystemServerHooks;
 static jmethodID gCallPostForkChildHooks;
 
 static bool g_is_security_enforced = true;
+
+static constexpr size_t MAX_NAME_LENGTH = 15;
+
+/**
+ * The prefix string for environmental variables storing socket FDs created by
+ * init.
+ */
+
+static const std::string ANDROID_SOCKET_PREFIX("ANDROID_SOCKET_");
+
+/**
+ * The file descriptor for the Zygote socket opened by init.
+ */
+
+static int gZygoteSocketFD;
+
+/**
+ * The file descriptor for the Blastula pool socket opened by init.
+ */
+
+static int gBlastulaPoolSocketFD;
+
+/**
+ * The maximum value that the gBlastulaPoolMax variable may take.
+ */
+static constexpr int BLASTULA_POOL_MAX_LIMIT = 10;
+
+/**
+ * The minimum value that the gBlastulaPoolMin variable may take.
+ */
+//static constexpr int BLASTULA_POOL_MIN_LIMIT = 1;
+
+/**
+ * The runtime-adjustable maximum Blastula pool size.
+ */
+static int gBlastulaPoolMax = BLASTULA_POOL_MAX_LIMIT;
+
+/**
+ * The runtime-adjustable minimum Blastula pool size.
+ */
+//static int gBlastulaPoolMin = BLASTULA_POOL_MIN_LIMIT;
+
+/**
+ * The number of Blastulas currently in this Zygote's pool.
+ */
+static std::atomic_uint32_t gBlastulaPoolCount = 0;
+
+/**
+ * A helper class containing accounting information for Blastulas.
+ */
+struct BlastulaTableEntry {
+  int pid;
+  int readPipeFD;
+
+  BlastulaTableEntry() : pid(-1), readPipeFD(-1) {}
+
+  BlastulaTableEntry(int argPID, int argReadPipeFD) : pid(argPID), readPipeFD(argReadPipeFD) {}
+
+  void Reset() {
+    close(readPipeFD);
+    pid = readPipeFD = -1;
+  }
+};
+
+/**
+ * A table containing information about the Blastulas currently in the pool.
+ */
+static BlastulaTableEntry gBlastulaTable[BLASTULA_POOL_MAX_LIMIT];
+
+/**
+ * The list of open zygote file descriptors.
+ */
+static FileDescriptorTable* gOpenFdTable = nullptr;
 
 // Must match values in com.android.internal.os.Zygote.
 enum MountExternalKind {
@@ -103,6 +179,9 @@ enum MountExternalKind {
 enum RuntimeFlags : uint32_t {
   DEBUG_ENABLE_JDWP = 1,
 };
+
+// Forward declaration so we don't have to move the signal handler.
+static bool RemoveBlastulaTableEntry(pid_t blastula_pid);
 
 static void RuntimeAbort(JNIEnv* env, int line, const char* msg) {
   std::ostringstream oss;
@@ -147,6 +226,10 @@ static void SigChldHandler(int /*signal_number*/) {
       ALOGE("Exit zygote because system server (%d) has terminated", pid);
       kill(getpid(), SIGKILL);
     }
+
+    // Check to see if the PID is in the blastula pool and remove it if it is.
+    // TODO (chriswailes): See if there is a way to avoid this for non-blastula PIDs.
+    RemoveBlastulaTableEntry(pid);
   }
 
   // Note that we shouldn't consider ECHILD an error because
@@ -179,13 +262,13 @@ static void SetSignalHandlers() {
   struct sigaction sig_chld = {};
   sig_chld.sa_handler = SigChldHandler;
 
-  if (sigaction(SIGCHLD, &sig_chld, NULL) < 0) {
+  if (sigaction(SIGCHLD, &sig_chld, nullptr) < 0) {
     ALOGW("Error setting SIGCHLD handler: %s", strerror(errno));
   }
 
   struct sigaction sig_hup = {};
   sig_hup.sa_handler = SIG_IGN;
-  if (sigaction(SIGHUP, &sig_hup, NULL) < 0) {
+  if (sigaction(SIGHUP, &sig_hup, nullptr) < 0) {
     ALOGW("Error setting SIGHUP handler: %s", strerror(errno));
   }
 }
@@ -196,64 +279,55 @@ static void UnsetChldSignalHandler() {
   memset(&sa, 0, sizeof(sa));
   sa.sa_handler = SIG_DFL;
 
-  if (sigaction(SIGCHLD, &sa, NULL) < 0) {
+  if (sigaction(SIGCHLD, &sa, nullptr) < 0) {
     ALOGW("Error unsetting SIGCHLD handler: %s", strerror(errno));
   }
 }
 
 // Calls POSIX setgroups() using the int[] object as an argument.
-// A NULL argument is tolerated.
-static bool SetGids(JNIEnv* env, jintArray javaGids, std::string* error_msg) {
-  if (javaGids == NULL) {
-    return true;
+// A nullptr argument is tolerated.
+static void SetGids(JNIEnv* env, jintArray managed_gids, fail_fn_t fail_fn) {
+  if (managed_gids == nullptr) {
+    return;
   }
 
-  ScopedIntArrayRO gids(env, javaGids);
-  if (gids.get() == NULL) {
-    *error_msg = CREATE_ERROR("Getting gids int array failed");
-    return false;
-  }
-  int rc = setgroups(gids.size(), reinterpret_cast<const gid_t*>(&gids[0]));
-  if (rc == -1) {
-    *error_msg = CREATE_ERROR("setgroups failed: %s, gids.size=%zu", strerror(errno), gids.size());
-    return false;
+  ScopedIntArrayRO gids(env, managed_gids);
+  if (gids.get() == nullptr) {
+    fail_fn(CREATE_ERROR("Getting gids int array failed"));
   }
 
-  return true;
+  if (setgroups(gids.size(), reinterpret_cast<const gid_t*>(&gids[0])) == -1) {
+    fail_fn(CREATE_ERROR("setgroups failed: %s, gids.size=%zu", strerror(errno), gids.size()));
+  }
 }
 
 // Sets the resource limits via setrlimit(2) for the values in the
 // two-dimensional array of integers that's passed in. The second dimension
-// contains a tuple of length 3: (resource, rlim_cur, rlim_max). NULL is
+// contains a tuple of length 3: (resource, rlim_cur, rlim_max). nullptr is
 // treated as an empty array.
-static bool SetRLimits(JNIEnv* env, jobjectArray javaRlimits, std::string* error_msg) {
-  if (javaRlimits == NULL) {
-    return true;
+static void SetRLimits(JNIEnv* env, jobjectArray managed_rlimits, fail_fn_t fail_fn) {
+  if (managed_rlimits == nullptr) {
+    return;
   }
 
   rlimit rlim;
   memset(&rlim, 0, sizeof(rlim));
 
-  for (int i = 0; i < env->GetArrayLength(javaRlimits); ++i) {
-    ScopedLocalRef<jobject> javaRlimitObject(env, env->GetObjectArrayElement(javaRlimits, i));
-    ScopedIntArrayRO javaRlimit(env, reinterpret_cast<jintArray>(javaRlimitObject.get()));
-    if (javaRlimit.size() != 3) {
-      *error_msg = CREATE_ERROR("rlimits array must have a second dimension of size 3");
-      return false;
+  for (int i = 0; i < env->GetArrayLength(managed_rlimits); ++i) {
+    ScopedLocalRef<jobject> managed_rlimit_object(env, env->GetObjectArrayElement(managed_rlimits, i));
+    ScopedIntArrayRO rlimit_handle(env, reinterpret_cast<jintArray>(managed_rlimit_object.get()));
+
+    if (rlimit_handle.size() != 3) {
+      fail_fn(CREATE_ERROR("rlimits array must have a second dimension of size 3"));
     }
 
-    rlim.rlim_cur = javaRlimit[1];
-    rlim.rlim_max = javaRlimit[2];
+    rlim.rlim_cur = rlimit_handle[1];
+    rlim.rlim_max = rlimit_handle[2];
 
-    int rc = setrlimit(javaRlimit[0], &rlim);
-    if (rc == -1) {
-      *error_msg = CREATE_ERROR("setrlimit(%d, {%ld, %ld}) failed", javaRlimit[0], rlim.rlim_cur,
-            rlim.rlim_max);
-      return false;
+    if (setrlimit(rlimit_handle[0], &rlim) == -1) {
+      fail_fn(CREATE_ERROR("setrlimit(%d, {%ld, %ld}) failed", rlimit_handle[0], rlim.rlim_cur, rlim.rlim_max));
     }
   }
-
-  return true;
 }
 
 static void EnableDebugger() {
@@ -311,32 +385,26 @@ static void SetUpSeccompFilter(uid_t uid) {
   }
 }
 
-static bool EnableKeepCapabilities(std::string* error_msg) {
-  int rc = prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0);
-  if (rc == -1) {
-    *error_msg = CREATE_ERROR("prctl(PR_SET_KEEPCAPS) failed: %s", strerror(errno));
-    return false;
+static void EnableKeepCapabilities(fail_fn_t fail_fn) {
+  if (prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0) == -1) {
+    fail_fn(CREATE_ERROR("prctl(PR_SET_KEEPCAPS) failed: %s", strerror(errno)));
   }
-  return true;
 }
 
-static bool DropCapabilitiesBoundingSet(std::string* error_msg) {
-  for (int i = 0; prctl(PR_CAPBSET_READ, i, 0, 0, 0) >= 0; i++) {
-    int rc = prctl(PR_CAPBSET_DROP, i, 0, 0, 0);
-    if (rc == -1) {
+static void DropCapabilitiesBoundingSet(fail_fn_t fail_fn) {
+  for (int i = 0; prctl(PR_CAPBSET_READ, i, 0, 0, 0) >= 0; i++) {;
+    if (prctl(PR_CAPBSET_DROP, i, 0, 0, 0) == -1) {
       if (errno == EINVAL) {
         ALOGE("prctl(PR_CAPBSET_DROP) failed with EINVAL. Please verify "
               "your kernel is compiled with file capabilities support");
       } else {
-        *error_msg = CREATE_ERROR("prctl(PR_CAPBSET_DROP, %d) failed: %s", i, strerror(errno));
-        return false;
+        fail_fn(CREATE_ERROR("prctl(PR_CAPBSET_DROP, %d) failed: %s", i, strerror(errno)));
       }
     }
   }
-  return true;
 }
 
-static bool SetInheritable(uint64_t inheritable, std::string* error_msg) {
+static void SetInheritable(uint64_t inheritable, fail_fn_t fail_fn) {
   __user_cap_header_struct capheader;
   memset(&capheader, 0, sizeof(capheader));
   capheader.version = _LINUX_CAPABILITY_VERSION_3;
@@ -344,23 +412,19 @@ static bool SetInheritable(uint64_t inheritable, std::string* error_msg) {
 
   __user_cap_data_struct capdata[2];
   if (capget(&capheader, &capdata[0]) == -1) {
-    *error_msg = CREATE_ERROR("capget failed: %s", strerror(errno));
-    return false;
+    fail_fn(CREATE_ERROR("capget failed: %s", strerror(errno)));
   }
 
   capdata[0].inheritable = inheritable;
   capdata[1].inheritable = inheritable >> 32;
 
   if (capset(&capheader, &capdata[0]) == -1) {
-    *error_msg = CREATE_ERROR("capset(inh=%" PRIx64 ") failed: %s", inheritable, strerror(errno));
-    return false;
+    fail_fn(CREATE_ERROR("capset(inh=%" PRIx64 ") failed: %s", inheritable, strerror(errno)));
   }
-
-  return true;
 }
 
-static bool SetCapabilities(uint64_t permitted, uint64_t effective, uint64_t inheritable,
-                            std::string* error_msg) {
+static void SetCapabilities(uint64_t permitted, uint64_t effective, uint64_t inheritable,
+                            fail_fn_t fail_fn) {
   __user_cap_header_struct capheader;
   memset(&capheader, 0, sizeof(capheader));
   capheader.version = _LINUX_CAPABILITY_VERSION_3;
@@ -376,27 +440,23 @@ static bool SetCapabilities(uint64_t permitted, uint64_t effective, uint64_t inh
   capdata[1].inheritable = inheritable >> 32;
 
   if (capset(&capheader, &capdata[0]) == -1) {
-    *error_msg = CREATE_ERROR("capset(perm=%" PRIx64 ", eff=%" PRIx64 ", inh=%" PRIx64 ") "
-                              "failed: %s", permitted, effective, inheritable, strerror(errno));
-    return false;
+    fail_fn(CREATE_ERROR("capset(perm=%" PRIx64 ", eff=%" PRIx64 ", inh=%" PRIx64 ") "
+                         "failed: %s", permitted, effective, inheritable, strerror(errno)));
   }
-  return true;
 }
 
-static bool SetSchedulerPolicy(std::string* error_msg) {
+static void SetSchedulerPolicy(fail_fn_t fail_fn) {
   errno = -set_sched_policy(0, SP_DEFAULT);
   if (errno != 0) {
-    *error_msg = CREATE_ERROR("set_sched_policy(0, SP_DEFAULT) failed: %s", strerror(errno));
-    return false;
+    fail_fn(CREATE_ERROR("set_sched_policy(0, SP_DEFAULT) failed: %s", strerror(errno)));
   }
-  return true;
 }
 
 static int UnmountTree(const char* path) {
     size_t path_len = strlen(path);
 
     FILE* fp = setmntent("/proc/mounts", "r");
-    if (fp == NULL) {
+    if (fp == nullptr) {
         ALOGE("Error opening /proc/mounts: %s", strerror(errno));
         return -errno;
     }
@@ -405,7 +465,7 @@ static int UnmountTree(const char* path) {
     // reverse order to give us the best chance of success.
     std::list<std::string> toUnmount;
     mntent* mentry;
-    while ((mentry = getmntent(fp)) != NULL) {
+    while ((mentry = getmntent(fp)) != nullptr) {
         if (strncmp(mentry->mnt_dir, path, path_len) == 0) {
             toUnmount.push_front(std::string(mentry->mnt_dir));
         }
@@ -422,8 +482,8 @@ static int UnmountTree(const char* path) {
 
 // Create a private mount namespace and bind mount appropriate emulated
 // storage for the given user.
-static bool MountEmulatedStorage(uid_t uid, jint mount_mode,
-        bool force_mount_namespace, std::string* error_msg) {
+static void MountEmulatedStorage(uid_t uid, jint mount_mode,
+                                 bool force_mount_namespace, fail_fn_t fail_fn) {
     // See storage config details at http://source.android.com/tech/storage/
 
     String8 storageSource;
@@ -435,44 +495,50 @@ static bool MountEmulatedStorage(uid_t uid, jint mount_mode,
         storageSource = "/mnt/runtime/write";
     } else if (!force_mount_namespace) {
         // Sane default of no storage visible
-        return true;
+        return;
     }
 
     // Create a second private mount namespace for our process
     if (unshare(CLONE_NEWNS) == -1) {
-        *error_msg = CREATE_ERROR("Failed to unshare(): %s", strerror(errno));
-        return false;
+        fail_fn(CREATE_ERROR("Failed to unshare(): %s", strerror(errno)));
     }
 
     // Handle force_mount_namespace with MOUNT_EXTERNAL_NONE.
     if (mount_mode == MOUNT_EXTERNAL_NONE) {
-        return true;
+        return;
     }
 
     if (TEMP_FAILURE_RETRY(mount(storageSource.string(), "/storage",
-            NULL, MS_BIND | MS_REC | MS_SLAVE, NULL)) == -1) {
-        *error_msg = CREATE_ERROR("Failed to mount %s to /storage: %s",
-                                  storageSource.string(),
-                                  strerror(errno));
-        return false;
+                                 nullptr, MS_BIND | MS_REC | MS_SLAVE, nullptr)) == -1) {
+        fail_fn(CREATE_ERROR("Failed to mount %s to /storage: %s",
+                             storageSource.string(),
+                             strerror(errno)));
     }
 
     // Mount user-specific symlink helper into place
     userid_t user_id = multiuser_get_user_id(uid);
     const String8 userSource(String8::format("/mnt/user/%d", user_id));
     if (fs_prepare_dir(userSource.string(), 0751, 0, 0) == -1) {
-        *error_msg = CREATE_ERROR("fs_prepare_dir failed on %s", userSource.string());
-        return false;
-    }
-    if (TEMP_FAILURE_RETRY(mount(userSource.string(), "/storage/self",
-            NULL, MS_BIND, NULL)) == -1) {
-        *error_msg = CREATE_ERROR("Failed to mount %s to /storage/self: %s",
-                                  userSource.string(),
-                                  strerror(errno));
-        return false;
+      if (errno == ENOTCONN || errno == EROFS) {
+        // When device is actively encrypting, we get ENOTCONN here
+        // since FUSE was mounted before the framework restarted.
+        // When encrypted device is booting, we get EROFS since
+        // FUSE hasn't been created yet by init.
+        // In either case, continue without external storage.
+
+        ALOGW("Failed to mount emulated storage: %s", strerror(errno));
+      } else {
+        fail_fn(CREATE_ERROR("fs_prepare_dir failed on %s",
+                             userSource.string()));
+      }
     }
 
-    return true;
+    if (TEMP_FAILURE_RETRY(mount(userSource.string(), "/storage/self",
+                                 nullptr, MS_BIND, nullptr)) == -1) {
+        fail_fn(CREATE_ERROR("Failed to mount %s to /storage/self: %s",
+                             userSource.string(),
+                             strerror(errno)));
+    }
 }
 
 static bool NeedsNoRandomizeWorkaround() {
@@ -500,83 +566,53 @@ static bool NeedsNoRandomizeWorkaround() {
 // descriptor (if any) is closed via dup2(), replacing it with a valid
 // (open) descriptor to /dev/null.
 
-static bool DetachDescriptors(JNIEnv* env, jintArray fdsToClose, std::string* error_msg) {
-  if (!fdsToClose) {
-    return true;
-  }
-  jsize count = env->GetArrayLength(fdsToClose);
-  ScopedIntArrayRO ar(env, fdsToClose);
-  if (ar.get() == NULL) {
-    *error_msg = "Bad fd array";
-    return false;
-  }
-  jsize i;
-  int devnull;
-  for (i = 0; i < count; i++) {
-    devnull = open("/dev/null", O_RDWR);
-    if (devnull < 0) {
-      *error_msg = std::string("Failed to open /dev/null: ").append(strerror(errno));
-      return false;
+static void DetachDescriptors(JNIEnv* env,
+                              const std::vector<int>& fds_to_close,
+                              fail_fn_t fail_fn) {
+
+  if (fds_to_close.size() > 0) {
+    int devnull_fd = open("/dev/null", O_RDWR);
+    if (devnull_fd == -1) {
+      fail_fn(std::string("Failed to open /dev/null: ").append(strerror(errno)));
     }
-    ALOGV("Switching descriptor %d to /dev/null: %s", ar[i], strerror(errno));
-    if (dup2(devnull, ar[i]) < 0) {
-      *error_msg = StringPrintf("Failed dup2() on descriptor %d: %s", ar[i], strerror(errno));
-      return false;
+
+    for (int fd : fds_to_close) {
+      if (dup2(devnull_fd, fd) == -1) {
+        close(devnull_fd);
+        fail_fn(StringPrintf("Failed dup2() on descriptor %d: %s", fd, strerror(errno)));
+      }
     }
-    close(devnull);
+
+    close(devnull_fd);
   }
-  return true;
 }
 
-void SetThreadName(const char* thread_name) {
+void SetThreadName(const std::string& thread_name) {
   bool hasAt = false;
   bool hasDot = false;
-  const char* s = thread_name;
-  while (*s) {
-    if (*s == '.') {
+
+  for (const char str_el : thread_name) {
+    if (str_el == '.') {
       hasDot = true;
-    } else if (*s == '@') {
+    } else if (str_el == '@') {
       hasAt = true;
     }
-    s++;
   }
-  const int len = s - thread_name;
-  if (len < 15 || hasAt || !hasDot) {
-    s = thread_name;
-  } else {
-    s = thread_name + len - 15;
+
+  const char* name_start_ptr = thread_name.c_str();
+  if (thread_name.length() >= MAX_NAME_LENGTH && !hasAt && hasDot) {
+    name_start_ptr += thread_name.length() - MAX_NAME_LENGTH;
   }
+
   // pthread_setname_np fails rather than truncating long strings.
   char buf[16];       // MAX_TASK_COMM_LEN=16 is hard-coded into bionic
-  strlcpy(buf, s, sizeof(buf)-1);
+  strlcpy(buf, name_start_ptr, sizeof(buf) - 1);
   errno = pthread_setname_np(pthread_self(), buf);
   if (errno != 0) {
     ALOGW("Unable to set the name of current thread to '%s': %s", buf, strerror(errno));
   }
   // Update base::logging default tag.
   android::base::SetDefaultTag(buf);
-}
-
-// The list of open zygote file descriptors.
-static FileDescriptorTable* gOpenFdTable = NULL;
-
-static bool FillFileDescriptorVector(JNIEnv* env,
-                                     jintArray managed_fds,
-                                     std::vector<int>* fds,
-                                     std::string* error_msg) {
-  CHECK(fds != nullptr);
-  if (managed_fds != nullptr) {
-    ScopedIntArrayRO ar(env, managed_fds);
-    if (ar.get() == nullptr) {
-      *error_msg = "Bad fd array";
-      return false;
-    }
-    fds->reserve(ar.size());
-    for (size_t i = 0; i < ar.size(); ++i) {
-      fds->push_back(ar[i]);
-    }
-  }
-  return true;
 }
 
 [[noreturn]]
@@ -604,7 +640,7 @@ static std::optional<std::string> ExtractJString(JNIEnv* env,
                                                  jstring managed_process_name,
                                                  jstring managed_string) {
   if (managed_string == nullptr) {
-    return std::optional<std::string>();
+    return std::nullopt;
   } else {
     ScopedUtfChars scoped_string_chars(env, managed_string);
 
@@ -616,15 +652,56 @@ static std::optional<std::string> ExtractJString(JNIEnv* env,
   }
 }
 
+static std::optional<std::vector<int>> ExtractJIntArray(JNIEnv* env,
+                                                        const char* process_name,
+                                                        jstring managed_process_name,
+                                                        jintArray managed_array) {
+  if (managed_array == nullptr) {
+    return std::nullopt;
+  } else {
+    ScopedIntArrayRO managed_array_handle(env, managed_array);
+
+    if (managed_array_handle.get() != nullptr) {
+      std::vector<int> native_array;
+      native_array.reserve(managed_array_handle.size());
+
+      for (size_t array_index = 0; array_index < managed_array_handle.size(); ++array_index) {
+        native_array.push_back(managed_array_handle[array_index]);
+      }
+
+      return std::optional<std::vector<int>>(std::move(native_array));
+
+    } else {
+      ZygoteFailure(env, process_name, managed_process_name, "Failed to extract JIntArray.");
+    }
+  }
+}
+
+static void BlockSignal(int signum, fail_fn_t fail_fn) {
+  sigset_t sigs;
+  sigemptyset(&sigs);
+  sigaddset(&sigs, signum);
+
+  if (sigprocmask(SIG_BLOCK, &sigs, nullptr) == -1) {
+    fail_fn(CREATE_ERROR("Failed to block signal %s: %s", strsignal(signum), strerror(errno)));
+  }
+}
+
+static void UnblockSignal(int signum, fail_fn_t fail_fn) {
+  sigset_t sigs;
+  sigemptyset(&sigs);
+  sigaddset(&sigs, signum);
+
+  if (sigprocmask(SIG_UNBLOCK, &sigs, nullptr) == -1) {
+    fail_fn(CREATE_ERROR("Failed to un-block signal %s: %s", strsignal(signum), strerror(errno)));
+  }
+}
+
 // Utility routine to fork a zygote.
 static pid_t ForkCommon(JNIEnv* env, bool is_system_server,
-                        jintArray managed_fds_to_close, jintArray managed_fds_to_ignore) {
+                        const std::vector<int>& fds_to_close,
+                        const std::vector<int>& fds_to_ignore) {
   SetSignalHandlers();
-
-  // Block SIGCHLD prior to fork.
-  sigset_t sigchld;
-  sigemptyset(&sigchld);
-  sigaddset(&sigchld, SIGCHLD);
 
   // Curry a failure function.
   auto fail_fn = std::bind(ZygoteFailure, env, is_system_server ? "system_server" : "zygote",
@@ -635,9 +712,7 @@ static pid_t ForkCommon(JNIEnv* env, bool is_system_server,
   // This would cause failures because the FDs are not whitelisted.
   //
   // Note that the zygote process is single threaded at this point.
-  if (sigprocmask(SIG_BLOCK, &sigchld, nullptr) == -1) {
-    fail_fn(CREATE_ERROR("sigprocmask(SIG_SETMASK, { SIGCHLD }) failed: %s", strerror(errno)));
-  }
+  BlockSignal(SIGCHLD, fail_fn);
 
   // Close any logging related FDs before we start evaluating the list of
   // file descriptors.
@@ -647,19 +722,10 @@ static pid_t ForkCommon(JNIEnv* env, bool is_system_server,
   // If this is the first fork for this zygote, create the open FD table.  If
   // it isn't, we just need to check whether the list of open files has changed
   // (and it shouldn't in the normal case).
-  std::string error_msg;
-  std::vector<int> fds_to_ignore;
-  if (!FillFileDescriptorVector(env, managed_fds_to_ignore, &fds_to_ignore, &error_msg)) {
-    fail_fn(error_msg);
-  }
-
   if (gOpenFdTable == nullptr) {
-    gOpenFdTable = FileDescriptorTable::Create(fds_to_ignore, &error_msg);
-    if (gOpenFdTable == nullptr) {
-      fail_fn(error_msg);
-    }
-  } else if (!gOpenFdTable->Restat(fds_to_ignore, &error_msg)) {
-    fail_fn(error_msg);
+    gOpenFdTable = FileDescriptorTable::Create(fds_to_ignore, fail_fn);
+  } else {
+    gOpenFdTable->Restat(fds_to_ignore, fail_fn);
   }
 
   android_fdsan_error_level fdsan_error_level = android_fdsan_get_error_level();
@@ -671,24 +737,19 @@ static pid_t ForkCommon(JNIEnv* env, bool is_system_server,
     PreApplicationInit();
 
     // Clean up any descriptors which must be closed immediately
-    if (!DetachDescriptors(env, managed_fds_to_close, &error_msg)) {
-      fail_fn(error_msg);
-    }
+    DetachDescriptors(env, fds_to_close, fail_fn);
 
     // Re-open all remaining open file descriptors so that they aren't shared
     // with the zygote across a fork.
-    if (!gOpenFdTable->ReopenOrDetach(&error_msg)) {
-      fail_fn(error_msg);
-    }
+    gOpenFdTable->ReopenOrDetach(fail_fn);
 
     // Turn fdsan back on.
     android_fdsan_set_error_level(fdsan_error_level);
   }
 
   // We blocked SIGCHLD prior to a fork, we unblock it here.
-  if (sigprocmask(SIG_UNBLOCK, &sigchld, nullptr) == -1) {
-    fail_fn(CREATE_ERROR("sigprocmask(SIG_SETMASK, { SIGCHLD }) failed: %s", strerror(errno)));
-  }
+  UnblockSignal(SIGCHLD, fail_fn);
+
   return pid;
 }
 
@@ -710,22 +771,14 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
   auto instruction_set = extract_fn(managed_instruction_set);
   auto app_data_dir = extract_fn(managed_app_data_dir);
 
-  std::string error_msg;
-
   // Keep capabilities across UID change, unless we're staying root.
   if (uid != 0) {
-    if (!EnableKeepCapabilities(&error_msg)) {
-      fail_fn(error_msg);
-    }
+    EnableKeepCapabilities(fail_fn);
   }
 
-  if (!SetInheritable(permitted_capabilities, &error_msg)) {
-    fail_fn(error_msg);
-  }
+  SetInheritable(permitted_capabilities, fail_fn);
 
-  if (!DropCapabilitiesBoundingSet(&error_msg)) {
-    fail_fn(error_msg);
-  }
+  DropCapabilitiesBoundingSet(fail_fn);
 
   bool use_native_bridge = !is_system_server &&
                            instruction_set.has_value() &&
@@ -742,18 +795,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
     ALOGW("Native bridge will not be used because managed_app_data_dir == nullptr.");
   }
 
-  if (!MountEmulatedStorage(uid, mount_external, use_native_bridge, &error_msg)) {
-    ALOGW("Failed to mount emulated storage: %s (%s)", error_msg.c_str(), strerror(errno));
-    if (errno == ENOTCONN || errno == EROFS) {
-      // When device is actively encrypting, we get ENOTCONN here
-      // since FUSE was mounted before the framework restarted.
-      // When encrypted device is booting, we get EROFS since
-      // FUSE hasn't been created yet by init.
-      // In either case, continue without external storage.
-    } else {
-      fail_fn(error_msg);
-    }
-  }
+  MountEmulatedStorage(uid, mount_external, use_native_bridge, fail_fn);
 
   // If this zygote isn't root, it won't be able to create a process group,
   // since the directory is owned by root.
@@ -768,13 +810,8 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
       }
   }
 
-  if (!SetGids(env, gids, &error_msg)) {
-    fail_fn(error_msg);
-  }
-
-  if (!SetRLimits(env, rlimits, &error_msg)) {
-    fail_fn(error_msg);
-  }
+  SetGids(env, gids, fail_fn);
+  SetRLimits(env, rlimits, fail_fn);
 
   if (use_native_bridge) {
     // Due to the logic behind use_native_bridge we know that both app_data_dir
@@ -833,14 +870,9 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
       }
   }
 
-  if (!SetCapabilities(permitted_capabilities, effective_capabilities, permitted_capabilities,
-                       &error_msg)) {
-    fail_fn(error_msg);
-  }
+  SetCapabilities(permitted_capabilities, effective_capabilities, permitted_capabilities, fail_fn);
 
-  if (!SetSchedulerPolicy(&error_msg)) {
-    fail_fn(error_msg);
-  }
+  SetSchedulerPolicy(fail_fn);
 
   const char* se_info_ptr = se_info.has_value() ? se_info.value().c_str() : nullptr;
   const char* nice_name_ptr = nice_name.has_value() ? nice_name.value().c_str() : nullptr;
@@ -853,7 +885,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
   // Make it easier to debug audit logs by setting the main thread's name to the
   // nice name rather than "app_process".
   if (nice_name.has_value()) {
-    SetThreadName(nice_name.value().c_str());
+    SetThreadName(nice_name.value());
   } else if (is_system_server) {
     SetThreadName("system_server");
   }
@@ -866,6 +898,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
     if (env->ExceptionCheck()) {
       fail_fn("Error calling post fork system server hooks.");
     }
+
     // TODO(oth): Remove hardcoded label here (b/117874058).
     static const char* kSystemServerLabel = "u:r:system_server:s0";
     if (selinux_android_setcon(kSystemServerLabel) != 0) {
@@ -962,6 +995,70 @@ static jlong CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gi
 
   return capabilities & GetEffectiveCapabilityMask(env);
 }
+
+static pid_t ForkBlastula(JNIEnv* env,
+                          const std::vector<int> fds_to_close,
+                          const std::vector<int> fds_to_ignore) {
+  pid_t pid = ForkCommon(env, false, fds_to_close, fds_to_ignore);
+
+  if (pid == 0) {
+    ALOGI("Blastula forked from Zygote with PID %d", getpid());
+    exit(0);
+  } else {
+    ALOGI("Zygote finished forking a blastula with PID %d", pid);
+    return pid;
+  }
+}
+
+static void AddBlastulaTableEntry(pid_t blastula_pid, int read_pipe_fd) {
+  static int sBlastulaTableInsertIndex = 0;
+
+  int search_index = sBlastulaTableInsertIndex;
+
+  do {
+    if (gBlastulaTable[search_index].pid == -1) {
+      gBlastulaTable[search_index].pid = blastula_pid;
+      gBlastulaTable[search_index].readPipeFD = read_pipe_fd;
+
+      // Start our next search right after where we finished this one.
+      sBlastulaTableInsertIndex = (search_index + 1) % sizeof(gBlastulaTable);
+
+      return;
+    }
+
+    search_index = (search_index + 1) % sizeof(gBlastulaTable);
+  } while (search_index != sBlastulaTableInsertIndex);
+
+  // Much like money in the banana stand, there should always be an entry
+  // in the blastula table.
+  __builtin_unreachable();
+}
+
+static bool RemoveBlastulaTableEntry(pid_t blastula_pid) {
+  for (BlastulaTableEntry& entry : gBlastulaTable) {
+    if (entry.pid == blastula_pid) {
+      entry.Reset();
+      --gBlastulaPoolCount;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+std::vector<int> MakeBlastulaPipeFDVector() {
+  std::vector<int> fd_vec;
+  fd_vec.reserve(sizeof(gBlastulaTable));
+
+  for (BlastulaTableEntry& entry : gBlastulaTable) {
+    if (entry.pid != -1) {
+      fd_vec.push_back(entry.readPipeFD);
+    }
+  }
+
+  return fd_vec;
+}
+
 }  // anonymous namespace
 
 namespace android {
@@ -980,11 +1077,32 @@ static jint com_android_internal_os_Zygote_nativeForkAndSpecialize(
         JNIEnv* env, jclass, jint uid, jint gid, jintArray gids,
         jint runtime_flags, jobjectArray rlimits,
         jint mount_external, jstring se_info, jstring nice_name,
-        jintArray fds_to_close, jintArray fds_to_ignore, jboolean is_child_zygote,
+        jintArray managed_fds_to_close, jintArray managed_fds_to_ignore, jboolean is_child_zygote,
         jstring instruction_set, jstring app_data_dir) {
     jlong capabilities = CalculateCapabilities(env, uid, gid, gids, is_child_zygote);
 
+    if (UNLIKELY(managed_fds_to_close == nullptr)) {
+      ZygoteFailure(env, "zygote", nice_name, "Zygote received a null fds_to_close vector.");
+    }
+
+    // TODO (chriswailes): Remove when Zygote-preforking is feature complete
+    ALOGI("Zygote:BlastulaPool:size = %u", gBlastulaPoolCount.load());
+
+    std::vector<int> fds_to_close =
+        ExtractJIntArray(env, "zygote", nice_name, managed_fds_to_close).value();
+    std::vector<int> fds_to_ignore =
+        ExtractJIntArray(env, "zygote", nice_name, managed_fds_to_ignore)
+            .value_or(std::vector<int>());
+
+    std::vector<int> blastula_pipes = MakeBlastulaPipeFDVector();
+
+    fds_to_close.insert(fds_to_close.end(), blastula_pipes.begin(), blastula_pipes.end());
+    fds_to_ignore.insert(fds_to_ignore.end(), blastula_pipes.begin(), blastula_pipes.end());
+
+    fds_to_close.push_back(gBlastulaPoolSocketFD);
+
     pid_t pid = ForkCommon(env, false, fds_to_close, fds_to_ignore);
+
     if (pid == 0) {
       SpecializeCommon(env, uid, gid, gids, runtime_flags, rlimits,
                        capabilities, capabilities,
@@ -998,9 +1116,15 @@ static jint com_android_internal_os_Zygote_nativeForkSystemServer(
         JNIEnv* env, jclass, uid_t uid, gid_t gid, jintArray gids,
         jint runtime_flags, jobjectArray rlimits, jlong permitted_capabilities,
         jlong effective_capabilities) {
+  std::vector<int> fds_to_close(MakeBlastulaPipeFDVector()),
+                   fds_to_ignore(fds_to_close);
+
+  fds_to_close.push_back(gBlastulaPoolSocketFD);
+  fds_to_ignore.push_back(gZygoteSocketFD);
+
   pid_t pid = ForkCommon(env, true,
-                         /* managed_fds_to_close= */ nullptr,
-                         /* managed_fds_to_ignore= */ nullptr);
+                         fds_to_close,
+                         fds_to_ignore);
   if (pid == 0) {
       SpecializeCommon(env, uid, gid, gids, runtime_flags, rlimits,
                        permitted_capabilities, effective_capabilities,
@@ -1082,6 +1206,62 @@ static void com_android_internal_os_Zygote_nativeUnmountStorageOnInit(JNIEnv* en
     UnmountTree("/storage");
 }
 
+static void com_android_internal_os_Zygote_nativeInitBlastulaPool(JNIEnv* env, jclass) {
+  std::vector<int> fds_to_close(MakeBlastulaPipeFDVector()),
+                   fds_to_ignore(fds_to_close);
+
+  fds_to_close.push_back(gZygoteSocketFD);
+  fds_to_ignore.push_back(gBlastulaPoolSocketFD);
+
+  // Dummy value pushed onto the vector to establish a loop invariant.
+  fds_to_ignore.push_back(-1);
+
+  for (size_t blastula_num = 0; blastula_num < gBlastulaPoolMax; ++blastula_num) {
+    int pipeFDs[2];
+
+    if (pipe2(pipeFDs, O_CLOEXEC) == -1) {
+      ALOGE("Zygote:BlastulaPool - Unable to create blastula reporting pipes.");
+    }
+
+    fds_to_close.push_back(pipeFDs[0]);
+
+    fds_to_ignore.back() = pipeFDs[0];
+    fds_to_ignore.push_back(pipeFDs[1]);
+
+    pid_t blastula_pid = ForkBlastula(env, fds_to_close, fds_to_ignore);
+    ++gBlastulaPoolCount;
+
+    // NOTE: For now only the parent process (the Zygote) returns to here.
+
+    close(pipeFDs[1]);
+
+    AddBlastulaTableEntry(blastula_pid, pipeFDs[0]);
+  }
+}
+
+static void com_android_internal_os_Zygote_nativeFetchSocketFDs(JNIEnv* env, jclass,
+                                                                jboolean is_primary) {
+  std::string env_var_name = ANDROID_SOCKET_PREFIX + (is_primary ? "zygote_socket" : "zygote_secondary");
+  char* env_var_val = getenv(env_var_name.c_str());
+
+  if (env_var_val != nullptr) {
+    gZygoteSocketFD = atoi(env_var_val);
+    ALOGI("Zygote:zygoteSocketFD = %d", gZygoteSocketFD);
+  } else {
+    ALOGE("Unable to fetch Zygote socket file descriptor");
+  }
+
+  env_var_name = ANDROID_SOCKET_PREFIX + (is_primary ? "blastula_pool" : "blastula_secondary_pool");
+  env_var_val = getenv(env_var_name.c_str());
+
+  if (env_var_val != nullptr) {
+    gBlastulaPoolSocketFD = atoi(env_var_val);
+    ALOGI("Zygote:blastulaPoolSocketFD = %d", gBlastulaPoolSocketFD);
+  } else {
+    ALOGE("Unable to fetch Blastula pool socket file descriptor");
+  }
+}
+
 static const JNINativeMethod gMethods[] = {
     { "nativeSecurityInit", "()V",
       (void *) com_android_internal_os_Zygote_nativeSecurityInit },
@@ -1095,7 +1275,11 @@ static const JNINativeMethod gMethods[] = {
     { "nativeUnmountStorageOnInit", "()V",
       (void *) com_android_internal_os_Zygote_nativeUnmountStorageOnInit },
     { "nativePreApplicationInit", "()V",
-      (void *) com_android_internal_os_Zygote_nativePreApplicationInit }
+      (void *) com_android_internal_os_Zygote_nativePreApplicationInit },
+    { "nativeInitBlastulaPool", "()V",
+      (void *) com_android_internal_os_Zygote_nativeInitBlastulaPool },
+    { "nativeFetchSocketFDs", "(Z)V",
+      (void *) com_android_internal_os_Zygote_nativeFetchSocketFDs }
 };
 
 int register_com_android_internal_os_Zygote(JNIEnv* env) {
