@@ -838,8 +838,12 @@ public class NetworkMonitor extends StateMachine {
 
         @Override
         public void enter() {
-            mThread = new Thread(() -> sendMessage(obtainMessage(CMD_PROBE_COMPLETE,
-                    isCaptivePortal())));
+            mThread = new Thread(new Runnable() {
+                @Override public void run() {
+                    final int token = mThread.hashCode();
+                    sendMessage(obtainMessage(CMD_PROBE_COMPLETE, token, 0, isCaptivePortal()));
+                }
+            });
             mThread.start();
         }
 
@@ -847,16 +851,12 @@ public class NetworkMonitor extends StateMachine {
         public boolean processMessage(Message message) {
             switch (message.what) {
                 case CMD_PROBE_COMPLETE:
-                    // Currently, it's not possible to exit this state without mThread having
-                    // terminated. Therefore, this state can never get CMD_PROBE_COMPLETE from a
-                    // stale thread that is not mThread.
-                    // TODO: As soon as it's possible to exit this state without mThread having
-                    // terminated, ensure that CMD_PROBE_COMPLETE from stale threads are ignored.
-                    // This could be done via a sequence number, or by changing mThread to a class
-                    // that has a stopped volatile boolean or AtomicBoolean.
+                    if (message.arg1 != mThread.hashCode()) {
+                        return HANDLED;
+                    }
+
                     final CaptivePortalProbeResult probeResult =
                             (CaptivePortalProbeResult) message.obj;
-
                     if (probeResult.isSuccessful()) {
                         // Transit EvaluatingPrivateDnsState to get to Validated
                         // state (even if no Private DNS validation required).
@@ -883,6 +883,7 @@ public class NetworkMonitor extends StateMachine {
                 case CMD_REEVALUATE:
                     // Leave the event to EvaluatingState. Defer this message will result in reset
                     // of mReevaluateDelayMs and mEvaluateAttempts.
+                case CMD_NETWORK_DISCONNECTED:
                     return NOT_HANDLED;
                 default:
                     // TODO: Some events may able to handle in this state, instead of deferring to
@@ -894,11 +895,7 @@ public class NetworkMonitor extends StateMachine {
 
         @Override
         public void exit() {
-            // If StateMachine get here, the probe started in enter() is guaranteed to have
-            // completed, because in this state, all messages except CMD_PROBE_COMPLETE and
-            // CMD_REEVALUATE are deferred. CMD_REEVALUATE cannot be in the queue, because it is
-            // only ever sent in EvaluatingState#enter, and the StateMachine reach this state by
-            // processing it. Therefore, there is no need to stop the thread.
+            if (mThread.isAlive()) mThread.interrupt();
             mThread = null;
         }
     }
