@@ -54,6 +54,11 @@ public final class CellSignalStrengthGsm extends CellSignalStrength implements P
     }
 
     /** @hide */
+    public CellSignalStrengthGsm(android.hardware.radio.V1_0.GsmSignalStrength gsm) {
+        this(gsm.signalStrength, gsm.bitErrorRate, gsm.timingAdvance);
+    }
+
+    /** @hide */
     public CellSignalStrengthGsm(int ss, int ber, int ta) {
         mSignalStrength = ss;
         mBitErrorRate = ber;
@@ -152,6 +157,15 @@ public final class CellSignalStrengthGsm extends CellSignalStrength implements P
         int level = mSignalStrength;
         if (DBG) log("getAsuLevel=" + level);
         return level;
+    }
+
+    /**
+     * Return the Bit Error Rate
+     * @returns the bit error rate (0-7, 99) as defined in TS 27.007 8.5 or UNAVAILBLE.
+     * @hide
+     */
+    public int getBitErrorRate() {
+        return mBitErrorRate;
     }
 
     @Override

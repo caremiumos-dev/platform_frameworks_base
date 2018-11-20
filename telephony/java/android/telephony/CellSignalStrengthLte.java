@@ -69,6 +69,11 @@ public final class CellSignalStrengthLte extends CellSignalStrength implements P
     }
 
     /** @hide */
+    public CellSignalStrengthLte(android.hardware.radio.V1_0.LteSignalStrength lte) {
+        this(lte.signalStrength, lte.rsrp, lte.rsrq, lte.rssnr, lte.cqi, lte.timingAdvance);
+    }
+
+    /** @hide */
     public CellSignalStrengthLte(int signalStrength, int rsrp, int rsrq, int rssnr, int cqi,
             int timingAdvance) {
         mSignalStrength = signalStrength;

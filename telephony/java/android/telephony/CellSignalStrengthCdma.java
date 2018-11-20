@@ -75,6 +75,13 @@ public final class CellSignalStrengthCdma extends CellSignalStrength implements 
     }
 
     /** @hide */
+    public CellSignalStrengthCdma(android.hardware.radio.V1_0.CdmaSignalStrength cdma,
+            android.hardware.radio.V1_0.EvdoSignalStrength evdo) {
+        this(cdma.dbm, cdma.ecio, evdo.dbm, evdo.ecio, evdo.signalNoiseRatio);
+    }
+
+
+    /** @hide */
     public CellSignalStrengthCdma(CellSignalStrengthCdma s) {
         copyFrom(s);
     }
@@ -131,7 +138,7 @@ public final class CellSignalStrengthCdma extends CellSignalStrength implements 
     }
 
     /**
-     * Get the signal level as an asu value between 0..97, 99 is unknown
+     * Get the CDMA ASU signal level as an asu value between 0..16, 99 is unknown
      */
     @Override
     public int getAsuLevel() {

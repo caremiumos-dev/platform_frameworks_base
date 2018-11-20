@@ -60,6 +60,16 @@ public final class CellSignalStrengthWcdma extends CellSignalStrength implements
     }
 
     /** @hide */
+    public CellSignalStrengthWcdma(android.hardware.radio.V1_0.WcdmaSignalStrength wcdma) {
+        this(wcdma.signalStrength, wcdma.bitErrorRate, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE);
+    }
+
+    /** @hide */
+    public CellSignalStrengthWcdma(android.hardware.radio.V1_2.WcdmaSignalStrength wcdma) {
+        this(wcdma.base.signalStrength, wcdma.base.bitErrorRate, wcdma.rscp, wcdma.ecno);
+    }
+
+    /** @hide */
     public CellSignalStrengthWcdma(CellSignalStrengthWcdma s) {
         copyFrom(s);
     }

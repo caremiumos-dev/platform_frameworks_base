@@ -48,10 +48,32 @@ public final class CellSignalStrengthTdscdma extends CellSignalStrength implemen
     }
 
     /** @hide */
+    public CellSignalStrengthTdscdma(android.hardware.radio.V1_0.TdScdmaSignalStrength tdscdma) {
+        this(CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, convertTdscdmaRscpTo1_2(tdscdma.rscp));
+    }
+
+    /** @hide */
+    public CellSignalStrengthTdscdma(android.hardware.radio.V1_2.TdscdmaSignalStrength tdscdma) {
+        this(tdscdma.signalStrength, tdscdma.bitErrorRate, tdscdma.rscp);
+    }
+
+    /** @hide */
     public CellSignalStrengthTdscdma(int ss, int ber, int rscp) {
         mSignalStrength = ss;
         mBitErrorRate = ber;
         mRscp = rscp;
+    }
+
+    private static int convertTdscdmaRscpTo1_2(int rscp) {
+        // The HAL 1.0 range is 25..120; the ASU/ HAL 1.2 range is 0..96;
+        // yes, this means the range in 1.0 cannot express -24dBm = 96
+        if (rscp >= 25 && rscp <= 120) {
+            // First we flip the sign to convert from the HALs -rscp to the actual RSCP value.
+            int rscpDbm = -rscp;
+            // Then to convert from RSCP to ASU, we apply the offset which aligns 0 ASU to -120dBm.
+            return rscpDbm + 120;
+        }
+        return Integer.MAX_VALUE;
     }
 
     /** @hide */
