@@ -43,7 +43,8 @@ public final class LocationAccessPolicy {
     private static final boolean DBG = false;
 
     /**
-     * API to determine if the caller has permissions to get cell location.
+     * API to determine if the caller has permissions to get fine cell location based on information
+     * from the telephony stack.
      *
      * @param pkgName Package name of the application requesting access
      * @param uid The uid of the package
@@ -51,8 +52,31 @@ public final class LocationAccessPolicy {
      * @param throwOnDeniedPermission Whether to throw if the location permission is denied.
      * @return boolean true or false if permissions is granted
      */
-    public static boolean canAccessCellLocation(@NonNull Context context, @NonNull String pkgName,
+    public static boolean canAccessFineLocation(@NonNull Context context, @NonNull String pkgName,
             int uid, int pid, boolean throwOnDeniedPermission) throws SecurityException {
+        return checkLocationAccess(context, pkgName, uid, pid, throwOnDeniedPermission,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    /**
+     * API to determine if the caller has permissions to get coarse location information based on
+     * information from the telephony stack.
+     *
+     * @param pkgName Package name of the application requesting access
+     * @param uid The uid of the package
+     * @param pid The pid of the package
+     * @param throwOnDeniedPermission Whether to throw if the location permission is denied.
+     * @return boolean true or false if permissions is granted
+     */
+    public static boolean canAccessCoarseLocation(@NonNull Context context,
+            @NonNull String pkgName, int uid, int pid, boolean throwOnDeniedPermission)
+            throws SecurityException {
+        return checkLocationAccess(context, pkgName, uid, pid, throwOnDeniedPermission,
+                Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
+
+    private static boolean checkLocationAccess(@NonNull Context context, @NonNull String pkgName,
+            int uid, int pid, boolean throwOnDeniedPermission, String permissionToCheck) {
         Trace.beginSection("TelephonyLocationCheck");
         try {
             // Always allow the phone process and system server to access location. This avoid
@@ -63,22 +87,15 @@ public final class LocationAccessPolicy {
                 return true;
             }
 
-            // We always require the location permission and also require the
-            // location mode to be on for non-legacy apps. Legacy apps are
-            // required to be in the foreground to at least mitigate the case
-            // where a legacy app the user is not using tracks their location.
-            // Granting ACCESS_FINE_LOCATION to an app automatically grants it
-            // ACCESS_COARSE_LOCATION.
             if (throwOnDeniedPermission) {
-                context.enforcePermission(Manifest.permission.ACCESS_COARSE_LOCATION,
-                        pid, uid, "canAccessCellLocation");
-            } else if (context.checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION,
-                    pid, uid) == PackageManager.PERMISSION_DENIED) {
+                context.enforcePermission(permissionToCheck, pid, uid,
+                        "checkLocationAccess: " + permissionToCheck);
+            } else if (context.checkPermission(permissionToCheck, pid, uid)
+                    == PackageManager.PERMISSION_DENIED) {
                 if (DBG) Log.w(TAG, "Permission checked failed (" + pid + "," + uid + ")");
                 return false;
             }
-            final int opCode = AppOpsManager.permissionToOpCode(
-                    Manifest.permission.ACCESS_COARSE_LOCATION);
+            final int opCode = AppOpsManager.permissionToOpCode(permissionToCheck);
             if (opCode != AppOpsManager.OP_NONE && context.getSystemService(AppOpsManager.class)
                     .noteOpNoThrow(opCode, uid, pkgName) != AppOpsManager.MODE_ALLOWED) {
                 if (DBG) Log.w(TAG, "AppOp check failed (" + uid + "," + pkgName + ")");
