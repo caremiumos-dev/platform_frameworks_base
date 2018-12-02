@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b22f2aed_58134e94",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1360,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2018-12-02T03:09:54Z",
+      "side": 1,
+      "message": "rangesThatShouldBeBlocked means the ranges we want to block but no including the existing blocked uids, right?\nIs rangesToTellNetdToAdd more clear?",
+      "range": {
+        "startLine": 1360,
+        "startChar": 12,
+        "endLine": 1360,
+        "endChar": 37
+      },
+      "revId": "39b26c0577882c14a6d0ab4211ad305741f3d956",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
