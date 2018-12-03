@@ -22,6 +22,30 @@
       "revId": "39b26c0577882c14a6d0ab4211ad305741f3d956",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "59867a64_f03d4555",
+        "filename": "services/core/java/com/android/server/connectivity/Vpn.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1360,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2018-12-03T03:29:48Z",
+      "side": 1,
+      "message": "You make a good point. I think either would be difficult to understand :\n・The way to construct the diff to tell to netd is unobvious, so I don\u0027t think we should have this var called rangesToTellNetdToAdd and construct it the way the code does.\n・But you make a good point that removing the currently blocked UIDs mean that what we need to add is what this variable ends up storing.\n\nWith this in mind, I fixed the semantics :\n・Kept the current var and the current building style, but leave the ranges that should be blocked inside.\n・Introduced a new local called rangesToTellNetdToAdd that is now built from rangesThatShouldBeBlocked.\n\nI think this should clear the ambiguity. What do you think ?",
+      "parentUuid": "b22f2aed_58134e94",
+      "range": {
+        "startLine": 1360,
+        "startChar": 12,
+        "endLine": 1360,
+        "endChar": 37
+      },
+      "revId": "39b26c0577882c14a6d0ab4211ad305741f3d956",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
