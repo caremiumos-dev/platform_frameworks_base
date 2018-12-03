@@ -20,8 +20,10 @@ import static com.android.internal.util.function.pooled.PooledLambda.obtainMessa
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
+import android.debug.AdbManager;
 import android.debug.AdbManagerInternal;
 import android.debug.AdbTransportType;
 import android.debug.IAdbManager;
@@ -33,6 +35,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemProperties;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.adb.AdbServiceDumpProto;
 import android.sysprop.AdbProperties;
@@ -53,12 +56,34 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The Android Debug Bridge (ADB) service. This controls the availability of ADB and authorization
  * of devices allowed to connect to ADB.
  */
 public class AdbService extends IAdbManager.Stub {
+    /**
+     * Adb native daemon.
+     */
+    static final String ADBD = "adbd";
+
+    /**
+     * Command to start native service.
+     */
+    static final String CTL_START = "ctl.start";
+
+    /**
+     * Command to start native service.
+     */
+    static final String CTL_STOP = "ctl.stop";
+
+    // The tcp port adb is currently using
+    AtomicInteger mConnectionPort = new AtomicInteger(-1);
+
+    private final AdbConnectionPortListener mPortListener = new AdbConnectionPortListener();
+    private AdbDebuggingManager.AdbConnectionPortPoller mConnectionPortPoller;
+
     /**
      * Manages the service lifecycle for {@code AdbService} in {@code SystemServer}.
      */
@@ -116,6 +141,16 @@ public class AdbService extends IAdbManager.Stub {
         @Override
         public File getAdbTempKeysFile() {
             return mDebuggingManager.getAdbTempKeysFile();
+        }
+
+        @Override
+        public void startAdbd() {
+            SystemProperties.set(CTL_START, ADBD);
+        }
+
+        @Override
+        public void stopAdbd() {
+            SystemProperties.set(CTL_STOP, ADBD);
         }
     }
 
@@ -186,6 +221,7 @@ public class AdbService extends IAdbManager.Stub {
      * May also contain vendor-specific default functions for testing purposes.
      */
     private static final String USB_PERSISTENT_CONFIG_PROPERTY = "persist.sys.usb.config";
+    private static final String WIFI_PERSISTENT_CONFIG_PROPERTY = "persist.sys.adb.wifi";
 
     private final Context mContext;
     private final ContentResolver mContentResolver;
@@ -295,52 +331,104 @@ public class AdbService extends IAdbManager.Stub {
     @Override
     public void allowWirelessDebugging(boolean alwaysAllow, String bssid) {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
+        if (mDebuggingManager != null) {
+            mDebuggingManager.allowWirelessDebugging(alwaysAllow, bssid);
+        }
     }
 
     @Override
     public void denyWirelessDebugging() {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
+        if (mDebuggingManager != null) {
+            mDebuggingManager.denyWirelessDebugging();
+        }
     }
 
     @Override
     public Map<String, PairDevice> getPairedDevices() {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
+        if (mDebuggingManager != null) {
+            return mDebuggingManager.getPairedDevices();
+        }
         return null;
     }
 
     @Override
     public void unpairDevice(String fingerprint) {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
+        if (mDebuggingManager != null) {
+            mDebuggingManager.unpairDevice(fingerprint);
+        }
     }
 
     @Override
     public void enablePairingByPairingCode() {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
+        if (mDebuggingManager != null) {
+            mDebuggingManager.enablePairingByPairingCode();
+        }
     }
 
     @Override
     public void enablePairingByQrCode(String serviceName, String password) {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
+        if (mDebuggingManager != null) {
+            mDebuggingManager.enablePairingByQrCode(serviceName, password);
+        }
     }
 
     @Override
     public void disablePairing() {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
+        if (mDebuggingManager != null) {
+            mDebuggingManager.disablePairing();
+        }
     }
 
     @Override
     public int getAdbWirelessPort() {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
-        // TODO(joshuaduong): NOT IMPLEMENTED
-        return 0;
+        if (mDebuggingManager != null) {
+            return mDebuggingManager.getAdbWirelessPort();
+        }
+        // If ro.adb.secure=0
+        return mConnectionPort.get();
     }
+
+    /**
+     * This listener is only used when ro.adb.secure=0. Otherwise, AdbDebuggingManager will
+     * do this.
+     */
+    class AdbConnectionPortListener implements AdbDebuggingManager.AdbConnectionPortListener {
+        public void onPortReceived(int port) {
+            if (port > 0 && port <= 65535) {
+                mConnectionPort.set(port);
+            } else {
+                mConnectionPort.set(-1);
+                // Turn off wifi debugging, since the server did not start.
+                try {
+                    Settings.Global.putInt(mContentResolver,
+                            Settings.Global.ADB_WIFI_ENABLED, 0);
+                } catch (SecurityException e) {
+                    // If UserManager.DISALLOW_DEBUGGING_FEATURES is on, that this setting can't
+                    // be changed.
+                    Slog.d(TAG, "ADB_ENABLED is restricted.");
+                }
+            }
+            broadcastPortInfo(mConnectionPort.get());
+        }
+    }
+
+    private void broadcastPortInfo(int port) {
+        Intent intent = new Intent(AdbManager.WIRELESS_DEBUG_STATE_CHANGED_ACTION);
+        intent.putExtra(AdbManager.WIRELESS_STATUS_EXTRA, (port >= 0)
+                ? AdbManager.WIRELESS_STATUS_CONNECTED
+                : AdbManager.WIRELESS_STATUS_DISCONNECTED);
+        intent.putExtra(AdbManager.WIRELESS_DEBUG_PORT_EXTRA, port);
+        mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
+        Slog.i(TAG, "sent port broadcast port=" + port);
+    }
+
 
     private void setAdbEnabled(boolean enable, byte transportType) {
         if (DEBUG) {
@@ -352,6 +440,22 @@ public class AdbService extends IAdbManager.Stub {
             mAdbUsbEnabled = enable;
         } else if (transportType == AdbTransportType.WIFI && enable != mAdbWifiEnabled) {
             mAdbWifiEnabled = enable;
+            if (mAdbWifiEnabled) {
+                if (!AdbProperties.secure().orElse(false) && mDebuggingManager == null) {
+                    // Start adbd. If this is secure adb, then we defer starting adbd.
+                    SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "1");
+                    mConnectionPortPoller =
+                            new AdbDebuggingManager.AdbConnectionPortPoller(mPortListener);
+                    mConnectionPortPoller.start();
+                }
+            } else {
+                // Stop adbd.
+                SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "0");
+                if (mConnectionPortPoller != null) {
+                    mConnectionPortPoller.cancelAndWait();
+                    mConnectionPortPoller = null;
+                }
+            }
         } else {
             // No change
             return;

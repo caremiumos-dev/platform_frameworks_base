@@ -1176,6 +1176,14 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                     .isAdbEnabled(AdbTransportType.USB);
         }
 
+        protected void stopAdbd() {
+            LocalServices.getService(AdbManagerInternal.class).stopAdbd();
+        }
+
+        protected void startAdbd() {
+            LocalServices.getService(AdbManagerInternal.class).startAdbd();
+        }
+
         protected void updateAdbNotification(boolean force) {
             if (mNotificationManager == null) return;
             final int id = SystemMessage.NOTE_ADB_ACTIVE;
@@ -1718,21 +1726,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         private static final int ENUMERATION_TIME_OUT_MS = 2000;
 
         /**
-         * Command to start native service.
-         */
-        protected static final String CTL_START = "ctl.start";
-
-        /**
-         * Command to start native service.
-         */
-        protected static final String CTL_STOP = "ctl.stop";
-
-        /**
-         * Adb native daemon.
-         */
-        protected static final String ADBD = "adbd";
-
-        /**
          * Gadget HAL fully qualified instance name for registering for ServiceNotification.
          */
         protected static final String GADGET_HAL_FQ_NAME =
@@ -1917,12 +1910,12 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                         /**
                          * Start adbd if ADB function is included in the configuration.
                          */
-                        setSystemProperty(CTL_START, ADBD);
+                        startAdbd();
                     } else {
                         /**
                          * Stop adbd otherwise.
                          */
-                        setSystemProperty(CTL_STOP, ADBD);
+                        stopAdbd();
                     }
                     UsbGadgetCallback usbGadgetCallback = new UsbGadgetCallback(mCurrentRequest,
                             config, chargingFunctions);

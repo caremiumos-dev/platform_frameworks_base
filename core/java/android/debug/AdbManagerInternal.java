@@ -53,4 +53,15 @@ public abstract class AdbManagerInternal {
      * Returns the file that contains all of the ADB keys and their last used time.
      */
     public abstract File getAdbTempKeysFile();
+
+    /**
+     * Starts the adbd process.
+     */
+    public abstract void startAdbd();
+
+    /**
+     * Stops the adbd process. This will only stop if adb is disabled for all
+     * transport types.
+     */
+    public abstract void stopAdbd();
 }
