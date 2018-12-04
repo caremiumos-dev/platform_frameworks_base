@@ -123,8 +123,7 @@ message Atom {
         PhoneServiceStateChanged phone_service_state_changed = 94;
         PhoneStateChanged phone_state_changed = 95;
         LowMemReported low_mem_reported = 81;
-
-
+        DataStallEvent data_stall_event = 104;
     }
 
     // Pulled events will start at field 10000.
@@ -2003,4 +2002,49 @@ message Temperature {
 
     // Temperature in tenths of a degree C.
     optional int32 temperature_dC = 3;
+}
+
+/**
+ * Logs when a data stall event occurs.
+ *
+ * Logged from:
+ *     frameworks/base/services/core/java/com/android/server/connectivity/NetworkMonitor.java
+ */
+message DataStallEvent {
+    // Data stall evaluation type.
+    // See definition in frameworks/base/services/core/java/com/android/server/connectivity/NetworkMonitor.DATA_STALL_EVALUATION_TYPE_*.
+    optional int32 evaluation_type = 1;
+    // True if data stall is suspected.
+    optional bool data_stall_suspected = 2;
+    // True if validation result align with data stall evaluation.
+    optional bool is_stall_after_validation = 3;
+    // Network Tyep. See definition in frameworks/base/core/java/android/net/NetworkCapabilities.TRANSPORT_*.
+    optional int32 network_type = 4;
+    // Dns event happened before.
+    repeated DnsEvent dns_event = 5;
+    // The dns event stats.
+    message DnsEvent {
+        // The dns return code.
+        optional int32 return_code = 1;
+        // Indicate the timestamp which receive the dns event.
+        optional int64 time = 2;
+    }
+    // Signal strength at the time of data stall suspect.
+    optional int32 singal_strength = 6;
+    // True means Recovered , false means recovery timed out.
+    optional boolean is_recovered = 7;
+    // The recent recovery step helped to recover the data (or) -1 in case validation passed even
+    // before recovery attempted.
+    optional int32 recover_phase = 8;
+    // Cellular specific. Indicate the radio technology at the time of data stall suspect.
+    // See definition in frameworks/base/telephony/java/android/telephony/ServiceState.RIL_RADIO_TECHNOLOGY_*.
+    optional int32 rat_type = 9;
+    // Cellular specific. True if device is roaming network at the time of data stall suspect.
+    optional boolean is_roaming = 10;
+    // Cellular specific. Camped network MccMnc when data stall happen
+    optional string network_mccmnc = 11;
+    // Cellular specific. Indicate the SIM card carrier.
+    optional string sim_mccmnc = 12;
+    // Wifi specific. See definition in frameworks/base/wifi/java/android/net/wifi/WifiConfiguration.AP_BAND_*.
+    optional int32 wifi_band = 13;
 }
