@@ -50,6 +50,8 @@ public final class Telecom extends BaseCommand {
     private static final String COMMAND_ADD_OR_REMOVE_CALL_COMPANION_APP =
             "add-or-remove-call-companion-app";
     private static final String COMMAND_SET_TEST_AUTO_MODE_APP = "set-test-auto-mode-app";
+    private static final String COMMAND_SET_PHONE_ACCOUNT_SUGGESTION_COMPONENT =
+            "set-phone-acct-suggestion-component";
     private static final String COMMAND_UNREGISTER_PHONE_ACCOUNT = "unregister-phone-account";
     private static final String COMMAND_SET_DEFAULT_DIALER = "set-default-dialer";
     private static final String COMMAND_GET_DEFAULT_DIALER = "get-default-dialer";
@@ -70,6 +72,7 @@ public final class Telecom extends BaseCommand {
                 "usage: telecom register-phone-account <COMPONENT> <ID> <USER_SN> <LABEL>\n" +
                 "usage: telecom set-test-call-screening-app <PACKAGE>\n" +
                 "usage: telecom set-test-auto-mode-app <PACKAGE>\n" +
+                "usage: telecom set-phone-acct-suggestion-component <COMPONENT>\n" +
                 "usage: telecom add-or-remove-call-companion-app <PACKAGE> <1/0>\n" +
                 "usage: telecom register-sim-phone-account <COMPONENT> <ID> <USER_SN> <LABEL> <ADDRESS>\n" +
                 "usage: telecom unregister-phone-account <COMPONENT> <ID> <USER_SN>\n" +
@@ -128,6 +131,9 @@ public final class Telecom extends BaseCommand {
                 break;
             case COMMAND_SET_TEST_AUTO_MODE_APP:
                 runSetTestAutoModeApp();
+                break;
+            case COMMAND_SET_PHONE_ACCOUNT_SUGGESTION_COMPONENT:
+                runSetTestPhoneAcctSuggestionComponent();
                 break;
             case COMMAND_REGISTER_SIM_PHONE_ACCOUNT:
                 runRegisterSimPhoneAccount();
@@ -204,6 +210,11 @@ public final class Telecom extends BaseCommand {
     private void runSetTestAutoModeApp() throws RemoteException {
         final String packageName = nextArg();
         mTelecomService.setTestAutoModeApp(packageName);
+    }
+
+    private void runSetTestPhoneAcctSuggestionComponent() throws RemoteException {
+        final String componentName = nextArg();
+        mTelecomService.setTestPhoneAcctSuggestionComponent(componentName);
     }
 
     private void runUnregisterPhoneAccount() throws RemoteException {

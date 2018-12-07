@@ -305,6 +305,8 @@ interface ITelecomService {
      */
     void handleCallIntent(in Intent intent);
 
+    void setTestPhoneAcctSuggestionComponent(String flattenedComponentName);
+
     void setTestDefaultCallScreeningApp(String packageName);
 
     void addOrRemoveTestCallCompanionApp(String packageName, boolean isAdded);
