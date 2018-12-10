@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Modifier;
 import java.net.Inet4Address;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ public class DhcpServingParamsTest {
     private static final int TEST_MTU = 1500;
     private static final Set<Inet4Address> TEST_EXCLUDED_ADDRS = new HashSet<>(
             Arrays.asList(parseAddr("192.168.0.200"), parseAddr("192.168.0.201")));
+    private static final boolean TEST_METERED = true;
 
     @Before
     public void setUp() {
@@ -65,7 +67,8 @@ public class DhcpServingParamsTest {
                 .setDnsServers(TEST_DNS_SERVERS)
                 .setServerAddr(TEST_LINKADDR)
                 .setLinkMtu(TEST_MTU)
-                .setExcludedAddrs(TEST_EXCLUDED_ADDRS);
+                .setExcludedAddrs(TEST_EXCLUDED_ADDRS)
+                .setMetered(TEST_METERED);
     }
 
     @Test
@@ -91,6 +94,7 @@ public class DhcpServingParamsTest {
         assertEquals(TEST_DNS_SERVERS, params.dnsServers);
         assertEquals(TEST_LINKADDR, params.serverAddr);
         assertEquals(TEST_MTU, params.linkMtu);
+        assertEquals(TEST_METERED, params.metered);
 
         assertContains(params.excludedAddrs, TEST_EXCLUDED_ADDRS);
         assertContains(params.excludedAddrs, TEST_DEFAULT_ROUTERS);
@@ -157,6 +161,26 @@ public class DhcpServingParamsTest {
     @Test(expected = InvalidParameterException.class)
     public void testBuild_RouterNotInPrefix() throws InvalidParameterException {
         mBuilder.setDefaultRouters(parseAddr("192.168.254.254")).build();
+    }
+
+    @Test
+    public void testParcelUnparcel() throws InvalidParameterException {
+        final DhcpServingParams params = mBuilder.build();
+        final DhcpServingParams parceled = DhcpServingParams.fromParcel(params.toParcel());
+
+        assertEquals(params.defaultRouters, parceled.defaultRouters);
+        assertEquals(params.dhcpLeaseTimeSecs, parceled.dhcpLeaseTimeSecs);
+        assertEquals(params.dnsServers, parceled.dnsServers);
+        assertEquals(params.serverAddr, parceled.serverAddr);
+        assertEquals(params.linkMtu, parceled.linkMtu);
+        assertEquals(params.excludedAddrs, parceled.excludedAddrs);
+        assertEquals(params.metered, parceled.metered);
+
+        // Ensure that we do not miss any field if added in the future
+        final long numFields = Arrays.stream(DhcpServingParams.class.getDeclaredFields())
+                .filter(f -> !Modifier.isStatic(f.getModifiers()))
+                .count();
+        assertEquals(7, numFields);
     }
 
     private static <T> void assertContains(@NonNull Set<T> set, @NonNull Set<T> subset) {
