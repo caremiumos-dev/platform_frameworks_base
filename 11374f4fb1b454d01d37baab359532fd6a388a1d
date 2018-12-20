@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "41b93656_5a77315a",
+        "filename": "telephony/java/android/telephony/UiccCardInfo.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1248840
+      },
+      "writtenOn": "2018-12-20T00:47:22Z",
+      "side": 1,
+      "message": "For isRemovable, LPA can just tell from mSlotIndex, right?",
+      "range": {
+        "startLine": 35,
+        "startChar": 22,
+        "endLine": 35,
+        "endChar": 32
+      },
+      "revId": "11374f4fb1b454d01d37baab359532fd6a388a1d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
