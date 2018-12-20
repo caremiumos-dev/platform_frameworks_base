@@ -166,7 +166,7 @@ class IntervalStats {
             usageStats.mLastEvent = eventType;
         }
 
-        if (isUserVisibleEvent(eventType)) {
+        if (isStatefulEvent(eventType)) {
             usageStats.mLastTimeUsed = timeStamp;
         }
         usageStats.mEndTimeStamp = timeStamp;
@@ -175,6 +175,11 @@ class IntervalStats {
             usageStats.mLaunchCount += 1;
         }
 
+        //update launch count
+        if (eventType == UsageEvents.Event.CONTINUE_PREVIOUS_DAY) {
+            usageStats.mLaunchCount += 1;
+            usageStats.mAppLaunchCount += 1;
+        }
         endTime = timeStamp;
     }
 
