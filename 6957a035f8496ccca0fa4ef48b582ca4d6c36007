@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fe36d2f3_2c80135a",
+        "filename": "services/core/java/com/android/server/BluetoothManagerService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1013,
+      "author": {
+        "id": 1121403
+      },
+      "writtenOn": "2018-12-21T21:32:53Z",
+      "side": 1,
+      "message": "I understand the BluetoothHeadset change. Why is this change necessary?",
+      "range": {
+        "startLine": 1013,
+        "startChar": 0,
+        "endLine": 1013,
+        "endChar": 48
+      },
+      "revId": "6957a035f8496ccca0fa4ef48b582ca4d6c36007",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
