@@ -22,6 +22,29 @@
       "revId": "11374f4fb1b454d01d37baab359532fd6a388a1d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e76241c0_4147cea8",
+        "filename": "telephony/java/android/telephony/UiccCardInfo.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1098848
+      },
+      "writtenOn": "2018-12-21T03:22:30Z",
+      "side": 1,
+      "message": "nit: if (!(obj instanceof UiccCardInfo)) return false;",
+      "range": {
+        "startLine": 125,
+        "startChar": 8,
+        "endLine": 127,
+        "endChar": 9
+      },
+      "revId": "11374f4fb1b454d01d37baab359532fd6a388a1d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
