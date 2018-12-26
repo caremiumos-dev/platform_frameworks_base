@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "d08f9be8_1157f104",
+        "filename": "telephony/java/android/telephony/UiccCardInfo.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1121198
+      },
+      "writtenOn": "2018-12-26T16:15:39Z",
+      "side": 1,
+      "message": "If the LPA has independent logic to figure out which physical slots are eUICCs and which contain removable cards, then yes. I\u0027m not sure there are platform guarantees around this, it might vary by device, but it is probably pretty reliable.",
+      "parentUuid": "41b93656_5a77315a",
+      "range": {
+        "startLine": 35,
+        "startChar": 22,
+        "endLine": 35,
+        "endChar": 32
+      },
+      "revId": "11374f4fb1b454d01d37baab359532fd6a388a1d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e76241c0_4147cea8",
         "filename": "telephony/java/android/telephony/UiccCardInfo.java",
         "patchSetId": 1
