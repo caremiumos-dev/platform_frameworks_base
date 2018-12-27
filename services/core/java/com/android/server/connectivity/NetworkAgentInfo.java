@@ -16,9 +16,8 @@
 
 package com.android.server.connectivity;
 
-import static android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED;
-
 import android.content.Context;
+import android.net.INetworkMonitor;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -26,6 +25,7 @@ import android.net.NetworkInfo;
 import android.net.NetworkMisc;
 import android.net.NetworkRequest;
 import android.net.NetworkState;
+import android.net.shared.PrivateDnsConfig;
 import android.os.Handler;
 import android.os.INetworkManagementService;
 import android.os.Messenger;
@@ -37,11 +37,8 @@ import android.util.SparseArray;
 import com.android.internal.util.AsyncChannel;
 import com.android.internal.util.WakeupMessage;
 import com.android.server.ConnectivityService;
-import com.android.server.connectivity.NetworkMonitor;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -126,7 +123,6 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
     public LinkProperties linkProperties;
     // This should only be modified via ConnectivityService.updateCapabilities().
     public NetworkCapabilities networkCapabilities;
-    public final NetworkMonitor networkMonitor;
     public final NetworkMisc networkMisc;
     // Indicates if netd has been told to create this Network. From this point on the appropriate
     // routing rules are setup and routes are added so packets can begin flowing over the Network.
@@ -239,6 +235,9 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
     // Used by ConnectivityService to keep track of 464xlat.
     public Nat464Xlat clatd;
 
+    // Set after asynchronous creation of the NetworkMonitor.
+    private INetworkMonitor mNetworkMonitor;
+
     private static final String TAG = ConnectivityService.class.getSimpleName();
     private static final boolean VDBG = false;
     private final ConnectivityService mConnService;
@@ -247,7 +246,7 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
 
     public NetworkAgentInfo(Messenger messenger, AsyncChannel ac, Network net, NetworkInfo info,
             LinkProperties lp, NetworkCapabilities nc, int score, Context context, Handler handler,
-            NetworkMisc misc, NetworkRequest defaultRequest, ConnectivityService connService) {
+            NetworkMisc misc, ConnectivityService connService) {
         this.messenger = messenger;
         asyncChannel = ac;
         network = net;
@@ -258,8 +257,14 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
         mConnService = connService;
         mContext = context;
         mHandler = handler;
-        networkMonitor = mConnService.createNetworkMonitor(context, handler, this, defaultRequest);
         networkMisc = misc;
+    }
+
+    /**
+     * Inform NetworkAgentInfo that a new NetworkMonitor was created.
+     */
+    public void onNetworkMonitorCreated(INetworkMonitor networkMonitor) {
+        mNetworkMonitor = networkMonitor;
     }
 
     public ConnectivityService connService() {
@@ -276,6 +281,119 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
 
     public Network network() {
         return network;
+    }
+
+    /**
+     * Start the NetworkMonitor associated with this NetworkAgentInfo.
+     * This should be called after the NetworkAgent is registered.
+     */
+    public void startNetworkMonitor() {
+        try {
+            mNetworkMonitor.start();
+        } catch (RemoteException e) {
+            e.rethrowAsRuntimeException();
+        }
+    }
+
+    /**
+     * Notify that private DNS settings have changed.
+     */
+    public void notifyPrivateDnsChanged(PrivateDnsConfig cfg) {
+        try {
+            mNetworkMonitor.notifyPrivateDnsChanged(cfg.toParcel());
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Notify that there was a DNS query response event.
+     */
+    public void notifyDnsResponse(int returnCode) {
+        try {
+            mNetworkMonitor.notifyDnsResponse(returnCode);
+        } catch (RemoteException e) {
+            e.rethrowAsRuntimeException();
+        }
+    }
+
+    /**
+     * Notify that the network is now connected.
+     */
+    public void notifyNetworkConnected() {
+        try {
+            mNetworkMonitor.notifyNetworkConnected();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Notify that the network is now disconnected.
+     */
+    public void notifyNetworkDisconnected() {
+        try {
+            mNetworkMonitor.notifyNetworkDisconnected();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Request the NetworkMonitor to launch the captive portal app.
+     */
+    public void launchCaptivePortalApp() {
+        try {
+            mNetworkMonitor.launchCaptivePortalApp();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Notify that the system is now ready.
+     */
+    public void notifySystemReady() {
+        try {
+            mNetworkMonitor.notifySystemReady();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Request that the NetworkMonitor reevaluates.
+     */
+    public void forceNetworkMonitorReevaluation(int uid) {
+        try {
+            mNetworkMonitor.forceReevaluation(uid);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Notify NetworkMonitor that updated NetworkCapabilities can be obtained through
+     * {@link #getNetworkCapabilities(Network)}.
+     */
+    public void notifyCapabilitiesChanged() {
+        try {
+            mNetworkMonitor.notifyNetworkCapabilitiesChanged();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Notify NetworkMonitor that updated NetworkCapabilities can be obtained through
+     * {@link #getLinkProperties(Network)}.
+     */
+    public void notifyLinkPropertiesChanged() {
+        try {
+            mNetworkMonitor.notifyLinkPropertiesChanged();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
     }
 
     // Functions for manipulating the requests satisfied by this network.
