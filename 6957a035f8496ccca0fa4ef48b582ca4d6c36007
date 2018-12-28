@@ -22,6 +22,30 @@
       "revId": "6957a035f8496ccca0fa4ef48b582ca4d6c36007",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da26c50a_4eba70ba",
+        "filename": "services/core/java/com/android/server/BluetoothManagerService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1013,
+      "author": {
+        "id": 1407423
+      },
+      "writtenOn": "2018-12-28T03:47:35Z",
+      "side": 1,
+      "message": "Every time BindService, IBluetoothHeadset will be held by BinderRecorder, IBluetoothHeadset will not be released, even if the Bluetooth process died",
+      "parentUuid": "fe36d2f3_2c80135a",
+      "range": {
+        "startLine": 1013,
+        "startChar": 0,
+        "endLine": 1013,
+        "endChar": 48
+      },
+      "revId": "6957a035f8496ccca0fa4ef48b582ca4d6c36007",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
