@@ -1230,7 +1230,9 @@ public class NetworkStats implements Parcelable {
             if (recycle.uid == UID_ALL) {
                 throw new IllegalStateException(
                         "Cannot adjust VPN accounting on an iface aggregated NetworkStats.");
-            } if (recycle.set == SET_DBG_VPN_IN || recycle.set == SET_DBG_VPN_OUT) {
+            }
+            if ((recycle.set == SET_DBG_VPN_IN || recycle.set == SET_DBG_VPN_OUT)
+                    && Objects.equals(underlyingIface, recycle.iface)) {
                 throw new IllegalStateException(
                         "Cannot adjust VPN accounting on a NetworkStats containing SET_DBG_VPN_*");
             }

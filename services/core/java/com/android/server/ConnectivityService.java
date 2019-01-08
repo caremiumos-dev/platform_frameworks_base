@@ -4025,15 +4025,22 @@ public class ConnectivityService extends IConnectivityManager.Stub
         if (underlyingNetworks == null) {
             NetworkAgentInfo defaultNetwork = getDefaultNetwork();
             if (defaultNetwork != null && defaultNetwork.linkProperties != null) {
-                info.primaryUnderlyingIface = getDefaultNetwork().linkProperties.getInterfaceName();
+                info.underlyingIfaces =
+                        new String[] {defaultNetwork.linkProperties.getInterfaceName()};
             }
         } else if (underlyingNetworks.length > 0) {
-            LinkProperties linkProperties = getLinkProperties(underlyingNetworks[0]);
-            if (linkProperties != null) {
-                info.primaryUnderlyingIface = linkProperties.getInterfaceName();
+            List<String> interfaces = new ArrayList<>();
+            for (Network network : underlyingNetworks) {
+                LinkProperties lp = getLinkProperties(network);
+                if (lp != null) {
+                    interfaces.add(lp.getInterfaceName());
+                }
+            }
+            if (!interfaces.isEmpty()) {
+                info.underlyingIfaces = interfaces.toArray(new String[interfaces.size()]);
             }
         }
-        return info.primaryUnderlyingIface == null ? null : info;
+        return info.underlyingIfaces == null ? null : info;
     }
 
     /**

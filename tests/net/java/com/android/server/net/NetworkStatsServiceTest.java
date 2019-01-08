@@ -19,6 +19,7 @@ package com.android.server.net;
 import static android.content.Intent.ACTION_UID_REMOVED;
 import static android.content.Intent.EXTRA_UID;
 import static android.net.ConnectivityManager.TYPE_MOBILE;
+import static android.net.ConnectivityManager.TYPE_VPN;
 import static android.net.ConnectivityManager.TYPE_WIFI;
 import static android.net.ConnectivityManager.TYPE_WIMAX;
 import static android.net.NetworkStats.DEFAULT_NETWORK_ALL;
@@ -41,6 +42,7 @@ import static android.net.NetworkStats.TAG_NONE;
 import static android.net.NetworkStats.UID_ALL;
 import static android.net.NetworkStatsHistory.FIELD_ALL;
 import static android.net.NetworkTemplate.buildTemplateMobileAll;
+import static android.net.NetworkTemplate.buildTemplateMobileWildcard;
 import static android.net.NetworkTemplate.buildTemplateWifiWildcard;
 import static android.net.TrafficStats.MB_IN_BYTES;
 import static android.net.TrafficStats.UID_REMOVED;
@@ -100,7 +102,6 @@ import android.telephony.TelephonyManager;
 import com.android.internal.net.VpnInfo;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.test.BroadcastInterceptingContext;
-import com.android.server.LocalServices;
 import com.android.server.net.NetworkStatsService.NetworkStatsSettings;
 import com.android.server.net.NetworkStatsService.NetworkStatsSettings.Config;
 
@@ -133,6 +134,7 @@ public class NetworkStatsServiceTest {
 
     private static final String TEST_IFACE = "test0";
     private static final String TEST_IFACE2 = "test1";
+    private static final String TUN_IFACE = "test_nss_tun0";
     private static final long TEST_START = 1194220800000L;
 
     private static final String IMSI_1 = "310004";
@@ -146,10 +148,12 @@ public class NetworkStatsServiceTest {
     private static final int UID_RED = 1001;
     private static final int UID_BLUE = 1002;
     private static final int UID_GREEN = 1003;
+    private static final int UID_VPN = 1004;
 
 
     private static final Network WIFI_NETWORK =  new Network(100);
     private static final Network MOBILE_NETWORK =  new Network(101);
+    private static final Network VPN_NETWORK = new Network(102);
     private static final Network[] NETWORKS_WIFI = new Network[]{ WIFI_NETWORK };
     private static final Network[] NETWORKS_MOBILE = new Network[]{ MOBILE_NETWORK };
 
@@ -917,7 +921,148 @@ public class NetworkStatsServiceTest {
         assertNetworkTotal(sTemplateImsi1, 2048L, 16L, 512L, 4L, 0);
         assertUidTotal(sTemplateImsi1, UID_RED, 128L, 2L, 128L, 2L, 0);
         assertUidTotal(sTemplateImsi1, UID_TETHERING, 1920L, 14L, 384L, 2L, 0);
+    }
 
+    @Test
+    public void vpnWithOneUnderlyingIface() throws Exception {
+        // We have WiFi and VPN network, and VPN is using WiFi (which has TEST_IFACE).
+        expectDefaultSettings();
+        NetworkState[] networkStates =
+                new NetworkState[] {buildWifiState(), buildVpnState(false /* isMetered */)};
+        expectNetworkState(networkStates);
+        VpnInfo[] vpnInfos = new VpnInfo[] {createVpnInfo(new String[] {TEST_IFACE})};
+        when(mConnManager.getAllVpnInfo()).thenReturn(vpnInfos);
+        expectNetworkStatsUidDetail(buildEmptyStats());
+        expectBandwidthControlCheck();
+
+        mService.forceUpdateIfaces(new Network[] {WIFI_NETWORK, VPN_NETWORK});
+        // create some traffic (assume 10 bytes of MTU for VPN interface and 1 byte encryption
+        // overhead per packet):
+        // 1000 bytes (100 packets) were downloaded by UID_RED over VPN.
+        // VPN received 1100 bytes (100 packets) over WiFi.
+        // Of 1100 bytes over WiFi, expect 1000 bytes attributed to UID_RED and 100 bytes attributed
+        // to UID_VPN.
+        incrementCurrentTime(HOUR_IN_MILLIS);
+        expectNetworkStatsUidDetail(
+                new NetworkStats(getElapsedRealtime(), 2)
+                        .addValues(
+                                TUN_IFACE, UID_RED, SET_DEFAULT, TAG_NONE, 1000L, 100L, 0L, 0L, 0L)
+                        .addValues(
+                                TEST_IFACE,
+                                UID_VPN,
+                                SET_DEFAULT,
+                                TAG_NONE,
+                                1100L,
+                                100L,
+                                0L,
+                                0L,
+                                0L));
+
+        forcePollAndWaitForIdle();
+
+        assertUidTotal(sTemplateWifi, UID_RED, 1000L, 100L, 0L, 0L, 0);
+        assertUidTotal(sTemplateWifi, UID_VPN, 100L, 0L, 0L, 0L, 0);
+    }
+
+    @Test
+    public void vpnWithTwoUnderlyingIfaces() throws Exception {
+        // We have WiFi, Cell, and VPN network, and VPN is using WiFi (which has TEST_IFACE) and
+        // Cell (which has TEST_IFACE2) and has declared both of them in its underlying network set.
+        expectDefaultSettings();
+        NetworkState[] networkStates =
+                new NetworkState[] {
+                    buildWifiState(),
+                    buildMobile4gState(TEST_IFACE2),
+                    buildVpnState(false /* isMetered */)
+                };
+        expectNetworkState(networkStates);
+        VpnInfo[] vpnInfos = new VpnInfo[] {createVpnInfo(new String[] {TEST_IFACE, TEST_IFACE2})};
+        when(mConnManager.getAllVpnInfo()).thenReturn(vpnInfos);
+        expectNetworkStatsUidDetail(buildEmptyStats());
+        expectBandwidthControlCheck();
+
+        mService.forceUpdateIfaces(new Network[] {WIFI_NETWORK, VPN_NETWORK});
+        // create some traffic (assume 10 bytes of MTU for VPN interface and 1 byte encryption
+        // overhead per packet):
+        // 1000 bytes (100 packets) were downloaded by UID_RED over VPN.
+        // VPN received 1100 bytes (100 packets) over both WiFi and Cell.
+        // Of 1100 bytes over WiFi/Cell, expect 1000 bytes attributed to UID_RED and 100 bytes
+        // attributed to UID_VPN for both WiFi and Cell.
+        incrementCurrentTime(HOUR_IN_MILLIS);
+        expectNetworkStatsUidDetail(
+                new NetworkStats(getElapsedRealtime(), 3)
+                        .addValues(
+                                TUN_IFACE, UID_RED, SET_DEFAULT, TAG_NONE, 1000L, 100L, 0L, 0L, 0L)
+                        .addValues(
+                                TEST_IFACE, UID_VPN, SET_DEFAULT, TAG_NONE, 1100L, 100L, 0L, 0L, 0L)
+                        .addValues(
+                                TEST_IFACE2,
+                                UID_VPN,
+                                SET_DEFAULT,
+                                TAG_NONE,
+                                1100L,
+                                100L,
+                                0L,
+                                0L,
+                                0L));
+
+        forcePollAndWaitForIdle();
+
+        assertUidTotal(sTemplateWifi, UID_RED, 1000L, 100L, 0L, 0L, 0);
+        assertUidTotal(sTemplateWifi, UID_VPN, 100L, 0L, 0L, 0L, 0);
+        assertUidTotal(buildTemplateMobileWildcard(), UID_RED, 1000L, 100L, 0L, 0L, 0);
+        assertUidTotal(buildTemplateMobileWildcard(), UID_VPN, 100L, 0L, 0L, 0L, 0);
+    }
+
+    @Test
+    public void vpnWithIncorrectUnderlyingIfaces() throws Exception {
+        // We have WiFi, Cell, and VPN network, and VPN is using WiFi (which has TEST_IFACE) and
+        // Cell (which has TEST_IFACE2), but has only declared WiFi in its underlying network set.
+        expectDefaultSettings();
+        NetworkState[] networkStates =
+                new NetworkState[] {
+                    buildWifiState(),
+                    buildMobile4gState(TEST_IFACE2),
+                    buildVpnState(false /* isMetered */)
+                };
+        expectNetworkState(networkStates);
+        VpnInfo[] vpnInfos = new VpnInfo[] {createVpnInfo(new String[] {TEST_IFACE})};
+        when(mConnManager.getAllVpnInfo()).thenReturn(vpnInfos);
+        expectNetworkStatsUidDetail(buildEmptyStats());
+        expectBandwidthControlCheck();
+
+        mService.forceUpdateIfaces(new Network[] {WIFI_NETWORK, VPN_NETWORK});
+        // create some traffic (assume 10 bytes of MTU for VPN interface and 1 byte encryption
+        // overhead per packet):
+        // 1000 bytes (100 packets) were downloaded by UID_RED over VPN.
+        // VPN received 1100 bytes (100 packets) over both WiFi and Cell.
+        // Of 1100 bytes over WiFi, expect 1000 bytes attributed to UID_RED and 100 bytes
+        // attributed to UID_VPN.
+        // Of 1100 bytes over Cell, expect all of it attributed to UID_VPN.
+        incrementCurrentTime(HOUR_IN_MILLIS);
+        expectNetworkStatsUidDetail(
+                new NetworkStats(getElapsedRealtime(), 3)
+                        .addValues(
+                                TUN_IFACE, UID_RED, SET_DEFAULT, TAG_NONE, 1000L, 100L, 0L, 0L, 0L)
+                        .addValues(
+                                TEST_IFACE, UID_VPN, SET_DEFAULT, TAG_NONE, 1100L, 100L, 0L, 0L, 0L)
+                        .addValues(
+                                TEST_IFACE2,
+                                UID_VPN,
+                                SET_DEFAULT,
+                                TAG_NONE,
+                                1100L,
+                                100L,
+                                0L,
+                                0L,
+                                0L));
+
+        forcePollAndWaitForIdle();
+
+        assertUidTotal(sTemplateWifi, UID_RED, 1000L, 100L, 0L, 0L, 0);
+        assertUidTotal(sTemplateWifi, UID_VPN, 100L, 0L, 0L, 0L, 0);
+        assertUidTotal(buildTemplateMobileWildcard(), UID_RED, 0L, 0L, 0L, 0L, 0);
+        assertUidTotal(buildTemplateMobileWildcard(), UID_VPN, 1100L, 100L, 0L, 0L, 0);
     }
 
     @Test
@@ -1261,6 +1406,24 @@ public class NetworkStatsServiceTest {
         capabilities.setCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED, false);
         capabilities.setCapability(NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING, true);
         return new NetworkState(info, prop, capabilities, MOBILE_NETWORK, null, null);
+    }
+
+    private static NetworkState buildVpnState(boolean isMetered) {
+        final NetworkInfo info = new NetworkInfo(TYPE_VPN, 0, null, null);
+        info.setDetailedState(DetailedState.CONNECTED, null, null);
+        final LinkProperties prop = new LinkProperties();
+        prop.setInterfaceName(TUN_IFACE);
+        final NetworkCapabilities capabilities = new NetworkCapabilities();
+        capabilities.setCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED, !isMetered);
+        return new NetworkState(info, prop, capabilities, VPN_NETWORK, null, null);
+    }
+
+    private static VpnInfo createVpnInfo(String[] underlyingIfaces) {
+        VpnInfo info = new VpnInfo();
+        info.ownerUid = UID_VPN;
+        info.vpnIface = TUN_IFACE;
+        info.underlyingIfaces = underlyingIfaces;
+        return info;
     }
 
     private NetworkStats buildEmptyStats() {

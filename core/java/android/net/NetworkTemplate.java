@@ -93,6 +93,10 @@ public class NetworkTemplate implements Parcelable {
         sForceAllNetworkTypes = true;
     }
 
+    public static void resetForceAllNetworkTypes() {
+        sForceAllNetworkTypes = false;
+    }
+
     /**
      * Template to match {@link ConnectivityManager#TYPE_MOBILE} networks with
      * the given IMSI.
