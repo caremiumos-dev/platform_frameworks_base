@@ -26,12 +26,15 @@ import android.os.Messenger;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.AsyncChannel;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.Protocol;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 /**
  * A NetworkFactory is an entity that creates NetworkAgent objects.
@@ -96,7 +99,18 @@ public class NetworkFactory extends Handler {
      */
     private static final int CMD_SET_FILTER = BASE + 3;
 
+    /**
+     * Sent by NetworkFactory to ConnectivityService to indicate that a request is
+     * unfulfillable.
+     * @see #releaseRequestAsUnfulfillableByAnyFactory(NetworkRequest).
+     */
+    public static final int EVENT_UNFULFILLABLE_REQUEST = BASE + 4;
+
     private final Context mContext;
+    @GuardedBy("mPreConnectedQueue")
+    private final ArrayList<Message> mPreConnectedQueue = new ArrayList<Message>();
+    @GuardedBy("mPreConnectedQueue")
+    private volatile AsyncChannel mAsyncChannel;
     private final String LOG_TAG;
 
     private final SparseArray<NetworkRequestInfo> mNetworkRequests =
@@ -136,6 +150,42 @@ public class NetworkFactory extends Handler {
     @Override
     public void handleMessage(Message msg) {
         switch (msg.what) {
+            case AsyncChannel.CMD_CHANNEL_FULL_CONNECTION: {
+                if (mAsyncChannel != null) {
+                    log("Received new connection while already connected!");
+                } else {
+                    if (VDBG) log("NetworkFactory fully connected");
+                    AsyncChannel ac = new AsyncChannel();
+                    ac.connected(null, this, msg.replyTo);
+                    ac.replyToMessage(msg, AsyncChannel.CMD_CHANNEL_FULLY_CONNECTED,
+                            AsyncChannel.STATUS_SUCCESSFUL);
+                    synchronized (mPreConnectedQueue) {
+                        mAsyncChannel = ac;
+                        for (Message m : mPreConnectedQueue) {
+                            ac.sendMessage(m);
+                        }
+                        mPreConnectedQueue.clear();
+                    }
+                }
+                break;
+            }
+            case AsyncChannel.CMD_CHANNEL_DISCONNECT: {
+                if (VDBG) log("CMD_CHANNEL_DISCONNECT");
+                synchronized (mPreConnectedQueue) {
+                    if (mAsyncChannel != null) {
+                        mAsyncChannel.disconnect();
+                        mAsyncChannel = null;
+                    }
+                }
+                break;
+            }
+            case AsyncChannel.CMD_CHANNEL_DISCONNECTED: {
+                if (DBG) log("NetworkFactory channel lost");
+                synchronized (mPreConnectedQueue) {
+                    mAsyncChannel = null;
+                }
+                break;
+            }
             case CMD_REQUEST_NETWORK: {
                 handleAddRequest((NetworkRequest)msg.obj, msg.arg1);
                 break;
@@ -151,6 +201,33 @@ public class NetworkFactory extends Handler {
             case CMD_SET_FILTER: {
                 handleSetFilter((NetworkCapabilities) msg.obj);
                 break;
+            }
+        }
+    }
+
+    private void queueOrSendMessage(int what, Object obj) {
+        queueOrSendMessage(what, 0, 0, obj);
+    }
+
+    private void queueOrSendMessage(int what, int arg1, int arg2) {
+        queueOrSendMessage(what, arg1, arg2, null);
+    }
+
+    private void queueOrSendMessage(int what, int arg1, int arg2, Object obj) {
+        Message msg = Message.obtain();
+        msg.what = what;
+        msg.arg1 = arg1;
+        msg.arg2 = arg2;
+        msg.obj = obj;
+        queueOrSendMessage(msg);
+    }
+
+    private void queueOrSendMessage(Message msg) {
+        synchronized (mPreConnectedQueue) {
+            if (mAsyncChannel != null) {
+                mAsyncChannel.sendMessage(msg);
+            } else {
+                mPreConnectedQueue.add(msg);
             }
         }
     }
@@ -267,6 +344,26 @@ public class NetworkFactory extends Handler {
         });
     }
 
+    /**
+     * Can be called by a factory to release a request as unfulfillable: the request will be
+     * removed, and the caller will get a
+     * {@link ConnectivityManager.NetworkCallback#onUnavailable()} callback.
+     *
+     * Note: this should only be called by factory which KNOWS that it is the ONLY factory which
+     * is able to fulfill this request!
+     */
+    protected void releaseRequestAsUnfulfillableByAnyFactory(NetworkRequest r) {
+        post(() -> {
+            if (DBG) log("releaseRequestAsUnfulfillableByAnyFactory: " + r);
+            if (mAsyncChannel == null) {
+                Log.e(LOG_TAG,
+                        "releaseRequestAsUnfulfillableByAnyFactory: no async channel to CS!");
+            } else {
+                queueOrSendMessage(obtainMessage(EVENT_UNFULFILLABLE_REQUEST, r));
+            }
+        });
+    }
+
     // override to do simple mode (request independent)
     protected void startNetwork() { }
     protected void stopNetwork() { }
@@ -279,7 +376,6 @@ public class NetworkFactory extends Handler {
     protected void releaseNetworkFor(NetworkRequest networkRequest) {
         if (--mRefCount == 0) stopNetwork();
     }
-
 
     public void addNetworkRequest(NetworkRequest networkRequest, int score) {
         sendMessage(obtainMessage(CMD_REQUEST_NETWORK,
