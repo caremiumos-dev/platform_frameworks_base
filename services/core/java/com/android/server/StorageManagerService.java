@@ -752,6 +752,10 @@ class StorageManagerService extends IStorageManager.Stub
                 }
             });
         refreshZramSettings();
+
+        if (mContext.getResources().getBoolean(com.android.internal.R.bool.config_zramWriteback)) {
+            ZramWriteback.scheduleZramWriteback(mContext);
+        }
     }
 
     /**
