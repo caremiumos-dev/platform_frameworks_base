@@ -896,6 +896,7 @@ public class ConnectivityServiceTest {
             mNetworkCapabilities.set(mMockNetworkAgent.getNetworkCapabilities());
             mConnected = true;
             mConfig = new VpnConfig();
+            mConfig.isMetered = false;
         }
 
         @Override
