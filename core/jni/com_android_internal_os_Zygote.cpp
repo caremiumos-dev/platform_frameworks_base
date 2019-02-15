@@ -1309,7 +1309,8 @@ static jint com_android_internal_os_Zygote_nativeForkSystemServer(
           // Assign system_server to the correct memory cgroup.
           // Not all devices mount memcg so check if it is mounted first
           // to avoid unnecessarily printing errors and denials in the logs.
-          if (!SetTaskProfiles(pid, std::vector<std::string>{"SystemMemoryProcess"})) {
+          // Do not use cached file descriptors because they are not whitelisted for JNI use.
+          if (!SetTaskProfiles(pid, std::vector<std::string>{"SystemMemoryProcess"}, false)) {
               ALOGE("couldn't add process %d into system memcg group", pid);
           }
       }
