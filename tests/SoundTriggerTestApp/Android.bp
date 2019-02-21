@@ -1,0 +1,10 @@
+android_app {
+    name: "SoundTriggerTestApp",
+    srcs: ["**/*.java"],
+
+    platform_apis: true,
+
+    privileged: true,
+    certificate: "platform",
+
+}

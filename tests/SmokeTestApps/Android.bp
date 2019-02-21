@@ -1,0 +1,7 @@
+android_test {
+    name: "SmokeTestTriggerApps",
+    srcs: ["src/**/*.java"],
+
+    sdk_version: "current",
+
+}

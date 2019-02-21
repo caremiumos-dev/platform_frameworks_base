@@ -1,0 +1,17 @@
+android_test {
+    name: "ImfTestTests",
+
+    // Include all test java files.
+    srcs: ["**/*.java"],
+
+    libs: [
+        "android.test.runner",
+        "android.test.base",
+    ],
+    static_libs: ["junit"],
+
+    platform_apis: true,
+
+    instrumentation_for: "ImfTest",
+
+}
