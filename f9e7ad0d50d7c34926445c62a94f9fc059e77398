@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "e0e30b35_98240b3d",
+        "filename": "core/java/android/net/TcpSocketKeepalive.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1385042
+      },
+      "writtenOn": "2019-03-05T03:52:03Z",
+      "side": 1,
+      "message": "this statement cannot be read smoothly.\n\"that the data has sent\" or \"that the data has been delivered\" or what do you mean?",
+      "range": {
+        "startLine": 53,
+        "startChar": 41,
+        "endLine": 53,
+        "endChar": 89
+      },
+      "revId": "f9e7ad0d50d7c34926445c62a94f9fc059e77398",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ecbfd8e8_03e97e70",
         "filename": "services/core/java/com/android/server/connectivity/KeepaliveTracker.java",
         "patchSetId": 1
