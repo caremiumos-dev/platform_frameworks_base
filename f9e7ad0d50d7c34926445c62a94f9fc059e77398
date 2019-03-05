@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ecbfd8e8_03e97e70",
+        "filename": "services/core/java/com/android/server/connectivity/KeepaliveTracker.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2019-03-05T03:03:19Z",
+      "side": 1,
+      "message": "Currently IllegalArgumentException from startSocketMonitor means two things.\n1. This slot is already taken\n2. This fd is already registered\nRegarding to case 1, is it suitable to stop keepalive for occupied slot ?? If we need to stop it, seems we need to notify user who has occupied this slot.",
+      "revId": "f9e7ad0d50d7c34926445c62a94f9fc059e77398",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
