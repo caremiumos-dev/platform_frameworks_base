@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "33aef4fb_23d2783b",
+        "filename": "core/java/android/net/TcpSocketKeepalive.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2019-03-07T08:03:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e0e30b35_98240b3d",
+      "range": {
+        "startLine": 53,
+        "startChar": 41,
+        "endLine": 53,
+        "endChar": 89
+      },
+      "revId": "f9e7ad0d50d7c34926445c62a94f9fc059e77398",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ecbfd8e8_03e97e70",
         "filename": "services/core/java/com/android/server/connectivity/KeepaliveTracker.java",
         "patchSetId": 1
@@ -39,6 +63,24 @@
       "revId": "f9e7ad0d50d7c34926445c62a94f9fc059e77398",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0db32c07_5154bc59",
+        "filename": "services/core/java/com/android/server/connectivity/KeepaliveTracker.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2019-03-07T08:03:55Z",
+      "side": 1,
+      "message": "per offline discussion, leave case 1 since it should not happened.",
+      "parentUuid": "ecbfd8e8_03e97e70",
+      "revId": "f9e7ad0d50d7c34926445c62a94f9fc059e77398",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
