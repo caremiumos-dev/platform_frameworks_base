@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8242f002_57e5ca14",
+        "filename": "services/core/java/com/android/server/connectivity/TcpKeepaliveController.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2019-03-08T13:56:04Z",
+      "side": 1,
+      "message": "I think I prefer IllegalArgumentException. The socket is not invalid, but we don\u0027t want this argument because it\u0027s already registered.\n\nNot feeling strongly.",
+      "range": {
+        "startLine": 231,
+        "startChar": 30,
+        "endLine": 231,
+        "endChar": 52
+      },
+      "revId": "1d5cd19090d62cdb27b3ab0261fee56b8f80a9cd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
