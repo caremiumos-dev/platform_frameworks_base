@@ -46,6 +46,30 @@
       "revId": "1d5cd19090d62cdb27b3ab0261fee56b8f80a9cd",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bdb8daef_6884bf7c",
+        "filename": "services/core/java/com/android/server/connectivity/TcpKeepaliveController.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2019-03-15T09:39:57Z",
+      "side": 1,
+      "message": "I see very little reason for the caller to distinguish programmatically though ?\n\nI think both cases are programming errors that the caller should fix anyway. If that\u0027s the case, then the string is perfectly enough to distinguish.\n\nIf there is reason to distinguish programmatically that I am missing, then I think defining both exceptions is probably the better choice. But I\u0027d need to be convinced the need exists.",
+      "parentUuid": "04dc0536_484f0cce",
+      "range": {
+        "startLine": 231,
+        "startChar": 30,
+        "endLine": 231,
+        "endChar": 52
+      },
+      "revId": "1d5cd19090d62cdb27b3ab0261fee56b8f80a9cd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
