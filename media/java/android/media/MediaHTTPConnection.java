@@ -24,6 +24,8 @@ import android.os.IBinder;
 import android.os.StrictMode;
 import android.util.Log;
 
+import com.android.internal.annotations.GuardedBy;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +39,12 @@ import java.net.URL;
 import java.net.UnknownServiceException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** @hide */
 public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
@@ -51,15 +58,40 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     private final static int HTTP_TEMP_REDIRECT = 307;
     private final static int MAX_REDIRECTS = 20;
 
+    private ExecutorService mExecutor = null;
+
     class ConnectionState {
+        @GuardedBy("mLock")
         public HttpURLConnection mConnection = null;
+        @GuardedBy("mLock")
         public InputStream mInputStream = null;
+        @GuardedBy("mLock")
         public long mCurrentOffset = -1;
+        @GuardedBy("mLock")
         public Map<String, String> mHeaders = null;
+        @GuardedBy("mLock")
         public URL mURL = null;
+        @GuardedBy("mLock")
         public long mTotalSize = -1;
+        @GuardedBy("mLock")
         public boolean mAllowCrossDomainRedirect = true;
+        @GuardedBy("mLock")
         public boolean mAllowCrossProtocolRedirect = true;
+        @GuardedBy("MediaHTTPConnection.this")
+        public CompletableFuture<Integer> mReadAtResult = null;
+        private final ReentrantLock mLock = new ReentrantLock();
+
+        public boolean tryLock() {
+            return mLock.tryLock();
+        }
+
+        public void lock() {
+            mLock.lock();
+        }
+
+        public void unlock() {
+            mLock.unlock();
+        }
     }
     private final AtomicReference<ConnectionState> mConnectionStateHolder =
             new AtomicReference<ConnectionState>();
@@ -72,11 +104,12 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
         }
 
         native_setup();
+        mExecutor = Executors.newFixedThreadPool(1);
     }
 
     @Override
     @UnsupportedAppUsage
-    public IBinder connect(String uri, String headers) {
+    public IBinder connect(String uri, String headers) throws IllegalStateException {
         if (VERBOSE) {
             Log.d(TAG, "connect: uri=" + uri + ", headers=" + headers);
         }
@@ -89,18 +122,25 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
             }
         }
 
-        try {
-            disconnect();
-            connectionState.mAllowCrossDomainRedirect = true;
-            connectionState.mURL = new URL(uri);
-            connectionState.mHeaders = convertHeaderStringToMap(headers, connectionState);
-        } catch (MalformedURLException e) {
-            return null;
-        } finally {
-            mConnectionStateHolder.set(connectionState);
+        boolean locked = connectionState.tryLock();
+        if (!locked) {
+            throw new IllegalStateException("connectionLock unexpectedly contended");
+        } else {
+            ConnectionState newConnectionState = new ConnectionState();
+            try {
+                disconnect();
+                newConnectionState.mAllowCrossDomainRedirect = true;
+                newConnectionState.mURL = new URL(uri);
+                newConnectionState.mHeaders =
+                        convertHeaderStringToMap(headers, newConnectionState);
+                return native_getIMemory();
+            } catch (MalformedURLException e) {
+                return null;
+            } finally {
+                mConnectionStateHolder.set(newConnectionState);
+                connectionState.unlock();
+            }
         }
-
-        return native_getIMemory();
     }
 
     private boolean parseBoolean(String val) {
@@ -126,8 +166,8 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
         return true;
     }
 
-    private Map<String, String> convertHeaderStringToMap(String headers,
-            ConnectionState connectionState) {
+    private Map<String, String> convertHeaderStringToMap(
+            String headers, ConnectionState connectionState) {
         HashMap<String, String> map = new HashMap<String, String>();
 
         String[] pairs = headers.split("\r\n");
@@ -149,11 +189,29 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     @Override
     @UnsupportedAppUsage
     public void disconnect() {
-        ConnectionState connectionState = mConnectionStateHolder.getAndSet(null);
+        final ConnectionState connectionState = mConnectionStateHolder.getAndSet(null);
+        synchronized (this) {
+            if (connectionState != null
+                    && connectionState.mReadAtResult != null
+                    && !connectionState.mReadAtResult.isDone()) {
+                connectionState.mReadAtResult.complete(-1);
+            }
+        }
+
         if (connectionState != null) {
-            teardownConnection(connectionState);
-            connectionState.mHeaders = null;
-            connectionState.mURL = null;
+            mExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    connectionState.lock();
+                    try {
+                        teardownConnection(connectionState);
+                        connectionState.mHeaders = null;
+                        connectionState.mURL = null;
+                    } finally {
+                        connectionState.unlock();
+                    }
+                }
+            });
         }
     }
 
@@ -169,7 +227,6 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
 
             connectionState.mConnection.disconnect();
             connectionState.mConnection = null;
-
             connectionState.mCurrentOffset = -1;
         }
     }
@@ -341,7 +398,31 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     public int readAt(long offset, int size) {
         ConnectionState connectionState = mConnectionStateHolder.get();
         if (connectionState != null) {
-            return native_readAt(offset, size, connectionState);
+            boolean locked = connectionState.tryLock();
+            if (locked) {
+                try {
+                    synchronized (this) {
+                        if (mConnectionStateHolder.get() == null) {
+                            return -1;
+                        }
+                        connectionState.mReadAtResult = (CompletableFuture<Integer>) (
+                        mExecutor.submit(new Callable<Integer>() {
+                            @Override
+                            public Integer call() throws Exception {
+                                return native_readAt(offset, size, connectionState);
+                            }
+                        }));
+                    }
+                    return connectionState.mReadAtResult.get();
+                } catch (Exception e) {
+                    if (VERBOSE) {
+                        Log.d(TAG, "readAt " + offset + " / " + size + " => -1");
+                    }
+                    return -1;
+                } finally {
+                    connectionState.unlock();
+                }
+            }
         }
         return -1;
     }
@@ -353,10 +434,8 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
         StrictMode.setThreadPolicy(policy);
 
         try {
-            synchronized(this) {
-                if (offset != connectionState.mCurrentOffset) {
-                    seekTo(offset, connectionState);
-                }
+            if (offset != connectionState.mCurrentOffset) {
+                seekTo(offset, connectionState);
             }
 
             int n = connectionState.mInputStream.read(data, 0, size);
@@ -398,37 +477,41 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     }
 
     @Override
-    public synchronized long getSize() {
+    public long getSize() {
         ConnectionState connectionState = mConnectionStateHolder.get();
         if (connectionState != null) {
-            if (connectionState.mConnection == null) {
-                try {
+            try {
+                connectionState.lock();
+                if (connectionState.mConnection == null) {
                     seekTo(0, connectionState);
-                } catch (IOException e) {
-                    return -1;
                 }
+                return connectionState.mTotalSize;
+            } catch (IOException e) {
+                return -1;
+            } finally {
+                connectionState.unlock();
             }
-            return connectionState.mTotalSize;
         }
-
         return -1;
     }
 
     @Override
     @UnsupportedAppUsage
-    public synchronized String getMIMEType() {
+    public String getMIMEType() {
         ConnectionState connectionState = mConnectionStateHolder.get();
         if (connectionState != null) {
-            if (connectionState.mConnection == null) {
-                try {
+            try {
+                connectionState.lock();
+                if (connectionState.mConnection == null) {
                     seekTo(0, connectionState);
-                } catch (IOException e) {
-                    return "application/octet-stream";
                 }
+                return connectionState.mConnection.getContentType();
+            } catch (IOException e) {
+                return "application/octet-stream";
+            } finally {
+                connectionState.unlock();
             }
-            return connectionState.mConnection.getContentType();
         }
-
         return null;
     }
 
@@ -437,7 +520,12 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     public String getUri() {
         ConnectionState connectionState = mConnectionStateHolder.get();
         if (connectionState != null) {
-            return connectionState.mURL.toString();
+            try {
+                connectionState.lock();
+                return connectionState.mURL.toString();
+            } finally {
+                connectionState.unlock();
+            }
         }
         return null;
     }
