@@ -37,6 +37,11 @@ import java.net.URL;
 import java.net.UnknownServiceException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** @hide */
@@ -51,6 +56,8 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     private final static int HTTP_TEMP_REDIRECT = 307;
     private final static int MAX_REDIRECTS = 20;
 
+    private ExecutorService mExecutor = null;
+
     class ConnectionState {
         public HttpURLConnection mConnection = null;
         public InputStream mInputStream = null;
@@ -63,6 +70,28 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     }
     private final AtomicReference<ConnectionState> mConnectionStateHolder =
             new AtomicReference<ConnectionState>();
+
+    public CompletableFuture<Integer> mReadAtResult = null;
+
+    private <T> T runCallableBlocking(CompletableFuture<T> future,
+            final Callable<T> callable, final String callableName, final T defaultVal) {
+        final CompletableFuture<T> ret = future == null ? new CompletableFuture<T>() : future;
+        try {
+            mExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ret.complete(callable.call());
+                    } catch (Exception e) {
+                    }
+                }
+            });
+            return ret.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.w(TAG, callableName + ": " + e);
+            return defaultVal;
+        }
+    }
 
     @UnsupportedAppUsage
     public MediaHTTPConnection() {
@@ -81,26 +110,24 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
             Log.d(TAG, "connect: uri=" + uri + ", headers=" + headers);
         }
 
-        ConnectionState connectionState = mConnectionStateHolder.get();
-        synchronized (this) {
-            if (connectionState == null) {
-                connectionState = new ConnectionState();
-                mConnectionStateHolder.set(connectionState);
+        disconnect();
+        mExecutor = Executors.newFixedThreadPool(1);
+        final ConnectionState connectionState = new ConnectionState();
+        return runCallableBlocking(null, new Callable<IBinder>() {
+            @Override
+            public IBinder call() {
+                try {
+                    connectionState.mAllowCrossDomainRedirect = true;
+                    connectionState.mURL = new URL(uri);
+                    connectionState.mHeaders =
+                            convertHeaderStringToMap(headers, connectionState);
+                    mConnectionStateHolder.set(connectionState);
+                    return native_getIMemory();
+                } catch (MalformedURLException e) {
+                    return null;
+                }
             }
-        }
-
-        try {
-            disconnect();
-            connectionState.mAllowCrossDomainRedirect = true;
-            connectionState.mURL = new URL(uri);
-            connectionState.mHeaders = convertHeaderStringToMap(headers, connectionState);
-        } catch (MalformedURLException e) {
-            return null;
-        } finally {
-            mConnectionStateHolder.set(connectionState);
-        }
-
-        return native_getIMemory();
+        }, "connect", null);
     }
 
     private boolean parseBoolean(String val) {
@@ -149,12 +176,28 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     @Override
     @UnsupportedAppUsage
     public void disconnect() {
-        ConnectionState connectionState = mConnectionStateHolder.getAndSet(null);
-        if (connectionState != null) {
-            teardownConnection(connectionState);
-            connectionState.mHeaders = null;
-            connectionState.mURL = null;
+        final ConnectionState connectionState = mConnectionStateHolder.getAndSet(null);
+        if (connectionState == null) {
+            return;
         }
+        synchronized (this) {
+            if (mReadAtResult != null && !mReadAtResult.isDone()) {
+                mReadAtResult.complete(-1);
+            }
+        }
+
+        if (mExecutor == null) {
+            mExecutor = Executors.newFixedThreadPool(1);
+        }
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                teardownConnection(connectionState);
+                connectionState.mHeaders = null;
+                connectionState.mURL = null;
+            }
+        });
+        mExecutor.shutdown();
     }
 
     private void teardownConnection(ConnectionState connectionState) {
@@ -169,7 +212,6 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
 
             connectionState.mConnection.disconnect();
             connectionState.mConnection = null;
-
             connectionState.mCurrentOffset = -1;
         }
     }
@@ -339,13 +381,32 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     @Override
     @UnsupportedAppUsage
     public int readAt(long offset, int size) {
-        ConnectionState connectionState = mConnectionStateHolder.get();
-        if (connectionState != null) {
-            return native_readAt(offset, size, connectionState);
+        final ConnectionState connectionState = mConnectionStateHolder.get();
+        if (connectionState == null) {
+            return -1;
         }
-        return -1;
+
+        synchronized (this) {
+            // if disconnect() is called after readAt() gets connectionState from holder
+            // and if disconnect() takes synchronized(this) lock first, then mReadAtResult is
+            // null and the future.complete(-1) logic in disconnect() will not be executed.
+            // in this case if native_readAt() hangs, code hangs.
+            // the below if logic is preventing that from happening.
+            if (mConnectionStateHolder.get() == null) {
+                return -1;
+            }
+            mReadAtResult = new CompletableFuture<Integer>();
+        }
+
+        return runCallableBlocking(mReadAtResult, new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return native_readAt(offset, size, connectionState);
+            }
+        }, "readAt", -1);
     }
 
+    // Called from native_readAt() on executor thread.
     private int readAt(long offset, byte[] data, int size, ConnectionState connectionState) {
         StrictMode.ThreadPolicy policy =
             new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -353,10 +414,8 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
         StrictMode.setThreadPolicy(policy);
 
         try {
-            synchronized(this) {
-                if (offset != connectionState.mCurrentOffset) {
-                    seekTo(offset, connectionState);
-                }
+            if (offset != connectionState.mCurrentOffset) {
+                seekTo(offset, connectionState);
             }
 
             int n = connectionState.mInputStream.read(data, 0, size);
@@ -398,48 +457,61 @@ public class MediaHTTPConnection extends IMediaHTTPConnection.Stub {
     }
 
     @Override
-    public synchronized long getSize() {
-        ConnectionState connectionState = mConnectionStateHolder.get();
-        if (connectionState != null) {
-            if (connectionState.mConnection == null) {
-                try {
-                    seekTo(0, connectionState);
-                } catch (IOException e) {
-                    return -1;
+    public long getSize() {
+        return runCallableBlocking(null, new Callable<Long>() {
+            @Override
+            public Long call() {
+                ConnectionState connectionState = mConnectionStateHolder.get();
+                if (connectionState == null) {
+                    return new Long(-1);
                 }
+                if (connectionState.mConnection == null) {
+                    try {
+                        seekTo(0, connectionState);
+                    } catch (IOException e) {
+                        return new Long(-1);
+                    }
+                }
+                return new Long(connectionState.mTotalSize);
             }
-            return connectionState.mTotalSize;
-        }
-
-        return -1;
+        }, "getSize ", new Long(-1)).longValue();
     }
 
     @Override
     @UnsupportedAppUsage
-    public synchronized String getMIMEType() {
-        ConnectionState connectionState = mConnectionStateHolder.get();
-        if (connectionState != null) {
-            if (connectionState.mConnection == null) {
-                try {
-                    seekTo(0, connectionState);
-                } catch (IOException e) {
-                    return "application/octet-stream";
+    public String getMIMEType() {
+        return runCallableBlocking(null, new Callable<String>() {
+            @Override
+            public String call() {
+                ConnectionState connectionState = mConnectionStateHolder.get();
+                if (connectionState == null) {
+                    return null;
                 }
+                if (connectionState.mConnection == null) {
+                    try {
+                        seekTo(0, connectionState);
+                    } catch (IOException e) {
+                        return "application/octet-stream";
+                    }
+                }
+                return connectionState.mConnection.getContentType();
             }
-            return connectionState.mConnection.getContentType();
-        }
-
-        return null;
+        }, "getMIMEType", null);
     }
 
     @Override
     @UnsupportedAppUsage
     public String getUri() {
-        ConnectionState connectionState = mConnectionStateHolder.get();
-        if (connectionState != null) {
-            return connectionState.mURL.toString();
-        }
-        return null;
+        return runCallableBlocking(null, new Callable<String>() {
+            @Override
+            public String call() {
+                ConnectionState connectionState = mConnectionStateHolder.get();
+                if (connectionState == null) {
+                    return null;
+                }
+                return connectionState.mURL.toString();
+            }
+        }, "getUri", null);
     }
 
     @Override
