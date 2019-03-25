@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b4bf7f4b_1bd6a359",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1105161
+      },
+      "writtenOn": "2019-03-25T14:44:38Z",
+      "side": 1,
+      "message": "Code change just makes it return false more often",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 53
+      },
+      "revId": "9c7d1eb71cf3ba0270c3c804755eee411970ba24",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5dc5d88b_9f3349cb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1105161
+      },
+      "writtenOn": "2019-03-25T14:44:38Z",
+      "side": 1,
+      "message": "Generally, yes, it\u0027s fine for devices to not have GPS.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 0
+      },
+      "revId": "9c7d1eb71cf3ba0270c3c804755eee411970ba24",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a13fe12_470cb39c",
+        "filename": "services/core/java/com/android/server/location/GnssLocationProvider.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 653,
+      "author": {
+        "id": 1105161
+      },
+      "writtenOn": "2019-03-25T14:44:38Z",
+      "side": 1,
+      "message": "Seems like you\u0027re trying to resolve a bug in the HAL implementation, by a change to the framework.  Have you simply not registering a GNSS Service?  https://source.android.com/devices/architecture/hidl/services",
+      "range": {
+        "startLine": 651,
+        "startChar": 7,
+        "endLine": 653,
+        "endChar": 16
+      },
+      "revId": "9c7d1eb71cf3ba0270c3c804755eee411970ba24",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
