@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "af66b84e_db4830df",
+        "filename": "core/res/res/drawable/ic_bluetooth.xml",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1044446
+      },
+      "writtenOn": "2019-03-26T11:33:58Z",
+      "side": 1,
+      "message": "android:fillColor\u003d\"@android:color/white\" here and android:tint\u003d\"?android:attr/colorControlNormal\" on the top-level \u003cvector\u003e is preferred for generic icon resources.\n\nIf you need the icon to be accent colored, you\u0027d want to tint it where it\u0027s being used (e.g. in code or layout XML) by setting the tint to \"?android:attr/colorAccent\" (ex. android:tint property on ImageView).",
+      "range": {
+        "startLine": 23,
+        "startChar": 27,
+        "endLine": 23,
+        "endChar": 63
+      },
+      "revId": "aff40d23b7b91ff9421ad8d80d2a1bb621c2ba99",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
