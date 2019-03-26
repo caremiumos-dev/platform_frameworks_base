@@ -46,6 +46,30 @@
       "revId": "aff40d23b7b91ff9421ad8d80d2a1bb621c2ba99",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e2b7856f_00f3da57",
+        "filename": "core/res/res/drawable/ic_bluetooth.xml",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1044446
+      },
+      "writtenOn": "2019-03-26T15:05:04Z",
+      "side": 1,
+      "message": "It\u0027s cleaner until someone tries to reference ic_bluetooth from elsewhere in the platform and expects it to mirror the other ic_ resources. If this file is scoped to a specific use case, please consider naming this file to reflect where it will be used and documenting the intended usage in an \u003c!-- XML comment --\u003e as you would do javadoc.",
+      "parentUuid": "1d7affb8_9936a6d6",
+      "range": {
+        "startLine": 23,
+        "startChar": 27,
+        "endLine": 23,
+        "endChar": 63
+      },
+      "revId": "aff40d23b7b91ff9421ad8d80d2a1bb621c2ba99",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
