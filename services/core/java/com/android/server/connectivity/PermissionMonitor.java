@@ -97,6 +97,9 @@ public class PermissionMonitor {
                               app.requestedPermissionsFlags);
                     }
                 }
+            } else {
+                // The last package of this uid is removed from device. Clean the package up.
+                permission = INetd.CLEAN_PERMISSION;
             }
             return permission;
         }
@@ -450,6 +453,7 @@ public class PermissionMonitor {
         ArrayList<Integer> allPermissionAppIds = new ArrayList<>();
         ArrayList<Integer> internetPermissionAppIds = new ArrayList<>();
         ArrayList<Integer> updateStatsPermissionAppIds = new ArrayList<>();
+        ArrayList<Integer> noPermissionAppIds = new ArrayList<>();
         ArrayList<Integer> uninstalledAppIds = new ArrayList<>();
         for (int i = 0; i < netdPermissionsAppIds.size(); i++) {
             int permissions = netdPermissionsAppIds.valueAt(i);
@@ -464,8 +468,10 @@ public class PermissionMonitor {
                     updateStatsPermissionAppIds.add(netdPermissionsAppIds.keyAt(i));
                     break;
                 case INetd.NO_PERMISSIONS:
-                    uninstalledAppIds.add(netdPermissionsAppIds.keyAt(i));
+                    noPermissionAppIds.add(netdPermissionsAppIds.keyAt(i));
                     break;
+                case INetd.CLEAN_PERMISSION:
+                    uninstalledAppIds.add(netdPermissionsAppIds.keyAt(i));
                 default:
                     Log.e(TAG, "unknown permission type: " + permissions + "for uid: "
                             + netdPermissionsAppIds.keyAt(i));
@@ -486,8 +492,12 @@ public class PermissionMonitor {
                 mNetd.trafficSetNetPermForUids(INetd.PERMISSION_UPDATE_DEVICE_STATS,
                         ArrayUtils.convertToIntArray(updateStatsPermissionAppIds));
             }
-            if (uninstalledAppIds.size() != 0) {
+            if (noPermissionAppIds.size() != 0) {
                 mNetd.trafficSetNetPermForUids(INetd.NO_PERMISSIONS,
+                        ArrayUtils.convertToIntArray(noPermissionAppIds));
+            }
+            if (uninstalledAppIds.size() != 0) {
+                mNetd.trafficSetNetPermForUids(INetd.CLEAN_PERMISSION,
                         ArrayUtils.convertToIntArray(uninstalledAppIds));
             }
         } catch (RemoteException e) {
