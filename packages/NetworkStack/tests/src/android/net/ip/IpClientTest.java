@@ -44,10 +44,14 @@ import android.net.MacAddress;
 import android.net.NetworkStackIpMemoryStore;
 import android.net.RouteInfo;
 import android.net.ipmemorystore.NetworkAttributes;
+import android.net.TestNetworkInterface;
+import android.net.TestNetworkManager;
 import android.net.shared.InitialConfiguration;
 import android.net.shared.ProvisioningConfiguration;
 import android.net.util.InterfaceParams;
+import android.os.ConditionVariable;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -101,6 +105,8 @@ public class IpClientTest {
 
     private NetworkObserver mObserver;
     private InterfaceParams mIfParams;
+    private TestNetworkInterface mIface;
+    private String mIfaceName;
 
     @Before
     public void setUp() throws Exception {
@@ -115,6 +121,11 @@ public class IpClientTest {
         when(mContext.getContentResolver()).thenReturn(mContentResolver);
 
         mIfParams = null;
+
+        TestNetworkManager tnm = (TestNetworkManager) InstrumentationRegistry.getInstrumentation()
+                .getContext().getSystemService(Context.TEST_NETWORK_SERVICE);
+        mIface = tnm.createTapInterface();
+        mIfaceName = mIface.getInterfaceName();
     }
 
     private void setTestInterfaceParams(String ifname) {
@@ -467,6 +478,33 @@ public class IpClientTest {
         conf.directlyConnectedRoutes.addAll(prefixes);
         conf.dnsServers.addAll(dns);
         return conf;
+    }
+
+    @Test
+    public void testIpClientCallbacks() throws Exception {
+        class TestIpClientCallback extends IpClientCallbacks {
+            IIpClient mIIpClient;
+            ConditionVariable mCreatedCv;
+
+            @Override
+            public void onIpClientCreated(IIpClient iIpClient) {
+                mIIpClient = iIpClient;
+                mCreatedCv.open();
+            }
+
+            public IIpClient getIIpClient() {
+                mCreatedCv.block();
+                return mIIpClient;
+            }
+        }
+
+        INetd netd = (INetd) mContext.getSystemService(Context.NETD_SERVICE);
+        TestIpClientCallback cb = new TestIpClientCallback();
+        IpClientUtil.makeIpClient(mContext, mIfaceName, cb);
+        IIpClient iipc = cb.getIIpClient();
+
+        ProvisioningConfiguration config = new ProvisioningConfiguration.Builder().build();
+        iipc.startProvisioning(config.toStableParcelable());
     }
 
     static Set<RouteInfo> routes(String... routes) {
