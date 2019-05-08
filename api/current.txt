@@ -37467,6 +37467,15 @@ package android.provider {
     field public static final String SUBSCRIPTION_ID = "pending_sub_id";
   }
 
+  public static interface Telephony.Raw {
+    field public static final String ADDRESS = "address";
+    field public static final android.net.Uri CONTENT_URI;
+    field public static final String COUNT = "count";
+    field public static final String DISPLAY_ORIGINATING_ADDRESS = "display_originating_addr";
+    field public static final String MESSAGE_BODY = "message_body";
+    field public static final android.net.Uri PERMANENT_DELETE_URI;
+  }
+
   public static final class Telephony.ServiceStateTable {
     method public static android.net.Uri getUriForSubscriptionId(int);
     method public static android.net.Uri getUriForSubscriptionIdAndField(int, String);

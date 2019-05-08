@@ -1280,6 +1280,48 @@ public final class Telephony {
     }
 
     /**
+     * Contains all raw SMS messages
+     */
+    public interface Raw {
+        /**
+         * The {@code content://} style URL for this table.
+         */
+        Uri CONTENT_URI = Uri.withAppendedPath(
+                Telephony.Sms.CONTENT_URI, "raw");
+
+        /**
+         * The {@code content://} style URL for this table, for permanent deleting of the raw
+         * messages
+         */
+        Uri PERMANENT_DELETE_URI = Uri.withAppendedPath(
+                Telephony.Sms.CONTENT_URI, "raw/permanentDelete");
+
+        /**
+         * The message body
+         * <P>Type: TEXT</P>
+         */
+        String MESSAGE_BODY = "message_body";
+
+        /**
+         * The address text.
+         * <P>Type: TEXT</P>
+         */
+        String ADDRESS = "address";
+
+        /**
+         * This is the address which is displayed.
+         * <P>Type: TEXT</P>
+         */
+        String DISPLAY_ORIGINATING_ADDRESS = "display_originating_addr";
+
+        /**
+         * Count is the number of parts of the message
+         * <P>Type: INTEGER</P>
+         */
+        String COUNT = "count";
+    }
+
+    /**
      * Base column for the table that contain Carrier Public key.
      * @hide
      */
