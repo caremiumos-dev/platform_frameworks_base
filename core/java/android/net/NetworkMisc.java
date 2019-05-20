@@ -77,6 +77,12 @@ public class NetworkMisc implements Parcelable {
      */
     public boolean skip464xlat;
 
+    /**
+     * Set if the {@link NetworkAgent} is used to indicates blocked uids when VPN is in lockdown
+     * mode. This is set by a {@link Vpn} and used by {@link ConnectivityService}.
+     */
+    public boolean forLockdown;
+
     public NetworkMisc() {
     }
 
@@ -88,6 +94,7 @@ public class NetworkMisc implements Parcelable {
             subscriberId = nm.subscriberId;
             provisioningNotificationDisabled = nm.provisioningNotificationDisabled;
             skip464xlat = nm.skip464xlat;
+            forLockdown = nm.forLockdown;
         }
     }
 
@@ -104,6 +111,7 @@ public class NetworkMisc implements Parcelable {
         out.writeString(subscriberId);
         out.writeInt(provisioningNotificationDisabled ? 1 : 0);
         out.writeInt(skip464xlat ? 1 : 0);
+        out.writeInt(forLockdown ? 1 : 0);
     }
 
     public static final Creator<NetworkMisc> CREATOR = new Creator<NetworkMisc>() {
@@ -116,6 +124,7 @@ public class NetworkMisc implements Parcelable {
             networkMisc.subscriberId = in.readString();
             networkMisc.provisioningNotificationDisabled = in.readInt() != 0;
             networkMisc.skip464xlat = in.readInt() != 0;
+            networkMisc.forLockdown = in.readInt() != 0;
             return networkMisc;
         }
 

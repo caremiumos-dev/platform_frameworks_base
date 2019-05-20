@@ -37,12 +37,14 @@ import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -475,6 +477,29 @@ public class VpnTest {
     }
 
     @Test
+    public void testLockDownAgent() throws Exception {
+        final Vpn vpn = createVpn(primaryUser.id);
+
+        // Default state.
+        assertFalse(vpn.getAlwaysOn());
+        assertFalse(vpn.getLockdown());
+
+        // Generate expected blocked ranges.
+        final Set<UidRange> expectedBlocked = new ArraySet<>();
+        final UidRange user = UidRange.createForUser(primaryUser.id);
+        expectedBlocked.add(new UidRange(user.start, user.start + PKG_UIDS[1] - 1));
+        expectedBlocked.add(new UidRange(user.start + PKG_UIDS[1] + 1, user.stop));
+
+        // Set always-on with lockdown.
+        assertTrue(vpn.setAlwaysOnPackage(PKGS[1], true, Collections.emptyList()));
+        verify(vpn, times(1)).bringupLockdownAgent(eq(expectedBlocked));
+
+        // Remove always-on configuration.
+        assertTrue(vpn.setAlwaysOnPackage(null, false, Collections.emptyList()));
+        verify(vpn, times(1)).agentDisconnect(any());
+    }
+
+    @Test
     public void testIsAlwaysOnPackageSupported() throws Exception {
         final Vpn vpn = createVpn(primaryUser.id);
 
@@ -635,7 +660,10 @@ public class VpnTest {
      * Mock some methods of vpn object.
      */
     private Vpn createVpn(@UserIdInt int userId) {
-        return new Vpn(Looper.myLooper(), mContext, mNetService, userId, mSystemServices);
+        final Vpn wrappedVpn =
+                spy(new Vpn(Looper.myLooper(), mContext, mNetService, userId, mSystemServices));
+        doNothing().when(wrappedVpn).bringupLockdownAgent(anySet());
+        return wrappedVpn;
     }
 
     private static void assertBlocked(Vpn vpn, int... uids) {

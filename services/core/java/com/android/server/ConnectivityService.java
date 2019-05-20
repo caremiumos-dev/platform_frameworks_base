@@ -3069,6 +3069,8 @@ public class ConnectivityService extends IConnectivityManager.Stub
             // fallback network the default or requested a new network from the
             // NetworkFactories, so network traffic isn't interrupted for an unnecessarily
             // long time.
+            // For Lockdown VPN agent this would be unneeded since it only tracks the uid list but
+            // not creating any native network.
             destroyNativeNetwork(nai);
             mDnsManager.removeNetwork(nai.network);
         }
@@ -5880,6 +5882,10 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     private void updateUids(NetworkAgentInfo nai, NetworkCapabilities prevNc,
             NetworkCapabilities newNc) {
+        // If the agent is used for tracking lockdown VPN only, then it is unnecessary to update
+        // rules in native.
+        if (nai.networkMisc.forLockdown) return;
+
         Set<UidRange> prevRanges = null == prevNc ? null : prevNc.getUids();
         Set<UidRange> newRanges = null == newNc ? null : newNc.getUids();
         if (null == prevRanges) prevRanges = new ArraySet<>();
@@ -6501,7 +6507,8 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
         if (!networkAgent.created
                 && (state == NetworkInfo.State.CONNECTED
-                || (state == NetworkInfo.State.CONNECTING && networkAgent.isVPN()))) {
+                || (state == NetworkInfo.State.CONNECTING && networkAgent.isVPN()
+                && !networkAgent.networkMisc.forLockdown))) {
 
             // A network that has just connected has zero requests and is thus a foreground network.
             networkAgent.networkCapabilities.addCapability(NET_CAPABILITY_FOREGROUND);

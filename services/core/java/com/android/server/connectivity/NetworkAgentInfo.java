@@ -637,6 +637,7 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo> {
                 + "partialConnectivity{" + partialConnectivity + "} "
                 + "acceptPartialConnectivity{" + networkMisc.acceptPartialConnectivity + "} "
                 + "clat{" + clatd + "} "
+                + "forLockdown{" + networkMisc.forLockdown + "} "
                 + "}";
     }
 
