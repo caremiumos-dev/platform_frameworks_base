@@ -96,6 +96,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -485,14 +486,18 @@ public class ConnectivityServiceTest {
         }
 
         MockNetworkAgent(int transport) {
-            this(transport, new LinkProperties());
+            this(transport, new LinkProperties(), new NetworkMisc(), null /* uidRanges */);
         }
 
-        MockNetworkAgent(int transport, LinkProperties linkProperties) {
+        MockNetworkAgent(int transport, @NonNull LinkProperties linkProperties,
+                @NonNull NetworkMisc networkMisc, @Nullable Set<UidRange> ranges) {
             final int type = transportToLegacyType(transport);
             final String typeName = ConnectivityManager.getNetworkTypeName(type);
             mNetworkInfo = new NetworkInfo(type, 0, typeName, "Mock");
             mNetworkCapabilities = new NetworkCapabilities();
+            if (ranges != null) {
+                mNetworkCapabilities.setUids(ranges);
+            }
             mNetworkCapabilities.addTransportType(transport);
             switch (transport) {
                 case TRANSPORT_ETHERNET:
@@ -540,7 +545,7 @@ public class ConnectivityServiceTest {
 
             mNetworkAgent = new NetworkAgent(mHandlerThread.getLooper(), mServiceContext,
                     "Mock-" + typeName, mNetworkInfo, mNetworkCapabilities,
-                    linkProperties, mScore, new NetworkMisc(), NetworkFactory.SerialNumber.NONE) {
+                    linkProperties, mScore, networkMisc, NetworkFactory.SerialNumber.NONE) {
                 @Override
                 public void unwanted() { mDisconnected.open(); }
 
@@ -680,8 +685,8 @@ public class ConnectivityServiceTest {
          * @param hasInternet Indicate if network should pretend to have NET_CAPABILITY_INTERNET.
          */
         public void connect(boolean validated, boolean hasInternet) {
-            assertEquals("MockNetworkAgents can only be connected once",
-                    mNetworkInfo.getDetailedState(), DetailedState.IDLE);
+            assertNotEquals("MockNetworkAgents can not be connected",
+                    mNetworkInfo.getState(), NetworkInfo.State.CONNECTED);
             assertFalse(mNetworkCapabilities.hasCapability(NET_CAPABILITY_INTERNET));
 
             NetworkCallback callback = null;
@@ -740,6 +745,11 @@ public class ConnectivityServiceTest {
 
         public void disconnect() {
             mNetworkInfo.setDetailedState(DetailedState.DISCONNECTED, null, null);
+            mNetworkAgent.sendNetworkInfo(mNetworkInfo);
+        }
+
+        public void connecting() {
+            mNetworkInfo.setDetailedState(DetailedState.CONNECTING, null, null);
             mNetworkAgent.sendNetworkInfo(mNetworkInfo);
         }
 
@@ -4768,7 +4778,8 @@ public class ConnectivityServiceTest {
 
         // Verify direct routes are added when network agent is first registered in
         // ConnectivityService.
-        MockNetworkAgent networkAgent = new MockNetworkAgent(TRANSPORT_WIFI, lp);
+        MockNetworkAgent networkAgent =
+                new MockNetworkAgent(TRANSPORT_WIFI, lp, new NetworkMisc(), null);
         networkAgent.connect(true);
         networkCallback.expectCallback(CallbackState.AVAILABLE, networkAgent);
         networkCallback.expectCallback(CallbackState.NETWORK_CAPABILITIES, networkAgent);
@@ -5881,6 +5892,98 @@ public class ConnectivityServiceTest {
         mCm.unregisterNetworkCallback(defaultCallback);
     }
 
+    @Test
+    public void testNetworkBlockedStatusWithLockdownVpnAgent() {
+        final TestNetworkCallback defaultCallback = new TestNetworkCallback();
+        mCm.registerDefaultNetworkCallback(defaultCallback);
+
+        mCellNetworkAgent = new MockNetworkAgent(TRANSPORT_CELLULAR);
+        mCellNetworkAgent.connect(true);
+        defaultCallback.expectAvailableCallbacksUnvalidated(mCellNetworkAgent);
+        defaultCallback.expectCapabilitiesWith(NET_CAPABILITY_VALIDATED, mCellNetworkAgent);
+
+        // Prepare ranges that only applies to the test app.
+        final ArraySet<UidRange> ranges = new ArraySet<>();
+        final int uid = Process.myUid();
+        ranges.add(new UidRange(uid, uid));
+
+        // Set up a lockdown and VPN agent, expect blocked status changed to true if lockdown mode
+        // is enabled.
+        MockNetworkAgent lockdownNetworkAgent = createLockdownAgent(VPN_UID, ranges);
+        defaultCallback.expectBlockedStatusCallback(true, mCellNetworkAgent);
+
+        MockNetworkAgent vpnNetworkAgent = new MockNetworkAgent(TRANSPORT_VPN);
+        vpnNetworkAgent.setUids(ranges);
+
+        mMockVpn.setNetworkAgent(vpnNetworkAgent);
+        mMockVpn.setUids(ranges);
+
+        // Check that no callback is fired when VPN is just connecting.
+        vpnNetworkAgent.connecting();
+        defaultCallback.assertNoCallback();
+
+        // Check that blocked status changes to false when VPN is connected.
+        vpnNetworkAgent.connect(true);
+        mMockVpn.connect();
+        defaultCallback.expectAvailableThenValidatedCallbacks(vpnNetworkAgent);
+        waitForIdle();
+        assertEquals(vpnNetworkAgent.getNetwork(), mCm.getActiveNetwork());
+
+        // Check that if VPN is connected, enable/disable lockdown mode should not block network.
+        lockdownNetworkAgent.disconnect();
+        defaultCallback.assertNoCallback();
+        lockdownNetworkAgent = createLockdownAgent(VPN_UID, ranges);
+        defaultCallback.assertNoCallback();
+
+        // Check that the blocked status goes back to true if VPN is disconnected.
+        vpnNetworkAgent.disconnect();
+        mMockVpn.disconnect();
+        defaultCallback.expectCallback(CallbackState.LOST, vpnNetworkAgent);
+        defaultCallback.expectAvailableCallbacksValidatedAndBlocked(mCellNetworkAgent);
+        waitForIdle();
+        assertEquals(mCellNetworkAgent.getNetwork(), mCm.getActiveNetwork());
+
+        // TODO: Check that blocked status does not change if VPN does not apply to the test uid.
+        // Currently, the test app must be included in ranges in order to get VPN connected and
+        // validated.
+
+        // Check that the blocked status is false if lockdown mode is disabled.
+        lockdownNetworkAgent.disconnect();
+        defaultCallback.expectBlockedStatusCallback(false, mCellNetworkAgent);
+
+        // Check that the blocked status callback does not fire if the lockdown mode does not apply
+        // to the given uid.
+        lockdownNetworkAgent = createLockdownAgent(VPN_UID, new ArraySet<>());
+        defaultCallback.assertNoCallback();
+        lockdownNetworkAgent.disconnect();
+        defaultCallback.assertNoCallback();
+
+        // Check that the blocked status callback does not fire if the network is already blocked.
+        mService.setRestrictBackgroundChanged(true);
+        defaultCallback.expectBlockedStatusCallback(true, mCellNetworkAgent);
+        lockdownNetworkAgent = createLockdownAgent(VPN_UID, ranges);
+        defaultCallback.assertNoCallback();
+        lockdownNetworkAgent.disconnect();
+        defaultCallback.assertNoCallback();
+        mService.setRestrictBackgroundChanged(false);
+        defaultCallback.expectBlockedStatusCallback(false, mCellNetworkAgent);
+
+        mCellNetworkAgent.disconnect();
+        defaultCallback.expectCallback(CallbackState.LOST, mCellNetworkAgent);
+        defaultCallback.assertNoCallback();
+        waitForIdle();
+        assertEquals(null, mCm.getActiveNetwork());
+
+        // Check that the blocked status callback does not fire if the lockdown mode changed when
+        // there is no underlying network.
+        lockdownNetworkAgent = createLockdownAgent(VPN_UID, new ArraySet<>());
+        defaultCallback.assertNoCallback();
+        lockdownNetworkAgent.disconnect();
+        defaultCallback.assertNoCallback();
+
+        mCm.unregisterNetworkCallback(defaultCallback);
+    }
+
     /**
      * Make simulated InterfaceConfig for Nat464Xlat to query clat lower layer info.
      */
@@ -6389,7 +6492,8 @@ public class ConnectivityServiceTest {
 
     private MockNetworkAgent establishVpn(LinkProperties lp, int establishingUid,
             Set<UidRange> vpnRange) {
-        final MockNetworkAgent vpnNetworkAgent = new MockNetworkAgent(TRANSPORT_VPN, lp);
+        final MockNetworkAgent vpnNetworkAgent =
+                new MockNetworkAgent(TRANSPORT_VPN, lp, new NetworkMisc(), null);
         vpnNetworkAgent.getNetworkCapabilities().setEstablishingVpnAppUid(establishingUid);
         mMockVpn.setNetworkAgent(vpnNetworkAgent);
         mMockVpn.connect();
@@ -6397,6 +6501,18 @@ public class ConnectivityServiceTest {
         vpnNetworkAgent.connect(true);
         waitForIdle();
         return vpnNetworkAgent;
+    }
+
+    private @NonNull MockNetworkAgent createLockdownAgent(
+            int establishingUid, Set<UidRange> ranges) {
+        final NetworkMisc networkMisc = new NetworkMisc();
+        networkMisc.forLockdown = true;
+        final MockNetworkAgent lockdownNetworkAgent =
+                new MockNetworkAgent(TRANSPORT_VPN, new LinkProperties(), networkMisc, ranges);
+        lockdownNetworkAgent.getNetworkCapabilities().setEstablishingVpnAppUid(establishingUid);
+        lockdownNetworkAgent.connecting();
+        waitForIdle();
+        return lockdownNetworkAgent;
     }
 
     private void assertContainsExactly(int[] actual, int... expected) {
