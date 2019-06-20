@@ -926,7 +926,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
     }
 
     @VisibleForTesting
-    protected ConnectivityService(Context context, INetworkManagementService netManager,
+    public ConnectivityService(Context context, INetworkManagementService netManager,
             INetworkStatsService statsService, INetworkPolicyManager policyManager,
             IDnsResolver dnsresolver, IpConnectivityLog logger, INetd netd, Dependencies deps) {
         if (DBG) log("ConnectivityService starting up");
@@ -2164,7 +2164,11 @@ public class ConnectivityService extends IConnectivityManager.Stub
         }
     }
 
-    void systemReady() {
+    /**
+     * Called when the system is ready and ConnectivityService can initialize remaining components.
+     */
+    @VisibleForTesting
+    public void systemReady() {
         mProxyTracker.loadGlobalProxy();
         registerNetdEventCallback();
         mTethering.systemReady();

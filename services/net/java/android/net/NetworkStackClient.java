@@ -47,6 +47,7 @@ import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -113,7 +114,8 @@ public class NetworkStackClient {
         void onNetworkStackFailure(@NonNull String packageName);
     }
 
-    private NetworkStackClient() { }
+    @VisibleForTesting
+    protected NetworkStackClient() { }
 
     /**
      * Get the NetworkStackClient singleton instance.
@@ -225,10 +227,7 @@ public class NetworkStackClient {
 
     private void registerNetworkStackService(@NonNull IBinder service) {
         final INetworkStackConnector connector = INetworkStackConnector.Stub.asInterface(service);
-
-        ServiceManager.addService(Context.NETWORK_STACK_SERVICE, service, false /* allowIsolated */,
-                DUMP_FLAG_PRIORITY_HIGH | DUMP_FLAG_PRIORITY_NORMAL);
-        log("Network stack service registered");
+        addToServiceManager(service);
 
         final ArrayList<NetworkStackCallback> requests;
         synchronized (mPendingNetStackRequests) {
@@ -240,6 +239,13 @@ public class NetworkStackClient {
         for (NetworkStackCallback r : requests) {
             r.onNetworkStackConnected(connector);
         }
+    }
+
+    @VisibleForTesting
+    protected void addToServiceManager(@NonNull IBinder service) {
+        ServiceManager.addService(Context.NETWORK_STACK_SERVICE, service, false /* allowIsolated */,
+                DUMP_FLAG_PRIORITY_HIGH | DUMP_FLAG_PRIORITY_NORMAL);
+        log("Network stack service registered");
     }
 
     /**
@@ -295,8 +301,9 @@ public class NetworkStackClient {
         log("Network stack service start requested");
     }
 
+    @VisibleForTesting
     @Nullable
-    private Intent getNetworkStackIntent(@NonNull PackageManager pm, boolean inSystemProcess) {
+    protected Intent getNetworkStackIntent(@NonNull PackageManager pm, boolean inSystemProcess) {
         final String baseAction = INetworkStackConnector.class.getName();
         final Intent intent =
                 new Intent(inSystemProcess ? baseAction + IN_PROCESS_SUFFIX : baseAction);
@@ -486,16 +493,7 @@ public class NetworkStackClient {
     }
 
     private void requestConnector(@NonNull NetworkStackCallback request) {
-        // TODO: PID check.
-        final int caller = Binder.getCallingUid();
-        if (caller != Process.SYSTEM_UID
-                && caller != Process.NETWORK_STACK_UID
-                && !UserHandle.isSameApp(caller, Process.BLUETOOTH_UID)
-                && !UserHandle.isSameApp(caller, Process.PHONE_UID)) {
-            // Don't even attempt to obtain the connector and give a nice error message
-            throw new SecurityException(
-                    "Only the system server should try to bind to the network stack.");
-        }
+        checkCallerUid();
 
         if (!mWasSystemServerInitialized) {
             // The network stack is not being started in this process, e.g. this process is not
@@ -518,6 +516,22 @@ public class NetworkStackClient {
         }
 
         request.onNetworkStackConnected(connector);
+    }
+
+    @VisibleForTesting
+    protected void checkCallerUid() {
+        final int caller = Binder.getCallingUid();
+        // This is a client lib so "caller" is the current UID in most cases. The check is done
+        // here in the caller's process just to provide a nicer error message to clients; more
+        // generic checks are also done in NetworkStackService.
+        // See PermissionUtil in NetworkStack for the actual check on the service side - the checks
+        // here should be kept in sync with PermissionUtil.
+        if (caller != Process.SYSTEM_UID
+                && caller != Process.NETWORK_STACK_UID
+                && !UserHandle.isSameApp(caller, Process.BLUETOOTH_UID)) {
+            throw new SecurityException(
+                    "Only the system server should try to bind to the network stack.");
+        }
     }
 
     /**
