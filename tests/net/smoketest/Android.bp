@@ -11,7 +11,28 @@
 // dependent libraries.
 android_test {
     name: "FrameworksNetSmokeTests",
-    defaults: ["FrameworksNetTests-jni-defaults"],
     srcs: ["java/SmokeTest.java"],
     test_suites: ["device-tests"],
+    static_libs: [
+        "androidx.test.rules",
+        "mockito-target-minus-junit4",
+        "services.core",
+    ],
+    jni_libs: [
+        "ld-android",
+        "libbase",
+        "libbpf",
+        "libbpf_android",
+        "libc++",
+        "libcgrouprc",
+        "libcutils",
+        "libdl_android",
+        "libnativehelper",
+        "libnetdbpf",
+        "libnetdutils",
+        "libnetworkstatsfactorytestjni",
+        "libprocessgroup",
+        "libutils",
+        "libvndksupport",
+    ],
 }
