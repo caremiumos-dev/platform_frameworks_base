@@ -50,7 +50,6 @@ public final class MessageQueue {
     @SuppressWarnings("unused")
     private long mPtr; // used by native code
 
-    @UnsupportedAppUsage
     Message mMessages;
     @UnsupportedAppUsage
     private final ArrayList<IdleHandler> mIdleHandlers = new ArrayList<IdleHandler>();
