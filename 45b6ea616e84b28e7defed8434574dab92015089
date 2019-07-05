@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6a560f7f_8f08e84b",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 2806,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T12:16:05Z",
+      "side": 1,
+      "message": "may be easier to use if we detect automatically?\n\nIf it doesn\u0027t parse as a long, then lookup by name.",
+      "range": {
+        "startLine": 2806,
+        "startChar": 27,
+        "endLine": 2806,
+        "endChar": 39
+      },
+      "revId": "45b6ea616e84b28e7defed8434574dab92015089",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "147560da_ed9e9859",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 2822,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T12:16:05Z",
+      "side": 1,
+      "message": "include the change itself here (maybe someone got the order of args wrong, so it will help with correcting that)",
+      "range": {
+        "startLine": 2822,
+        "startChar": 43,
+        "endLine": 2822,
+        "endChar": 50
+      },
+      "revId": "45b6ea616e84b28e7defed8434574dab92015089",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
