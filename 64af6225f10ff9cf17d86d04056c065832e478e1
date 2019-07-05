@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e9e369ed_d37911cf",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 2803,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T10:27:23Z",
+      "side": 1,
+      "message": "could also support passing changes by name, using CompatConfig.lookupChangeId()",
+      "range": {
+        "startLine": 2803,
+        "startChar": 23,
+        "endLine": 2803,
+        "endChar": 60
+      },
+      "revId": "64af6225f10ff9cf17d86d04056c065832e478e1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8f405b01_8f6553db",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 2809,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T10:27:23Z",
+      "side": 1,
+      "message": "\"Enabling it may have no effect\" ?",
+      "range": {
+        "startLine": 2808,
+        "startChar": 83,
+        "endLine": 2809,
+        "endChar": 56
+      },
+      "revId": "64af6225f10ff9cf17d86d04056c065832e478e1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9fea0e2a_bbf49435",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 2816,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T10:27:23Z",
+      "side": 1,
+      "message": "\"Disabling it may have no effect\" ?",
+      "range": {
+        "startLine": 2815,
+        "startChar": 83,
+        "endLine": 2816,
+        "endChar": 55
+      },
+      "revId": "64af6225f10ff9cf17d86d04056c065832e478e1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
