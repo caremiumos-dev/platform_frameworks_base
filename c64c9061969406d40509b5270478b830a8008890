@@ -65,6 +65,30 @@
     },
     {
       "key": {
+        "uuid": "3bd780d5_04be906c",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 2818,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T13:36:33Z",
+      "side": 1,
+      "message": "There may be changes referred to in the code that are unknown to the config. We still want to be able to configure those.",
+      "parentUuid": "25b1b6c1_5d8d09cd",
+      "range": {
+        "startLine": 2817,
+        "startChar": 15,
+        "endLine": 2818,
+        "endChar": 56
+      },
+      "revId": "c64c9061969406d40509b5270478b830a8008890",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "749df50f_2dfa3f39",
         "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
         "patchSetId": 9
