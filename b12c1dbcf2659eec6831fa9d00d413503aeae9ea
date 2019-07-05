@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6f020da5_b6bcb2aa",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T13:06:18Z",
+      "side": 1,
+      "message": "remove",
+      "range": {
+        "startLine": 10,
+        "startChar": 51,
+        "endLine": 10,
+        "endChar": 61
+      },
+      "revId": "b12c1dbcf2659eec6831fa9d00d413503aeae9ea",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "95df8175_70672745",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 2818,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T13:06:18Z",
+      "side": 1,
+      "message": "missing a space here (\"Enabling itcould...\"",
+      "range": {
+        "startLine": 2818,
+        "startChar": 30,
+        "endLine": 2818,
+        "endChar": 31
+      },
+      "revId": "b12c1dbcf2659eec6831fa9d00d413503aeae9ea",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6ca60002_e7493e72",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 2825,
+      "author": {
+        "id": 1010681
+      },
+      "writtenOn": "2019-07-05T13:06:18Z",
+      "side": 1,
+      "message": "space",
+      "range": {
+        "startLine": 2825,
+        "startChar": 31,
+        "endLine": 2825,
+        "endChar": 36
+      },
+      "revId": "b12c1dbcf2659eec6831fa9d00d413503aeae9ea",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
