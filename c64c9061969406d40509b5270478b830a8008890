@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a9b59e11_5fb46663",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 2804,
+      "author": {
+        "id": 1061164
+      },
+      "writtenOn": "2019-07-05T13:27:18Z",
+      "side": 1,
+      "message": "s/nextArg/changeArg/ or something more specific?",
+      "range": {
+        "startLine": 2804,
+        "startChar": 15,
+        "endLine": 2804,
+        "endChar": 22
+      },
+      "revId": "c64c9061969406d40509b5270478b830a8008890",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "65c8c149_58719fe5",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 2811,
+      "author": {
+        "id": 1061164
+      },
+      "writtenOn": "2019-07-05T13:27:18Z",
+      "side": 1,
+      "message": "nit: consider using printf() here and below, it may help readability a bit (e.g. it\u0027s easier to see if you missed a whitespace or a quote after an argument.",
+      "revId": "c64c9061969406d40509b5270478b830a8008890",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "25b1b6c1_5d8d09cd",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 2818,
+      "author": {
+        "id": 1061164
+      },
+      "writtenOn": "2019-07-05T13:27:18Z",
+      "side": 1,
+      "message": "is this desirable? why not \"do nothing if the change is unknown\"?",
+      "range": {
+        "startLine": 2817,
+        "startChar": 15,
+        "endLine": 2818,
+        "endChar": 56
+      },
+      "revId": "c64c9061969406d40509b5270478b830a8008890",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "749df50f_2dfa3f39",
+        "filename": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 2829,
+      "author": {
+        "id": 1061164
+      },
+      "writtenOn": "2019-07-05T13:27:18Z",
+      "side": 1,
+      "message": "nit: is `reset` too ambiguous? it\u0027s easier to type though..",
+      "range": {
+        "startLine": 2829,
+        "startChar": 18,
+        "endLine": 2829,
+        "endChar": 29
+      },
+      "revId": "c64c9061969406d40509b5270478b830a8008890",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
