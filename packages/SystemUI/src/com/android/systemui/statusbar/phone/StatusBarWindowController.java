@@ -317,6 +317,7 @@ public class StatusBarWindowController implements Callback, Dumpable, Configurat
         applyInputFeatures(state);
         applyFitsSystemWindows(state);
         applyModalFlag(state);
+		applySecureFlag(state);
         applyBrightness(state);
         applyHasTopUi(state);
         applyNotTouchable(state);
@@ -343,6 +344,14 @@ public class StatusBarWindowController implements Callback, Dumpable, Configurat
                         mCurrentState.keyguardOccluded,
                         mCurrentState.bouncerShowing);
             }
+        }
+    }
+
+    private void applySecureFlag(State state) {
+        if (state.bouncerShowing) {
+            mLpChanged.flags |= WindowManager.LayoutParams.FLAG_SECURE;
+        } else {
+            mLpChanged.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
         }
     }
 
