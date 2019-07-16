@@ -16,6 +16,24 @@
       "revId": "bf507765d49973f75862de72c8801cb2b13c5277",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a7dc86b3_e6a4c010",
+        "filename": "tools/lock_agent/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1039338
+      },
+      "writtenOn": "2019-07-16T15:11:15Z",
+      "side": 1,
+      "message": "Doh. I\u0027m so used to working in repositories with bp format checking during preupload that I forgot to reformat.",
+      "parentUuid": "87d42636_39ff7ff3",
+      "revId": "bf507765d49973f75862de72c8801cb2b13c5277",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
