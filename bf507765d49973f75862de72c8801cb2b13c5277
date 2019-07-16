@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "87d42636_39ff7ff3",
+        "filename": "tools/lock_agent/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2019-07-16T15:04:54Z",
+      "side": 1,
+      "message": "stray tabs here and elsewhere",
+      "revId": "bf507765d49973f75862de72c8801cb2b13c5277",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
