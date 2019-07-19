@@ -20,6 +20,7 @@ aidl_interface {
         "1",
         "2",
         "3",
+        "4",
     ],
 }
 
@@ -29,6 +30,7 @@ aidl_interface {
     include_dirs: ["frameworks/base/core/java"], // For framework parcelables.
     srcs: [
         "java/android/net/DhcpResultsParcelable.aidl",
+        "java/android/net/HigherLayerProtocolParcelable.aidl",
         "java/android/net/INetworkMonitor.aidl",
         "java/android/net/INetworkMonitorCallbacks.aidl",
         "java/android/net/INetworkStackConnector.aidl",
@@ -58,6 +60,7 @@ aidl_interface {
         "1",
         "2",
         "3",
+        "4",
     ],
 }
 
@@ -68,7 +71,7 @@ java_library_static {
         "dnsresolver_aidl_interface-V2-java",
         "ipmemorystore-client",
         "netd_aidl_interface-V2-java",
-        "networkstack-aidl-interfaces-V3-java",
+        "networkstack-aidl-interfaces-V4-java",
     ],
 }
 
@@ -81,7 +84,7 @@ java_library_static {
         "java/android/net/ipmemorystore/**/*.java",
     ],
     static_libs: [
-        "ipmemorystore-aidl-interfaces-V3-java",
+        "ipmemorystore-aidl-interfaces-V4-java",
     ],
 }
 

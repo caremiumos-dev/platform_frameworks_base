@@ -16,6 +16,7 @@
 package android.net.ip;
 
 import android.net.LinkProperties;
+import android.net.HigherLayerProtocolParcelable;
 import android.net.ip.IIpClient;
 import android.net.DhcpResultsParcelable;
 
@@ -63,4 +64,7 @@ oneway interface IIpClientCallbacks {
     // Enabled/disable Neighbor Discover offload functionality. This is
     // called, for example, whenever 464xlat is being started or stopped.
     void setNeighborDiscoveryOffload(boolean enable);
+
+    // Start FILS HLP IP Address setup.
+    void onPreDhcpConnectionStart(in List<HigherLayerProtocolParcelable> hlp);
 }
