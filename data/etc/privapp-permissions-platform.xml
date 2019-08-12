@@ -66,7 +66,6 @@ applications that come with the platform
     <privapp-permissions package="com.android.managedprovisioning">
         <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE"/>
         <permission name="android.permission.CHANGE_CONFIGURATION"/>
-        <permission name="android.permission.CONNECTIVITY_INTERNAL"/>
         <permission name="android.permission.CRYPT_KEEPER"/>
         <permission name="android.permission.DELETE_PACKAGES"/>
         <permission name="android.permission.INSTALL_PACKAGES"/>
@@ -103,7 +102,6 @@ applications that come with the platform
 
     <privapp-permissions package="com.android.omadm.service">
         <permission name="android.permission.CHANGE_CONFIGURATION"/>
-        <permission name="android.permission.CONNECTIVITY_INTERNAL"/>
         <permission name="android.permission.MODIFY_PHONE_STATE"/>
         <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
         <permission name="android.permission.WRITE_APN_SETTINGS"/>
@@ -131,13 +129,13 @@ applications that come with the platform
         <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE"/>
         <permission name="android.permission.CHANGE_CONFIGURATION"/>
         <permission name="android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST"/>
-        <permission name="android.permission.CONNECTIVITY_INTERNAL"/>
         <permission name="android.permission.CONTROL_INCALL_EXPERIENCE"/>
         <permission name="android.permission.DUMP"/>
         <permission name="android.permission.INTERACT_ACROSS_USERS"/>
         <permission name="android.permission.LOCAL_MAC_ADDRESS"/>
         <permission name="android.permission.MANAGE_USERS"/>
         <permission name="android.permission.MODIFY_PHONE_STATE"/>
+        <permission name="android.permission.OBSERVE_NETWORK_POLICY"/>
         <permission name="android.permission.PACKAGE_USAGE_STATS"/>
         <permission name="android.permission.PERFORM_CDMA_PROVISIONING"/>
         <permission name="android.permission.READ_NETWORK_USAGE_HISTORY"/>
@@ -181,7 +179,7 @@ applications that come with the platform
     <privapp-permissions package="com.android.providers.downloads">
         <permission name="android.permission.ACCESS_CACHE_FILESYSTEM"/>
         <permission name="android.permission.CLEAR_APP_CACHE"/>
-        <permission name="android.permission.CONNECTIVITY_INTERNAL"/>
+        <permission name="android.permission.OBSERVE_NETWORK_POLICY"/>
         <permission name="android.permission.UPDATE_APP_OPS_STATS"/>
         <permission name="android.permission.UPDATE_DEVICE_STATS"/>
     </privapp-permissions>
@@ -249,7 +247,6 @@ applications that come with the platform
         <permission name="android.permission.CHANGE_OVERLAY_PACKAGES"/>
         <permission name="android.permission.CLEAR_APP_CACHE"/>
         <permission name="android.permission.ACCESS_INSTANT_APPS" />
-        <permission name="android.permission.CONNECTIVITY_INTERNAL"/>
         <permission name="android.permission.DELETE_CACHE_FILES"/>
         <permission name="android.permission.DELETE_PACKAGES"/>
         <permission name="android.permission.DUMP"/>
@@ -314,7 +311,6 @@ applications that come with the platform
     </privapp-permissions>
 
     <privapp-permissions package="com.android.vpndialogs">
-        <permission name="android.permission.CONNECTIVITY_INTERNAL"/>
         <permission name="android.permission.CONTROL_VPN"/>
     </privapp-permissions>
 

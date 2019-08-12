@@ -239,7 +239,7 @@ public class JobInfo implements Parcelable {
      * still need to post the notification yourself.
      * <p>
      * To use this flag, the caller must hold the
-     * {@link android.Manifest.permission#CONNECTIVITY_INTERNAL} permission.
+     * {@link android.Manifest.permission#NETWORK_STACK} permission.
      *
      * @hide
      */

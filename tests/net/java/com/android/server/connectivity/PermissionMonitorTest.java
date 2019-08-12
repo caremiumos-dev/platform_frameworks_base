@@ -18,7 +18,6 @@ package com.android.server.connectivity;
 
 import static android.Manifest.permission.CHANGE_NETWORK_STATE;
 import static android.Manifest.permission.CHANGE_WIFI_STATE;
-import static android.Manifest.permission.CONNECTIVITY_INTERNAL;
 import static android.Manifest.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS;
 import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.NETWORK_STACK;
@@ -207,7 +206,6 @@ public class PermissionMonitorTest {
         assertFalse(mPermissionMonitor.hasPermission(app, CHANGE_NETWORK_STATE));
         assertFalse(mPermissionMonitor.hasPermission(app, NETWORK_STACK));
         assertFalse(mPermissionMonitor.hasPermission(app, CONNECTIVITY_USE_RESTRICTED_NETWORKS));
-        assertFalse(mPermissionMonitor.hasPermission(app, CONNECTIVITY_INTERNAL));
 
         app = packageInfoWithPermissions(new String[] {
             CHANGE_NETWORK_STATE, NETWORK_STACK
@@ -215,15 +213,13 @@ public class PermissionMonitorTest {
         assertTrue(mPermissionMonitor.hasPermission(app, CHANGE_NETWORK_STATE));
         assertTrue(mPermissionMonitor.hasPermission(app, NETWORK_STACK));
         assertFalse(mPermissionMonitor.hasPermission(app, CONNECTIVITY_USE_RESTRICTED_NETWORKS));
-        assertFalse(mPermissionMonitor.hasPermission(app, CONNECTIVITY_INTERNAL));
 
         app = packageInfoWithPermissions(new String[] {
-            CONNECTIVITY_USE_RESTRICTED_NETWORKS, CONNECTIVITY_INTERNAL
+            CONNECTIVITY_USE_RESTRICTED_NETWORKS
         }, PARTITION_SYSTEM);
         assertFalse(mPermissionMonitor.hasPermission(app, CHANGE_NETWORK_STATE));
         assertFalse(mPermissionMonitor.hasPermission(app, NETWORK_STACK));
         assertTrue(mPermissionMonitor.hasPermission(app, CONNECTIVITY_USE_RESTRICTED_NETWORKS));
-        assertTrue(mPermissionMonitor.hasPermission(app, CONNECTIVITY_INTERNAL));
     }
 
     @Test
@@ -243,7 +239,6 @@ public class PermissionMonitorTest {
         assertFalse(hasBgPermission(PARTITION_SYSTEM, VERSION_P, MOCK_UID1));
         assertTrue(hasBgPermission(PARTITION_SYSTEM, VERSION_P, MOCK_UID1, CHANGE_NETWORK_STATE));
         assertTrue(hasBgPermission(PARTITION_SYSTEM, VERSION_P, MOCK_UID1, NETWORK_STACK));
-        assertTrue(hasBgPermission(PARTITION_SYSTEM, VERSION_P, MOCK_UID1, CONNECTIVITY_INTERNAL));
         assertTrue(hasBgPermission(PARTITION_SYSTEM, VERSION_P, MOCK_UID1,
                 CONNECTIVITY_USE_RESTRICTED_NETWORKS));
         assertFalse(hasBgPermission(PARTITION_SYSTEM, VERSION_P, MOCK_UID1, CHANGE_WIFI_STATE));
@@ -272,7 +267,6 @@ public class PermissionMonitorTest {
         assertTrue(hasBgPermission(PARTITION_VENDOR, VERSION_P, MOCK_UID1));
         assertTrue(hasBgPermission(PARTITION_VENDOR, VERSION_P, MOCK_UID1, CHANGE_NETWORK_STATE));
         assertTrue(hasBgPermission(PARTITION_VENDOR, VERSION_P, MOCK_UID1, NETWORK_STACK));
-        assertTrue(hasBgPermission(PARTITION_VENDOR, VERSION_P, MOCK_UID1, CONNECTIVITY_INTERNAL));
         assertTrue(hasBgPermission(PARTITION_VENDOR, VERSION_P, MOCK_UID1,
                 CONNECTIVITY_USE_RESTRICTED_NETWORKS));
         assertTrue(hasBgPermission(PARTITION_VENDOR, VERSION_P, MOCK_UID1, CHANGE_WIFI_STATE));

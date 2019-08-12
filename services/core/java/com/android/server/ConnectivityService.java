@@ -1396,7 +1396,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public Network getActiveNetworkForUid(int uid, boolean ignoreBlocked) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         return getActiveNetworkForUidInternal(uid, ignoreBlocked);
     }
 
@@ -1438,7 +1438,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public NetworkInfo getActiveNetworkInfoForUid(int uid, boolean ignoreBlocked) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         final NetworkState state = getUnfilteredActiveNetworkState(uid);
         filterNetworkStateForUid(state, uid, ignoreBlocked);
         return state.networkInfo;
@@ -1657,8 +1657,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public NetworkState[] getAllNetworkState() {
-        // Require internal since we're handing out IMSI details
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
 
         final ArrayList<NetworkState> result = Lists.newArrayList();
         for (Network network : getAllNetworks()) {
@@ -1736,7 +1735,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
         }
         enforceChangePermission();
         if (mProtectedNetworks.contains(networkType)) {
-            enforceConnectivityInternalPermission();
+            NetworkStack.checkNetworkStackPermission(mContext);
         }
 
         InetAddress addr;
@@ -2023,12 +2022,6 @@ public class ConnectivityService extends IConnectivityManager.Stub
                 "ConnectivityService");
     }
 
-    private void enforceConnectivityInternalPermission() {
-        enforceAnyPermissionOf(
-                android.Manifest.permission.CONNECTIVITY_INTERNAL,
-                NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK);
-    }
-
     private void enforceControlAlwaysOnVpnPermission() {
         mContext.enforceCallingOrSelfPermission(
                 android.Manifest.permission.CONTROL_ALWAYS_ON_VPN,
@@ -2056,13 +2049,9 @@ public class ConnectivityService extends IConnectivityManager.Stub
     }
 
     private void enforceConnectivityRestrictedNetworksPermission() {
-        try {
-            mContext.enforceCallingOrSelfPermission(
-                    android.Manifest.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS,
-                    "ConnectivityService");
-            return;
-        } catch (SecurityException e) { /* fallback to ConnectivityInternalPermission */ }
-        enforceConnectivityInternalPermission();
+        mContext.enforceCallingOrSelfPermission(
+                android.Manifest.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS,
+                "ConnectivityService");
     }
 
     private void enforceKeepalivePermission() {
@@ -2071,7 +2060,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     // Public because it's used by mLockdownTracker.
     public void sendConnectedBroadcast(NetworkInfo info) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         sendGeneralBroadcast(info, CONNECTIVITY_ACTION);
     }
 
@@ -3521,7 +3510,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public void startCaptivePortalApp(Network network) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         mHandler.post(() -> {
             NetworkAgentInfo nai = getNetworkAgentInfoForNetwork(network);
             if (nai == null) return;
@@ -4007,7 +3996,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public String[] getTetheredDhcpRanges() {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         return mTethering.getTetheredDhcpRanges();
     }
 
@@ -4229,7 +4218,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public void setGlobalProxy(final ProxyInfo proxyProperties) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         mProxyTracker.setGlobalProxy(proxyProperties);
     }
 
@@ -4776,7 +4765,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public String getMobileProvisioningUrl() {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         String url = getProvisioningUrlBaseFromFile();
         if (TextUtils.isEmpty(url)) {
             url = mContext.getResources().getString(R.string.mobile_provisioning_url);
@@ -4802,7 +4791,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
     @Override
     public void setProvisioningNotificationVisible(boolean visible, int networkType,
             String action) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         if (!ConnectivityManager.isNetworkTypeValid(networkType)) {
             return;
         }
@@ -5378,7 +5367,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public int registerNetworkFactory(Messenger messenger, String name) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         NetworkFactoryInfo nfi = new NetworkFactoryInfo(name, messenger, new AsyncChannel(),
                 NetworkFactory.SerialNumber.nextSerialNumber());
         mHandler.sendMessage(mHandler.obtainMessage(EVENT_REGISTER_NETWORK_FACTORY, nfi));
@@ -5393,7 +5382,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public void unregisterNetworkFactory(Messenger messenger) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         mHandler.sendMessage(mHandler.obtainMessage(EVENT_UNREGISTER_NETWORK_FACTORY, messenger));
     }
 
@@ -5516,7 +5505,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
     public int registerNetworkAgent(Messenger messenger, NetworkInfo networkInfo,
             LinkProperties linkProperties, NetworkCapabilities networkCapabilities,
             int currentScore, NetworkMisc networkMisc, int factorySerialNumber) {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
 
         LinkProperties lp = new LinkProperties(linkProperties);
         lp.ensureDirectlyConnectedRoutes();
@@ -6897,7 +6886,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public String getCaptivePortalServerUrl() {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
         String settingUrl = mContext.getResources().getString(
                 R.string.config_networkCaptivePortalServerUrl);
 
@@ -6950,7 +6939,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     @Override
     public void factoryReset() {
-        enforceConnectivityInternalPermission();
+        NetworkStack.checkNetworkStackPermission(mContext);
 
         if (mUserManager.hasUserRestriction(UserManager.DISALLOW_NETWORK_RESET)) {
             return;

@@ -17,7 +17,6 @@
 package com.android.server.connectivity;
 
 import static android.Manifest.permission.CHANGE_NETWORK_STATE;
-import static android.Manifest.permission.CONNECTIVITY_INTERNAL;
 import static android.Manifest.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS;
 import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.NETWORK_STACK;
@@ -259,8 +258,7 @@ public class PermissionMonitor {
                 return true;
             }
         }
-        return hasPermission(app, CONNECTIVITY_INTERNAL)
-                || hasPermission(app, CONNECTIVITY_USE_RESTRICTED_NETWORKS);
+        return hasPermission(app, CONNECTIVITY_USE_RESTRICTED_NETWORKS);
     }
 
     private boolean hasUseBackgroundNetworksPermission(PackageInfo app) {
