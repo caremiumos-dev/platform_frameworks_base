@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2ad25f79_0a1449a0",
+        "filename": "services/net/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2019-08-23T05:52:30Z",
+      "side": 1,
+      "message": "Just for question: do we need new version because you add new stable aidl ?? Maybe V3 don\u0027t freeze yet ??",
+      "range": {
+        "startLine": 62,
+        "startChar": 8,
+        "endLine": 62,
+        "endChar": 11
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b73917cf_439e9888",
+        "filename": "services/net/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2019-08-23T05:52:30Z",
+      "side": 1,
+      "message": "Why remove \"V3\" ??",
+      "range": {
+        "startLine": 73,
+        "startChar": 9,
+        "endLine": 73,
+        "endChar": 43
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
