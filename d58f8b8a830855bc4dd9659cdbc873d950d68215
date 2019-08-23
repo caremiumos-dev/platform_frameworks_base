@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "b22432d2_f9596d3e",
+        "filename": "services/net/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-08-23T14:00:23Z",
+      "side": 1,
+      "message": "If we want to ship it, we need to lock it first and have new version. Then, we could use getVersion() to know which functionality should be supported.\nevery version you see here is a fixed one.",
+      "parentUuid": "2ad25f79_0a1449a0",
+      "range": {
+        "startLine": 62,
+        "startChar": 8,
+        "endLine": 62,
+        "endChar": 11
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b73917cf_439e9888",
         "filename": "services/net/Android.bp",
         "patchSetId": 2
@@ -36,6 +60,30 @@
       "writtenOn": "2019-08-23T05:52:30Z",
       "side": 1,
       "message": "Why remove \"V3\" ??",
+      "range": {
+        "startLine": 73,
+        "startChar": 9,
+        "endLine": 73,
+        "endChar": 43
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "840bd101_95fddf3d",
+        "filename": "services/net/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-08-23T14:00:23Z",
+      "side": 1,
+      "message": "the V3 is locked. If anything is added to the aidl targer, either use the re-locking new versioned AIDL(said, V4) or non-versioned one.",
+      "parentUuid": "b73917cf_439e9888",
       "range": {
         "startLine": 73,
         "startChar": 9,
