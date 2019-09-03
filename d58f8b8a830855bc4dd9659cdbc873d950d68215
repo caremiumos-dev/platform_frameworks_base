@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "a38cf8e0_b340d109",
+        "filename": "core/java/android/net/ConnectivityManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 2802,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8fbac676_778e356f",
+      "range": {
+        "startLine": 2802,
+        "startChar": 4,
+        "endLine": 2802,
+        "endChar": 18
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5da2e5bd_58d0ab9a",
         "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
         "patchSetId": 2
@@ -45,6 +69,30 @@
       "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "43739fd7_1f89001b",
+        "filename": "services/core/java/com/android/server/connectivity/Tethering.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1156,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5da2e5bd_58d0ab9a",
+      "range": {
+        "startLine": 1156,
+        "startChar": 16,
+        "endLine": 1156,
+        "endChar": 75
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -95,6 +143,30 @@
     },
     {
       "key": {
+        "uuid": "c1aef485_180f7489",
+        "filename": "services/net/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b22432d2_f9596d3e",
+      "range": {
+        "startLine": 62,
+        "startChar": 8,
+        "endLine": 62,
+        "endChar": 11
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b73917cf_439e9888",
         "filename": "services/net/Android.bp",
         "patchSetId": 2
@@ -142,6 +214,30 @@
     },
     {
       "key": {
+        "uuid": "364d59f4_0a60cbfd",
+        "filename": "services/net/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "840bd101_95fddf3d",
+      "range": {
+        "startLine": 73,
+        "startChar": 9,
+        "endLine": 73,
+        "endChar": 43
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "efd38bcd_5383eec3",
         "filename": "services/net/java/android/net/dnsproxy/DnsProxyServerCallbacks.java",
         "patchSetId": 2
@@ -162,6 +258,30 @@
       "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d742428f_7cc5b066",
+        "filename": "services/net/java/android/net/dnsproxy/DnsProxyServerCallbacks.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "efd38bcd_5383eec3",
+      "range": {
+        "startLine": 24,
+        "startChar": 3,
+        "endLine": 24,
+        "endChar": 57
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -188,6 +308,30 @@
     },
     {
       "key": {
+        "uuid": "f163d37f_da923a7e",
+        "filename": "services/net/java/android/net/dnsproxy/IDnsProxyServerCallbacks.aidl",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7977e1d3_3ffc0846",
+      "range": {
+        "startLine": 23,
+        "startChar": 37,
+        "endLine": 23,
+        "endChar": 47
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2612a304_619393a9",
         "filename": "services/net/java/android/net/ip/IpServer.java",
         "patchSetId": 2
@@ -211,6 +355,30 @@
     },
     {
       "key": {
+        "uuid": "25a9725a_6868829a",
+        "filename": "services/net/java/android/net/ip/IpServer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2612a304_619393a9",
+      "range": {
+        "startLine": 169,
+        "startChar": 10,
+        "endLine": 169,
+        "endChar": 40
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "71246823_762d5ad7",
         "filename": "services/net/java/android/net/ip/IpServer.java",
         "patchSetId": 2
@@ -222,6 +390,30 @@
       "writtenOn": "2019-08-26T10:15:32Z",
       "side": 1,
       "message": "This breaks the inner loop, but if another network happens to match one of the interfaces we use that one instead right ? Is this the expected behavior ? This looks a little confusing",
+      "range": {
+        "startLine": 180,
+        "startChar": 24,
+        "endLine": 180,
+        "endChar": 30
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a3a193fa_9e80e51f",
+        "filename": "services/net/java/android/net/ip/IpServer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "yeah, only 1 network will be matched\n\nthe original InterfaceSet is resolved by setUpstreamNetwork() using TetheringInterfaceUtils.getTetheringInterfaces().",
+      "parentUuid": "71246823_762d5ad7",
       "range": {
         "startLine": 180,
         "startChar": 24,
@@ -257,6 +449,30 @@
     },
     {
       "key": {
+        "uuid": "463bb2fa_da4997bd",
+        "filename": "services/net/java/android/net/ip/IpServer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 424,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "ISTM that the base class should be IDhcpServerCallbacks/IDnsProxyServerCallbacks.\nI don\u0027t see any elegant way which can reduce much code unless we use the same aidl callback interface any thoughts?\ntry to use some utilities for now...",
+      "parentUuid": "5ffd77d7_64939171",
+      "range": {
+        "startLine": 424,
+        "startChar": 18,
+        "endLine": 424,
+        "endChar": 45
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dad9968a_472b9451",
         "filename": "services/net/java/android/net/ip/IpServer.java",
         "patchSetId": 2
@@ -280,6 +496,30 @@
     },
     {
       "key": {
+        "uuid": "ccf5596c_56bd4c43",
+        "filename": "services/net/java/android/net/ip/IpServer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dad9968a_472b9451",
+      "range": {
+        "startLine": 443,
+        "startChar": 34,
+        "endLine": 443,
+        "endChar": 48
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "012181b6_723e30c1",
         "filename": "services/net/java/android/net/ip/IpServer.java",
         "patchSetId": 2
@@ -300,6 +540,30 @@
       "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5aa21557_549497c0",
+        "filename": "services/net/java/android/net/ip/IpServer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 1337176
+      },
+      "writtenOn": "2019-09-03T13:56:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "012181b6_723e30c1",
+      "range": {
+        "startLine": 463,
+        "startChar": 20,
+        "endLine": 463,
+        "endChar": 48
+      },
+      "revId": "d58f8b8a830855bc4dd9659cdbc873d950d68215",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
