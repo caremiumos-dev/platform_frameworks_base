@@ -27,6 +27,7 @@ import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
@@ -828,9 +829,18 @@ public class Linkify {
         final TelephonyManager tm = (context == null)
                 ? TelephonyManager.getDefault()
                 : TelephonyManager.from(context);
-        Iterable<PhoneNumberMatch> matches = phoneUtil.findNumbers(s.toString(),
-                tm.getSimCountryIso().toUpperCase(Locale.US),
-                Leniency.POSSIBLE, Long.MAX_VALUE);
+
+        String country = tm.getNetworkCountryIso();
+        if (TextUtils.isEmpty(country)) {
+            country = tm.getSimCountryIso();
+        }
+
+        Iterable<PhoneNumberMatch> matches =
+                phoneUtil.findNumbers(
+                        s.toString(),
+                        country.toUpperCase(Locale.US),
+                        Leniency.POSSIBLE,
+                        Long.MAX_VALUE);
         for (PhoneNumberMatch match : matches) {
             LinkSpec spec = new LinkSpec();
             spec.url = "tel:" + PhoneNumberUtils.normalizeNumber(match.rawString());
