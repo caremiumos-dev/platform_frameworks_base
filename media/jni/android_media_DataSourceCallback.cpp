@@ -25,7 +25,6 @@
 #include <nativehelper/JNIHelp.h>
 
 #include <drm/drm_framework_common.h>
-#include <mediaplayer2/JavaVMHelper.h>
 #include <media/stagefright/foundation/ADebug.h>
 #include <nativehelper/ScopedLocalRef.h>
 
@@ -40,14 +39,14 @@ JDataSourceCallback::JDataSourceCallback(JNIEnv* env, jobject source)
     mDataSourceCallbackObj = env->NewGlobalRef(source);
     CHECK(mDataSourceCallbackObj != NULL);
 
-    ScopedLocalRef<jclass> media2DataSourceClass(env, env->GetObjectClass(mDataSourceCallbackObj));
-    CHECK(media2DataSourceClass.get() != NULL);
+    ScopedLocalRef<jclass> mediaDataSourceClass(env, env->GetObjectClass(mDataSourceCallbackObj));
+    CHECK(mediaDataSourceClass.get() != NULL);
 
-    mReadAtMethod = env->GetMethodID(media2DataSourceClass.get(), "readAt", "(J[BII)I");
+    mReadAtMethod = env->GetMethodID(mediaDataSourceClass.get(), "readAt", "(J[BII)I");
     CHECK(mReadAtMethod != NULL);
-    mGetSizeMethod = env->GetMethodID(media2DataSourceClass.get(), "getSize", "()J");
+    mGetSizeMethod = env->GetMethodID(mediaDataSourceClass.get(), "getSize", "()J");
     CHECK(mGetSizeMethod != NULL);
-    mCloseMethod = env->GetMethodID(media2DataSourceClass.get(), "close", "()V");
+    mCloseMethod = env->GetMethodID(mediaDataSourceClass.get(), "close", "()V");
     CHECK(mCloseMethod != NULL);
 
     ScopedLocalRef<jbyteArray> tmp(env, env->NewByteArray(kBufferSize));
@@ -56,7 +55,7 @@ JDataSourceCallback::JDataSourceCallback(JNIEnv* env, jobject source)
 }
 
 JDataSourceCallback::~JDataSourceCallback() {
-    JNIEnv* env = JavaVMHelper::getJNIEnv();
+    JNIEnv* env = AndroidRuntime::getJNIEnv();
     env->DeleteGlobalRef(mDataSourceCallbackObj);
     env->DeleteGlobalRef(mByteArrayObj);
 }
@@ -75,7 +74,7 @@ ssize_t JDataSourceCallback::readAt(off64_t offset, void *data, size_t size) {
         size = kBufferSize;
     }
 
-    JNIEnv* env = JavaVMHelper::getJNIEnv();
+    JNIEnv* env = AndroidRuntime::getJNIEnv();
     jint numread = env->CallIntMethod(mDataSourceCallbackObj, mReadAtMethod,
             (jlong)offset, mByteArrayObj, (jint)0, (jint)size);
     if (env->ExceptionCheck()) {
@@ -117,7 +116,7 @@ status_t JDataSourceCallback::getSize(off64_t* size) {
         return OK;
     }
 
-    JNIEnv* env = JavaVMHelper::getJNIEnv();
+    JNIEnv* env = AndroidRuntime::getJNIEnv();
     *size = env->CallLongMethod(mDataSourceCallbackObj, mGetSizeMethod);
     if (env->ExceptionCheck()) {
         ALOGW("An exception occurred in getSize()");
@@ -142,7 +141,7 @@ status_t JDataSourceCallback::getSize(off64_t* size) {
 void JDataSourceCallback::close() {
     Mutex::Autolock lock(mLock);
 
-    JNIEnv* env = JavaVMHelper::getJNIEnv();
+    JNIEnv* env = AndroidRuntime::getJNIEnv();
     env->CallVoidMethod(mDataSourceCallbackObj, mCloseMethod);
     // The closed state is effectively the same as an error state.
     mJavaObjStatus = UNKNOWN_ERROR;
