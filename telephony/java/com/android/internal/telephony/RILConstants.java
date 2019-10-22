@@ -478,6 +478,8 @@ public interface RILConstants {
     int RIL_REQUEST_ENABLE_MODEM = 146;
     int RIL_REQUEST_GET_MODEM_STATUS = 147;
     int RIL_REQUEST_CDMA_SEND_SMS_EXPECT_MORE = 148;
+    int RIL_REQUEST_GET_PHONEBOOK_RECORDS = 149;
+    int RIL_REQUEST_UPDATE_PHONEBOOK_RECORD = 150;
 
     /* The following requests are not defined in RIL.h */
     int RIL_REQUEST_HAL_NON_RIL_BASE = 200;
@@ -549,6 +551,8 @@ public interface RILConstants {
     int RIL_UNSOL_CARRIER_INFO_IMSI_ENCRYPTION = 1048;
     int RIL_UNSOL_NETWORK_SCAN_RESULT = 1049;
     int RIL_UNSOL_KEEPALIVE_STATUS = 1050;
+    int RIL_UNSOL_RESPONSE_PHONEBOOK_INIT_DONE = 1051;
+    int RIL_UNSOL_RESPONSE_PHONEBOOK_RECORDS = 1052;
 
     /* The following unsols are not defined in RIL.h */
     int RIL_UNSOL_HAL_NON_RIL_BASE = 1100;
