@@ -1756,6 +1756,11 @@
     <permission android:name="android.permission.NFC_TRANSACTION_EVENT"
         android:protectionLevel="normal" />
 
+    <!-- @SystemApi Allows an internal user to use privileged SecureElement APIs.
+         @hide -->
+    <permission android:name="android.permission.SECURE_ELEMENT_PRIVILEGED"
+        android:protectionLevel="signature|privileged" />
+
     <!-- @SystemApi Allows an internal user to use privileged ConnectivityManager APIs.
          @hide -->
     <permission android:name="android.permission.CONNECTIVITY_INTERNAL"
