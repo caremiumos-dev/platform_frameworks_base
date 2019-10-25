@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "eb13717f_9b89d23f",
+        "filename": "services/core/java/com/android/server/pm/PackageManagerService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 9356,
+      "author": {
+        "id": 1060678
+      },
+      "writtenOn": "2019-10-25T14:06:33Z",
+      "side": 1,
+      "message": "I would like to maintain the finality of the internal variables. Can you move this block to line 9336? It means we couldn\u0027t use \u0027isSystemPkgUpdated\u0027; instead, we\u0027d just get the disabled system package:\n\n  if (scanSystemPartition \u0026\u0026 !pkgAlreadyExists\n          \u0026\u0026 mSettings.getDisabledSystemPkgLPr(disabledPkgName) !\u003d null) {",
+      "range": {
+        "startLine": 9356,
+        "startChar": 12,
+        "endLine": 9356,
+        "endChar": 79
+      },
+      "revId": "4e251f766e6ab4a590f2e50c38b999f7a9d241ea",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8134016c_bf0a31fd",
+        "filename": "services/core/java/com/android/server/pm/PackageManagerService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 9365,
+      "author": {
+        "id": 1060678
+      },
+      "writtenOn": "2019-10-25T14:06:33Z",
+      "side": 1,
+      "message": "don\u0027t set these; let them be set normally",
+      "range": {
+        "startLine": 9364,
+        "startChar": 16,
+        "endLine": 9365,
+        "endChar": 34
+      },
+      "revId": "4e251f766e6ab4a590f2e50c38b999f7a9d241ea",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
