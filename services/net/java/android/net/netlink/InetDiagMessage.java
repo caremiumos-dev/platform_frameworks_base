@@ -30,8 +30,10 @@ import android.os.Build;
 import android.os.Process;
 import android.system.ErrnoException;
 import android.util.Log;
+import android.net.util.SocketUtils;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramSocket;
 import java.net.DatagramSocket;
@@ -163,8 +165,9 @@ public class InetDiagMessage extends NetlinkMessage {
      */
     public static int getConnectionOwnerUid(int protocol, InetSocketAddress local,
                                             InetSocketAddress remote) {
+        FileDescriptor fd = null;
         try {
-            final FileDescriptor fd = NetlinkSocket.forProto(NETLINK_INET_DIAG);
+            fd = NetlinkSocket.forProto(NETLINK_INET_DIAG);
             NetlinkSocket.connectToKernel(fd);
 
             return lookupUid(protocol, local, remote, fd);
@@ -172,6 +175,12 @@ public class InetDiagMessage extends NetlinkMessage {
         } catch (ErrnoException | SocketException | IllegalArgumentException
                 | InterruptedIOException e) {
             Log.e(TAG, e.toString());
+        } finally {
+            try {
+                SocketUtils.closeSocket(fd);
+            } catch (IOException e) {
+                Log.e(TAG, e.toString());
+            }
         }
         return INVALID_UID;
     }
