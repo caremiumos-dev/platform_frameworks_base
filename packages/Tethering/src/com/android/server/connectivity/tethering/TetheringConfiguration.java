@@ -84,6 +84,7 @@ public class TetheringConfiguration {
     public final String[] tetherableWifiP2pRegexs;
     public final String[] tetherableBluetoothRegexs;
     public final String[] tetherableNcmRegexs;
+    public final String tetherableEthernetRegex;
     public final boolean isDunRequired;
     public final boolean chooseUpstreamAutomatically;
     public final Collection<Integer> preferredUpstreamIfaceTypes;
@@ -114,6 +115,8 @@ public class TetheringConfiguration {
         tetherableBluetoothRegexs = getResourceStringArray(
                 res, R.array.config_tether_bluetooth_regexs);
 
+        tetherableEthernetRegex = getResourceString(res,
+                R.string.config_ethernet_iface_regex);
         isDunRequired = checkDunRequired(ctx);
 
         chooseUpstreamAutomatically = getResourceBoolean(
@@ -163,6 +166,11 @@ public class TetheringConfiguration {
         return matchesDownstreamRegexs(iface, tetherableNcmRegexs);
     }
 
+    /** Check if interface is Ethernet */
+    public boolean isEthernet(String iface) {
+        return iface != null ? iface.matches(tetherableEthernetRegex) : false;
+    }
+
     /** Check whether no ui entitlement application is available.*/
     public boolean hasMobileHotspotProvisionApp() {
         return !TextUtils.isEmpty(provisioningAppNoUi);
@@ -178,6 +186,8 @@ public class TetheringConfiguration {
         dumpStringArray(pw, "tetherableWifiP2pRegexs", tetherableWifiP2pRegexs);
         dumpStringArray(pw, "tetherableBluetoothRegexs", tetherableBluetoothRegexs);
         dumpStringArray(pw, "tetherableNcmRegexs", tetherableNcmRegexs);
+        pw.print("tetherableEthernetRegex: ");
+        pw.println(tetherableEthernetRegex);
 
         pw.print("isDunRequired: ");
         pw.println(isDunRequired);
@@ -207,6 +217,7 @@ public class TetheringConfiguration {
         sj.add(String.format("tetherableWifiP2pRegexs:%s", makeString(tetherableWifiP2pRegexs)));
         sj.add(String.format("tetherableBluetoothRegexs:%s",
                 makeString(tetherableBluetoothRegexs)));
+        sj.add(String.format("tetherableEthernetRegex:%s", tetherableEthernetRegex));
         sj.add(String.format("isDunRequired:%s", isDunRequired));
         sj.add(String.format("chooseUpstreamAutomatically:%s", chooseUpstreamAutomatically));
         sj.add(String.format("preferredUpstreamIfaceTypes:%s",
@@ -330,6 +341,13 @@ public class TetheringConfiguration {
         }
     }
 
+    private static String getResourceString(Resources res, int resId) {
+        try {
+            return res.getString(resId);
+        } catch (Resources.NotFoundException e) {
+            return "";
+        }
+    }
     private static int getResourceInteger(Resources res, int resId, int defaultValue) {
         try {
             return res.getInteger(resId);
@@ -400,6 +418,7 @@ public class TetheringConfiguration {
         parcel.tetherableUsbRegexs = tetherableUsbRegexs;
         parcel.tetherableWifiRegexs = tetherableWifiRegexs;
         parcel.tetherableBluetoothRegexs = tetherableBluetoothRegexs;
+
         parcel.isDunRequired = isDunRequired;
         parcel.chooseUpstreamAutomatically = chooseUpstreamAutomatically;
 

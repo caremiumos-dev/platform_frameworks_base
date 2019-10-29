@@ -796,6 +796,8 @@ public class Tethering {
                         downstreamTypesMask |= (1 << TETHERING_WIFI);
                     } else if (cfg.isBluetooth(iface)) {
                         downstreamTypesMask |= (1 << TETHERING_BLUETOOTH);
+                    } else if (cfg.isEthernet(iface)) {
+                        downstreamTypesMask |= (1 << TETHERING_ETHERNET);
                     }
                     tetherList.add(iface);
                 }

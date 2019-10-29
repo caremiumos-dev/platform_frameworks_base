@@ -55,6 +55,9 @@
         <item>"bt-pan"</item>
     </string-array>
 
+    <!-- Regex of wired ethernet ifaces -->
+    <string translatable="false" name="config_ethernet_iface_regex">eth\\d</string>
+
     <!-- Use the old dnsmasq DHCP server for tethering instead of the framework implementation. -->
     <bool translatable="false" name="config_tether_enable_legacy_dhcp_server">false</bool>
 
@@ -194,7 +197,7 @@
     <string-array translatable="false" name="tethering_notification_icons">
         <item>USB;com.android.networkstack.tethering:drawable/stat_sys_tether_usb</item>
         <item>BT;com.android.networkstack.tethering:drawable/stat_sys_tether_bluetooth</item>
-        <item>WIFI|USB,WIFI|BT,USB|BT,WIFI|USB|BT;com.android.networkstack.tethering:drawable/stat_sys_tether_general</item>
+        <item>WIFI|USB,WIFI|BT,USB|BT,WIFI|USB|BT,ETH,ETH|WIFI,ETH|USB,ETH||BT,ETH|WIFI|USB,ETH|WIFI|BT,ETH|USB|BT,ETH|WIFI|USB|BT;com.android.networkstack.tethering:drawable/stat_sys_tether_general</item>
     </string-array>
     <!-- String for tether enable notification title. -->
     <string name="tethering_notification_title">@string/tethered_notification_title</string>

@@ -17,6 +17,7 @@
 package com.android.server.connectivity.tethering;
 
 import static android.net.TetheringManager.TETHERING_BLUETOOTH;
+import static android.net.TetheringManager.TETHERING_ETHERNET;
 import static android.net.TetheringManager.TETHERING_USB;
 import static android.net.TetheringManager.TETHERING_WIFI;
 
@@ -59,6 +60,7 @@ public class TetheringNotificationUpdater {
     private static final String WIFI_DOWNSTREAM = "WIFI";
     private static final String USB_DOWNSTREAM = "USB";
     private static final String BLUETOOTH_DOWNSTREAM = "BT";
+    private static final String ETHERNET_DOWNSTREAM = "ETH";
     private static final boolean NOTIFY_DONE = true;
     private static final boolean NO_NOTIFY = false;
     // Id to update and cancel tethering notification. Must be unique within the tethering app.
@@ -167,6 +169,8 @@ public class TetheringNotificationUpdater {
                 downstreamTypesMask |= (1 << TETHERING_WIFI);
             } else if (BLUETOOTH_DOWNSTREAM.equals(downstream.trim())) {
                 downstreamTypesMask |= (1 << TETHERING_BLUETOOTH);
+            } else if (ETHERNET_DOWNSTREAM.equals(downstream.trim())) {
+                downstreamTypesMask |= (1 << TETHERING_ETHERNET);
             }
         }
         return downstreamTypesMask;
