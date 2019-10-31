@@ -36,10 +36,7 @@ import java.util.stream.Collectors;
 
 /**
  * Description of a mobile network registration info
- * @hide
  */
-@SystemApi
-@TestApi
 public final class NetworkRegistrationInfo implements Parcelable {
     /**
      * Network domain
@@ -49,9 +46,14 @@ public final class NetworkRegistrationInfo implements Parcelable {
     @IntDef(prefix = "DOMAIN_", value = {DOMAIN_CS, DOMAIN_PS})
     public @interface Domain {}
 
-    /** Circuit switching domain */
+    /**
+     * Circuit-switched domain
+     */
     public static final int DOMAIN_CS = 1;
-    /** Packet switching domain */
+
+    /**
+     * Packet-switched domain
+     */
     public static final int DOMAIN_PS = 2;
 
     /**
@@ -65,17 +67,41 @@ public final class NetworkRegistrationInfo implements Parcelable {
                     REGISTRATION_STATE_UNKNOWN, REGISTRATION_STATE_ROAMING})
     public @interface RegistrationState {}
 
-    /** Not registered. The device is not currently searching a new operator to register. */
+    /**
+     * Not registered. The device is not currently searching a new operator to register.
+     * @hide
+     */
+    @SystemApi @TestApi
     public static final int REGISTRATION_STATE_NOT_REGISTERED_OR_SEARCHING = 0;
-    /** Registered on home network. */
+    /**
+     * Registered on home network.
+     * @hide
+     */
+    @SystemApi @TestApi
     public static final int REGISTRATION_STATE_HOME = 1;
-    /** Not registered. The device is currently searching a new operator to register. */
+    /**
+     * Not registered. The device is currently searching a new operator to register.
+     * @hide
+     */
+    @SystemApi @TestApi
     public static final int REGISTRATION_STATE_NOT_REGISTERED_SEARCHING = 2;
-    /** Registration denied. */
+    /**
+     * Registration denied.
+     * @hide
+     */
+    @SystemApi @TestApi
     public static final int REGISTRATION_STATE_DENIED = 3;
-    /** Registration state is unknown. */
+    /**
+     * Registration state is unknown.
+     * @hide
+     */
+    @SystemApi @TestApi
     public static final int REGISTRATION_STATE_UNKNOWN = 4;
-    /** Registered on roaming network. */
+    /**
+     * Registered on roaming network.
+     * @hide
+     */
+    @SystemApi @TestApi
     public static final int REGISTRATION_STATE_ROAMING = 5;
 
     /** @hide */
@@ -125,22 +151,34 @@ public final class NetworkRegistrationInfo implements Parcelable {
                     SERVICE_TYPE_VIDEO, SERVICE_TYPE_EMERGENCY})
     public @interface ServiceType {}
 
-    /** Unkown service */
+    /**
+     * Unknown service
+     */
     public static final int SERVICE_TYPE_UNKNOWN    = 0;
 
-    /** Voice service */
+    /**
+     * Voice service
+     */
     public static final int SERVICE_TYPE_VOICE      = 1;
 
-    /** Data service */
+    /**
+     * Data service
+     */
     public static final int SERVICE_TYPE_DATA       = 2;
 
-    /** SMS service */
+    /**
+     * SMS service
+     */
     public static final int SERVICE_TYPE_SMS        = 3;
 
-    /** Video service */
+    /**
+     * Video service
+     */
     public static final int SERVICE_TYPE_VIDEO      = 4;
 
-    /** Emergency service */
+    /**
+     * Emergency service
+     */
     public static final int SERVICE_TYPE_EMERGENCY  = 5;
 
     @Domain
@@ -348,6 +386,20 @@ public final class NetworkRegistrationInfo implements Parcelable {
     /**
      * @return {@code true} if registered on roaming network, {@code false} otherwise.
      */
+    public boolean isRegistered() {
+        return mRegistrationState == REGISTRATION_STATE_HOME;
+    }
+
+    /**
+     * @return {@code true} if registered on roaming network, {@code false} otherwise.
+     */
+    public boolean isSearching() {
+        return mRegistrationState == REGISTRATION_STATE_NOT_REGISTERED_SEARCHING;
+    }
+
+    /**
+     * @return {@code true} if registered on roaming network, {@code false} otherwise.
+     */
     public boolean isRoaming() {
         return mRoamingType != ServiceState.ROAMING_TYPE_NOT_ROAMING;
     }
@@ -372,22 +424,27 @@ public final class NetworkRegistrationInfo implements Parcelable {
 
     /**
      * @return the current network roaming type.
+     * @hide
      */
-
+    @SystemApi @TestApi
     public @ServiceState.RoamingType int getRoamingType() {
         return mRoamingType;
     }
 
     /**
      * @return Whether emergency is enabled.
+     * @hide
      */
+    @SystemApi @TestApi
     public boolean isEmergencyEnabled() { return mEmergencyOnly; }
 
     /**
      * @return List of available service types.
+     * @hide
      */
     @NonNull
     @ServiceType
+    @SystemApi @TestApi
     public List<Integer> getAvailableServices() {
         return Collections.unmodifiableList(mAvailableServices);
     }
@@ -418,7 +475,9 @@ public final class NetworkRegistrationInfo implements Parcelable {
      * @return Reason for denial if the registration state is {@link #REGISTRATION_STATE_DENIED}.
      * Depending on {@code accessNetworkTechnology}, the values are defined in 3GPP TS 24.008
      * 10.5.3.6 for UMTS, 3GPP TS 24.301 9.9.3.9 for LTE, and 3GPP2 A.S0001 6.2.2.44 for CDMA
+     * @hide
      */
+    @SystemApi @TestApi
     public int getRejectCause() {
         return mRejectCause;
     }
@@ -441,8 +500,10 @@ public final class NetworkRegistrationInfo implements Parcelable {
 
     /**
      * @return Data registration related info
+     * @hide
      */
     @Nullable
+    @SystemApi @TestApi
     public DataSpecificRegistrationInfo getDataSpecificInfo() {
         return mDataSpecificInfo;
     }
@@ -557,7 +618,11 @@ public final class NetworkRegistrationInfo implements Parcelable {
                 && mNrState == other.mNrState;
     }
 
+    /**
+     * @hide
+     */
     @Override
+    @SystemApi @TestApi
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(mDomain);
         dest.writeInt(mTransportType);
@@ -645,7 +710,9 @@ public final class NetworkRegistrationInfo implements Parcelable {
      *     .setRegistrationState(REGISTRATION_STATE_HOME)
      *     .build();
      * </code></pre>
+     * @hide
      */
+    @SystemApi @TestApi
     public static final class Builder{
         @Domain
         private int mDomain;
@@ -745,7 +812,9 @@ public final class NetworkRegistrationInfo implements Parcelable {
          * @param emergencyOnly True if this network registration is for emergency use only.
          *
          * @return The same instance of the builder.
+         * @hide
          */
+        @SystemApi @TestApi
         public @NonNull Builder setEmergencyOnly(boolean emergencyOnly) {
             mEmergencyOnly = emergencyOnly;
             return this;
@@ -757,7 +826,9 @@ public final class NetworkRegistrationInfo implements Parcelable {
          * @param availableServices Available services.
          *
          * @return The same instance of the builder.
+         * @hide
          */
+        @SystemApi @TestApi
         public @NonNull Builder setAvailableServices(
                 @NonNull @ServiceType List<Integer> availableServices) {
             mAvailableServices = availableServices;
@@ -770,7 +841,9 @@ public final class NetworkRegistrationInfo implements Parcelable {
          * @param cellIdentity The cell identity.
          *
          * @return The same instance of the builder.
+         * @hide
          */
+        @SystemApi @TestApi
         public @NonNull Builder setCellIdentity(@Nullable CellIdentity cellIdentity) {
             mCellIdentity = cellIdentity;
             return this;
@@ -778,9 +851,10 @@ public final class NetworkRegistrationInfo implements Parcelable {
 
         /**
          * Build the NetworkRegistrationInfo.
-         *
          * @return the NetworkRegistrationInfo object.
+         * @hide
          */
+        @SystemApi @TestApi
         public @NonNull NetworkRegistrationInfo build() {
             return new NetworkRegistrationInfo(mDomain, mTransportType, mRegistrationState,
                     mAccessNetworkTechnology, mRejectCause, mEmergencyOnly, mAvailableServices,
