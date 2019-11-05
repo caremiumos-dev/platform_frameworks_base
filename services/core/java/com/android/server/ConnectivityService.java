@@ -648,7 +648,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
     static class LegacyTypeTracker {
 
         private static final boolean DBG = true;
-        private static final boolean VDBG = false;
+        private static final boolean VDBG = true;
 
         /**
          * Array of lists, one per legacy network type (e.g., TYPE_MOBILE_MMS).
