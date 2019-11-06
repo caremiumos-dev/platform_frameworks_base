@@ -238,4 +238,14 @@ public interface TelephonyProperties
      * Type: int
      */
     static final String PROPERTY_MAX_ACTIVE_MODEMS = "ro.telephony.max.active.modems";
+
+    /**
+     * Number of physical SIM slots on the device. This includes both eSIM and pSIM slots, and is
+     * not necessarily the same as the number of phones/logical modems supported by the device.
+     * For example, a multi-sim device can have 2 phones/logical modems, but 3 physical slots, or
+     * a single SIM device can have 1 phones/logical modems, but 2 physical slots (one eSIM and
+     * one pSIM)
+     * Type: int
+     */
+    static final String PROPERTY_PHYSICAL_SIM_SLOT_COUNT = "persist.radio.physical.slot.count";
 }
