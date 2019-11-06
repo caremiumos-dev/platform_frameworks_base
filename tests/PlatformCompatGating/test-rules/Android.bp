@@ -18,8 +18,9 @@ java_library {
     name: "platform-compat-test-rules",
     srcs: ["src/**/*.java"],
     static_libs: [
-        "junit",
-        "android-support-test",
+        "androidx.test.ext.junit",
+        "androidx.test.runner",
+        "androidx.test.rules",
         "truth-prebuilt",
         "core-compat-test-rules"
     ],

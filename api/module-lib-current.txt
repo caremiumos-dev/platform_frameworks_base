@@ -1,4 +1,14 @@
 // Signature format: 2.0
+package android.app.compat {
+
+  public final class CompatChanges {
+    method public static boolean isChangeEnabled(long);
+    method public static boolean isChangeEnabled(long, @NonNull String, android.os.UserHandle);
+    method public static boolean isChangeEnabled(long, int);
+  }
+
+}
+
 package android.app.timedetector {
 
   public final class PhoneTimeSuggestion implements android.os.Parcelable {

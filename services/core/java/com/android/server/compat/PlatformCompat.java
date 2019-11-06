@@ -16,6 +16,7 @@
 
 package com.android.server.compat;
 
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
 import android.content.Context;
@@ -98,7 +99,8 @@ public class PlatformCompat extends IPlatformCompat.Stub {
     }
 
     @Override
-    public boolean isChangeEnabledByPackageName(long changeId, String packageName, int userId) {
+    public boolean isChangeEnabledByPackageName(long changeId, String packageName,
+            @UserIdInt int userId) {
         ApplicationInfo appInfo = getApplicationInfo(packageName, userId);
         if (appInfo == null) {
             return true;

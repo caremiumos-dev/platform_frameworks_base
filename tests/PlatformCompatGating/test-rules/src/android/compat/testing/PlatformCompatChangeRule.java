@@ -22,7 +22,8 @@ import android.compat.Compatibility.ChangeConfig;
 import android.content.Context;
 import android.os.RemoteException;
 import android.os.ServiceManager;
-import android.support.test.InstrumentationRegistry;
+
+import androidx.test.InstrumentationRegistry;
 
 import com.android.internal.compat.CompatibilityChangeConfig;
 import com.android.internal.compat.IPlatformCompat;
