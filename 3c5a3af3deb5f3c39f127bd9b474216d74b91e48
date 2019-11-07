@@ -46,6 +46,30 @@
       "revId": "3c5a3af3deb5f3c39f127bd9b474216d74b91e48",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "98ba14bf_5a4e0f50",
+        "filename": "services/core/jni/com_android_server_VibratorService.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1121838
+      },
+      "writtenOn": "2019-11-07T19:16:59Z",
+      "side": 1,
+      "message": "If this is the case, the interface should be documented to explicitly say that \"the internal implementation is NOT thread safe; callers are responsible for locking\"",
+      "parentUuid": "d548048c_27efd051",
+      "range": {
+        "startLine": 103,
+        "startChar": 0,
+        "endLine": 106,
+        "endChar": 9
+      },
+      "revId": "3c5a3af3deb5f3c39f127bd9b474216d74b91e48",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
