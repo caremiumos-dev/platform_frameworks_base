@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dc2fb05f_ade32839",
+        "filename": "services/core/jni/com_android_server_VibratorService.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1120458
+      },
+      "writtenOn": "2019-11-07T02:09:17Z",
+      "side": 1,
+      "message": "does this need to be thread safe btw? or do you know if that\u0027s handled elsewhere?",
+      "range": {
+        "startLine": 103,
+        "startChar": 0,
+        "endLine": 106,
+        "endChar": 9
+      },
+      "revId": "3c5a3af3deb5f3c39f127bd9b474216d74b91e48",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
