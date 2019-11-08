@@ -294,7 +294,7 @@ java_defaults {
             "telecomm/java",
             "telephony/java",
             "wifi/java",
-            "packages/Tethering/common/TetheringLib/src/",
+            "packages/Tethering/apex/common/TetheringLib/src/",
         ],
     },
 }
@@ -813,7 +813,7 @@ subdirs = [
     "tools/*",
     "native/android",
     "native/graphics/jni",
-    "packages/Tethering/common/TetheringLib/",
+    "packages/Tethering/apex/common/TetheringLib/",
 ]
 
 optional_subdirs = [

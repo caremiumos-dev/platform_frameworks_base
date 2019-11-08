@@ -111,3 +111,19 @@ android_app {
     // The permission configuration *must* be included to ensure security of the device
     required: ["NetworkPermissionConfig"],
 }
+
+apex {
+    name: "com.android.tetheringstack",
+    java_libs: ["tethering-client"],
+    apps: ["Tethering"],
+    manifest: "manifest.json",
+    key: "com.android.tetheringstack.key",
+
+    androidManifest: "AndroidManifest-tethering.xml",
+}
+
+apex_key {
+    name: "com.android.tetheringstack.key",
+    public_key: "com.android.tetheringstack.avbpubkey",
+    private_key: "com.android.tetheringstack.pem",
+}
