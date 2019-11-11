@@ -107,6 +107,21 @@ public class PlatformCompat extends IPlatformCompat.Stub {
         return enabled;
     }
 
+    /**
+     * Register a listener for change state overrides. Only one listener per change is allowed.
+     *
+     * <p>{@code listener.onCompatChange(String)} method is guaranteed to be called with
+     * packageName before the app is killed upon an override change. The state of a change is not
+     * guaranteed to change when {@code listener.onCompatChange(String)} is called.
+     *
+     * @param changeId to get updates for
+     * @param listener the listener that will be called upon a potential change for package.
+     * @throws IllegalArgumentException if a listener was already registered for changeId
+     */
+    public void registerListener(long changeId, CompatChange.ChangeListener listener) {
+        CompatConfig.get().registerListener(changeId, listener);
+    }
+
     @Override
     public void setOverrides(CompatibilityChangeConfig overrides, String packageName) {
         CompatConfig.get().addOverrides(overrides, packageName);
@@ -121,7 +136,6 @@ public class PlatformCompat extends IPlatformCompat.Stub {
     @Override
     public void clearOverrides(String packageName) {
         CompatConfig config = CompatConfig.get();
-        config.removePackageOverrides(packageName);
         killPackage(packageName);
     }
 

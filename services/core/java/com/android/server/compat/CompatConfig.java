@@ -243,6 +243,20 @@ final class CompatConfig {
         }
     }
 
+    boolean registerListener(long changeId, CompatChange.ChangeListener listener) {
+        boolean alreadyKnown = true;
+        synchronized (mChanges) {
+            CompatChange c = mChanges.get(changeId);
+            if (c == null) {
+                alreadyKnown = false;
+                c = new CompatChange(changeId);
+                addChange(c);
+            }
+            c.registerListener(listener);
+        }
+        return alreadyKnown;
+    }
+
     /**
      * Dumps the current list of compatibility config information.
      *
