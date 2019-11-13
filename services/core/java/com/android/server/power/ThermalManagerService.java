@@ -16,6 +16,8 @@
 
 package com.android.server.power;
 
+import static android.os.Process.THREAD_PRIORITY_FOREGROUND;
+
 import android.annotation.Nullable;
 import android.content.Context;
 import android.hardware.thermal.V1_0.ThermalStatus;
@@ -25,6 +27,7 @@ import android.hardware.thermal.V2_0.IThermalChangedCallback;
 import android.hardware.thermal.V2_0.ThrottlingSeverity;
 import android.os.Binder;
 import android.os.CoolingDevice;
+import android.os.Handler;
 import android.os.HwBinder;
 import android.os.IThermalEventListener;
 import android.os.IThermalService;
@@ -46,6 +49,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
 import com.android.server.EventLogTags;
 import com.android.server.FgThread;
+import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 
 import java.io.FileDescriptor;
@@ -56,6 +60,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This is a system service that listens to HAL thermal events and dispatch those to listeners.
@@ -462,6 +467,14 @@ public class ThermalManagerService extends SystemService {
             }
         }
 
+        @Override
+        public float getThermalHeadroom(int forecastSeconds) {
+            if (!mHalReady.get()) {
+                return -1.0f;
+            }
+            return mHalWrapper.getThermalHeadroom(forecastSeconds);
+        }
+
         private void dumpItemsLocked(PrintWriter pw, String prefix,
                 Collection<?> items) {
             for (Iterator iterator = items.iterator(); iterator.hasNext();) {
@@ -616,6 +629,8 @@ public class ThermalManagerService extends SystemService {
         protected abstract List<CoolingDevice> getCurrentCoolingDevices(boolean shouldFilter,
                 int type);
 
+        protected abstract float getThermalHeadroom(int forecastSeconds);
+
         protected abstract boolean connectToHal();
 
         protected abstract void dump(PrintWriter pw, String prefix);
@@ -725,6 +740,11 @@ public class ThermalManagerService extends SystemService {
                 }
                 return ret;
             }
+        }
+
+        @Override
+        protected float getThermalHeadroom(int forecastSeconds) {
+            return -1.0f;
         }
 
         @Override
@@ -857,6 +877,11 @@ public class ThermalManagerService extends SystemService {
         }
 
         @Override
+        protected float getThermalHeadroom(int forecastSeconds) {
+            return -1.0f;
+        }
+
+        @Override
         protected boolean connectToHal() {
             synchronized (mHalLock) {
                 try {
@@ -974,6 +999,179 @@ public class ThermalManagerService extends SystemService {
             }
         }
 
+        static class TemperatureWatcher {
+            private android.hardware.thermal.V2_0.IThermal mHal;
+            private final Object mHalLock;
+            private final Handler mHandler;
+            private final ArrayList<Float> mSamples = new ArrayList<>();
+            float mThreshold = -1.0f;
+            long mLastForecastCallTimeMillis = 0;
+
+            TemperatureWatcher(Object halLock) {
+                mHalLock = halLock;
+                ServiceThread serviceThread = new ServiceThread(":tempWatcher",
+                        THREAD_PRIORITY_FOREGROUND, false);
+                serviceThread.start();
+                mHandler = new Handler(serviceThread.getLooper());
+            }
+
+            void setThreshold(float threshold) {
+                synchronized (mSamples) {
+                    mThreshold = threshold;
+                }
+            }
+
+            void setHal(android.hardware.thermal.V2_0.IThermal hal) {
+                synchronized (mHalLock) {
+                    mHal = hal;
+                }
+            }
+
+            void updateTemperature() {
+                synchronized (mSamples) {
+                    if (System.currentTimeMillis() - mLastForecastCallTimeMillis < 10000) {
+                        // Trigger this again as long as forecast has been called in the past
+                        // 10 seconds
+                        mHandler.postDelayed(this::updateTemperature, 1000);
+                    } else {
+                        // Otherwise, we've been idle for at least 10 seconds, so we should
+                        // shut down
+                        Slog.i(TAG, "Shutting down updates");
+                        mSamples.clear();
+                        return;
+                    }
+
+                    final AtomicReference<Float> skinTemperature = new AtomicReference<>(-1.0f);
+                    synchronized (mHalLock) {
+                        if (mHal == null) {
+                            mSamples.clear();
+                            mSamples.add(-1.0f);
+                            return;
+                        }
+
+                        try {
+                            Slog.i(TAG, "Getting current temperatures");
+                            mHal.getCurrentTemperatures(true, Temperature.TYPE_SKIN,
+                                    (status, temperatures) -> {
+                                        if (status.code != ThermalStatusCode.SUCCESS) {
+                                            return;
+                                        }
+                                        if (temperatures.isEmpty()) {
+                                            return;
+                                        }
+                                        skinTemperature.set(temperatures.get(0).value);
+                                    });
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Failed to getCurrentTemperatures");
+                        }
+                    }
+
+                    if (skinTemperature.get() != -1.0f) {
+                        mSamples.add(skinTemperature.get());
+                        if (mSamples.size() > 30) {
+                            mSamples.remove(0);
+                        }
+                    }
+                }
+            }
+
+            /*
+             * Calculates the trend using a linear regression
+             */
+            static float getSlopeOf(List<Float> elements) {
+                float sumX = (float) elements.size() * (elements.size() + 1) / 2;
+                float meanX = sumX / elements.size();
+
+                float sumY = 0.0f;
+                for (float element : elements) {
+                    sumY += element;
+                }
+                float meanY = sumY / elements.size();
+
+                float sdXNumerator = 0.0f;
+                for (int i = 1; i <= elements.size(); ++i) {
+                    float delta = i - meanX;
+                    sdXNumerator += delta * delta;
+                }
+                float sdX = (float) Math.sqrt(sdXNumerator / (elements.size() - 1));
+
+                float sdYNumerator = 0.0f;
+                for (float element : elements) {
+                    float delta = element - meanY;
+                    sdYNumerator += delta * delta;
+                }
+                float sdY = (float) Math.sqrt(sdYNumerator / (elements.size() - 1));
+
+                float covarianceNumerator = 0.0f;
+                int index = 1;
+                for (float element : elements) {
+                    float x = index - meanX;
+                    float y = element - meanY;
+                    covarianceNumerator += x * y;
+                    index += 1;
+                }
+
+                float covariance = covarianceNumerator / (elements.size() - 1);
+                return covariance * sdY / sdX;
+            }
+
+            static final float WINDOW_SIZE = 30.0f;
+            float normalizeTemperature(float temperature) {
+                synchronized (mSamples) {
+                    float baseline = mThreshold - WINDOW_SIZE;
+                    if (temperature <= baseline) {
+                        return 0.0f;
+                    }
+                    float delta = temperature - baseline;
+                    return delta / WINDOW_SIZE;
+                }
+            }
+
+            float getForecast(int forecastSeconds) {
+                synchronized (mSamples) {
+                    mLastForecastCallTimeMillis = System.currentTimeMillis();
+                    if (mSamples.size() == 0) {
+                        updateTemperature();
+                    }
+                    float currentTemperature = mSamples.get(mSamples.size() - 1);
+                    if (mSamples.size() == 1) {
+                        // Don't try to forecast, just return the one we have
+                        return normalizeTemperature(currentTemperature);
+                    }
+                    float slope = getSlopeOf(mSamples);
+                    return normalizeTemperature(currentTemperature + slope * forecastSeconds);
+                }
+            }
+        }
+
+        final TemperatureWatcher mTemperatureWatcher = new TemperatureWatcher(mHalLock);
+
+        @Override
+        protected float getThermalHeadroom(int forecastSeconds) {
+            return mTemperatureWatcher.getForecast(forecastSeconds);
+        }
+
+        float getSevereThreshold() {
+            try {
+                final AtomicReference<Float> severeThreshold = new AtomicReference<>(-1.0f);
+                mThermalHal20.getTemperatureThresholds(true, Temperature.TYPE_SKIN,
+                        (status, thresholds) -> {
+                            if (thresholds.isEmpty()) {
+                                return;
+                            }
+                            float[] temperatures = thresholds.get(0).hotThrottlingThresholds;
+                            if (temperatures.length <= ThrottlingSeverity.SEVERE) {
+                                return;
+                            }
+                            severeThreshold.set(temperatures[ThrottlingSeverity.SEVERE]);
+                        });
+                return severeThreshold.get();
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to getTemperatureThresholds");
+            }
+            return -1.0f;
+        }
+
         @Override
         protected boolean connectToHal() {
             synchronized (mHalLock) {
@@ -983,6 +1181,10 @@ public class ThermalManagerService extends SystemService {
                     mThermalHal20.registerThermalChangedCallback(mThermalCallback20, false,
                             0 /* not used */);
                     Slog.i(TAG, "Thermal HAL 2.0 service connected.");
+                    float severeThreshold = getSevereThreshold();
+                    Slog.i(TAG, "Found severe threshold " + severeThreshold);
+                    mTemperatureWatcher.setThreshold(severeThreshold);
+                    mTemperatureWatcher.setHal(mThermalHal20);
                 } catch (NoSuchElementException | RemoteException e) {
                     Slog.e(TAG, "Thermal HAL 2.0 service not connected.");
                     mThermalHal20 = null;
@@ -1000,5 +1202,4 @@ public class ThermalManagerService extends SystemService {
             }
         }
     }
-
 }

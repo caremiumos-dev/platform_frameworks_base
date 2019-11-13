@@ -1896,6 +1896,23 @@ public final class PowerManager {
     }
 
     /**
+     *
+     */
+    public float getThermalHeadroom(int forecastSeconds) {
+        synchronized (this) {
+            if (mThermalService == null) {
+                mThermalService = IThermalService.Stub.asInterface(
+                        ServiceManager.getService(Context.THERMAL_SERVICE));
+            }
+            try {
+                return mThermalService.getThermalHeadroom(forecastSeconds);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
      * If true, the doze component is not started until after the screen has been
      * turned off and the screen off animation has been performed.
      * @hide

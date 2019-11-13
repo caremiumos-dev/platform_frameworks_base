@@ -1123,3 +1123,9 @@ Todo: android.provider.ContactsContract.RawContacts#newEntityIterator(android.da
     
 Todo: android.telephony.CarrierConfigManager#KEY_USE_OTASP_FOR_PROVISIONING_BOOL:
     
+
+
+VisiblySynchronized: PsiThisExpression:this:
+    Internal locks must not be exposed (synchronizing on this or class is still externally observable): method android.os.PowerManager.getThermalHeadroom(int)
+VisiblySynchronized: android.os.PowerManager#getThermalHeadroom(int):
+    Internal locks must not be exposed (synchronizing on this or class is still externally observable): method android.os.PowerManager.getThermalHeadroom(int)

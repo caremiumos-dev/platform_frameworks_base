@@ -133,6 +133,11 @@ public class ThermalManagerServiceTest {
         }
 
         @Override
+        protected float getHeadroomForLoad(int status) {
+            return 0.987f;
+        }
+
+        @Override
         protected boolean connectToHal() {
             return true;
         }
