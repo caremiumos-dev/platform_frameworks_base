@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bdf18ba6_82b4f4c8",
+        "filename": "telephony/java/android/telephony/ServiceState.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 769,
+      "author": {
+        "id": 1054648
+      },
+      "writtenOn": "2019-11-14T18:07:00Z",
+      "side": 1,
+      "message": "let\u0027s not make this system api. Spoke to SongFerng and he\u0027s going to merge voice and data operators as there is no current usecase to have the 2 as separate values.",
+      "revId": "aca1e8b8b5f4c5fe30b0c11285a21c0fb753ae24",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
