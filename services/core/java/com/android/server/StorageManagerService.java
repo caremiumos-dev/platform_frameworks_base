@@ -2805,7 +2805,10 @@ class StorageManagerService extends IStorageManager.Stub
         if (StorageManager.isFileEncryptedNativeOrEmulated()) {
             // When a user has secure lock screen, require secret to actually unlock.
             // This check is mostly in place for emulation mode.
-            if (mLockPatternUtils.isSecure(userId) && ArrayUtils.isEmpty(secret)) {
+            final boolean duringUserspaceReboot = SystemProperties.getBoolean(
+                    "sys.init.userspace_reboot.in_progress", false);
+            if (mLockPatternUtils.isSecure(userId) && ArrayUtils.isEmpty(secret)
+                    && !duringUserspaceReboot) {
                 throw new IllegalStateException("Secret required to unlock secure user " + userId);
             }
 
