@@ -16,6 +16,24 @@
       "revId": "aca1e8b8b5f4c5fe30b0c11285a21c0fb753ae24",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "81d20749_a2b56aec",
+        "filename": "telephony/java/android/telephony/ServiceState.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 769,
+      "author": {
+        "id": 1141163
+      },
+      "writtenOn": "2019-11-14T18:26:20Z",
+      "side": 1,
+      "message": "Ok, if yes pls make the system UI change as well",
+      "parentUuid": "bdf18ba6_82b4f4c8",
+      "revId": "aca1e8b8b5f4c5fe30b0c11285a21c0fb753ae24",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
