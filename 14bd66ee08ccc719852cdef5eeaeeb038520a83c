@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6caf4e6a_ae3118ab",
+        "filename": "api/system-current.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 7989,
+      "author": {
+        "id": 1141163
+      },
+      "writtenOn": "2019-11-14T18:31:24Z",
+      "side": 1,
+      "message": "updating",
+      "range": {
+        "startLine": 7989,
+        "startChar": 35,
+        "endLine": 7989,
+        "endChar": 63
+      },
+      "revId": "14bd66ee08ccc719852cdef5eeaeeb038520a83c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
