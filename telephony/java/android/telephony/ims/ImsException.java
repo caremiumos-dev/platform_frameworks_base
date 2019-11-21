@@ -18,8 +18,6 @@ package android.telephony.ims;
 
 import android.annotation.IntDef;
 import android.annotation.Nullable;
-import android.annotation.SystemApi;
-import android.annotation.TestApi;
 import android.content.pm.PackageManager;
 import android.telephony.SubscriptionManager;
 import android.text.TextUtils;
@@ -30,10 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * This class defines an IMS-related exception that has been thrown while interacting with a
  * device or carrier provided ImsService implementation.
- * @hide
  */
-@SystemApi
-@TestApi
 public final class ImsException extends Exception {
 
     /**
