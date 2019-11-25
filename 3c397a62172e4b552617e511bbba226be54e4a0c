@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cf586715_3588b5d0",
+        "filename": "core/java/android/net/NetworkIdentity.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1141163
+      },
+      "writtenOn": "2019-11-25T23:22:00Z",
+      "side": 0,
+      "message": "Note: This is a dead code today as COMBINE_SUBTYPE_ENABLED is hard coded TRUE",
+      "range": {
+        "startLine": 101,
+        "startChar": 25,
+        "endLine": 102,
+        "endChar": 73
+      },
+      "revId": "3c397a62172e4b552617e511bbba226be54e4a0c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
