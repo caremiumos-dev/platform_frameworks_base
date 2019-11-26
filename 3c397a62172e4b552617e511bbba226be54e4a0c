@@ -22,6 +22,30 @@
       "revId": "3c397a62172e4b552617e511bbba226be54e4a0c",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b19f63a9_609ae8df",
+        "filename": "core/java/android/net/NetworkIdentity.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1141163
+      },
+      "writtenOn": "2019-11-26T06:08:34Z",
+      "side": 0,
+      "message": "Other option is to copy paste the entire implementation to this code but i think its not worth",
+      "parentUuid": "cf586715_3588b5d0",
+      "range": {
+        "startLine": 101,
+        "startChar": 25,
+        "endLine": 102,
+        "endChar": 73
+      },
+      "revId": "3c397a62172e4b552617e511bbba226be54e4a0c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
