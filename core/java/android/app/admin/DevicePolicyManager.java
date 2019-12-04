@@ -49,6 +49,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageParser;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.UserInfo;
 import android.graphics.Bitmap;
@@ -64,6 +65,7 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.ServiceSpecificException;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -93,6 +95,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.Preconditions;
 import com.android.org.conscrypt.TrustedCertificateStore;
+import com.android.server.devicepolicy.DevicePolicyManagerService;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -6936,6 +6939,27 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Tests the Bluetooth Contact sharing system API.
+     */
+    public void testBluetoothContactSharingDisabled() {
+        /*DevicePolicyManagerService service =
+                (DevicePolicyManagerService)ServiceManager.getService(Context.DEVICE_POLICY_SERVICE);
+        ComponentName admin = service.getDeviceOwnerComponent(false);
+        int userId = service.getDeviceOwnerUserId();
+        UserHandle userHandle = new UserHandle(userId);*/
+        int userId = myUserId();
+        UserHandle userHandle = new UserHandle(userId);
+        ComponentName admin = getProfileOwnerAsUser(userId);
+
+        setBluetoothContactSharingDisabled(admin, true);
+        assertTrue("DevicePolicyManager.getBluetoothContactSharingDisabled() must return true",
+                getBluetoothContactSharingDisabled(userHandle));
+        mDevicePolicyManager.setBluetoothContactSharingDisabled(admin, false);
+        assertFalse("DevicePolicyManager.getBluetoothContactSharingDisabled() must return false",
+                getBluetoothContactSharingDisabled(userHandle));
+    }
+
+    /**
      * Called by a profile owner of a managed profile to set whether bluetooth devices can access
      * enterprise contacts.
      * <p>
@@ -6993,7 +7017,7 @@ public class DevicePolicyManager {
      */
     @SystemApi
     @RequiresPermission(permission.INTERACT_ACROSS_USERS)
-    public boolean getBluetoothContactSharingDisabled(UserHandle userHandle) {
+    public boolean getBluetoothContactSharingDisabled(@NonNull UserHandle userHandle) {
         if (mService != null) {
             try {
                 return mService.getBluetoothContactSharingDisabledForUser(userHandle
