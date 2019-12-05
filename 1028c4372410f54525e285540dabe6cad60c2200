@@ -22,6 +22,30 @@
       "revId": "1028c4372410f54525e285540dabe6cad60c2200",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29e6acbf_b3c9c032",
+        "filename": "api/current.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 45655,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2019-12-05T19:07:16Z",
+      "side": 1,
+      "message": "Is there any reason why you can not use RegistrationManager equivalents of this?",
+      "parentUuid": "c929d84e_bdec9bdc",
+      "range": {
+        "startLine": 45655,
+        "startChar": 50,
+        "endLine": 45655,
+        "endChar": 70
+      },
+      "revId": "1028c4372410f54525e285540dabe6cad60c2200",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
