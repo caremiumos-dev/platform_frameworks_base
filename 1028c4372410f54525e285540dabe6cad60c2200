@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c929d84e_bdec9bdc",
+        "filename": "api/current.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 45655,
+      "author": {
+        "id": 1060151
+      },
+      "writtenOn": "2019-12-05T00:28:32Z",
+      "side": 1,
+      "message": "It seems weird to expose something in the public API that\u0027s marked deprecated. Can you talk to breadley@ and figure out what to do here?",
+      "range": {
+        "startLine": 45655,
+        "startChar": 50,
+        "endLine": 45655,
+        "endChar": 70
+      },
+      "revId": "1028c4372410f54525e285540dabe6cad60c2200",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
