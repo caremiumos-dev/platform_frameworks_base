@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "ba12dcf6_9e5b77f4",
+        "filename": "api/current.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 45923,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2019-12-06T20:57:04Z",
+      "side": 1,
+      "message": "These intdefs were mistakenly made @SystemApi, please keep them @SystemApi instead of making them public.",
+      "range": {
+        "startLine": 45918,
+        "startChar": 0,
+        "endLine": 45923,
+        "endChar": 3
+      },
+      "revId": "d9effb1195893580cb7dba0a8cd1f705ceed9da7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c7568a86_6885344e",
         "filename": "telephony/java/android/telephony/ims/feature/MmTelFeature.java",
         "patchSetId": 5
