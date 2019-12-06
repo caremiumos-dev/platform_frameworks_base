@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c7568a86_6885344e",
+        "filename": "telephony/java/android/telephony/ims/feature/MmTelFeature.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2019-12-06T20:55:01Z",
+      "side": 1,
+      "message": "Only MmTelFeature.MmTelCapabilities#CAPABILITY_TYPE_* need to be set as public, please keep the rest of the methods @SystemApi",
+      "range": {
+        "startLine": 222,
+        "startChar": 24,
+        "endLine": 222,
+        "endChar": 41
+      },
+      "revId": "d9effb1195893580cb7dba0a8cd1f705ceed9da7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
