@@ -29,6 +29,8 @@ import static android.net.NetworkCapabilities.TRANSPORT_CELLULAR;
 import static android.net.NetworkCapabilities.TRANSPORT_VPN;
 import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
 
+import static com.android.testutils.MiscAssertsKt.assertThrows;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -508,6 +510,28 @@ public class VpnTest {
         vpn.prepare(PKGS[0], null);
 
         assertFalse(vpn.prepare(PKGS[1], null));
+    }
+
+    @Test
+    public void testCheckCarrierVpnConfig() {
+        VpnConfig config = new VpnConfig();
+        config.allowBypass = false;
+        assertThrows(IllegalStateException.class, () -> Vpn.checkCarrierVpnConfig(config));
+
+        config.allowBypass = true;
+        config.allowedApplications = Arrays.asList(PKGS[0]);
+        assertThrows(IllegalStateException.class, () -> Vpn.checkCarrierVpnConfig(config));
+
+        config.allowBypass = true;
+        config.allowedApplications = null;
+        config.disallowedApplications = Arrays.asList(PKGS[0]);
+        assertThrows(IllegalStateException.class, () -> Vpn.checkCarrierVpnConfig(config));
+
+        config.allowBypass = true;
+        config.allowedApplications = null;
+        config.disallowedApplications = null;
+        config.isMetered = false;
+        assertThrows(IllegalStateException.class, () -> Vpn.checkCarrierVpnConfig(config));
     }
 
     @Test

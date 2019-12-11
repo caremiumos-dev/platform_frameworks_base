@@ -116,6 +116,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
 import android.app.AlarmManager;
+import android.app.AppOpsManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -316,6 +317,7 @@ public class ConnectivityServiceTest {
     @Mock UserManager mUserManager;
     @Mock NotificationManager mNotificationManager;
     @Mock AlarmManager mAlarmManager;
+    @Mock AppOpsManager mAppOpsManager;
 
     private ArgumentCaptor<ResolverParamsParcel> mResolverParamsParcelCaptor =
             ArgumentCaptor.forClass(ResolverParamsParcel.class);
@@ -399,6 +401,7 @@ public class ConnectivityServiceTest {
             if (Context.NETWORK_STACK_SERVICE.equals(name)) return mNetworkStack;
             if (Context.USER_SERVICE.equals(name)) return mUserManager;
             if (Context.ALARM_SERVICE.equals(name)) return mAlarmManager;
+            if (Context.APP_OPS_SERVICE.equals(name)) return mAppOpsManager;
             return super.getSystemService(name);
         }
 
@@ -4949,6 +4952,8 @@ public class ConnectivityServiceTest {
 
     @Test
     public void testVpnNetworkActive() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(anyInt(), anyInt(), anyString()))
+                .thenReturn(AppOpsManager.MODE_ALLOWED);
         final int uid = Process.myUid();
 
         final TestNetworkCallback genericNetworkCallback = new TestNetworkCallback();
@@ -5183,6 +5188,8 @@ public class ConnectivityServiceTest {
 
     @Test
     public void testVpnSetUnderlyingNetworks() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(anyInt(), anyInt(), anyString()))
+                .thenReturn(AppOpsManager.MODE_ALLOWED);
         final int uid = Process.myUid();
 
         final TestNetworkCallback vpnNetworkCallback = new TestNetworkCallback();
@@ -5428,6 +5435,8 @@ public class ConnectivityServiceTest {
 
    @Test
    public void testIsActiveNetworkMeteredOverVpnSpecifyingUnderlyingNetworks() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(anyInt(), anyInt(), anyString()))
+               .thenReturn(AppOpsManager.MODE_ALLOWED);
         // Returns true by default when no network is available.
         assertTrue(mCm.isActiveNetworkMetered());
         mCellNetworkAgent = new TestNetworkAgentWrapper(TRANSPORT_CELLULAR);

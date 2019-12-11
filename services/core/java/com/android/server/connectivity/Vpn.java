@@ -1057,6 +1057,10 @@ public class Vpn {
             if (!BIND_VPN_SERVICE.equals(info.serviceInfo.permission)) {
                 throw new SecurityException(config.user + " does not require " + BIND_VPN_SERVICE);
             }
+
+            if (!isVpnUserPreConsented(mPackage)) {
+                checkCarrierVpnConfig(config);
+            }
         } catch (RemoteException e) {
             throw new SecurityException("Cannot find " + config.user);
         } finally {
@@ -1148,6 +1152,24 @@ public class Vpn {
         }
         Log.i(TAG, "Established by " + config.user + " on " + mInterface);
         return tun;
+    }
+
+    @VisibleForTesting
+    protected static void checkCarrierVpnConfig(VpnConfig config) {
+        if (!config.allowBypass) {
+            throw new IllegalStateException("Carrier VPN must be bypassable VPN.");
+        }
+        if (!isEmptyApplicationList(config.allowedApplications)
+                || !isEmptyApplicationList(config.disallowedApplications)) {
+            throw new IllegalStateException("Carrier VPN cannot exclude any applications.");
+        }
+        if (!config.isMetered) {
+            throw new IllegalStateException("Carrier VPN must be marked as metered VPN.");
+        }
+    }
+
+    private static boolean isEmptyApplicationList(List<String> applicationList) {
+        return applicationList == null || applicationList.isEmpty();
     }
 
     @VisibleForTesting
@@ -1551,7 +1573,7 @@ public class Vpn {
      * ConnectivityService thread to get updated capabilities.
      */
     public synchronized boolean setUnderlyingNetworks(Network[] networks) {
-        if (!isCallerEstablishedOwnerLocked()) {
+        if (!isCallerEstablishedOwnerLocked() || !isVpnUserPreConsented(mPackage)) {
             return false;
         }
         if (networks == null) {
