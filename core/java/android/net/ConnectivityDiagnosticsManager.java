@@ -19,9 +19,13 @@ package android.net;
 import static android.system.OsConstants.AF_INET;
 import static android.system.OsConstants.AF_INET6;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.os.PersistableBundle;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -59,6 +63,16 @@ public class ConnectivityDiagnosticsManager {
 
     private static final int TRACEROUTE_IPV4_DEFAULT_PACKET_SIZE = 60;
     private static final int TRACEROUTE_IPV6_DEFAULT_PACKET_SIZE = 80;
+
+    public static final int DETECTION_METHOD_DNS_EVENTS = 1;
+    public static final int DETECTION_METHOD_TCP_METRICS = 2;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"DETECTION_METHOD_"},
+            value = {DETECTION_METHOD_DNS_EVENTS, DETECTION_METHOD_TCP_METRICS})
+    public @interface DetectionMethod {}
 
     /** @hide */
     public ConnectivityDiagnosticsManager() {}
@@ -410,5 +424,178 @@ public class ConnectivityDiagnosticsManager {
 
         // TODO(b/143189134): implement Route Diagnostics functionality
         throw new UnsupportedOperationException("requestRouteDiagnostics() not supported yet");
+    }
+
+    /** Class that includes connectivity information for a specific Network at a specific time. */
+    public static class ConnectivityReport {
+        /** The Network for which this ConnectivityReport applies */
+        @NonNull public final Network network;
+
+        /**
+         * The timestamp for the report. The timestamp is taken from {@link
+         * System#currentTimeMillis}.
+         */
+        public final long reportTimestamp;
+
+        /** LinkProperties available on the Network at the reported timestamp */
+        @NonNull public final LinkProperties linkProperties;
+
+        /** NetworkCapabilities available on the Network at the reported timestamp */
+        @NonNull public final NetworkCapabilities networkCapabilities;
+
+        /** PersistableBundle that may contain additional info about the report */
+        @NonNull public final PersistableBundle additionalInfo;
+
+        /**
+         * Constructor for ConnectivityReport.
+         *
+         * <p>Apps should obtain instances through {@link
+         * ConnectivityDiagnosticsCallback#onConnectivityReport} instead of instantiating their own
+         * instances (unless for testing purposes).
+         *
+         * @param network The Network for which this ConnectivityReport applies
+         * @param reportTimestamp The timestamp for the report
+         * @param linkProperties The LinkProperties available on network at reportTimestamp
+         * @param networkCapabilities The NetworkCapabilities available on network at
+         *     reportTimestamp
+         * @param additionalInfo A PersistableBundle that may contain additional info about the
+         *     report
+         */
+        public ConnectivityReport(
+                @NonNull Network network,
+                long reportTimestamp,
+                @NonNull LinkProperties linkProperties,
+                @NonNull NetworkCapabilities networkCapabilities,
+                @NonNull PersistableBundle additionalInfo) {
+            this.network = network;
+            this.reportTimestamp = reportTimestamp;
+            this.linkProperties = linkProperties;
+            this.networkCapabilities = networkCapabilities;
+            this.additionalInfo = additionalInfo;
+        }
+    }
+
+    /** Class that includes information for a suspected data stall on a specific Network */
+    public static class DataStallReport {
+        /** The Network for which this DataStallReport applies */
+        @NonNull public final Network network;
+
+        /**
+         * The timestamp for the report. The timestamp is taken from {@link
+         * System#currentTimeMillis}.
+         */
+        public final long reportTimestamp;
+
+        /** The detection method used to identify the suspected data stall */
+        @DetectionMethod public final int detectionMethod;
+
+        /** PersistableBundle that may contain additional information on the suspected data stall */
+        @NonNull public final PersistableBundle stallDetails;
+
+        /**
+         * Constructor for DataStallReport.
+         *
+         * <p>Apps should obtain instances through {@link
+         * ConnectivityDiagnosticsCallback#onDataStalled} instead of instantiating their own
+         * instances (unless for testing purposes).
+         *
+         * @param network The Network for which this DataStallReport applies
+         * @param reportTimestamp The timestamp for the report
+         * @param detectionMethod The detection method used to identify this data stall
+         * @param stallDetails A PersistableBundle that may contain additional info about the report
+         */
+        public DataStallReport(
+                @NonNull Network network,
+                long reportTimestamp,
+                @DetectionMethod int detectionMethod,
+                @NonNull PersistableBundle stallDetails) {
+            this.network = network;
+            this.reportTimestamp = reportTimestamp;
+            this.detectionMethod = detectionMethod;
+            this.stallDetails = stallDetails;
+        }
+    }
+
+    /**
+     * Abstract base class for Connectivity Diagnostics callbacks. Used for notifications about
+     * network connectivity events. Must be extended by applications wanting notifications.
+     */
+    public abstract static class ConnectivityDiagnosticsCallback {
+        /**
+         * Called when the platform completes a data connectivity check. This will also be invoked
+         * upon registration with the latest report.
+         *
+         * @param report The ConnectivityReport containing information about a connectivity check
+         */
+        void onConnectivityReport(ConnectivityReport report) {}
+
+        /**
+         * Called when the platform suspects a data stall on some Network.
+         *
+         * @param report The DataStallReport containing information about the suspected data stall
+         */
+        void onDataStalled(DataStallReport report) {}
+
+        /**
+         * Called when any app reports connectivity to the System.
+         *
+         * @param network The Network for which connectivity has been reported
+         * @param hasConnectivity The connectivity reported to the System
+         */
+        void onNetworkConnectivityReported(Network network, boolean hasConnectivity) {}
+    }
+
+    /**
+     * Registers a ConnectivityDiagnosticsCallback with the System.
+     *
+     * <p>Only apps that offer network connectivity to the user are allowed to register callbacks.
+     * This includes:
+     *
+     * <ul>
+     *   <li>Carrier apps with active subscriptions
+     *   <li>Active VPNs
+     *   <li>WiFi Suggesters
+     * </ul>
+     *
+     * <p>Callbacks will be limited to receiving notifications for networks over which apps provide
+     * connectivity.
+     *
+     * <p>If a registering app loses its relevant permissions, any callbacks it registered will
+     * silently stop receiving callbacks.
+     *
+     * <p>Each register() call <b>MUST</b> use a unique ConnectivityDiagnosticsCallback instance. If
+     * a single instance is registered with multiple NetworkRequests, an IllegalArgumentException
+     * will be thrown.
+     *
+     * @param request The NetworkRequest that will be used to match with Networks for which
+     *     callbacks will be fired
+     * @param callback The ConnectivityDiagnosticsCallback that the caller wants registered with the
+     *     System
+     * @param e The Executor to be used for running the callback method invocations
+     * @throws IllegalArgumentException if the same callback instance is registered with multiple
+     *     NetworkRequests
+     * @throws SecurityException if the caller does not have appropriate permissions to register a
+     *     callback
+     */
+    public void registerConnectivityDiagnosticsCallback(
+            @NonNull NetworkRequest request,
+            @NonNull ConnectivityDiagnosticsCallback callback,
+            @NonNull Executor e) {
+        // TODO(b/143187964): implement ConnectivityDiagnostics functionality
+        throw new UnsupportedOperationException("registerCallback() not supported yet");
+    }
+
+    /**
+     * Unregisters a ConnectivityDiagnosticsCallback with the System.
+     *
+     * <p>If the given callback is not currently registered with the System, this operation will be
+     * a no-op.
+     *
+     * @param callback The ConnectivityDiagnosticsCallback to be unregistered from the System.
+     */
+    public void unregisterConnectivityDiagnosticsCallback(
+            @NonNull ConnectivityDiagnosticsCallback callback) {
+        // TODO(b/143187964): implement ConnectivityDiagnostics functionality
+        throw new UnsupportedOperationException("registerCallback() not supported yet");
     }
 }
