@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "98f8dd3c_c4c4cce8",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1883,
+      "author": {
+        "id": 1304263
+      },
+      "writtenOn": "2019-12-11T06:44:21Z",
+      "side": 1,
+      "message": "Will you also update the logic for restrict background with tethering in other places?\ne.g. NetworkPolicyManagerService.",
+      "range": {
+        "startLine": 1883,
+        "startChar": 20,
+        "endLine": 1883,
+        "endChar": 47
+      },
+      "revId": "8a98b86f26569afd290aaa30d7d65cf1ead34675",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
