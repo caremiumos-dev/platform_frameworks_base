@@ -576,7 +576,7 @@ public class ConnectivityServiceTest {
                 }
             };
 
-            assertEquals(na.netId, nmNetworkCaptor.getValue().netId);
+            assertEquals(na.network.netId, nmNetworkCaptor.getValue().netId);
             mNmCallbacks = nmCbCaptor.getValue();
 
             mNmCallbacks.onNetworkMonitorCreated(mNetworkMonitor);

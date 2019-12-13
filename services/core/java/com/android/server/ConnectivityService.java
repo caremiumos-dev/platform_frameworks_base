@@ -5557,7 +5557,10 @@ public class ConnectivityService extends IConnectivityManager.Stub
     // changes that would conflict throughout the automerger graph. Having this method temporarily
     // helps with the process of going through with all these dependent changes across the entire
     // tree.
-    public int registerNetworkAgent(Messenger messenger, NetworkInfo networkInfo,
+    /**
+     * Register a new agent. {@see #registerNetworkAgent} below.
+     */
+    public Network registerNetworkAgent(Messenger messenger, NetworkInfo networkInfo,
             LinkProperties linkProperties, NetworkCapabilities networkCapabilities,
             int currentScore, NetworkMisc networkMisc) {
         return registerNetworkAgent(messenger, networkInfo, linkProperties, networkCapabilities,
@@ -5578,8 +5581,9 @@ public class ConnectivityService extends IConnectivityManager.Stub
      *         {@link NetworkAgentInfo#getCurrentScore}.
      * @param networkMisc metadata about the network. This is never updated.
      * @param factorySerialNumber the serial number of the factory owning this NetworkAgent.
+     * @return the network created for this agent.
      */
-    public int registerNetworkAgent(Messenger messenger, NetworkInfo networkInfo,
+    public Network registerNetworkAgent(Messenger messenger, NetworkInfo networkInfo,
             LinkProperties linkProperties, NetworkCapabilities networkCapabilities,
             int currentScore, NetworkMisc networkMisc, int factorySerialNumber) {
         enforceNetworkFactoryPermission();
@@ -5612,7 +5616,7 @@ public class ConnectivityService extends IConnectivityManager.Stub
         // If the network disconnects or sends any other event before that, messages are deferred by
         // NetworkAgent until nai.asyncChannel.connect(), which will be called when finalizing the
         // registration.
-        return nai.network.netId;
+        return nai.network;
     }
 
     private void handleRegisterNetworkAgent(NetworkAgentInfo nai, INetworkMonitor networkMonitor) {
