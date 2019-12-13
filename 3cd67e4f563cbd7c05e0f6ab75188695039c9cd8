@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2e0a83d0_3ca57128",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2019-12-13T19:04:28Z",
+      "side": 1,
+      "message": "All of these APIs that are being exposed need to also have carrier privilege checks in PhoneInterfaceManager.java or this will still not be accessible to carrier apps.\n\nAlso the docs need to be updated to mention that they are accessible via carrier privileges, for example, see TelephonyManager#getImei",
+      "range": {
+        "startLine": 293,
+        "startChar": 16,
+        "endLine": 293,
+        "endChar": 47
+      },
+      "revId": "3cd67e4f563cbd7c05e0f6ab75188695039c9cd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
