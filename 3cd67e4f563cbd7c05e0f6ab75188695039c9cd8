@@ -22,6 +22,30 @@
       "revId": "3cd67e4f563cbd7c05e0f6ab75188695039c9cd8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da650415_ebc16481",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2019-12-17T19:18:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2e0a83d0_3ca57128",
+      "range": {
+        "startLine": 293,
+        "startChar": 16,
+        "endLine": 293,
+        "endChar": 47
+      },
+      "revId": "3cd67e4f563cbd7c05e0f6ab75188695039c9cd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
