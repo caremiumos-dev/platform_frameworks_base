@@ -1511,7 +1511,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (credential != null) {
                 Slog.wtf(TAG, "CredentialType is none, but credential is non-null.");
             }
-            clearUserKeyProtection(userId);
+            clearUserKeyProtection(userId, null);
             getGateKeeperService().clearSecureUserId(userId);
             mStorage.writeCredentialHash(CredentialHash.createEmptyHash(), userId);
             setKeystorePassword(null, userId);
@@ -1688,9 +1688,17 @@ public class LockSettingsService extends ILockSettings.Stub {
         addUserKeyAuth(userId, token, secretFromCredential(credential));
     }
 
-    private void clearUserKeyProtection(int userId) throws RemoteException {
+    private void clearUserKeyProtection(int userId, byte[] secret) {
         if (DEBUG) Slog.d(TAG, "clearUserKeyProtection user=" + userId);
-        addUserKeyAuth(userId, null, null);
+        final UserInfo userInfo = mUserManager.getUserInfo(userId);
+        final long callingId = Binder.clearCallingIdentity();
+        try {
+            mStorageManager.clearUserKeyAuth(userId, userInfo.serialNumber, null, secret);
+        } catch (RemoteException e) {
+            throw new IllegalStateException("clearUserKeyAuth failed user=" + userId);
+        } finally {
+            Binder.restoreCallingIdentity(callingId);
+        }
     }
 
     private static byte[] secretFromCredential(byte[] credential) throws RemoteException {
@@ -2512,7 +2520,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             setAuthlessUserKeyProtection(userId, auth.deriveDiskEncryptionKey());
             setKeystorePassword(auth.deriveKeyStorePassword(), userId);
         } else {
-            clearUserKeyProtection(userId);
+            clearUserKeyProtection(userId, null);
             setKeystorePassword(null, userId);
             getGateKeeperService().clearSecureUserId(userId);
         }
@@ -2691,7 +2699,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             // during boot. Vold storage needs to be unlocked before manipulation of the keys can
             // succeed.
             unlockUserKey(userId, null, auth.deriveDiskEncryptionKey());
-            clearUserKeyProtection(userId);
+            clearUserKeyProtection(userId, auth.deriveDiskEncryptionKey());
             fixateNewestUserKeyAuth(userId);
             unlockKeystore(auth.deriveKeyStorePassword(), userId);
             setKeystorePassword(null, userId);
