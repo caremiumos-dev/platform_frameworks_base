@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fcd3e748_4071d9fd",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2019-12-18T22:38:45Z",
+      "side": 1,
+      "message": "Does this need to be a global lock? If we\u0027re not mutating anything on ConnectivityDiagnosticsManager.this, why not just lock on the callback?",
+      "range": {
+        "startLine": 164,
+        "startChar": 22,
+        "endLine": 164,
+        "endChar": 27
+      },
+      "revId": "384b044b61193660a6217712207535fa0240a268",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
