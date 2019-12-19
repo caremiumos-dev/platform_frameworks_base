@@ -22,6 +22,30 @@
       "revId": "384b044b61193660a6217712207535fa0240a268",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "60fd2c4c_bc9d5048",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2019-12-19T19:06:10Z",
+      "side": 1,
+      "message": "We don\u0027t want to lock on the callback because the client could also be synchronizing on the callback.\n\nUpdated to synchronize on the callback.mBinder (which is private, so the client *shouldn\u0027t* be synchronizing on it).",
+      "parentUuid": "fcd3e748_4071d9fd",
+      "range": {
+        "startLine": 164,
+        "startChar": 22,
+        "endLine": 164,
+        "endChar": 27
+      },
+      "revId": "384b044b61193660a6217712207535fa0240a268",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
