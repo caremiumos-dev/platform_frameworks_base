@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f3679b70_d3a1f7d5",
+        "filename": "api/current.txt",
+        "patchSetId": 13
+      },
+      "lineNbr": 45720,
+      "author": {
+        "id": 1060151
+      },
+      "writtenOn": "2019-12-26T17:44:50Z",
+      "side": 1,
+      "message": "in general, these should be MODIFY_PHONE_STATE since READ_PRIVILEGED is a System permission. @tgunn, thoughts on this? In practice I think it makes little difference... but it does require (technically) a functional change and API change to make this documentation work correctly. Grrr...",
+      "range": {
+        "startLine": 45720,
+        "startChar": 51,
+        "endLine": 45720,
+        "endChar": 78
+      },
+      "revId": "ec53d4db01285766f44127c8521f6efddd745053",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
