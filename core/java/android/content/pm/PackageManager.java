@@ -7380,6 +7380,18 @@ public abstract class PackageManager {
     }
 
     /**
+     * @return the system defined networkstack package names, or null if there's none.
+     *
+     * @hide
+     */
+    @Nullable
+    @TestApi
+    public String[] getNetworkStackPackageNames() {
+        throw new UnsupportedOperationException(
+                "getNetworkStackPackageNames not implemented in subclass");
+    }
+
+    /**
      * @return the system defined content capture service package name, or null if there's none.
      *
      * @hide

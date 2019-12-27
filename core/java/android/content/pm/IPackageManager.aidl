@@ -756,6 +756,8 @@ interface IPackageManager {
 
     String[] getTelephonyPackageNames();
 
+    String[] getNetworkStackPackageNames();
+
     String getAppPredictionServicePackageName();
 
     String getSystemCaptionsServicePackageName();

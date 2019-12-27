@@ -1449,6 +1449,7 @@ public class PackageManagerService extends IPackageManager.Stub
     final @Nullable String mAppPredictionServicePackage;
     final @Nullable String mIncidentReportApproverPackage;
     final @Nullable String[] mTelephonyPackages;
+    final @Nullable String[] mNetworkStackPackages;
     final @NonNull String mServicesSystemSharedLibraryPackageName;
     final @NonNull String mSharedSystemSharedLibraryPackageName;
 
@@ -3009,6 +3010,7 @@ public class PackageManagerService extends IPackageManager.Stub
             mAppPredictionServicePackage = getAppPredictionServicePackageName();
             mIncidentReportApproverPackage = getIncidentReportApproverPackageName();
             mTelephonyPackages = getTelephonyPackageNames();
+            mNetworkStackPackages = getNetworkStackPackageNames();
 
             // Now that we know all of the shared libraries, update all clients to have
             // the correct library paths.
@@ -20602,6 +20604,16 @@ public class PackageManagerService extends IPackageManager.Stub
     }
 
     @Override
+    public String[] getNetworkStackPackageNames() {
+        String names = mContext.getString(R.string.config_networkstackPackages);
+        String[] networkstackPackageNames = null;
+        if (!TextUtils.isEmpty(names)) {
+            networkstackPackageNames = names.trim().split(",");
+        }
+        return networkstackPackageNames;
+    }
+
+    @Override
     public void setApplicationEnabledSetting(String appPackageName,
             int newState, int flags, int userId, String callingPackage) {
         if (!sUserManager.exists(userId)) return;
@@ -23780,6 +23792,8 @@ public class PackageManagerService extends IPackageManager.Stub
                     return new String[]{mAppPredictionServicePackage};
                 case PackageManagerInternal.PACKAGE_TELEPHONY:
                     return mTelephonyPackages;
+                case PackageManagerInternal.PACKAGE_NETWORKSTACK:
+                    return mNetworkStackPackages;
             }
             return ArrayUtils.emptyArray(String.class);
         }

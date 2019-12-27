@@ -3130,6 +3130,15 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @Override
+    public String[] getNetworkStackPackageNames() {
+        try {
+            return mPM.getNetworkStackPackageNames();
+        } catch (RemoteException e) {
+            throw e.rethrowAsRuntimeException();
+        }
+    }
+
+    @Override
     public String getSystemCaptionsServicePackageName() {
         try {
             return mPM.getSystemCaptionsServicePackageName();

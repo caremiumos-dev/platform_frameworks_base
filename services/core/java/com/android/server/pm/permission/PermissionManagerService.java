@@ -1914,6 +1914,13 @@ public class PermissionManagerService {
                 // Special permissions for the system telephony apps.
                 allowed = true;
             }
+            if (!allowed && bp.isNetworkStack()
+                    && ArrayUtils.contains(mPackageManagerInt.getKnownPackageNames(
+                    PackageManagerInternal.PACKAGE_NETWORKSTACK, UserHandle.USER_SYSTEM),
+                    pkg.packageName)) {
+                // Special permissions for the system networkstack apps.
+                allowed = true;
+            }
         }
         return allowed;
     }
