@@ -1755,6 +1755,8 @@ public class ConnectivityManager {
      *     to find the network instead.
      * @hide
      */
+    @SystemApi
+    @Deprecated
     public static NetworkCapabilities networkCapabilitiesForType(int type) {
         final NetworkCapabilities nc = new NetworkCapabilities();
 
