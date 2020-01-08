@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6075c447_7be2fd50",
+        "filename": "telephony/java/android/telephony/CarrierConfigManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1591497
+      },
+      "writtenOn": "2020-01-08T20:30:10Z",
+      "side": 1,
+      "message": "please separate serviceclass with _\nI guess that would make it more readable",
+      "range": {
+        "startLine": 119,
+        "startChar": 13,
+        "endLine": 119,
+        "endChar": 53
+      },
+      "revId": "56e9a13d7511d56969b7554fdbe3c2ea5b71fcb4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
