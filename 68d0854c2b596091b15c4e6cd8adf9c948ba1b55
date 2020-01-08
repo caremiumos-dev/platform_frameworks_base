@@ -1,0 +1,377 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d5204c3d_4e749ab6",
+        "filename": "api/lint-baseline.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Shouldn\u0027t need to modify this file.",
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "526ecf9b_1ea72364",
+        "filename": "api/system-lint-baseline.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "There should be no need to make any changes here.",
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "80887cf2_4bec5aed",
+        "filename": "telecomm/java/android/telecom/Call.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1508,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Add @NonNull annotation since this is a required parameter (that will resolve the lint error you were seeing).",
+      "range": {
+        "startLine": 1508,
+        "startChar": 25,
+        "endLine": 1508,
+        "endChar": 28
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "914b0a45_60aa780b",
+        "filename": "telecomm/java/android/telecom/Call.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1517,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Add @NonNull annotation since this is a required parameter (that will resolve the lint error you were seeing).",
+      "range": {
+        "startLine": 1517,
+        "startChar": 25,
+        "endLine": 1517,
+        "endChar": 46
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "89f5a809_dee5075b",
+        "filename": "telecomm/java/android/telecom/Connection.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Do you want to communicate to the Dialer app the result of the transfer when its assured?  E.g. do we need new connection events like\nEVENT_TRANSFER_SUCCESS\nEVENT_TRANSFER_FAILURE\n?",
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "45be62a3_7d9f023c",
+        "filename": "telecomm/java/android/telecom/Connection.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 2895,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Add @NonNull annotation since this is a required parameter (that will resolve the lint error you were seeing).\n\nAdd javadoc for the parameters:\n@param number the number to transfer this {@link Connection} to.\n@param isConfirmationRequired when {@code true}, the {@link ConnectionService} should wait until the transfer has successfully completed before disconnecting the current {@link Connection}.  When {@code false}, the {@link ConnectionService} should signal the network to perform the transfer, but should immediately disconnect the call regardless of the outcome of the transfer.",
+      "range": {
+        "startLine": 2895,
+        "startChar": 27,
+        "endLine": 2895,
+        "endChar": 37
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a2d0f54_dd091f1c",
+        "filename": "telecomm/java/android/telecom/Connection.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 2900,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "For consistency with the android.telecom.Call APi lets just call this onTransfer(Connection otherConnection)\n\nAdd @NonNull annotation since this is a required parameter (that will resolve the lint error you were seeing).\n\nAdd:\n@param otherConnection the {@link Connection} to transfer this call to.",
+      "range": {
+        "startLine": 2900,
+        "startChar": 39,
+        "endLine": 2900,
+        "endChar": 65
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "261fa79a_965b08b7",
+        "filename": "telephony/java/android/telephony/CarrierConfigManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1911,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Make this a public key; important for mainline work.",
+      "range": {
+        "startLine": 1911,
+        "startChar": 7,
+        "endLine": 1911,
+        "endChar": 12
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "133d61db_60a9252f",
+        "filename": "telephony/java/android/telephony/ims/ImsCallSession.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "@NonNull",
+      "range": {
+        "startLine": 458,
+        "startChar": 42,
+        "endLine": 458,
+        "endChar": 44
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eeee7992_3af6af6a",
+        "filename": "telephony/java/android/telephony/ims/ImsCallSession.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Add @NonNull and @Nullable annotations.",
+      "range": {
+        "startLine": 462,
+        "startChar": 46,
+        "endLine": 462,
+        "endChar": 94
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3eb0ca15_6b2e4983",
+        "filename": "telephony/java/android/telephony/ims/ImsCallSession.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 816,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "Add @NonNull annotation to number.",
+      "range": {
+        "startLine": 816,
+        "startChar": 25,
+        "endLine": 816,
+        "endChar": 72
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87cedb1d_87355949",
+        "filename": "telephony/java/android/telephony/ims/ImsCallSession.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 832,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "transfer\n\nAdd @NonNull annotation to ImsCallSession parameter.",
+      "range": {
+        "startLine": 832,
+        "startChar": 16,
+        "endLine": 832,
+        "endChar": 36
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d84ac092_8fe10629",
+        "filename": "telephony/java/android/telephony/ims/compat/stub/ImsCallSessionImplBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "number, disconnecting the ongoing call when the transfer is complete\n\nNote: Document the impact of the isConfirmationRequired flag for this.",
+      "range": {
+        "startLine": 199,
+        "startChar": 45,
+        "endLine": 199,
+        "endChar": 6
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4175da41_e2cafaf0",
+        "filename": "telephony/java/android/telephony/ims/compat/stub/ImsCallSessionImplBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "an existing ongoing session. \n\nMake sure to indicate what happens to the call on the current device when this is complete; I presume it just disconnects locally.",
+      "range": {
+        "startLine": 210,
+        "startChar": 39,
+        "endLine": 210,
+        "endChar": 51
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f8c6afac_f196516a",
+        "filename": "telephony/java/android/telephony/ims/compat/stub/ImsCallSessionImplBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "copy/paste",
+      "range": {
+        "startLine": 212,
+        "startChar": 7,
+        "endLine": 214,
+        "endChar": 52
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a14919fd_70f2240a",
+        "filename": "telephony/java/android/telephony/ims/compat/stub/ImsCallSessionImplBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "transfer",
+      "range": {
+        "startLine": 217,
+        "startChar": 16,
+        "endLine": 217,
+        "endChar": 36
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "96c5920c_7ed47176",
+        "filename": "telephony/java/android/telephony/ims/stub/ImsCallSessionImplBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 445,
+      "author": {
+        "id": 1056478
+      },
+      "writtenOn": "2020-01-08T21:49:04Z",
+      "side": 1,
+      "message": "transfer",
+      "range": {
+        "startLine": 445,
+        "startChar": 16,
+        "endLine": 445,
+        "endChar": 36
+      },
+      "revId": "68d0854c2b596091b15c4e6cd8adf9c948ba1b55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
