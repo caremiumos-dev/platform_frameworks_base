@@ -22,6 +22,30 @@
       "revId": "12e8919aa43392af9e262e5c860eab8d9a3d743f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d55c2d9a_da6ea5ba",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-09T16:37:57Z",
+      "side": 1,
+      "message": "Maintaining a Set\u003cCallback\u003e is tricky, as we want to avoid any strong references that would prevent the Binder death from being triggered in ConnectivityService.\n\nI\u0027ve updated ConnectivityDiagnosticsBinder to have a lock object for accessing the executor and synchronize on it here.\n\nAnother option is to return a NetworkRequest from the register call to ConnectivityService, and store it in a synchronized static collection (similar to how ConnectivityManager handles callbacks).\n\nhttps://osscs.corp.google.com/android/platform/superproject/+/master:frameworks/base/core/java/android/net/ConnectivityManager.java;bpv\u003d1;bpt\u003d1;l\u003d3598?q\u003dConnectivityManager\u0026ss\u003dandroid%2Fplatform%2Fsuperproject",
+      "parentUuid": "f96134fb_e4a6428d",
+      "range": {
+        "startLine": 163,
+        "startChar": 10,
+        "endLine": 165,
+        "endChar": 13
+      },
+      "revId": "12e8919aa43392af9e262e5c860eab8d9a3d743f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
