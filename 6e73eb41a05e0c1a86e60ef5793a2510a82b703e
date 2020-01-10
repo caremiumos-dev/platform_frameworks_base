@@ -1,0 +1,188 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a344af5a_9d5b9a3f",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 5368,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "Provider I guess, as we\u0027re keeping this method",
+      "range": {
+        "startLine": 5368,
+        "startChar": 38,
+        "endLine": 5368,
+        "endChar": 45
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "95a1d6bd_43eed8ef",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 5378,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "NetworkProvider",
+      "range": {
+        "startLine": 5378,
+        "startChar": 26,
+        "endLine": 5378,
+        "endChar": 40
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5a3fedb0_02edcb49",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 5382,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "NetworkFactories ? The legacy ones are those that are not based on NetworkProvider.",
+      "range": {
+        "startLine": 5382,
+        "startChar": 22,
+        "endLine": 5382,
+        "endChar": 38
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d1fd5837_49c7c8d7",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 5383,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "Does this build ?",
+      "range": {
+        "startLine": 5383,
+        "startChar": 37,
+        "endLine": 5383,
+        "endChar": 41
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b2be47fe_cf59af7d",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 5408,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "Provider (also in l.5411 and 5414)",
+      "range": {
+        "startLine": 5408,
+        "startChar": 40,
+        "endLine": 5408,
+        "endChar": 47
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fe81f9df_3b7c4f72",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 6046,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "Provider (also in ll.6021, 6024, 6030 and 6045)",
+      "range": {
+        "startLine": 6046,
+        "startChar": 34,
+        "endLine": 6046,
+        "endChar": 40
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8a66ac36_efa336ce",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 6345,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "provider",
+      "range": {
+        "startLine": 6345,
+        "startChar": 50,
+        "endLine": 6345,
+        "endChar": 57
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "73ae4ef3_3b752ce8",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 6374,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-10T10:12:41Z",
+      "side": 1,
+      "message": "providers",
+      "range": {
+        "startLine": 6374,
+        "startChar": 61,
+        "endLine": 6374,
+        "endChar": 70
+      },
+      "revId": "6e73eb41a05e0c1a86e60ef5793a2510a82b703e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
