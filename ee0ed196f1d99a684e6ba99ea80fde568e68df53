@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "3f3c6261_e11ebfea",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 388,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-11T07:13:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "98c7ac1a_a0e58007",
+      "range": {
+        "startLine": 388,
+        "startChar": 33,
+        "endLine": 388,
+        "endChar": 46
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2dc03910_7ea13f59",
         "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
         "patchSetId": 9
@@ -45,6 +69,30 @@
       "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a5ca31a0_066f5919",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 411,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-11T07:13:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2dc03910_7ea13f59",
+      "range": {
+        "startLine": 408,
+        "startChar": 20,
+        "endLine": 411,
+        "endChar": 96
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "30526188_6b6c36e2",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-11T07:13:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "38b33781_a159eef8",
+      "range": {
+        "startLine": 444,
+        "startChar": 50,
+        "endLine": 444,
+        "endChar": 54
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a48b1695_62093344",
         "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
         "patchSetId": 9
@@ -94,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "10eca778_7dcf97b1",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-11T07:13:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a48b1695_62093344",
+      "range": {
+        "startLine": 136,
+        "startChar": 31,
+        "endLine": 136,
+        "endChar": 43
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6ec81994_7172349c",
         "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
         "patchSetId": 9
@@ -114,6 +210,30 @@
       "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f11d7c9_dec8d0a4",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-11T07:13:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6ec81994_7172349c",
+      "range": {
+        "startLine": 139,
+        "startChar": 20,
+        "endLine": 139,
+        "endChar": 34
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
