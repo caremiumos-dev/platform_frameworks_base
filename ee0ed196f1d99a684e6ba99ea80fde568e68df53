@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2dc03910_7ea13f59",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 411,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2020-01-11T02:49:45Z",
+      "side": 1,
+      "message": "These are the rare cases I\u0027d argue for overriding the auto-formatter, and putting them on fewer lines:\n\n                    Binder.withCleanCallingIdentity(() -\u003e {\n                            mExecutor.execute(() -\u003e {\n                                    mLocalCallback.onConnectivityReport(report)));\n                            });\n                    });\n\nOnly if you agree though",
+      "range": {
+        "startLine": 408,
+        "startChar": 20,
+        "endLine": 411,
+        "endChar": 96
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a48b1695_62093344",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2020-01-11T02:49:45Z",
+      "side": 1,
+      "message": "Suggest extracting this since we\u0027re using this in multiple places",
+      "range": {
+        "startLine": 136,
+        "startChar": 31,
+        "endLine": 136,
+        "endChar": 43
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6ec81994_7172349c",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2020-01-11T02:49:45Z",
+      "side": 1,
+      "message": "Since this test uses an inline executor, there should be no concurrency issues. We can probably just assert getCount() is 0.\n\nOtherwise this would make me think that there\u0027s potential for flaky behavior in this test based on the timeout.",
+      "range": {
+        "startLine": 139,
+        "startChar": 20,
+        "endLine": 139,
+        "endChar": 34
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
