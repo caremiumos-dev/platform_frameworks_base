@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "545d546d_167e430d",
+        "filename": "core/java/android/net/NetworkSpecifier.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1039103
+      },
+      "writtenOn": "2020-01-11T02:02:30Z",
+      "side": 1,
+      "message": "I think you want to add the @Deprecated tag - not replace the @SystemApi tag.",
+      "range": {
+        "startLine": 55,
+        "startChar": 5,
+        "endLine": 55,
+        "endChar": 15
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
