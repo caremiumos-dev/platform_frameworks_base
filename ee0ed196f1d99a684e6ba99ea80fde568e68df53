@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "98c7ac1a_a0e58007",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 388,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2020-01-11T02:57:41Z",
+      "side": 1,
+      "message": "Suggest flipping the order to make this adjacent to the executor (feel free to add line break if you want to make them a separate block",
+      "range": {
+        "startLine": 388,
+        "startChar": 33,
+        "endLine": 388,
+        "endChar": 46
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2dc03910_7ea13f59",
         "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
         "patchSetId": 9
@@ -18,6 +41,29 @@
         "startChar": 20,
         "endLine": 411,
         "endChar": 96
+      },
+      "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38b33781_a159eef8",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2020-01-11T02:57:41Z",
+      "side": 1,
+      "message": "Do we need to pass this? Could we name the binder methods with a \"Internal\" prefix or something, and just call the user-facing one directly?\n\nThis would probably mean the IBinder class can\u0027t be static, but I think that\u0027s reasonable if it\u0027s cleaner.\n\n(Maybe the executor could pop up one level too then, and we wouldn\u0027t have to do cb.mBinder.executor in subsequent CLs)",
+      "range": {
+        "startLine": 444,
+        "startChar": 50,
+        "endLine": 444,
+        "endChar": 54
       },
       "revId": "ee0ed196f1d99a684e6ba99ea80fde568e68df53",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
