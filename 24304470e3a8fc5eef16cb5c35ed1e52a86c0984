@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2c1dc0a1_b75d1f2f",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 22
+      },
+      "lineNbr": 572,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-13T22:22:15Z",
+      "side": 1,
+      "message": "These all should be @RequiresPermission(anyof \u003d {android.Manifest.permission.READ_PRECISE_PHONE_STATE,Manifest.permission.READ_PRIVILEGED_PHONE_STATE}).",
+      "range": {
+        "startLine": 572,
+        "startChar": 5,
+        "endLine": 572,
+        "endChar": 23
+      },
+      "revId": "24304470e3a8fc5eef16cb5c35ed1e52a86c0984",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
