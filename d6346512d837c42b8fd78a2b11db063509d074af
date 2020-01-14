@@ -25,6 +25,29 @@
     },
     {
       "key": {
+        "uuid": "609bdca5_1c7c5649",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2020-01-14T00:32:54Z",
+      "side": 1,
+      "message": "If this is a inline executor, it would make things easier to test.",
+      "range": {
+        "startLine": 57,
+        "startChar": 20,
+        "endLine": 57,
+        "endChar": 56
+      },
+      "revId": "d6346512d837c42b8fd78a2b11db063509d074af",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b5cdfa64_bb4d7992",
         "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
         "patchSetId": 10
