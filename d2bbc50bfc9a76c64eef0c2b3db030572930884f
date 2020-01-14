@@ -45,6 +45,54 @@
       "revId": "d2bbc50bfc9a76c64eef0c2b3db030572930884f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a8bf7f5f_e4f776d2",
+        "filename": "telephony/common/com/android/internal/telephony/TelephonyPermissions.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 666,
+      "author": {
+        "id": 1609802
+      },
+      "writtenOn": "2020-01-14T04:47:13Z",
+      "side": 1,
+      "message": "Yes, we will need a refactoring after b/145688189 and b/144374158 are cherry-pick to aosp/master",
+      "parentUuid": "458ec60f_8bbeb2e2",
+      "range": {
+        "startLine": 666,
+        "startChar": 12,
+        "endLine": 666,
+        "endChar": 16
+      },
+      "revId": "d2bbc50bfc9a76c64eef0c2b3db030572930884f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1d3d3779_18d13e82",
+        "filename": "telephony/common/com/android/internal/telephony/TelephonyPermissions.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 666,
+      "author": {
+        "id": 1609802
+      },
+      "writtenOn": "2020-01-14T04:47:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "130b6885_efea03e3",
+      "range": {
+        "startLine": 666,
+        "startChar": 37,
+        "endLine": 666,
+        "endChar": 47
+      },
+      "revId": "d2bbc50bfc9a76c64eef0c2b3db030572930884f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
