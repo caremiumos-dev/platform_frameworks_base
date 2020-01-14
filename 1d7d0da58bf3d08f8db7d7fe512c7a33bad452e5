@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "cbeacee4_e5f88c7c",
+        "filename": "core/java/android/net/NetworkFactory.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "I would much prefer something more structured than a Bundle. NetworkFactory#NetworkRequestInfo looks very much like what we\u0027d need, maybe we can use that by making it parcelable and system API ?",
+      "range": {
+        "startLine": 210,
+        "startChar": 24,
+        "endLine": 210,
+        "endChar": 30
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df3ac044_e87fa927",
+        "filename": "core/java/android/net/NetworkProvider.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "This change is not apparent in system-current.txt, did you forget to regenerate it ?",
+      "range": {
+        "startLine": 152,
+        "startChar": 16,
+        "endLine": 152,
+        "endChar": 34
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "545d546d_167e430d",
         "filename": "core/java/android/net/NetworkSpecifier.java",
         "patchSetId": 1
@@ -18,6 +64,144 @@
         "startChar": 5,
         "endLine": 55,
         "endChar": 15
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8228a9b5_8a8ffccb",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 605,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "Let\u0027s move this up one line",
+      "range": {
+        "startLine": 605,
+        "startChar": 4,
+        "endLine": 605,
+        "endChar": 5
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9af7213a_f35711ac",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 954,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "Don\u0027t we have a constant for this ?",
+      "range": {
+        "startLine": 954,
+        "startChar": 77,
+        "endLine": 954,
+        "endChar": 84
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "27f78ea2_97252b3a",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 4951,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "final please\n\n(but also hopefully change the bundle as per the previous comment)",
+      "range": {
+        "startLine": 4951,
+        "startChar": 12,
+        "endLine": 4951,
+        "endChar": 19
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11e13dc5_f6ab20b5",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 4967,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "unused",
+      "range": {
+        "startLine": 4967,
+        "startChar": 20,
+        "endLine": 4967,
+        "endChar": 23
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "34cf67df_f55e7b34",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 4970,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "\u003e 100",
+      "range": {
+        "startLine": 4970,
+        "startChar": 100,
+        "endLine": 4970,
+        "endChar": 102
+      },
+      "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "84eafb14_a4c84f72",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 6067,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-14T21:13:53Z",
+      "side": 1,
+      "message": "As this is only used in one place and inside DBG, let\u0027s inline (or at least move inside the if() and make final)",
+      "range": {
+        "startLine": 6067,
+        "startChar": 23,
+        "endLine": 6067,
+        "endChar": 37
       },
       "revId": "1d7d0da58bf3d08f8db7d7fe512c7a33bad452e5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
