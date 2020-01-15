@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a8bb6d08_30bd6e07",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-15T03:35:03Z",
+      "side": 1,
+      "message": "The mutable executor here means that our current api for registerConnectivityDiagnosticsCallback() still works.\n\nIf we want to avoid the mutability here, we can try to have a static Map\u003cConnectivityDiagnosticsBinder, Executor\u003e. However, this means we will be using strong references on the IBinders, so app deaths won\u0027t trigger the Binder.DeathRecipient behavior in ConnectivityService (defined in aosp/1200998). We can use WeakReference\u003cConnectivityDiagnosticsBinder\u003e, but these don\u0027t override hashCode() so storing them in an easily accessible way gets tricky.\n\nThese approach seems to be the best compromise immediately available from what I can tell. Thoughts?",
+      "range": {
+        "startLine": 393,
+        "startChar": 8,
+        "endLine": 397,
+        "endChar": 9
+      },
+      "revId": "18b0e3cf58337298d5ab038752b606dab00f38a3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
