@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "54cba1ce_8d367b39",
+        "filename": "telephony/common/com/android/internal/telephony/TelephonyPermissions.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 579,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-15T21:24:20Z",
+      "side": 1,
+      "message": "nit: most places are using enforce vs enforece",
+      "range": {
+        "startLine": 579,
+        "startChar": 23,
+        "endLine": 579,
+        "endChar": 31
+      },
+      "revId": "606a24df7846d00510b93e351dd13ef954cbcfd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
