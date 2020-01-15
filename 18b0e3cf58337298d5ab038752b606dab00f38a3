@@ -22,6 +22,30 @@
       "revId": "18b0e3cf58337298d5ab038752b606dab00f38a3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "42d435c3_22d44800",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1221725
+      },
+      "writtenOn": "2020-01-15T06:24:36Z",
+      "side": 1,
+      "message": "Adding on to that, the user must hold the primary reference to the binder interface (ConnDiagBinder), or the binder would be cleaned up immediately. This (somewhat) precludes our having the binder be generated during the registerConnectivityDiagnosticsCallback(), unless we then store that in the user\u0027s ConnectivityDiagnosticsCallback instance (mutable field, similar to mutable executor)\n\nMinor correction from above: App deaths will trigger the Binder.DeathRecipient, but anything short of the app dying may result in ConnectivityDiagnosticsManager not being GC\u0027d, and therefore holding on to the references.",
+      "parentUuid": "a8bb6d08_30bd6e07",
+      "range": {
+        "startLine": 393,
+        "startChar": 8,
+        "endLine": 397,
+        "endChar": 9
+      },
+      "revId": "18b0e3cf58337298d5ab038752b606dab00f38a3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
