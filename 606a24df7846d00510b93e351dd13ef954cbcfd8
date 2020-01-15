@@ -22,6 +22,30 @@
       "revId": "606a24df7846d00510b93e351dd13ef954cbcfd8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f2a6755_283ffcd2",
+        "filename": "telephony/common/com/android/internal/telephony/TelephonyPermissions.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 579,
+      "author": {
+        "id": 1609802
+      },
+      "writtenOn": "2020-01-15T21:29:03Z",
+      "side": 1,
+      "message": "Ack. \nif we want to unify them, let\u0027s use a new bug to do it. this can avoid confusion.\nThanks",
+      "parentUuid": "54cba1ce_8d367b39",
+      "range": {
+        "startLine": 579,
+        "startChar": 23,
+        "endLine": 579,
+        "endChar": 31
+      },
+      "revId": "606a24df7846d00510b93e351dd13ef954cbcfd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
