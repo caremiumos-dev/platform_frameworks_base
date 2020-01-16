@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b6fcba4d_d9b29339",
+        "filename": "telephony/java/android/telephony/ims/stub/ImsUtImplBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T04:47:39Z",
+      "side": 1,
+      "message": "Would it also be possible to set ImsUtInterface constants to these values?",
+      "range": {
+        "startLine": 46,
+        "startChar": 28,
+        "endLine": 46,
+        "endChar": 53
+      },
+      "revId": "5e6059a7bdc3cf08affd179b0c83bc7f3aa771ad",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b45f35fb_a3faddf1",
+        "filename": "telephony/java/android/telephony/ims/stub/ImsUtImplBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T04:47:39Z",
+      "side": 1,
+      "message": "Are you planning on exposing ImsUtInterface.CDIV_CF* in a separate CL?",
+      "range": {
+        "startLine": 96,
+        "startChar": 22,
+        "endLine": 96,
+        "endChar": 35
+      },
+      "revId": "5e6059a7bdc3cf08affd179b0c83bc7f3aa771ad",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
