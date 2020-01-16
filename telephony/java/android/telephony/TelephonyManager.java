@@ -5209,17 +5209,7 @@ public class TelephonyManager {
             if (registry != null) {
                 // subId from PhoneStateListener is deprecated Q on forward, use the subId from
                 // TelephonyManager instance. keep using subId from PhoneStateListener for pre-Q.
-                int subId = mSubId;
-                if (VMRuntime.getRuntime().getTargetSdkVersion() >= Build.VERSION_CODES.Q) {
-                    // since mSubId in PhoneStateListener is deprecated from Q on forward, this is
-                    // the only place to set mSubId and its for "informational" only.
-                    //  TODO: remove this once we completely get rid of mSubId in PhoneStateListener
-                    listener.mSubId = (events == PhoneStateListener.LISTEN_NONE)
-                            ? SubscriptionManager.INVALID_SUBSCRIPTION_ID : subId;
-                } else if (listener.mSubId != null) {
-                    subId = listener.mSubId;
-                }
-                registry.listenForSubscriber(subId, getOpPackageName(), getFeatureId(),
+                registry.listenForSubscriber(mSubId, getOpPackageName(), getFeatureId(),
                         listener.callback, events, notifyNow);
             } else {
                 Rlog.w(TAG, "telephony registry not ready.");

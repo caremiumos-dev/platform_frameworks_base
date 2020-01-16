@@ -27,6 +27,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
+import android.compat.Compatibility;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -741,10 +744,28 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         listen(callingPackage, callingFeatureId, callback, events, notifyNow, subId);
     }
 
+    /**
+     * To check the SDK version for {@link #listen}.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.P)
+    private static final long LISTEN_CODE_CHANGE = 147600208L;
+
     private void listen(String callingPackage, @Nullable String callingFeatureId,
             IPhoneStateListener callback, int events, boolean notifyNow, int subId) {
         int callerUserId = UserHandle.getCallingUserId();
         mAppOps.checkPackage(Binder.getCallingUid(), callingPackage);
+
+        if (Compatibility.isChangeEnabled(LISTEN_CODE_CHANGE)) {
+            // since mSubId in PhoneStateListener is deprecated from Q on forward, this is
+            // the only place to set mSubId and its for "informational" only.
+            //  TODO: remove this once we completely get rid of mSubId in PhoneStateListener
+            callback.mSubId = (events == PhoneStateListener.LISTEN_NONE)
+                    ? SubscriptionManager.INVALID_SUBSCRIPTION_ID : subId;
+        } else if (callback.mSubId != null) {
+            subId = callback.mSubId;
+        }
+
         String str = "listen: E pkg=" + callingPackage + " events=0x" + Integer.toHexString(events)
                 + " notifyNow=" + notifyNow + " subId=" + subId + " myUserId="
                 + UserHandle.myUserId() + " callerUserId=" + callerUserId;
