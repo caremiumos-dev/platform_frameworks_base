@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c4ec1fdf_c2de0b5f",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-16T15:35:59Z",
+      "side": 1,
+      "message": "This object never needs access to the binder (the member is unused and will stay unused AFAICT), but you have to make the binder a non-static inner class so that it has a ref to this and to create it very early for no good reason that I can see. How about doing it the other way around ?\n\n  static class CDBinder extends Stub {\n    final CDC mCallback;\n    final Executor mExecutor;\n    public CDBinder(final CDC callback, final Executor executor) {\n      mCallback \u003d callback;\n      mExecutor \u003d executor;\n    }\n    /* The current code of the binder */\n  }\n\n  public void registerConnectivityDiagnosticsCallback(\n            @NonNull NetworkRequest request,\n            @NonNull Executor e,\n            @NonNull ConnectivityDiagnosticsCallback callback) {\n    final CDBinder binder \u003d new CDBinder(callback, e);\n    ...\n  }",
+      "range": {
+        "startLine": 393,
+        "startChar": 20,
+        "endLine": 393,
+        "endChar": 31
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cd1d2e15_f9044d2d",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-16T15:35:59Z",
+      "side": 1,
+      "message": "Make this final and initialize it inline",
+      "range": {
+        "startLine": 50,
+        "startChar": 12,
+        "endLine": 50,
+        "endChar": 20
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "019feb7b_b1b88e2f",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-16T15:35:59Z",
+      "side": 1,
+      "message": "What you\u0027ve written is fine, but wouldn\u0027t it have been simpler to just make a mock ?\n\n  final CDC cb \u003d mock(CDC.class);\n  cb.mBinder.onConnectivityReport(create());\n  verify(cb).onConnectivityReport(eq(create()));",
+      "range": {
+        "startLine": 213,
+        "startChar": 46,
+        "endLine": 213,
+        "endChar": 48
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "169cb3a5_49a049e4",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-16T15:35:59Z",
+      "side": 1,
+      "message": "Nit (as I don\u0027t think it\u0027s unclear here, so you don\u0027t have to address) : go/avoidwe",
+      "range": {
+        "startLine": 223,
+        "startChar": 92,
+        "endLine": 223,
+        "endChar": 94
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
