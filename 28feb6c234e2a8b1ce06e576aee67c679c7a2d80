@@ -1,0 +1,257 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b7bd253c_aa905356",
+        "filename": "api/current.txt",
+        "patchSetId": 24
+      },
+      "lineNbr": 46262,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "This class shouldnt be set to public, i think you only need MmTelFeature.MmTelCapabilities",
+      "range": {
+        "startLine": 46262,
+        "startChar": 15,
+        "endLine": 46262,
+        "endChar": 27
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "90e07404_9bba2f4b",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "Needs to also be @TestApi for CTS testing.",
+      "range": {
+        "startLine": 100,
+        "startChar": 5,
+        "endLine": 100,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3dd5240e_5531a814",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "Is this preferred for documentation?",
+      "range": {
+        "startLine": 145,
+        "startChar": 27,
+        "endLine": 145,
+        "endChar": 30
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6527a174_64e46417",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "Needs @TestApi for CTS testing.",
+      "range": {
+        "startLine": 277,
+        "startChar": 5,
+        "endLine": 277,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "838980c8_4d114e39",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 349,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "Needs @TestApi for CTS testing.",
+      "range": {
+        "startLine": 349,
+        "startChar": 5,
+        "endLine": 349,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7b5a47ea_a220a851",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "Need @TestApi for CTS testing.",
+      "range": {
+        "startLine": 393,
+        "startChar": 5,
+        "endLine": 393,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9711d27b_e2679996",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "Requires @TestApi as well",
+      "range": {
+        "startLine": 671,
+        "startChar": 5,
+        "endLine": 671,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "41a8f773_d70293fe",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 699,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "Requires @TestApi as well",
+      "range": {
+        "startLine": 699,
+        "startChar": 5,
+        "endLine": 699,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a32c5fd5_981a8574",
+        "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "This is not needed, please remove",
+      "range": {
+        "startLine": 138,
+        "startChar": 13,
+        "endLine": 142,
+        "endChar": 22
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bc533b89_0d415d01",
+        "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "This should stay @hide. We do not want to expose this.",
+      "range": {
+        "startLine": 211,
+        "startChar": 9,
+        "endLine": 211,
+        "endChar": 18
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3e38f1c5_59f78d8f",
+        "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 289,
+      "author": {
+        "id": 1098053
+      },
+      "writtenOn": "2020-01-16T21:37:19Z",
+      "side": 1,
+      "message": "The usages of this method are public, should also public?",
+      "range": {
+        "startLine": 289,
+        "startChar": 5,
+        "endLine": 289,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
