@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9e824314_ed61ae88",
+        "filename": "api/current.txt",
+        "patchSetId": 24
+      },
+      "lineNbr": 46262,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done for others.\n\nHide MmTelFeature() constructor would break \n\nframeworks/opt/telephony/src/java/com/android/internal/telephony/ims/MmTelFeatureCompatAdapter.java:285",
+      "parentUuid": "b7bd253c_aa905356",
+      "range": {
+        "startLine": 46262,
+        "startChar": 15,
+        "endLine": 46262,
+        "endChar": 27
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "90e07404_9bba2f4b",
         "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
         "patchSetId": 24
@@ -45,6 +69,30 @@
       "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cbfde479_1b9ff205",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "90e07404_9bba2f4b",
+      "range": {
+        "startLine": 100,
+        "startChar": 5,
+        "endLine": 100,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "e57fa1c3_b1d1de50",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "yes, to be consistent with others",
+      "parentUuid": "3dd5240e_5531a814",
+      "range": {
+        "startLine": 145,
+        "startChar": 27,
+        "endLine": 145,
+        "endChar": 30
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6527a174_64e46417",
         "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
         "patchSetId": 24
@@ -91,6 +163,30 @@
       "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87724b8f_7fb0735a",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6527a174_64e46417",
+      "range": {
+        "startLine": 277,
+        "startChar": 5,
+        "endLine": 277,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "a1b91add_32de7744",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 349,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "838980c8_4d114e39",
+      "range": {
+        "startLine": 349,
+        "startChar": 5,
+        "endLine": 349,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7b5a47ea_a220a851",
         "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
         "patchSetId": 24
@@ -137,6 +257,30 @@
       "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9f42aeac_4849405c",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7b5a47ea_a220a851",
+      "range": {
+        "startLine": 393,
+        "startChar": 5,
+        "endLine": 393,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -163,6 +307,30 @@
     },
     {
       "key": {
+        "uuid": "2c286083_f362e494",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9711d27b_e2679996",
+      "range": {
+        "startLine": 671,
+        "startChar": 5,
+        "endLine": 671,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "41a8f773_d70293fe",
         "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
         "patchSetId": 24
@@ -183,6 +351,30 @@
       "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5e404831_4f634ed2",
+        "filename": "telephony/java/android/telephony/ims/ImsMmTelManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 699,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "41a8f773_d70293fe",
+      "range": {
+        "startLine": 699,
+        "startChar": 5,
+        "endLine": 699,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -209,6 +401,30 @@
     },
     {
       "key": {
+        "uuid": "d2e2a4c3_7253be1c",
+        "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a32c5fd5_981a8574",
+      "range": {
+        "startLine": 138,
+        "startChar": 13,
+        "endLine": 142,
+        "endChar": 22
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bc533b89_0d415d01",
         "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
         "patchSetId": 24
@@ -232,6 +448,30 @@
     },
     {
       "key": {
+        "uuid": "897e1832_0543760e",
+        "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bc533b89_0d415d01",
+      "range": {
+        "startLine": 211,
+        "startChar": 9,
+        "endLine": 211,
+        "endChar": 18
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3e38f1c5_59f78d8f",
         "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
         "patchSetId": 24
@@ -252,6 +492,30 @@
       "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ec64ec90_47b2fcc6",
+        "filename": "telephony/java/android/telephony/ims/RegistrationManager.java",
+        "patchSetId": 24
+      },
+      "lineNbr": 289,
+      "author": {
+        "id": 1269899
+      },
+      "writtenOn": "2020-01-17T04:04:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3e38f1c5_59f78d8f",
+      "range": {
+        "startLine": 289,
+        "startChar": 5,
+        "endLine": 289,
+        "endChar": 14
+      },
+      "revId": "28feb6c234e2a8b1ce06e576aee67c679c7a2d80",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
