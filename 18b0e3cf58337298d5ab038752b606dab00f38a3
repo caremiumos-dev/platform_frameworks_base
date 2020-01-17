@@ -46,6 +46,30 @@
       "revId": "18b0e3cf58337298d5ab038752b606dab00f38a3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c1bd110b_9d3d1c33",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-17T17:56:46Z",
+      "side": 1,
+      "message": "Per our sync yesterday, switching implementation so CDBinder contains a CDCallback instance so that the callback and executor are both final. Marking done.",
+      "parentUuid": "42d435c3_22d44800",
+      "range": {
+        "startLine": 393,
+        "startChar": 8,
+        "endLine": 397,
+        "endChar": 9
+      },
+      "revId": "18b0e3cf58337298d5ab038752b606dab00f38a3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }

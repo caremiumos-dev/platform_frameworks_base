@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "cbba460c_13076d0d",
+        "filename": "core/java/android/net/ConnectivityDiagnosticsManager.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-17T17:56:46Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "c4ec1fdf_c2de0b5f",
+      "range": {
+        "startLine": 393,
+        "startChar": 20,
+        "endLine": 393,
+        "endChar": 31
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cd1d2e15_f9044d2d",
         "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
         "patchSetId": 12
@@ -45,6 +69,30 @@
       "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c153397e_3750bd98",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-17T17:56:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cd1d2e15_f9044d2d",
+      "range": {
+        "startLine": 50,
+        "startChar": 12,
+        "endLine": 50,
+        "endChar": 20
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "69379b88_f9eb0499",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-17T17:56:46Z",
+      "side": 1,
+      "message": "I don\u0027t think it\u0027s valid to reference a field on a mock - running this causes NPEs. Using a spy is also not possible here, as you can only verify functionality called directly on the spy object.\n\nThis changed with the Callback-Binder refactor (b/147848028). Done.",
+      "parentUuid": "019feb7b_b1b88e2f",
+      "range": {
+        "startLine": 213,
+        "startChar": 46,
+        "endLine": 213,
+        "endChar": 48
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "169cb3a5_49a049e4",
         "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
         "patchSetId": 12
@@ -82,6 +154,30 @@
       "writtenOn": "2020-01-16T15:35:59Z",
       "side": 1,
       "message": "Nit (as I don\u0027t think it\u0027s unclear here, so you don\u0027t have to address) : go/avoidwe",
+      "range": {
+        "startLine": 223,
+        "startChar": 92,
+        "endLine": 223,
+        "endChar": 94
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "94d941c4_1e37f6cf",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-17T17:56:46Z",
+      "side": 1,
+      "message": "Done. I\u0027ll keep this in mind for future comments",
+      "parentUuid": "169cb3a5_49a049e4",
       "range": {
         "startLine": 223,
         "startChar": 92,
