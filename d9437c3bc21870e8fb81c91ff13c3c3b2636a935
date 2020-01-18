@@ -143,6 +143,30 @@
     },
     {
       "key": {
+        "uuid": "dd4ca982_cc6286e7",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-01-18T04:18:26Z",
+      "side": 1,
+      "message": "You\u0027re right, you\u0027d have had to mock the binder object instead. Moot anyway, sorry",
+      "parentUuid": "69379b88_f9eb0499",
+      "range": {
+        "startLine": 213,
+        "startChar": 46,
+        "endLine": 213,
+        "endChar": 48
+      },
+      "revId": "d9437c3bc21870e8fb81c91ff13c3c3b2636a935",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "169cb3a5_49a049e4",
         "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
         "patchSetId": 12
