@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "4700f193_e35a6810",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 15
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-21T01:45:03Z",
+      "side": 1,
+      "message": "Ack. Filed b/148010019 for cleanup later.",
+      "parentUuid": "839101b0_f49fc722",
+      "range": {
+        "startLine": 61,
+        "startChar": 14,
+        "endLine": 61,
+        "endChar": 18
+      },
+      "revId": "efdeef51eabbf57e484eeb8b66159ce5daa1b4bf",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ed1acd15_7ebe2836",
         "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
         "patchSetId": 15
@@ -36,6 +60,30 @@
       "writtenOn": "2020-01-18T04:18:26Z",
       "side": 1,
       "message": "While not wrong these tests provide very little value. Maybe they could check for the callback to actually be called on the executor, but it wouldn\u0027t be much more valuable. Maybe they\u0027ll be enriched in the future.\n\nFine for now anyway.",
+      "range": {
+        "startLine": 220,
+        "startChar": 16,
+        "endLine": 220,
+        "endChar": 71
+      },
+      "revId": "efdeef51eabbf57e484eeb8b66159ce5daa1b4bf",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "151151c6_61373f58",
+        "filename": "tests/net/java/android/net/ConnectivityDiagnosticsManagerTest.java",
+        "patchSetId": 15
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1463964
+      },
+      "writtenOn": "2020-01-21T01:45:03Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ed1acd15_7ebe2836",
       "range": {
         "startLine": 220,
         "startChar": 16,
