@@ -101,13 +101,12 @@ public class CellularTile extends QSTileImpl<SignalState> {
 
     @Override
     protected void handleClick() {
-        if (getState().state == Tile.STATE_UNAVAILABLE) {
-            return;
-        }
-        if (mDataController.isMobileDataEnabled()) {
-            maybeShowDisableDialog();
-        } else {
-            mDataController.setMobileDataEnabled(true);
+        if (getState().state == Tile.STATE_ACTIVE || getState().state == Tile.STATE_INACTIVE) {
+            if (mDataController.isMobileDataEnabled()) {
+                maybeShowDisableDialog();
+            } else {
+                mDataController.setMobileDataEnabled(true);
+            }
         }
     }
 
@@ -178,9 +177,6 @@ public class CellularTile extends QSTileImpl<SignalState> {
         if (cb.noSim) {
             state.state = Tile.STATE_UNAVAILABLE;
             state.secondaryLabel = r.getString(R.string.keyguard_missing_sim_message_short);
-        } else if (cb.airplaneModeEnabled) {
-            state.state = Tile.STATE_UNAVAILABLE;
-            state.secondaryLabel = r.getString(R.string.status_bar_airplane);
         } else if (mobileDataEnabled) {
             state.state = Tile.STATE_ACTIVE;
             state.secondaryLabel = appendMobileDataType(
@@ -192,6 +188,12 @@ public class CellularTile extends QSTileImpl<SignalState> {
             state.secondaryLabel = r.getString(R.string.cell_data_off);
         }
 
+        if (cb.airplaneModeEnabled && android.provider.Settings.Global.getString(
+                mContext.getContentResolver(), android.provider.Settings.Global.AIRPLANE_MODE_RADIOS)
+                .contains(android.provider.Settings.Global.RADIO_CELL)) {
+            state.state = Tile.STATE_UNAVAILABLE;
+            state.secondaryLabel = r.getString(R.string.status_bar_airplane);
+        }
 
         // TODO(b/77881974): Instead of switching out the description via a string check for
         // we need to have two strings provided by the MobileIconGroup.

@@ -100,9 +100,9 @@ public class MobileSignalController extends SignalController<
     // TODO: Reduce number of vars passed in, if we have the NetworkController, probably don't
     // need listener lists anymore.
     public MobileSignalController(Context context, Config config, boolean hasMobileData,
-            TelephonyManager phone, CallbackHandler callbackHandler,
-            NetworkControllerImpl networkController, SubscriptionInfo info,
-            SubscriptionDefaults defaults, Looper receiverLooper) {
+                                  TelephonyManager phone, CallbackHandler callbackHandler,
+                                  NetworkControllerImpl networkController, SubscriptionInfo info,
+                                  SubscriptionDefaults defaults, Looper receiverLooper) {
         super("MobileSignalController(" + info.getSubscriptionId() + ")", context,
                 NetworkCapabilities.TRANSPORT_CELLULAR, callbackHandler,
                 networkController);
@@ -337,7 +337,11 @@ public class MobileSignalController extends SignalController<
 
         // Show icon in QS when we are connected or data is disabled.
         boolean showDataIcon = mCurrentState.dataConnected || dataDisabled;
-        IconState statusIcon = new IconState(mCurrentState.enabled && !mCurrentState.airplaneMode,
+        IconState statusIcon = new IconState(mCurrentState.enabled &&
+                (!mCurrentState.airplaneMode ||
+                        !android.provider.Settings.Global.getString(mContext.getContentResolver(),
+                                android.provider.Settings.Global.AIRPLANE_MODE_RADIOS)
+                                .contains(android.provider.Settings.Global.RADIO_CELL)),
                 getCurrentIconId(), contentDescription);
 
         int qsTypeIcon = 0;
@@ -451,7 +455,7 @@ public class MobileSignalController extends SignalController<
      * Updates the network's name based on incoming spn and plmn.
      */
     void updateNetworkName(boolean showSpn, String spn, String dataSpn,
-            boolean showPlmn, String plmn) {
+                           boolean showPlmn, String plmn) {
         if (CHATTY) {
             Log.d("CarrierLabel", "updateNetworkName showSpn=" + showSpn
                     + " spn=" + spn + " dataSpn=" + dataSpn
@@ -775,8 +779,8 @@ public class MobileSignalController extends SignalController<
         final int mQsDataType;
 
         public MobileIconGroup(String name, int[][] sbIcons, int[][] qsIcons, int[] contentDesc,
-                int sbNullState, int qsNullState, int sbDiscState, int qsDiscState,
-                int discContentDesc, int dataContentDesc, int dataType, boolean isWide) {
+                               int sbNullState, int qsNullState, int sbDiscState, int qsDiscState,
+                               int discContentDesc, int dataContentDesc, int dataType, boolean isWide) {
             super(name, sbIcons, qsIcons, contentDesc, sbNullState, qsNullState, sbDiscState,
                     qsDiscState, discContentDesc);
             mDataContentDescription = dataContentDesc;
