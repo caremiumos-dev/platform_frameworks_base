@@ -538,6 +538,22 @@ public class NetworkInfo implements Parcelable {
         }
     }
 
+    /** Returns a brief summary string suitable for debugging. @hide */
+    public String toShortString() {
+        synchronized (this) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getTypeName()).append("[").append(getSubtypeName()).append("] ");
+            builder.append(mDetailedState);
+            if (mIsRoaming) {
+                builder.append(" ROAMING");
+            }
+            if (mExtraInfo != null) {
+                builder.append(" extra: ").append(mExtraInfo);
+            }
+            return builder.toString();
+        }
+    }
+
     @Override
     public int describeContents() {
         return 0;
