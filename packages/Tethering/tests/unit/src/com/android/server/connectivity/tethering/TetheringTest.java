@@ -163,7 +163,8 @@ public class TetheringTest {
     private static final String TEST_MOBILE_IFNAME = "test_rmnet_data0";
     private static final String TEST_XLAT_MOBILE_IFNAME = "v4-test_rmnet_data0";
     private static final String TEST_USB_IFNAME = "test_rndis0";
-    private static final String TEST_WLAN_IFNAME = "test_wlan0";
+    private static final String TEST_WIFI_IFNAME = "test_wlan0";
+    private static final String TEST_WLAN_IFNAME = "test_wlan1";
     private static final String TEST_P2P_IFNAME = "test_p2p-p2p0-0";
     private static final String TEST_NCM_IFNAME = "test_ncm0";
     private static final String TETHERING_NAME = "Tethering";
@@ -1624,6 +1625,41 @@ public class TetheringTest {
         assertEquals(serverAddr, intToInet4AddressHTH(params.serverAddr).getHostAddress());
         assertEquals(24, params.serverAddrPrefixLength);
         assertEquals(clientAddrParceled, params.clientAddr);
+    }
+
+    private static UpstreamNetworkState buildV4WifiUpstreamState(String ipv4Address) {
+        final LinkProperties prop = new LinkProperties();
+        prop.setInterfaceName(TEST_WIFI_IFNAME);
+
+        prop.addLinkAddress(
+                new LinkAddress(InetAddresses.parseNumericAddress(ipv4Address),
+                        NetworkConstants.IPV4_ADDR_BITS));
+
+        final NetworkCapabilities capabilities = new NetworkCapabilities()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        return new UpstreamNetworkState(prop, capabilities, new Network(200));
+    }
+
+    @Test
+    public void testHandleIpConflict() throws Exception {
+        UpstreamNetworkState upstreamNetwork = null;
+        runUsbTethering(upstreamNetwork);
+        final ArgumentCaptor<InterfaceConfigurationParcel> ifaceConfigCaptor =
+                ArgumentCaptor.forClass(InterfaceConfigurationParcel.class);
+        verify(mNetd).interfaceSetCfg(ifaceConfigCaptor.capture());
+        final String ipv4Address = ifaceConfigCaptor.getValue().ipv4Addr;
+        verify(mDhcpServer, timeout(DHCPSERVER_START_TIMEOUT_MS).times(1)).startWithCallbacks(
+                any(), any());
+        reset(mNetd, mUsbManager);
+        upstreamNetwork = buildV4WifiUpstreamState(ipv4Address);
+        mTethering.getTetherMasterSM().sendMessage(Tethering.TetherMasterSM.EVENT_UPSTREAM_CALLBACK,
+                UpstreamNetworkMonitor.EVENT_ON_LINKPROPERTIES, 0, upstreamNetwork);
+        mLooper.dispatchAll();
+        // verify trun off usb tethering
+        verify(mUsbManager).setCurrentFunctions(UsbManager.FUNCTION_NONE);
+        mTethering.interfaceRemoved(TEST_USB_IFNAME);
+        // verify restart usb tethering
+        verify(mUsbManager).setCurrentFunctions(UsbManager.FUNCTION_RNDIS);
     }
 
     // TODO: Test that a request for hotspot mode doesn't interfere with an
