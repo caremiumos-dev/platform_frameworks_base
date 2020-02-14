@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.om.OverlayInfo;
+import android.util.Pair;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -131,13 +132,13 @@ public class OverlayManagerServiceImplTests extends OverlayManagerServiceImplTes
 
         assertOverlayInfoForTarget(TARGET, USER, o1, o2, o3);
 
-        assertTrue(impl.setLowestPriority(OVERLAY3, USER));
+        assertResultOk(impl.setLowestPriority(OVERLAY3, USER), TARGET, USER);
         assertOverlayInfoForTarget(TARGET, USER, o3, o1, o2);
 
-        assertTrue(impl.setHighestPriority(OVERLAY3, USER));
+        assertResultOk(impl.setHighestPriority(OVERLAY3, USER), TARGET, USER);
         assertOverlayInfoForTarget(TARGET, USER, o1, o2, o3);
 
-        assertTrue(impl.setPriority(OVERLAY, OVERLAY2, USER));
+        assertResultOk(impl.setPriority(OVERLAY, OVERLAY2, USER), TARGET, USER);
         assertOverlayInfoForTarget(TARGET, USER, o2, o1, o3);
     }
 
@@ -153,7 +154,7 @@ public class OverlayManagerServiceImplTests extends OverlayManagerServiceImplTes
         installNewPackage(target, USER);
         assertState(STATE_DISABLED, OVERLAY, USER);
 
-        impl.setEnabled(OVERLAY, true, USER);
+        assertResultOk(impl.setEnabled(OVERLAY, true, USER), TARGET, USER);
         assertState(STATE_ENABLED, OVERLAY, USER);
 
         // target upgrades do not change the state of the overlay
@@ -169,45 +170,32 @@ public class OverlayManagerServiceImplTests extends OverlayManagerServiceImplTes
 
     @Test
     public void testOnOverlayPackageUpgraded() {
-        final FakeListener listener = getListener();
         final FakeDeviceState.PackageBuilder target = target(TARGET);
         final FakeDeviceState.PackageBuilder overlay = overlay(OVERLAY, TARGET);
         installNewPackage(target, USER);
         installNewPackage(overlay, USER);
-        listener.count = 0;
         upgradePackage(overlay, USER);
-        assertEquals(2, listener.count);
 
         // upgrade to a version where the overlay has changed its target
-        // expect once for the old target package, once for the new target package
-        listener.count = 0;
         final FakeDeviceState.PackageBuilder overlay2 = overlay(OVERLAY, "some.other.target");
-        upgradePackage(overlay2, USER);
-        assertEquals(3, listener.count);
-
-        listener.count = 0;
-        upgradePackage(overlay2, USER);
-        assertEquals(2, listener.count);
+        final Pair<Result, Result> results = upgradePackage(overlay2, USER);
+        assertResultOk(results.first, TARGET, USER);
+        assertResultOk(results.second, "some.other.target", USER);
     }
 
     @Test
-    public void testListener() {
+    public void testResult() {
         final OverlayManagerServiceImpl impl = getImpl();
-        final FakeListener listener = getListener();
-        installNewPackage(overlay(OVERLAY, TARGET), USER);
-        assertEquals(1, listener.count);
-        listener.count = 0;
+        assertResultError(impl.setEnabled(OVERLAY, true, USER));
 
+        // request succeeded, and there was a change that needs to be
+        // propagated to the rest of the system
         installNewPackage(target(TARGET), USER);
-        assertEquals(1, listener.count);
-        listener.count = 0;
+        installNewPackage(overlay(OVERLAY, TARGET), USER);
+        assertResultOk(impl.setEnabled(OVERLAY, true, USER), TARGET, USER);
 
-        impl.setEnabled(OVERLAY, true, USER);
-        assertEquals(1, listener.count);
-        listener.count = 0;
-
-        impl.setEnabled(OVERLAY, true, USER);
-        assertEquals(0, listener.count);
+        // request succeeded, but nothing changed
+        assertResultOk(impl.setEnabled(OVERLAY, true, USER));
     }
 
     @Test

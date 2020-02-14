@@ -16,12 +16,17 @@
 
 package com.android.server.om;
 
+import static com.android.server.om.Result.TYPE_ERROR;
+import static com.android.server.om.Result.TYPE_OK;
+import static com.android.server.om.Result.TYPE_OK_WITH_DATA;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
+import android.annotation.UserIdInt;
 import android.content.om.OverlayInfo;
 import android.content.om.OverlayInfo.State;
 import android.content.om.OverlayableInfo;
@@ -30,6 +35,7 @@ import android.content.pm.PackageInfo;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
@@ -49,7 +55,6 @@ import java.util.stream.Collectors;
 class OverlayManagerServiceImplTestsBase {
     private OverlayManagerServiceImpl mImpl;
     private FakeDeviceState mState;
-    private FakeListener mListener;
     private FakePackageManagerHelper mPackageManager;
     private FakeIdmapDaemon mIdmapDaemon;
     private OverlayConfig mOverlayConfig;
@@ -58,7 +63,6 @@ class OverlayManagerServiceImplTestsBase {
     @Before
     public void setUp() {
         mState = new FakeDeviceState();
-        mListener = new FakeListener();
         mPackageManager = new FakePackageManagerHelper(mState);
         mIdmapDaemon = new FakeIdmapDaemon(mState);
         mOverlayConfig = mock(OverlayConfig.class);
@@ -73,16 +77,11 @@ class OverlayManagerServiceImplTestsBase {
                 new IdmapManager(mIdmapDaemon, mPackageManager),
                 new OverlayManagerSettings(),
                 mOverlayConfig,
-                new String[0],
-                mListener);
+                new String[0]);
     }
 
     OverlayManagerServiceImpl getImpl() {
         return mImpl;
-    }
-
-    FakeListener getListener() {
-        return mListener;
     }
 
     FakeIdmapDaemon getIdmapd() {
@@ -114,6 +113,21 @@ class OverlayManagerServiceImplTestsBase {
                 mImpl.getOverlayInfosForTarget(targetPackageName, userId);
         final List<OverlayInfo> actual = Arrays.asList(overlayInfos);
         assertEquals(expected, actual);
+    }
+
+    void assertResultOk(@NonNull Result result) {
+        assertEquals(result.type, TYPE_OK);
+    }
+
+    void assertResultOk(@NonNull Result result, @NonNull String packageName,
+            @UserIdInt int userId) {
+        assertEquals(result.type, TYPE_OK_WITH_DATA);
+        assertEquals(result.packageName, packageName);
+        assertEquals(result.userId, userId);
+    }
+
+    void assertResultError(@NonNull Result result) {
+        assertEquals(result.type, TYPE_ERROR);
     }
 
     FakeDeviceState.PackageBuilder app(String packageName) {
@@ -176,23 +190,29 @@ class OverlayManagerServiceImplTestsBase {
      * {@link android.content.Intent#ACTION_PACKAGE_ADDED} broadcast with the
      * {@link android.content.Intent#EXTRA_REPLACING} extra.
      *
+     * @return the two Results from starting and finishing the upgrade
+     *
      * @throws IllegalStateException if the package is not currently installed
      */
-    void upgradePackage(FakeDeviceState.PackageBuilder pkg, int userId) {
+    Pair<Result, Result> upgradePackage(FakeDeviceState.PackageBuilder pkg, int userId) {
         final FakeDeviceState.Package replacedPackage = mState.select(pkg.packageName, userId);
         if (replacedPackage == null) {
             throw new IllegalStateException("package " + pkg.packageName + " not installed");
         }
+        Result r1 = null;
         if (replacedPackage.targetPackageName != null) {
-            mImpl.onOverlayPackageReplacing(pkg.packageName, userId);
+            r1 = mImpl.onOverlayPackageReplacing(pkg.packageName, userId);
         }
 
         mState.add(pkg, userId);
+        Result r2;
         if (pkg.targetPackage == null) {
-            mImpl.onTargetPackageReplaced(pkg.packageName, userId);
+            r2 = mImpl.onTargetPackageReplaced(pkg.packageName, userId);
         } else {
-            mImpl.onOverlayPackageReplaced(pkg.packageName, userId);
+            r2 = mImpl.onOverlayPackageReplaced(pkg.packageName, userId);
         }
+
+        return Pair.create(r1, r2);
     }
 
     /**
@@ -483,14 +503,6 @@ class OverlayManagerServiceImplTestsBase {
                         && expectedTargetPath.equals(targetPath) && expectedPolicies == policies
                         && expectedEnforceOverlayable == enforceOverlayable;
             }
-        }
-    }
-
-    static class FakeListener implements OverlayManagerServiceImpl.OverlayChangeListener {
-        public int count;
-
-        public void onOverlaysChanged(@NonNull String targetPackage, int userId) {
-            count++;
         }
     }
 }
