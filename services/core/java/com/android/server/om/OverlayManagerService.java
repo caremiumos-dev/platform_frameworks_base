@@ -24,6 +24,8 @@ import static android.content.Intent.ACTION_PACKAGE_REMOVED;
 import static android.content.Intent.ACTION_USER_ADDED;
 import static android.content.Intent.ACTION_USER_REMOVED;
 import static android.content.Intent.EXTRA_REASON;
+import static android.content.om.OverlayManagerTransaction.Request.TYPE_SET_DISABLED;
+import static android.content.om.OverlayManagerTransaction.Request.TYPE_SET_ENABLED;
 import static android.content.pm.PackageManager.SIGNATURE_MATCH;
 import static android.os.Trace.TRACE_TAG_RRO;
 import static android.os.Trace.traceBegin;
@@ -39,6 +41,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.om.IOverlayManager;
 import android.content.om.OverlayInfo;
+import android.content.om.OverlayManagerTransaction;
 import android.content.om.OverlayableInfo;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageInfo;
@@ -87,6 +90,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Service to manage asset overlays.
@@ -779,6 +783,166 @@ public final class OverlayManagerService extends SystemService {
         }
 
         @Override
+        public boolean commit(@NonNull final OverlayManagerTransaction transaction)
+                throws RemoteException {
+            try {
+                traceBegin(TRACE_TAG_RRO, "OMS#commit " + transaction);
+                return commitTraced(transaction);
+            } finally {
+                traceEnd(TRACE_TAG_RRO);
+            }
+        }
+
+        private @NonNull List<OverlayManagerTransaction.Request> vetTransaction(
+                @NonNull final OverlayManagerTransaction transaction) {
+            final List<OverlayManagerTransaction.Request> vettedTransaction = new ArrayList<>();
+            for (final OverlayManagerTransaction.Request request : transaction) {
+                if (request.packageName == null) {
+                    throw new IllegalArgumentException("missing package name: " + request);
+                }
+                switch (request.type) {
+                    case TYPE_SET_ENABLED:
+                    case TYPE_SET_DISABLED:
+                        final int realUserId =
+                                handleIncomingUser(request.userId, request.typeToString());
+                        enforceActor(request.packageName, request.typeToString(), realUserId);
+                        vettedTransaction.add(
+                                new OverlayManagerTransaction.Request(request.type,
+                                    request.packageName, realUserId));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("unsupported request: " + request);
+                }
+            }
+            return vettedTransaction;
+        }
+
+        private List<Result> executeRequest(OverlayManagerTransaction.Request request) {
+            List<Result> results = new ArrayList<>(2);
+            switch (request.type) {
+                case TYPE_SET_ENABLED:
+                    results.add(mImpl.setEnabled(request.packageName, true, request.userId));
+                    results.add(mImpl.setHighestPriority(request.packageName, request.userId));
+                    break;
+                case TYPE_SET_DISABLED:
+                    results.add(mImpl.setEnabled(request.packageName, false, request.userId));
+                    break;
+                default:
+                    throw new IllegalArgumentException("unsupported request: " + request);
+            }
+            return results;
+        }
+
+        private boolean commitTraced(
+                @NonNull final OverlayManagerTransaction transaction) {
+            if (DEBUG) {
+                Slog.d(TAG, "commit " + transaction);
+            }
+            if (transaction == null) {
+                throw new IllegalArgumentException("null transaction");
+            }
+
+            // First, loop through the requests once to check caller's
+            // permissions, invalid arguments and resolve userIds. Also, narrow
+            // the scope to only the overlays the caller has access to.
+            final List<OverlayManagerTransaction.Request> vettedTransaction =
+                    vetTransaction(transaction);
+
+            // Second, obtain the lock, switch to system_server and execute the vetted requests
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                // map: userId -> set<targetPackageName>
+                SparseArray<Set<String>> targetsToUpdate = new SparseArray<>();
+
+                synchronized (mLock) {
+                    // execute the requests
+                    for (final OverlayManagerTransaction.Request request : vettedTransaction) {
+                        for (final Result result : executeRequest(request)) {
+                            switch (result.type) {
+                                case Result.TYPE_OK_WITH_DATA:
+                                    if (targetsToUpdate.indexOfKey(result.userId) < 0) {
+                                        targetsToUpdate.put(result.userId, new ArraySet<String>());
+                                    }
+                                    targetsToUpdate.get(result.userId).add(result.packageName);
+                                    break;
+                                case Result.TYPE_OK:
+                                    break;
+                                default:
+                                    // abort transaction and roll back to last persisted state
+                                    Slog.e(TAG, "transaction failed because of " + request);
+                                    restoreSettings();
+                                    return false;
+                            }
+                        }
+                    }
+
+                    // point of no return: the entire transaction has been
+                    // processed successfully, we can no longer fail
+                    persistSettings();
+
+                    // inform the package manager about the new paths
+                    final PackageManagerInternal pm =
+                            LocalServices.getService(PackageManagerInternal.class);
+                    for (int index = 0; index < targetsToUpdate.size(); index++) {
+                        final int userId = targetsToUpdate.keyAt(index);
+                        Set<String> targetPackageNames = targetsToUpdate.valueAt(index);
+                        if (targetPackageNames.contains("android")) {
+                            targetPackageNames.clear();
+                            targetPackageNames.addAll(pm.getTargetPackageNames(userId));
+                        }
+                        final List<String> frameworkOverlayPackageNames =
+                                mImpl.getEnabledOverlayPackageNames("android", userId);
+                        for (String t : targetPackageNames) {
+                            List<String> o = new ArrayList<>();
+                            if (!"android".equals(t)) {
+                                o.addAll(frameworkOverlayPackageNames);
+                            }
+                            o.addAll(mImpl.getEnabledOverlayPackageNames(t, userId));
+                            final HashSet<String> updatedPackages = new HashSet<>();
+                            if (!pm.setEnabledOverlayPackages(userId, t, o, updatedPackages)) {
+                                Slog.e(TAG, String.format("Failed to change enabled overlays "
+                                            + "for %s user %d", t, userId));
+                            }
+                            // FIXME: use updatedPackages
+                            // TODO(rtmitchell): also update shared libraries
+                        }
+                    }
+                } // synchronized (mLock)
+
+                // broadcast the ACTION_OVERLAY_CHANGED intents
+                final IActivityManager am = ActivityManager.getService();
+                for (int index = 0; index < targetsToUpdate.size(); index++) {
+                    final int userId = targetsToUpdate.keyAt(index);
+                    for (String targetPackageName : targetsToUpdate.valueAt(index)) {
+                        final Intent intent = new Intent(ACTION_OVERLAY_CHANGED,
+                                Uri.fromParts("package", targetPackageName, null));
+                        intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
+                        try {
+                            am.broadcastIntent(null, intent, null, null, 0, null, null, null,
+                                    android.app.AppOpsManager.OP_NONE, null, false, false, userId);
+                        } catch (RemoteException e) {
+                            // Intentionally left empty.
+                        }
+                    }
+                }
+
+                // schedule apps to refresh
+                for (int index = 0; index < targetsToUpdate.size(); index++) {
+                    try {
+                        List<String> list = new ArrayList<>();
+                        list.addAll(targetsToUpdate.valueAt(index));
+                        am.scheduleApplicationInfoChanged(list, targetsToUpdate.keyAt(index));
+                    } catch (RemoteException e) {
+                        // Intentionally left empty.
+                    }
+                }
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+            return true;
+        }
+
+        @Override
         public void onShellCommand(@NonNull final FileDescriptor in,
                 @NonNull final FileDescriptor out, @NonNull final FileDescriptor err,
                 @NonNull final String[] args, @NonNull final ShellCallback callback,
@@ -902,6 +1066,7 @@ public final class OverlayManagerService extends SystemService {
     private boolean handleResult(@NonNull Result result) {
         switch (result.type) {
             case Result.TYPE_OK_WITH_DATA:
+                persistSettings();
                 onOverlaysChanged(result.packageName, result.userId);
                 return true;
             case Result.TYPE_OK:
@@ -915,7 +1080,6 @@ public final class OverlayManagerService extends SystemService {
      }
 
     private void onOverlaysChanged(@NonNull final String targetPackageName, final int userId) {
-        persistSettings();
         FgThread.getHandler().post(() -> {
             updateAssets(userId, targetPackageName);
 
