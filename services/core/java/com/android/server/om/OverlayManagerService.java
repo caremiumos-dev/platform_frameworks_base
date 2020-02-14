@@ -87,7 +87,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Service to manage asset overlays.
@@ -236,8 +235,6 @@ public final class OverlayManagerService extends SystemService {
 
     private final OverlayActorEnforcer mActorEnforcer;
 
-    private final AtomicBoolean mPersistSettingsScheduled = new AtomicBoolean(false);
-
     public OverlayManagerService(@NonNull final Context context) {
         super(context);
         try {
@@ -311,7 +308,7 @@ public final class OverlayManagerService extends SystemService {
                 final List<String> targets = mImpl.updateOverlaysForUser(newUserId);
                 updateAssets(newUserId, targets);
             }
-            schedulePersistSettings();
+            persistSettings();
         } finally {
             traceEnd(TRACE_TAG_RRO);
         }
@@ -335,6 +332,10 @@ public final class OverlayManagerService extends SystemService {
     private final class PackageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(@NonNull final Context context, @NonNull final Intent intent) {
+            IoThread.getExecutor().execute(() -> onReceiveOnBackgroundThread(intent));
+        }
+
+        private void onReceiveOnBackgroundThread(@NonNull final Intent intent) {
             final String action = intent.getAction();
             if (action == null) {
                 Slog.e(TAG, "Cannot handle package broadcast with null action");
@@ -914,7 +915,7 @@ public final class OverlayManagerService extends SystemService {
      }
 
     private void onOverlaysChanged(@NonNull final String targetPackageName, final int userId) {
-        schedulePersistSettings();
+        persistSettings();
         FgThread.getHandler().post(() -> {
             updateAssets(userId, targetPackageName);
 
@@ -1006,27 +1007,21 @@ public final class OverlayManagerService extends SystemService {
         }
     }
 
-    private void schedulePersistSettings() {
-        if (mPersistSettingsScheduled.getAndSet(true)) {
-            return;
+    private void persistSettings() {
+        if (DEBUG) {
+            Slog.d(TAG, "Writing overlay settings");
         }
-        IoThread.getHandler().post(() -> {
-            mPersistSettingsScheduled.set(false);
-            if (DEBUG) {
-                Slog.d(TAG, "Writing overlay settings");
+        synchronized (mLock) {
+            FileOutputStream stream = null;
+            try {
+                stream = mSettingsFile.startWrite();
+                mSettings.persist(stream);
+                mSettingsFile.finishWrite(stream);
+            } catch (IOException | XmlPullParserException e) {
+                mSettingsFile.failWrite(stream);
+                Slog.e(TAG, "failed to persist overlay state", e);
             }
-            synchronized (mLock) {
-                FileOutputStream stream = null;
-                try {
-                    stream = mSettingsFile.startWrite();
-                    mSettings.persist(stream);
-                    mSettingsFile.finishWrite(stream);
-                } catch (IOException | XmlPullParserException e) {
-                    mSettingsFile.failWrite(stream);
-                    Slog.e(TAG, "failed to persist overlay state", e);
-                }
-            }
-        });
+        }
     }
 
     private void restoreSettings() {
