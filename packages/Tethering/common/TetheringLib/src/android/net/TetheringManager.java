@@ -562,19 +562,34 @@ public class TetheringManager {
                 mBuilderParcel = new TetheringRequestParcel();
                 mBuilderParcel.tetheringType = type;
                 mBuilderParcel.localIPv4Address = null;
+                mBuilderParcel.staticClientAddress = null;
                 mBuilderParcel.exemptFromEntitlementCheck = false;
                 mBuilderParcel.showProvisioningUi = true;
             }
 
             /**
-             * Configure tethering with static IPv4 assignment (with DHCP disabled).
+             * Configure tethering with static IPv4 assignment.
              *
-             * @param localIPv4Address The preferred local IPv4 address to use.
+             * The clientAddress must be in the serverAddress prefix. A DHCP server will be started
+             * but will only be able to offer the clientAddress. Only the same prefix length of
+             * serverAddress and clientAddress are supported.
+             *
+             * @param serverAddress The preferred local IPv4 link address to use.
+             * @param clientAddress The static client address.
              */
             @RequiresPermission(android.Manifest.permission.TETHER_PRIVILEGED)
             @NonNull
-            public Builder setStaticIpv4Addresses(@NonNull final LinkAddress localIPv4Address) {
-                mBuilderParcel.localIPv4Address = localIPv4Address;
+            public Builder setStaticIpv4Addresses(@NonNull final LinkAddress serverAddress,
+                    @NonNull final LinkAddress clientAddress) {
+                Objects.requireNonNull(serverAddress);
+                Objects.requireNonNull(clientAddress);
+                if (serverAddress.getPrefixLength() != clientAddress.getPrefixLength()
+                        || !serverAddress.isIpv4() || !clientAddress.isIpv4()) {
+                    throw new IllegalArgumentException("Invalid server or client addresses");
+                }
+
+                mBuilderParcel.localIPv4Address = serverAddress;
+                mBuilderParcel.staticClientAddress = clientAddress;
                 return this;
             }
 
@@ -615,6 +630,12 @@ public class TetheringManager {
                 return mBuilderParcel.localIPv4Address;
             }
 
+            /** Get static client address. */
+            @Nullable
+            public LinkAddress getStaticClientAddress() {
+                return mBuilderParcel.staticClientAddress;
+            }
+
             /** Check if exempt from entitlement check. */
             public boolean isExemptFromEntitlementCheck() {
                 return mBuilderParcel.exemptFromEntitlementCheck;
@@ -638,6 +659,7 @@ public class TetheringManager {
         public String toString() {
             return "TetheringRequest [ type= " + mRequestParcel.tetheringType
                     + ", localIPv4Address= " + mRequestParcel.localIPv4Address
+                    + ", staticClientAddress= " + mRequestParcel.staticClientAddress
                     + ", exemptFromEntitlementCheck= "
                     + mRequestParcel.exemptFromEntitlementCheck + ", showProvisioningUi= "
                     + mRequestParcel.showProvisioningUi + " ]";
