@@ -78,6 +78,14 @@ public final class LruCacheTest extends TestCase {
         assertHit(cache, "b", "B");
         assertHit(cache, "c", "C");
         assertSnapshot(cache, "e", "E", "b", "B", "c", "C");
+
+        cache.resetStatistics();
+        expectedEvictionCount = 0;
+        expectedPutCount = 0;
+        expectedMissCount = 0;
+        expectedHitCount = 0;
+        expectedCreateCount = 0;
+        assertStatistics(cache);
     }
 
     public void testStatisticsWithCreate() {
