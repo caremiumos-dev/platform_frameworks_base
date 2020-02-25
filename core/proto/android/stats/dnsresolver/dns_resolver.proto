@@ -62,6 +62,9 @@ enum NsRcode {
     NS_R_NOTAUTH = 9;   // Not authoritative for zone
     NS_R_NOTZONE = 10;  // Zone of record different from zone section
     NS_R_MAX = 11;
+    // 12-15 Unassigned
+    // UNASSIGNED_15 for the response from one special DNS server.
+    NS_R_UNASSIGNED_15; // Unassigned
     // The following are EDNS extended rcodes
     NS_R_BADVERS = 16;
     // The following are TSIG errors
