@@ -245,7 +245,7 @@ public class IpServer extends StateMachine {
     private LinkAddress mIpv4Address;
 
     private LinkAddress mStaticIpv4ServerAddr;
-    private String mStaticIpv4ClientAddr;
+    private Inet4Address mStaticIpv4ClientAddr;
 
     @NonNull
     private List<TetheredClient> mDhcpLeases = Collections.emptyList();
@@ -489,7 +489,8 @@ public class IpServer extends StateMachine {
         }
     }
 
-    private boolean startDhcp(Inet4Address addr, int prefixLen) {
+    private boolean startDhcp(final Inet4Address addr, int prefixLen,
+            final Inet4Address clientAddr) {
         if (mUsingLegacyDhcp) {
             return true;
         }
@@ -499,7 +500,8 @@ public class IpServer extends StateMachine {
                 .setDhcpLeaseTimeSecs(DHCP_LEASE_TIME_SECS)
                 .setDnsServers(addr)
                 .setServerAddr(new LinkAddress(addr, prefixLen))
-                .setMetered(true);
+                .setMetered(true)
+                .setClientAddr(clientAddr);
         // TODO: also advertise link MTU
 
         mDhcpServerStartIndex++;
@@ -534,9 +536,10 @@ public class IpServer extends StateMachine {
         }
     }
 
-    private boolean configureDhcp(boolean enable, Inet4Address addr, int prefixLen) {
+    private boolean configureDhcp(boolean enable, final Inet4Address addr, final int prefixLen,
+            final Inet4Address clientAddr) {
         if (enable) {
-            return startDhcp(addr, prefixLen);
+            return startDhcp(addr, prefixLen, clientAddr);
         } else {
             stopDhcp();
             return true;
@@ -584,7 +587,8 @@ public class IpServer extends StateMachine {
                 // code that calls into NetworkManagementService directly.
                 srvAddr = (Inet4Address) parseNumericAddress(BLUETOOTH_IFACE_ADDR);
                 mIpv4Address = new LinkAddress(srvAddr, BLUETOOTH_DHCP_PREFIX_LENGTH);
-                return configureDhcp(enabled, srvAddr, BLUETOOTH_DHCP_PREFIX_LENGTH);
+                return configureDhcp(enabled, srvAddr, BLUETOOTH_DHCP_PREFIX_LENGTH,
+                        null /* clientAddress */);
             }
             mIpv4Address = new LinkAddress(srvAddr, prefixLen);
         } catch (IllegalArgumentException e) {
@@ -621,14 +625,10 @@ public class IpServer extends StateMachine {
             mLinkProperties.removeRoute(route);
         }
 
-        if (mStaticIpv4ServerAddr != null) {
-            // TODO: configure specific client address to dhcp server.
-            // if (mStaticIpv4ClientAddr != null) configureDhcp(...).
+        // Never setting mStaticIpv4ClientAddr to non-null if mStaticIpv4ServerAddr is null.
+        if (mStaticIpv4ServerAddr != null && mStaticIpv4ClientAddr == null) return true;
 
-            return true;
-        }
-
-        return configureDhcp(enabled, srvAddr, prefixLen);
+        return configureDhcp(enabled, srvAddr, prefixLen, mStaticIpv4ClientAddr);
     }
 
     private String getRandomWifiIPv4Address() {
@@ -949,10 +949,18 @@ public class IpServer extends StateMachine {
     }
 
     private void maybeConfigureStaticIp(final TetheringRequestParcel request) {
-        if (request == null) return;
+        if (request == null || request.localIPv4Address == null) return;
 
         mStaticIpv4ServerAddr = request.localIPv4Address;
-        mStaticIpv4ClientAddr = request.staticClientAddress;
+
+        if (request.staticClientAddress == null) return;
+
+        try {
+            mStaticIpv4ClientAddr = (Inet4Address) InetAddress.getByName(
+                    request.staticClientAddress);
+        } catch (UnknownHostException e) {
+            // Ignore if address is known.
+        }
     }
 
     class InitialState extends State {

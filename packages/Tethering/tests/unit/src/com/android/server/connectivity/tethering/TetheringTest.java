@@ -38,6 +38,7 @@ import static android.net.TetheringManager.TETHER_HARDWARE_OFFLOAD_FAILED;
 import static android.net.TetheringManager.TETHER_HARDWARE_OFFLOAD_STARTED;
 import static android.net.TetheringManager.TETHER_HARDWARE_OFFLOAD_STOPPED;
 import static android.net.dhcp.IDhcpServer.STATUS_SUCCESS;
+import static android.net.shared.Inet4AddressUtils.intToInet4AddressHTH;
 import static android.net.wifi.WifiManager.EXTRA_WIFI_AP_INTERFACE_NAME;
 import static android.net.wifi.WifiManager.EXTRA_WIFI_AP_MODE;
 import static android.net.wifi.WifiManager.EXTRA_WIFI_AP_STATE;
@@ -1599,8 +1600,30 @@ public class TetheringTest {
         mLooper.dispatchAll();
         verifyNoMoreInteractions(mDhcpServer);
         verify(mNetd).interfaceSetCfg(argThat(cfg -> serverAddr.equals(cfg.ipv4Addr)));
+    }
 
-        // TODO: test static client address.
+    @Test
+    public void testRequestStaticServerIpAndClientIp() throws Exception {
+        final String serverLinkAddr = "192.168.0.123/24";
+        final String serverAddr = "192.168.0.123";
+        final String clientAddr = "192.168.0.42";
+        final int clientAddrParceled = 0xc0a8002a;
+        final ArgumentCaptor<DhcpServingParamsParcel> dhcpParamsCaptor =
+                ArgumentCaptor.forClass(DhcpServingParamsParcel.class);
+        mTethering.startTethering(createTetheringRequestParcel(TETHERING_USB,
+                  new LinkAddress(serverLinkAddr), clientAddr), null);
+        mLooper.dispatchAll();
+        verify(mUsbManager, times(1)).setCurrentFunctions(UsbManager.FUNCTION_RNDIS);
+        mTethering.interfaceStatusChanged(TEST_USB_IFNAME, true);
+        sendUsbBroadcast(true, true, true, TETHERING_USB);
+        mLooper.dispatchAll();
+        verify(mNetd).interfaceSetCfg(argThat(cfg -> serverAddr.equals(cfg.ipv4Addr)));
+        verify(mIpServerDependencies, times(1)).makeDhcpServer(any(), dhcpParamsCaptor.capture(),
+                any());
+        final DhcpServingParamsParcel params = dhcpParamsCaptor.getValue();
+        assertEquals(serverAddr, intToInet4AddressHTH(params.serverAddr).getHostAddress());
+        assertEquals(24, params.serverAddrPrefixLength);
+        assertEquals(clientAddrParceled, params.clientAddr);
     }
 
     // TODO: Test that a request for hotspot mode doesn't interfere with an
