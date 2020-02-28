@@ -805,7 +805,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     }
 
     class C implements Callbacks {
-        private final HashMap<Callbacks, Handler> mCallbackMap = new HashMap<>();
+        private final Map<Callbacks, Handler> mCallbackMap = new ConcurrentHashMap<>();
 
         public void add(Callbacks callback, Handler handler) {
             if (callback == null || handler == null) throw new IllegalArgumentException();
