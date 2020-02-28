@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "06bfa2e1_ecdc022e",
+        "filename": "services/core/java/com/android/server/DynamicSystemService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 1135739
+      },
+      "writtenOn": "2020-02-28T12:00:24Z",
+      "side": 1,
+      "message": "You are right. I\u0027ll prevent it by assign a none-zero default value.",
+      "parentUuid": "24c82e41_74b2621a",
+      "range": {
+        "startLine": 219,
+        "startChar": 28,
+        "endLine": 219,
+        "endChar": 37
+      },
+      "revId": "c9f395fb428ffdf33ec948306a34c610fccd8094",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e55390d1_afd70ac7",
         "filename": "services/core/java/com/android/server/DynamicSystemService.java",
         "patchSetId": 1
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "43a2d1fb_a9250d53",
+        "filename": "services/core/java/com/android/server/DynamicSystemService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1135739
+      },
+      "writtenOn": "2020-02-28T12:00:24Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e55390d1_afd70ac7",
+      "range": {
+        "startLine": 221,
+        "startChar": 32,
+        "endLine": 221,
+        "endChar": 36
+      },
+      "revId": "c9f395fb428ffdf33ec948306a34c610fccd8094",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8b2e84ad_0c9d4a1f",
         "filename": "services/core/java/com/android/server/DynamicSystemService.java",
         "patchSetId": 1
@@ -68,6 +116,30 @@
       "revId": "c9f395fb428ffdf33ec948306a34c610fccd8094",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da22a7dc_192eb92f",
+        "filename": "services/core/java/com/android/server/DynamicSystemService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 241,
+      "author": {
+        "id": 1135739
+      },
+      "writtenOn": "2020-02-28T12:00:24Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "8b2e84ad_0c9d4a1f",
+      "range": {
+        "startLine": 241,
+        "startChar": 44,
+        "endLine": 241,
+        "endChar": 55
+      },
+      "revId": "c9f395fb428ffdf33ec948306a34c610fccd8094",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
