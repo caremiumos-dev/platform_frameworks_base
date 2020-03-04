@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a4db99a1_774d9865",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-03-04T04:31:36Z",
+      "side": 1,
+      "message": "Can you give context on why we need this ?",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 43
+      },
+      "revId": "5b71489beb86ae698d2d3be0adbaefe62a6d4d8d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7d6b324b_d639a7ac",
+        "filename": "core/java/android/net/DhcpInfo.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-03-04T04:31:36Z",
+      "side": 1,
+      "message": "final",
+      "range": {
+        "startLine": 78,
+        "startChar": 8,
+        "endLine": 78,
+        "endChar": 16
+      },
+      "revId": "5b71489beb86ae698d2d3be0adbaefe62a6d4d8d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
