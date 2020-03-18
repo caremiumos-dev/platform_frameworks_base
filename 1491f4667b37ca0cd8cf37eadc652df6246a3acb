@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4206f146_c12ea06f",
+        "filename": "packages/Tethering/src/com/android/server/connectivity/tethering/Tethering.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 620,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2020-03-18T06:32:18Z",
+      "side": 1,
+      "message": "We should remove this line that always release request when stopEtherentTethering",
+      "range": {
+        "startLine": 620,
+        "startChar": 0,
+        "endLine": 620,
+        "endChar": 53
+      },
+      "revId": "1491f4667b37ca0cd8cf37eadc652df6246a3acb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "78b771eb_25e70220",
+        "filename": "packages/Tethering/src/com/android/server/connectivity/tethering/Tethering.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 621,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2020-03-18T06:32:18Z",
+      "side": 1,
+      "message": "This is redundant that l.622 is enough.",
+      "range": {
+        "startLine": 621,
+        "startChar": 0,
+        "endLine": 621,
+        "endChar": 81
+      },
+      "revId": "1491f4667b37ca0cd8cf37eadc652df6246a3acb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
