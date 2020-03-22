@@ -1461,7 +1461,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                     && mPowerState.prepareColorFade(mContext,
                             mColorFadeFadesConfig ?
                                     ColorFade.MODE_FADE : ColorFade.MODE_COOL_DOWN)
-                    && mPowerState.getScreenState() != Display.STATE_OFF) {
+                    && mPowerState.getScreenState() != Display.STATE_OFF
+                    && mPowerState.getScreenState() != Display.STATE_DOZE_SUSPEND) {
                 // Perform the screen off animation.
                 mColorFadeOffAnimator.start();
             } else {
