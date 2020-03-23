@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "43d22f47_2669899b",
+        "filename": "core/java/android/net/DhcpInfo.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-03-23T09:42:14Z",
+      "side": 1,
+      "message": "Okay I don\u0027t think we can do this.\nDhcpInfo is a public class and apps are using it. If any app is relying on equals() behaving like it used to, for example by using this class as a key in a hashmap, this code will break the app.\n\nWhat you are doing here is right in principle, and it could even be called a bugfix, but this class has existed for more than 10 years and you\u0027re changing a pretty fundamental behavior. Sure it\u0027s a change for the better, but it\u0027s a very visible change and I don\u0027t think we can afford breaking compatibility like this.\n\nFor the test in aosp/1162443, you can just move the code doing this equality comparison to the test.",
+      "range": {
+        "startLine": 69,
+        "startChar": 19,
+        "endLine": 69,
+        "endChar": 25
+      },
+      "revId": "60e84da662d4fcbd7e11beb4096d22f4df7bf776",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
