@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "65380830_5698ad37",
+        "filename": "tests/net/common/java/android/net/MatchAllNetworkSpecifierTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-03-23T12:51:15Z",
+      "side": 1,
+      "message": "Specifier is not a mock. Please pass a real instance of a specifier.",
+      "range": {
+        "startLine": 42,
+        "startChar": 34,
+        "endLine": 42,
+        "endChar": 39
+      },
+      "revId": "df98f925c1f5fb003b1711a7d7982278fa30d488",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2520aa24_ade6369a",
+        "filename": "tests/net/common/java/android/net/MatchAllNetworkSpecifierTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-03-23T12:51:15Z",
+      "side": 1,
+      "message": "Either use\n\n  @Test(expected \u003d IllegalStateException::class)\n\nor\n\n  assertFailsWith\u003cIllegalStateException::class\u003e(errorMessage) {\n    specifier.satisfiedBy()\n  }",
+      "range": {
+        "startLine": 45,
+        "startChar": 8,
+        "endLine": 47,
+        "endChar": 9
+      },
+      "revId": "df98f925c1f5fb003b1711a7d7982278fa30d488",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
