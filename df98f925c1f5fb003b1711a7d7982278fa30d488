@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "d63a946f_9ff8d66f",
+        "filename": "tests/net/common/java/android/net/MatchAllNetworkSpecifierTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1308163
+      },
+      "writtenOn": "2020-03-26T10:59:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "65380830_5698ad37",
+      "range": {
+        "startLine": 42,
+        "startChar": 34,
+        "endLine": 42,
+        "endChar": 39
+      },
+      "revId": "df98f925c1f5fb003b1711a7d7982278fa30d488",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2520aa24_ade6369a",
         "filename": "tests/net/common/java/android/net/MatchAllNetworkSpecifierTest.kt",
         "patchSetId": 2
@@ -45,6 +69,30 @@
       "revId": "df98f925c1f5fb003b1711a7d7982278fa30d488",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9b33aa9b_f250be8e",
+        "filename": "tests/net/common/java/android/net/MatchAllNetworkSpecifierTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1308163
+      },
+      "writtenOn": "2020-03-26T10:59:38Z",
+      "side": 1,
+      "message": "Good to know, thanks for the suggestion!\nUpdated.",
+      "parentUuid": "2520aa24_ade6369a",
+      "range": {
+        "startLine": 45,
+        "startChar": 8,
+        "endLine": 47,
+        "endChar": 9
+      },
+      "revId": "df98f925c1f5fb003b1711a7d7982278fa30d488",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
