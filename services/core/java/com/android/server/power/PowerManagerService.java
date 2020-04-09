@@ -881,7 +881,7 @@ public final class PowerManagerService extends SystemService
 
         mBatterySaverController.systemReady();
         mBatterySaverPolicy.systemReady();
-
+        mAttentionDetector.registerAdaptiveSleepObserver();
         // Register for settings changes.
         resolver.registerContentObserver(Settings.Secure.getUriFor(
                 Settings.Secure.SCREENSAVER_ENABLED),

@@ -158,13 +158,15 @@ public class AttentionDetector {
         } catch (RemoteException e) {
              // Shouldn't happen since in-process.
         }
+    }
 
-        context.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+    public void registerAdaptiveSleepObserver() {
+        mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
                 Settings.System.ADAPTIVE_SLEEP),
-                false, new ContentObserver(new Handler(context.getMainLooper())) {
+                false, new ContentObserver(new Handler(mContext.getMainLooper())) {
                     @Override
                     public void onChange(boolean selfChange) {
-                        updateEnabledFromSettings(context);
+                        updateEnabledFromSettings(mContext);
                     }
                 }, UserHandle.USER_ALL);
     }
