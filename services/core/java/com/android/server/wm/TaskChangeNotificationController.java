@@ -150,7 +150,12 @@ class TaskChangeNotificationController {
     };
 
     private final TaskStackConsumer mNotifyTaskSnapshotChanged = (l, m) -> {
-        l.onTaskSnapshotChanged(m.arg1, (TaskSnapshot) m.obj);
+        TaskSnapshot taskSnapShot = (TaskSnapshot) m.obj;
+        if (taskSnapShot != null
+            && taskSnapShot.getSnapshot() != null
+            && !taskSnapShot.getSnapshot().isDestroyed()) {
+            l.onTaskSnapshotChanged(m.arg1, (TaskSnapshot) m.obj);
+        }
     };
 
     private final TaskStackConsumer mOnSizeCompatModeActivityChanged = (l, m) -> {

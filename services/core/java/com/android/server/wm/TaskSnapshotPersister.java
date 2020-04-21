@@ -360,6 +360,12 @@ class TaskSnapshotPersister {
         }
 
         boolean writeBuffer() {
+            if (mSnapshot == null
+                || mSnapshot.getSnapshot() == null
+                || mSnapshot.getSnapshot().isDestroyed()) {
+                Slog.e(TAG, "Invalid task snapshot");
+                return false;
+            }
             // TODO(b/116112787) TaskSnapshot needs bookkeep the ColorSpace of the
             // hardware bitmap when created.
             final Bitmap bitmap = Bitmap.wrapHardwareBuffer(
