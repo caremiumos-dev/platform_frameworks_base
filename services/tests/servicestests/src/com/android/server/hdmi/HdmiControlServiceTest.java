@@ -28,6 +28,7 @@ import static junit.framework.Assert.assertTrue;
 import android.hardware.hdmi.HdmiPortInfo;
 import android.os.Looper;
 import android.os.test.TestLooper;
+import android.sysprop.HdmiProperties.cec_device_types_values;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
@@ -38,6 +39,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests for {@link HdmiControlService} class.
@@ -197,5 +200,24 @@ public class HdmiControlServiceTest {
         mNativeWrapper.setPhysicalAddress(0x2000);
         mHdmiControlService.initPortInfo();
         assertThat(mHdmiControlService.pathToPortId(0x1000)).isEqualTo(Constants.INVALID_PORT_ID);
+    }
+
+    @Test
+    public void cecDeviceTypesSameAsDeviceType() {
+        List<Integer> deviceTypes = new ArrayList<>(Arrays.asList(-1, 0, 1, 2, 3, 4, 5, 6, 7));
+        List<cec_device_types_values> cecDeviceTypes =
+                new ArrayList<>(Arrays.asList(
+                    cec_device_types_values.INACTIVE,
+                    cec_device_types_values.TV,
+                    cec_device_types_values.RECORDER,
+                    cec_device_types_values.RESERVED,
+                    cec_device_types_values.TUNER,
+                    cec_device_types_values.PLAYBACK,
+                    cec_device_types_values.AUDIO_SYSTEM,
+                    cec_device_types_values.PURE_CEC_SWITCH,
+                    cec_device_types_values.VIDEO_PROCESSOR));
+        List<Integer> intListOfCecDeviceTypes =
+                mHdmiControlService.getIntListOfCecDeviceTypes(cecDeviceTypes);
+        assertTrue(deviceTypes.equals(intListOfCecDeviceTypes));
     }
 }

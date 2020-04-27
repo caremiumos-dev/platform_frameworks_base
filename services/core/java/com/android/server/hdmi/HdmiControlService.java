@@ -67,6 +67,7 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings.Global;
 import android.sysprop.HdmiProperties;
+import android.sysprop.HdmiProperties.cec_device_types_values;
 import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Slog;
@@ -433,15 +434,55 @@ public class HdmiControlService extends SystemService {
 
     public HdmiControlService(Context context) {
         super(context);
-        List<Integer> deviceTypes = HdmiProperties.device_type();
-        if (deviceTypes.contains(null)) {
-            Slog.w(TAG, "Error parsing ro.hdmi.device.type: " + SystemProperties.get(
-                    "ro.hdmi.device_type"));
-            deviceTypes = deviceTypes.stream().filter(Objects::nonNull).collect(
+        List<cec_device_types_values> cecDeviceTypes = HdmiProperties.cec_device_types();
+        if (cecDeviceTypes.contains(null)) {
+            Slog.w(TAG, "Error parsing ro.hdmi.cec_device_types: " + SystemProperties.get(
+                    "ro.hdmi.cec_device_types"));
+            cecDeviceTypes = cecDeviceTypes.stream().filter(Objects::nonNull).collect(
                     Collectors.toList());
         }
+        List<Integer> deviceTypes = getIntListOfCecDeviceTypes(cecDeviceTypes);
         mLocalDevices = deviceTypes;
         mSettingsObserver = new SettingsObserver(mHandler);
+    }
+
+    protected static List<Integer> getIntListOfCecDeviceTypes(
+            List<cec_device_types_values> cecDeviceTypes) {
+        ArrayList<Integer> list = new ArrayList<>();
+        for (cec_device_types_values cecDeviceType : cecDeviceTypes) {
+            switch (cecDeviceType.getPropValue()) {
+                case "tv":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_TV));
+                    break;
+                case "recorder":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_RECORDER));
+                    break;
+                case "reserved":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_RESERVED));
+                    break;
+                case "tuner":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_TUNER));
+                    break;
+                case "playback":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_PLAYBACK));
+                    break;
+                case "audio_system":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM));
+                    break;
+                case "pure_cec_switch":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_PURE_CEC_SWITCH));
+                    break;
+                case "video_processor":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_VIDEO_PROCESSOR));
+                    break;
+                case "inactive":
+                    list.add(Integer.valueOf(HdmiDeviceInfo.DEVICE_INACTIVE));
+                    break;
+                default:
+                    Slog.w(TAG, "Wrong Cec device type added: " + cecDeviceType.getPropValue());
+            }
+        }
+        return Collections.unmodifiableList(list);
     }
 
     protected static List<Integer> getIntList(String string) {
