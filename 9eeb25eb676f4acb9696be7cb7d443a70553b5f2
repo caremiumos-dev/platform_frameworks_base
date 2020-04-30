@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "77b282b5_eb7bc047",
+        "filename": "packages/Tethering/tests/unit/src/com/android/networkstack/tethering/OffloadControllerTest.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2020-04-30T14:42:06Z",
+      "side": 1,
+      "message": "Nit: instead of this you could also make assertNoCallback accept a null handler. That seems mildly better, but I don\u0027t feel strongly about it.",
+      "range": {
+        "startLine": 118,
+        "startChar": 4,
+        "endLine": 118,
+        "endChar": 73
+      },
+      "revId": "9eeb25eb676f4acb9696be7cb7d443a70553b5f2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
