@@ -22,6 +22,30 @@
       "revId": "9eeb25eb676f4acb9696be7cb7d443a70553b5f2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9daf11db_0899c0fa",
+        "filename": "packages/Tethering/tests/unit/src/com/android/networkstack/tethering/OffloadControllerTest.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2020-05-01T00:53:54Z",
+      "side": 1,
+      "message": "However I think it is error-prone if assertNoCallback could accept null.\nit is easy to write mTetherStatsProviderCb.assertNoCallback() which might cause waiting.\nHence I\u0027ll prefer to keep it as is if not feel strongly.\nBut anyway people could modify it to accept null if really needed.\nFeel free to reply if any idea.",
+      "parentUuid": "77b282b5_eb7bc047",
+      "range": {
+        "startLine": 118,
+        "startChar": 4,
+        "endLine": 118,
+        "endChar": 73
+      },
+      "revId": "9eeb25eb676f4acb9696be7cb7d443a70553b5f2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
