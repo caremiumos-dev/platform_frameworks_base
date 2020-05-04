@@ -46,6 +46,30 @@
       "revId": "9eeb25eb676f4acb9696be7cb7d443a70553b5f2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "014f4430_f39ce5f5",
+        "filename": "packages/Tethering/tests/unit/src/com/android/networkstack/tethering/OffloadControllerTest.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2020-05-04T10:00:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9daf11db_0899c0fa",
+      "range": {
+        "startLine": 118,
+        "startChar": 4,
+        "endLine": 118,
+        "endChar": 73
+      },
+      "revId": "9eeb25eb676f4acb9696be7cb7d443a70553b5f2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
