@@ -104,6 +104,7 @@ public final class TelephonyScanManager {
     }
 
     private final Looper mLooper;
+    private final Handler mHandler;
     private final Messenger mMessenger;
     private final SparseArray<NetworkScanInfo> mScanInfo = new SparseArray<NetworkScanInfo>();
 
@@ -111,7 +112,7 @@ public final class TelephonyScanManager {
         HandlerThread thread = new HandlerThread(TAG);
         thread.start();
         mLooper = thread.getLooper();
-        mMessenger = new Messenger(new Handler(mLooper) {
+        mHandler = new Handler(mLooper) {
             @Override
             public void handleMessage(Message message) {
                 checkNotNull(message, "message cannot be null");
@@ -179,7 +180,8 @@ public final class TelephonyScanManager {
                         break;
                 }
             }
-        });
+        };
+        mMessenger = new Messenger(mHandler);
     }
 
     /**
@@ -203,19 +205,33 @@ public final class TelephonyScanManager {
             NetworkScanRequest request, Executor executor, NetworkScanCallback callback,
             String callingPackage, String callingFeatureId) {
         try {
-            ITelephony telephony = getITelephony();
-            if (telephony != null) {
-                synchronized (mScanInfo) {
-                    int scanId = telephony.requestNetworkScan(
-                            subId, request, mMessenger, new Binder(), callingPackage,
-                            callingFeatureId);
-                    if (scanId == INVALID_SCAN_ID) {
-                        Rlog.e(TAG, "Failed to initiate network scan");
-                        return null;
-                    }
-                    saveScanInfo(scanId, request, executor, callback);
-                    return new NetworkScan(scanId, subId);
+            final ITelephony telephony = getITelephony();
+            if (telephony == null) return null;
+
+            final Binder b = new Binder();
+            // Link the binder to death; no need to unlink it since it will be unlinked
+            // automatically once all references are released, and remote is holding the
+            // only reference.
+            b.linkToDeath(
+                    new Binder.DeathRecipient() {
+                        @Override
+                        public void binderDied() {
+                            mHandler.obtainMessage(
+                                    CALLBACK_SCAN_ERROR,
+                                    NetworkScan.ERROR_MODEM_UNAVAILABLE, 0).sendToTarget();
+                        }
+                    }, 0);
+
+            synchronized (mScanInfo) {
+                int scanId = telephony.requestNetworkScan(
+                        subId, request, mMessenger, b, callingPackage,
+                        callingFeatureId);
+                if (scanId == INVALID_SCAN_ID) {
+                    Rlog.e(TAG, "Failed to initiate network scan");
+                    return null;
                 }
+                saveScanInfo(scanId, request, executor, callback);
+                return new NetworkScan(scanId, subId);
             }
         } catch (RemoteException ex) {
             Rlog.e(TAG, "requestNetworkScan RemoteException", ex);
