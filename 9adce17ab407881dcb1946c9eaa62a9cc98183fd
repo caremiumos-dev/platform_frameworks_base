@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4d7aadbd_7bf5f36e",
+        "filename": "packages/Tethering/common/TetheringLib/Android.bp",
+        "patchSetId": 5
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1006497
+      },
+      "writtenOn": "2020-05-28T14:21:23Z",
+      "side": 1,
+      "message": "nit: line length",
+      "revId": "9adce17ab407881dcb1946c9eaa62a9cc98183fd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
