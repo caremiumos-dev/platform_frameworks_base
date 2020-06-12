@@ -4320,6 +4320,25 @@ public class ConnectivityManager {
     }
 
     /**
+     * Unregister all registered network callbacks
+     * @hide
+     */
+    @TestApi
+    public void unregisterAllNetworkCallbacks() {
+        synchronized (sCallbacks) {
+            for (Map.Entry<NetworkRequest, NetworkCallback> e : sCallbacks.entrySet()) {
+                if (e.getValue().networkRequest == ALREADY_UNREGISTERED) continue;
+                try {
+                    mService.releaseNetworkRequest(e.getKey());
+                } catch (RemoteException ex) {
+                    throw ex.rethrowFromSystemServer();
+                }
+            }
+            sCallbacks.clear();
+        }
+    }
+
+    /**
      * Unregisters a callback previously registered via
      * {@link #registerNetworkCallback(NetworkRequest, android.app.PendingIntent)}.
      *
