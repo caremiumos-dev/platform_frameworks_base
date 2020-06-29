@@ -1784,6 +1784,7 @@ public final class BluetoothAdapter {
         try {
             mServiceLock.readLock().lock();
             if (mService != null) {
+                if (DBG) log.d("removeActiveDevice, profiles: " + profiles);
                 return mService.removeActiveDevice(profiles);
             }
         } catch (RemoteException e) {
@@ -1828,6 +1829,7 @@ public final class BluetoothAdapter {
         try {
             mServiceLock.readLock().lock();
             if (mService != null) {
+                if (DBG) log.d("setActiveDevice, device: " + device + ", profiles: " + profiles);
                 return mService.setActiveDevice(device, profiles);
             }
         } catch (RemoteException e) {
