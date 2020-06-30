@@ -50,6 +50,7 @@ stubs_defaults {
         ":art-module-public-api-stubs-source",
         ":android_icu4j_public_api_files",
         "**/package.html",
+        "core/java/overview.html",
     ],
     libs: ["framework-internal-utils"],
     installable: false,
@@ -58,6 +59,7 @@ stubs_defaults {
     merge_annotations_dirs: [
         "metalava-manual",
     ],
+    sandbox: true,
     api_levels_annotations_enabled: false,
     filter_packages: packages_to_document,
 }
