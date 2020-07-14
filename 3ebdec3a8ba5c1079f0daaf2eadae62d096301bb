@@ -36,6 +36,29 @@
     },
     {
       "key": {
+        "uuid": "c3de6c3e_107174ff",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T22:25:45Z",
+      "side": 1,
+      "message": "localeCount",
+      "range": {
+        "startLine": 328,
+        "startChar": 16,
+        "endLine": 328,
+        "endChar": 30
+      },
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d581b21f_58f1492c",
         "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
         "patchSetId": 4

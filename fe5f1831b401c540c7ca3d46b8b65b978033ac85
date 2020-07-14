@@ -190,6 +190,30 @@
     },
     {
       "key": {
+        "uuid": "802bd84f_e84abaf0",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T22:25:45Z",
+      "side": 1,
+      "message": "Sorry if I wasn\u0027t clear, but I meant in the return:\n\n@Nullable\nprivate static...\n\nor \n\nprivate static @Nullable ...",
+      "parentUuid": "2e43b46f_8f861ea3",
+      "range": {
+        "startLine": 312,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 73
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3c618c23_5379cb9a",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 2
@@ -613,6 +637,30 @@
     },
     {
       "key": {
+        "uuid": "ee3e9c11_87e3d187",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T22:25:45Z",
+      "side": 1,
+      "message": "AFAIK the notation is the same on tests for Android",
+      "parentUuid": "3d78fab4_6a0ee936",
+      "range": {
+        "startLine": 20,
+        "startChar": 16,
+        "endLine": 21,
+        "endChar": 33
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3718ca02_5289b764",
         "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
         "patchSetId": 2
@@ -648,6 +696,30 @@
       "side": 1,
       "message": "Yes, these are arrays. \"isEqualTo()\" performs proper content comparison.",
       "parentUuid": "3718ca02_5289b764",
+      "range": {
+        "startLine": 52,
+        "startChar": 0,
+        "endLine": 52,
+        "endChar": 57
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7dde555c_79d79d75",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T22:25:45Z",
+      "side": 1,
+      "message": "The proper comparison is ok when the test pass, but when it fails the message will be something like:\n\nfail: Strings\u0026481516 differnt then Strings\u00262342\n\nWhile when using containsAll(), it would tell exactly what\u0027s wong like:\n\nfail: expetec [\"foo\"], got [\"bar\"]",
+      "parentUuid": "2e7c9b18_6cc3dcb6",
       "range": {
         "startLine": 52,
         "startChar": 0,
