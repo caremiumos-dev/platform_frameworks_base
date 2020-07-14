@@ -1,0 +1,349 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1597b740_4b5d41db",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "Compiling a pattern is an expensive operation, and here you\u0027re dynamically creating one for each locale - can\u0027t you just do a direct string comparison?",
+      "range": {
+        "startLine": 113,
+        "startChar": 0,
+        "endLine": 113,
+        "endChar": 73
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b5bdb7ae_11b01912",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "nit: I\u0027d called the exception e on both cases, as that\u0027s the typical convention for exceptions\\",
+      "range": {
+        "startLine": 115,
+        "startChar": 35,
+        "endLine": 117,
+        "endChar": 49
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9bbaf4d5_994dd8b8",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "include filter format?",
+      "range": {
+        "startLine": 118,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 62
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54d1a77c_fc1077c4",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "nit: add a @Nullable",
+      "range": {
+        "startLine": 312,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 73
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c618c23_5379cb9a",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "use local variable instead of calling multiple times?",
+      "range": {
+        "startLine": 318,
+        "startChar": 60,
+        "endLine": 318,
+        "endChar": 74
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cde6f561_329edc65",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "if you\u0027re using streams in other places, use here as well?",
+      "range": {
+        "startLine": 319,
+        "startChar": 7,
+        "endLine": 325,
+        "endChar": 0
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e8cf0bb2_03b4d9a5",
+        "filename": "core/sysprop/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "license header?",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 17
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d335e013_b9b003ab",
+        "filename": "tests/LocalizationTest/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "license header?",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 14
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "544d6e07_9feaa307",
+        "filename": "tests/LocalizationTest/AndroidManifest.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "license header?",
+      "range": {
+        "startLine": 1,
+        "startChar": 1,
+        "endLine": 1,
+        "endChar": 9
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7c8631a1_5cdcb604",
+        "filename": "tests/LocalizationTest/AndroidManifest.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "not: space instead of tabs",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 1
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f957dbd8_b9e0b18e",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "license header?",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 40
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f5fb9120_5cf4c820",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "public final instead? \n(or does Kotlin doesn\u0027t support that?)",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 5
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7606e6c_dad207cf",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "shouldn\u0027t we prefix those with m (like mContext)?",
+      "range": {
+        "startLine": 20,
+        "startChar": 16,
+        "endLine": 21,
+        "endChar": 33
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3718ca02_5289b764",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "I\u0027m assuming these are collections and/or arrays, right? (\"thanks\", Kotlin for not requiring a type :-) \n\nIf so, please use Truth\u0027s method that assert them (like assertContains())\n\n(same below)",
+      "range": {
+        "startLine": 52,
+        "startChar": 0,
+        "endLine": 52,
+        "endChar": 57
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24a8f7c1_ef545426",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 1013984
+      },
+      "writtenOn": "2020-07-14T18:20:11Z",
+      "side": 1,
+      "message": "speaking in Java, this is a lambda call (same as doReturn().when( ()-\u003e xxx), right?",
+      "range": {
+        "startLine": 91,
+        "startChar": 38,
+        "endLine": 91,
+        "endChar": 97
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
