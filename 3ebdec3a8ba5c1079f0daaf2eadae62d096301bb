@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a19913c0_a3ef77be",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1122434
+      },
+      "writtenOn": "2020-07-14T21:09:45Z",
+      "side": 1,
+      "message": "error level, so Log.e",
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "05c4b489_9b0fbd10",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1122434
+      },
+      "writtenOn": "2020-07-14T21:09:45Z",
+      "side": 1,
+      "message": "error level, so Log.e",
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d581b21f_58f1492c",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1122434
+      },
+      "writtenOn": "2020-07-14T21:09:45Z",
+      "side": 1,
+      "message": "interesting that the test is in Kotlin. What\u0027s the rationale? (Mostly curious.)",
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
