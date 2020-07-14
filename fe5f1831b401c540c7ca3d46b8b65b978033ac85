@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "61658199_b3b9655d",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Yes, it is an expensive operation, but the pattern is compiled once per getting a list of supported locales or update locales call, not for each locale. The above mentioned operations are themselves rarely called, so I think it is safe to keep it as is. Using string comparison doesn\u0027t allow to reasonably cover all the necessary use cases.\n\nAlternatively, I could cache the pattern to a static field (given the current class design), but it is generally not really a good thing to do (unless there\u0027s a strong reason), plus it would make the method much harder to test (without extra injection points).",
+      "parentUuid": "1597b740_4b5d41db",
+      "range": {
+        "startLine": 113,
+        "startChar": 0,
+        "endLine": 113,
+        "endChar": 73
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b5bdb7ae_11b01912",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 2
@@ -36,6 +60,30 @@
       "writtenOn": "2020-07-14T18:20:11Z",
       "side": 1,
       "message": "nit: I\u0027d called the exception e on both cases, as that\u0027s the typical convention for exceptions\\",
+      "range": {
+        "startLine": 115,
+        "startChar": 35,
+        "endLine": 117,
+        "endChar": 49
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e0275b52_bf6fdea1",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b5bdb7ae_11b01912",
       "range": {
         "startLine": 115,
         "startChar": 35,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "614162b9_5df71611",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9bbaf4d5_994dd8b8",
+      "range": {
+        "startLine": 118,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 62
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "54d1a77c_fc1077c4",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 2
@@ -91,6 +163,30 @@
       "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2e43b46f_8f861ea3",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "54d1a77c_fc1077c4",
+      "range": {
+        "startLine": 312,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 73
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "bb2d0d6f_4a53dc38",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3c618c23_5379cb9a",
+      "range": {
+        "startLine": 318,
+        "startChar": 60,
+        "endLine": 318,
+        "endChar": 74
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cde6f561_329edc65",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 2
@@ -137,6 +257,30 @@
       "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "45c83a92_07400661",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "I would happily do, but the LocaleList class is a custom wrapper around array of Locales, so there\u0027s no way to turn it into stream (without touching the class source, which is not really necessary).",
+      "parentUuid": "cde6f561_329edc65",
+      "range": {
+        "startLine": 319,
+        "startChar": 7,
+        "endLine": 325,
+        "endChar": 0
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -163,6 +307,30 @@
     },
     {
       "key": {
+        "uuid": "d05d0029_719fc0f8",
+        "filename": "core/sysprop/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e8cf0bb2_03b4d9a5",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 17
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d335e013_b9b003ab",
         "filename": "tests/LocalizationTest/Android.bp",
         "patchSetId": 2
@@ -183,6 +351,30 @@
       "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2c40c300_17c39c24",
+        "filename": "tests/LocalizationTest/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d335e013_b9b003ab",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 14
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -209,6 +401,30 @@
     },
     {
       "key": {
+        "uuid": "e448f1d7_08c868f5",
+        "filename": "tests/LocalizationTest/AndroidManifest.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "544d6e07_9feaa307",
+      "range": {
+        "startLine": 1,
+        "startChar": 1,
+        "endLine": 1,
+        "endChar": 9
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7c8631a1_5cdcb604",
         "filename": "tests/LocalizationTest/AndroidManifest.xml",
         "patchSetId": 2
@@ -229,6 +445,30 @@
       "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d99162e7_e61dc3ad",
+        "filename": "tests/LocalizationTest/AndroidManifest.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7c8631a1_5cdcb604",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 1
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -255,6 +495,30 @@
     },
     {
       "key": {
+        "uuid": "23a94719_0d3c2247",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f957dbd8_b9e0b18e",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 40
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f5fb9120_5cf4c820",
         "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
         "patchSetId": 2
@@ -275,6 +539,30 @@
       "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9bfa660d_900c90a5",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "In Kotlin classes are final by default and the default visibility is public.",
+      "parentUuid": "f5fb9120_5cf4c820",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 5
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -301,6 +589,30 @@
     },
     {
       "key": {
+        "uuid": "3d78fab4_6a0ee936",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "I\u0027ve seen both notations in test sources, so I thought there was no strict rule anymore. Fixed.",
+      "parentUuid": "c7606e6c_dad207cf",
+      "range": {
+        "startLine": 20,
+        "startChar": 16,
+        "endLine": 21,
+        "endChar": 33
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3718ca02_5289b764",
         "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
         "patchSetId": 2
@@ -324,6 +636,30 @@
     },
     {
       "key": {
+        "uuid": "2e7c9b18_6cc3dcb6",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Yes, these are arrays. \"isEqualTo()\" performs proper content comparison.",
+      "parentUuid": "3718ca02_5289b764",
+      "range": {
+        "startLine": 52,
+        "startChar": 0,
+        "endLine": 52,
+        "endChar": 57
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "24a8f7c1_ef545426",
         "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
         "patchSetId": 2
@@ -344,6 +680,30 @@
       "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "652e7de8_566b9dd1",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-14T21:02:25Z",
+      "side": 1,
+      "message": "Yes, right.",
+      "parentUuid": "24a8f7c1_ef545426",
+      "range": {
+        "startLine": 91,
+        "startChar": 38,
+        "endLine": 91,
+        "endChar": 97
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
