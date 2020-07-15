@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "812789a9_54de12f8",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-15T08:22:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a19913c0_a3ef77be",
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "05c4b489_9b0fbd10",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 4
@@ -33,6 +51,24 @@
       "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "77906d98_5a8e7815",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-15T08:22:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "05c4b489_9b0fbd10",
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -59,6 +95,30 @@
     },
     {
       "key": {
+        "uuid": "0e96e0eb_a26cf282",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-15T08:22:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c3de6c3e_107174ff",
+      "range": {
+        "startLine": 328,
+        "startChar": 16,
+        "endLine": 328,
+        "endChar": 30
+      },
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d581b21f_58f1492c",
         "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
         "patchSetId": 4
@@ -73,6 +133,24 @@
       "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af6da99d_95384491",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-15T08:22:50Z",
+      "side": 1,
+      "message": "I love how powerful, convenient and slick Kotlin is. I\u0027ve also mentioned that quite a few of framework tests are already written in Kotlin, so I am happy to join the effort! :)",
+      "parentUuid": "d581b21f_58f1492c",
+      "revId": "3ebdec3a8ba5c1079f0daaf2eadae62d096301bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }

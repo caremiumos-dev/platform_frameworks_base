@@ -214,6 +214,30 @@
     },
     {
       "key": {
+        "uuid": "d71d797b_5f49a05f",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-15T08:22:50Z",
+      "side": 1,
+      "message": "Done. I\u0027ve left the parameter annotation as well for consistency.",
+      "parentUuid": "802bd84f_e84abaf0",
+      "range": {
+        "startLine": 312,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 73
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3c618c23_5379cb9a",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 2
@@ -720,6 +744,30 @@
       "side": 1,
       "message": "The proper comparison is ok when the test pass, but when it fails the message will be something like:\n\nfail: Strings\u0026481516 differnt then Strings\u00262342\n\nWhile when using containsAll(), it would tell exactly what\u0027s wong like:\n\nfail: expetec [\"foo\"], got [\"bar\"]",
       "parentUuid": "2e7c9b18_6cc3dcb6",
+      "range": {
+        "startLine": 52,
+        "startChar": 0,
+        "endLine": 52,
+        "endChar": 57
+      },
+      "revId": "fe5f1831b401c540c7ca3d46b8b65b978033ac85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1fdabb52_d97d6265",
+        "filename": "tests/LocalizationTest/java/com/android/internal/app/LocalizationTest.kt",
+        "patchSetId": 2
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-15T08:22:50Z",
+      "side": 1,
+      "message": "In fact, the error message is as descriptive as you mentioned as well:\n\nExample #1\nexpected: [de-DE, en-AG, en-AI,…\nbut was : [de-AT, de-DE, en-AG, en-AI,…\nwrong length\nexpected: 110\nbut was : 111\n\nExample #2\nexpected: [de-DE, en-US, ru-BY, ru-KG, ru-KZ, ru-MD, ru-RU, ru-UA]\nbut was : [de-AT, de-DE, en-AG, en-AI, en-AS, en-AT, en-AU, en-BB, en-BE, en-BI, en-BM, en-BS, en-BW, en-BZ, en-CA, en-CC, en-CH, en-CK, en-CM, en-CX, en-CY, en-DE, en-DG, en-DK, en-DM, en-ER, en-FI, en-FJ, en-FK, en-FM, en-GB, en-GD, en-GG, en-GH, en-GI, en-GM, en-GU, en-GY, en-HK, en-IE, en-IL, en-IM, en-IN, en-IO, en-JE, en-JM, en-KE, en-KI, en-KN, en-KY, en-LC, en-LR, en-LS, en-MG, en-MH, en-MO, en-MP, en-MS, en-MT, en-MU, en-MW, en-MY, en-NA, en-NF, en-NG, en-NL, en-NR, en-NU, en-NZ, en-PG, en-PH, en-PK, en-PN, en-PR, en-PW, en-RW, en-SB, en-SC, en-SD, en-SE, en-SG, en-SH, en-SI, en-SL, en-SS, en-SX, en-SZ, en-TC, en-TK, en-TO, en-TT, en-TV, en-TZ, en-UG, en-UM, en-US, en-VC, en-VG, en-VI, en-VU, en-WS, en-XA, en-ZA, en-ZM, en-ZW, ru-BY, ru-KG, ru-KZ, ru-MD, ru-RU, ru-UA]\nwrong length\nexpected: 8\nbut was : 111",
+      "parentUuid": "7dde555c_79d79d75",
       "range": {
         "startLine": 52,
         "startChar": 0,
