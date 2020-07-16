@@ -42,6 +42,30 @@
     },
     {
       "key": {
+        "uuid": "6d8c13a1_baba44db",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8383e475_008f73ac",
+      "range": {
+        "startLine": 57,
+        "startChar": 4,
+        "endLine": 57,
+        "endChar": 77
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8793a447_685572af",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 5
@@ -62,6 +86,30 @@
       "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c36f38e2_eaf62150",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8793a447_685572af",
+      "range": {
+        "startLine": 107,
+        "startChar": 32,
+        "endLine": 107,
+        "endChar": 48
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -88,6 +136,30 @@
     },
     {
       "key": {
+        "uuid": "cbefb92f_059cf890",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "Done. NB: I would love to share the logic, but the LocaleList does not inherit any collection class.",
+      "parentUuid": "5ee6714e_1f64f9d8",
+      "range": {
+        "startLine": 108,
+        "startChar": 18,
+        "endLine": 108,
+        "endChar": 43
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f4ec7517_967e0c31",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 5
@@ -99,6 +171,30 @@
       "writtenOn": "2020-07-16T17:32:51Z",
       "side": 1,
       "message": "The system property cannot change while the device is running since it is read-only, correct? If so, this should return a singleton instance.",
+      "range": {
+        "startLine": 111,
+        "startChar": 37,
+        "endLine": 111,
+        "endChar": 52
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4d7dd8bb_88c3f8f5",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "Yes, correct. But using singleton comes with all related \"benefits\": extra logic for lazy initialization, synchronization and making both manual and unit testing more complex. The method is not used too often, so I do not think there\u0027s much value in caching the filter.\n\nDo you have any major concerns keeping it as is?",
+      "parentUuid": "f4ec7517_967e0c31",
       "range": {
         "startLine": 111,
         "startChar": 37,
@@ -134,6 +230,30 @@
     },
     {
       "key": {
+        "uuid": "fa36db52_f0419fa2",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "02ae38ba_df9fb2fc",
+      "range": {
+        "startLine": 115,
+        "startChar": 28,
+        "endLine": 115,
+        "endChar": 44
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "713af48f_7ebd65f7",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 5
@@ -154,6 +274,30 @@
       "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "79ad1d10_90687143",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "I am afraid it not possible.\n\nDone for \"Log.e\" part.",
+      "parentUuid": "713af48f_7ebd65f7",
+      "range": {
+        "startLine": 117,
+        "startChar": 53,
+        "endLine": 117,
+        "endChar": 54
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -180,6 +324,30 @@
     },
     {
       "key": {
+        "uuid": "c486dc31_3aa4379b",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "The configuration can be pushed to a device separately from the OS build, so it might not be caught at the development phase. I think it is safer to keep gracefully handle such situations.",
+      "parentUuid": "a6c04dfc_8979f104",
+      "range": {
+        "startLine": 118,
+        "startChar": 17,
+        "endLine": 120,
+        "endChar": 0
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "24945874_bc5c7f7a",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 5
@@ -203,6 +371,30 @@
     },
     {
       "key": {
+        "uuid": "a15d0300_a06b620e",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "24945874_bc5c7f7a",
+      "range": {
+        "startLine": 122,
+        "startChar": 15,
+        "endLine": 122,
+        "endChar": 31
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "56e69e1f_80ac4fb0",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 5
@@ -223,6 +415,30 @@
       "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df8be589_c8965dee",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 316,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-16T19:57:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "56e69e1f_80ac4fb0",
+      "range": {
+        "startLine": 316,
+        "startChar": 8,
+        "endLine": 316,
+        "endChar": 70
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
