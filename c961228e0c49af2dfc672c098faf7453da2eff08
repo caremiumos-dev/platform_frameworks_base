@@ -1,0 +1,228 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f7a55e23_62513a24",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "I like the simplicity of this fix :)",
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8383e475_008f73ac",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "Remove this and make getLocaleFilter() return a @Nullable predicate.",
+      "range": {
+        "startLine": 57,
+        "startChar": 4,
+        "endLine": 57,
+        "endChar": 77
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8793a447_685572af",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "null",
+      "range": {
+        "startLine": 107,
+        "startChar": 32,
+        "endLine": 107,
+        "endChar": 48
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5ee6714e_1f64f9d8",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "The framework team generally disallows the use of streams in framework code. Looks like some of the logic from removeExcludedLocales can be reused instead.",
+      "range": {
+        "startLine": 108,
+        "startChar": 18,
+        "endLine": 108,
+        "endChar": 43
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4ec7517_967e0c31",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "The system property cannot change while the device is running since it is read-only, correct? If so, this should return a singleton instance.",
+      "range": {
+        "startLine": 111,
+        "startChar": 37,
+        "endLine": 111,
+        "endChar": 52
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02ae38ba_df9fb2fc",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "null",
+      "range": {
+        "startLine": 115,
+        "startChar": 28,
+        "endLine": 115,
+        "endChar": 44
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "713af48f_7ebd65f7",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "Is it possible to mention the property name here (without hardcoding it)? Also use the Log.e(String, String, Thowable) variant of Log.e.",
+      "range": {
+        "startLine": 117,
+        "startChar": 53,
+        "endLine": 117,
+        "endChar": 54
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a6c04dfc_8979f104",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "Should we throw a runtime exception instead? It seems this is an invalid device configuration that should never happen and should be caught as soon as possible when developing the device.",
+      "range": {
+        "startLine": 118,
+        "startChar": 17,
+        "endLine": 120,
+        "endChar": 0
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24945874_bc5c7f7a",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "null",
+      "range": {
+        "startLine": 122,
+        "startChar": 15,
+        "endLine": 122,
+        "endChar": 31
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "56e69e1f_80ac4fb0",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 316,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-16T17:32:51Z",
+      "side": 1,
+      "message": "Remove nested parenthesis:\n if (locales \u003d\u003d null || localeFilter \u003d\u003d null) {",
+      "range": {
+        "startLine": 316,
+        "startChar": 8,
+        "endLine": 316,
+        "endChar": 70
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
