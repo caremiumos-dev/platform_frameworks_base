@@ -207,6 +207,30 @@
     },
     {
       "key": {
+        "uuid": "b361521f_27b919b8",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-21T22:01:25Z",
+      "side": 1,
+      "message": "I\u0027m good with keeping it as is. If it in the future becomes a warmer code path, then we can look into reducing repeated work.",
+      "parentUuid": "4d7dd8bb_88c3f8f5",
+      "range": {
+        "startLine": 111,
+        "startChar": 37,
+        "endLine": 111,
+        "endChar": 52
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "02ae38ba_df9fb2fc",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 5
@@ -336,6 +360,30 @@
       "side": 1,
       "message": "The configuration can be pushed to a device separately from the OS build, so it might not be caught at the development phase. I think it is safer to keep gracefully handle such situations.",
       "parentUuid": "a6c04dfc_8979f104",
+      "range": {
+        "startLine": 118,
+        "startChar": 17,
+        "endLine": 120,
+        "endChar": 0
+      },
+      "revId": "c961228e0c49af2dfc672c098faf7453da2eff08",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f2c1a460_6a7b0c3b",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-21T22:01:25Z",
+      "side": 1,
+      "message": "Sounds good.",
+      "parentUuid": "c486dc31_3aa4379b",
       "range": {
         "startLine": 118,
         "startChar": 17,

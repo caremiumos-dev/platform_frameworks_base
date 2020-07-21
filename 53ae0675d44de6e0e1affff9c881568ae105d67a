@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c23015b1_ccb3a96a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-21T22:01:25Z",
+      "side": 1,
+      "message": "Overall LGTM. Adding inseob@ and jiyong@ to comment on the system property being read only.",
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
