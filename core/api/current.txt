@@ -9572,6 +9572,7 @@ package android.bluetooth.le {
     method public android.bluetooth.le.AdvertiseSettings.Builder setConnectable(boolean);
     method public android.bluetooth.le.AdvertiseSettings.Builder setTimeout(int);
     method public android.bluetooth.le.AdvertiseSettings.Builder setTxPowerLevel(int);
+    method public android.bluetooth.le.AdvertiseSettings.Builder setOwnAddressType(int);
   }
 
   public final class AdvertisingSet {
@@ -9641,6 +9642,7 @@ package android.bluetooth.le {
     method public android.bluetooth.le.AdvertisingSetParameters.Builder setScannable(boolean);
     method public android.bluetooth.le.AdvertisingSetParameters.Builder setSecondaryPhy(int);
     method public android.bluetooth.le.AdvertisingSetParameters.Builder setTxPowerLevel(int);
+    method public android.bluetooth.le.AdvertisingSetParameters.Builder setOwnAddressType(int);
   }
 
   public final class BluetoothLeAdvertiser {
