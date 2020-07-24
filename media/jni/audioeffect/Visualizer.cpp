@@ -39,23 +39,28 @@ Visualizer::Visualizer (const String16& opPackageName,
          effect_callback_t cbf,
          void* user,
          audio_session_t sessionId)
-    :   AudioEffect(SL_IID_VISUALIZATION, opPackageName, NULL, priority, cbf, user, sessionId),
+    :   AudioEffect(SL_IID_VISUALIZATION, opPackageName, nullptr, priority, cbf, user, sessionId),
         mCaptureRate(CAPTURE_RATE_DEF),
         mCaptureSize(CAPTURE_SIZE_DEF),
         mSampleRate(44100000),
         mScalingMode(VISUALIZER_SCALING_MODE_NORMALIZED),
         mMeasurementMode(MEASUREMENT_MODE_NONE),
-        mCaptureCallBack(NULL),
-        mCaptureCbkUser(NULL)
+        mCaptureCallBack(nullptr),
+        mCaptureCbkUser(nullptr)
 {
     initCaptureSize();
 }
 
+void Visualizer::onFirstRef() {
+    ALOGV("Visualizer:: onFirstRef() %p", this);
+    AudioEffect::onFirstRef();
+    initCaptureSize();
+}
+
+
 Visualizer::~Visualizer()
 {
     ALOGV("Visualizer::~Visualizer()");
-    setEnabled(false);
-    setCaptureCallBack(NULL, NULL, 0, 0);
 }
 
 void Visualizer::release()
@@ -65,8 +70,8 @@ void Visualizer::release()
     Mutex::Autolock _l(mCaptureLock);
 
     mCaptureThread.clear();
-    mCaptureCallBack = NULL;
-    mCaptureCbkUser = NULL;
+    mCaptureCallBack = nullptr;
+    mCaptureCbkUser = nullptr;
     mCaptureFlags = 0;
     mCaptureRate = 0;
 }
@@ -76,7 +81,7 @@ status_t Visualizer::setEnabled(bool enabled)
     Mutex::Autolock _l(mCaptureLock);
 
     sp<CaptureThread> t = mCaptureThread;
-    if (t != 0) {
+    if (t != nullptr) {
         if (enabled) {
             if (t->exitPending()) {
                 mCaptureLock.unlock();
@@ -93,7 +98,7 @@ status_t Visualizer::setEnabled(bool enabled)
 
     status_t status = AudioEffect::setEnabled(enabled);
 
-    if (t != 0) {
+    if (t != nullptr) {
         if (enabled && status == NO_ERROR) {
             t->run("Visualizer");
         } else {
@@ -101,7 +106,7 @@ status_t Visualizer::setEnabled(bool enabled)
         }
     }
 
-    if (t != 0) {
+    if (t != nullptr) {
         t->mLock.unlock();
     }
 
@@ -120,7 +125,7 @@ status_t Visualizer::setCaptureCallBack(capture_cbk_t cbk, void* user, uint32_t 
         return INVALID_OPERATION;
     }
 
-    if (mCaptureThread != 0) {
+    if (mCaptureThread != nullptr) {
         sp<CaptureThread> t = mCaptureThread;
         mCaptureLock.unlock();
         t->requestExitAndWait();
@@ -133,7 +138,7 @@ status_t Visualizer::setCaptureCallBack(capture_cbk_t cbk, void* user, uint32_t 
     mCaptureFlags = flags;
     mCaptureRate = rate;
 
-    if (cbk != NULL) {
+    if (cbk != nullptr) {
         mCaptureThread = new CaptureThread(this, rate, ((flags & CAPTURE_CALL_JAVA) != 0));
     }
     ALOGV("setCaptureCallBack() rate: %d thread %p flags 0x%08x",
@@ -273,7 +278,7 @@ status_t Visualizer::getIntMeasurements(uint32_t type, uint32_t number, int32_t 
 
 status_t Visualizer::getWaveForm(uint8_t *waveform)
 {
-    if (waveform == NULL) {
+    if (waveform == nullptr) {
         return BAD_VALUE;
     }
     if (mCaptureSize == 0) {
@@ -283,7 +288,7 @@ status_t Visualizer::getWaveForm(uint8_t *waveform)
     status_t status = NO_ERROR;
     if (mEnabled) {
         uint32_t replySize = mCaptureSize;
-        status = command(VISUALIZER_CMD_CAPTURE, 0, NULL, &replySize, waveform);
+        status = command(VISUALIZER_CMD_CAPTURE, 0, nullptr, &replySize, waveform);
         ALOGV("getWaveForm() command returned %d", status);
         if ((status == NO_ERROR) && (replySize == 0)) {
             status = NOT_ENOUGH_DATA;
@@ -297,7 +302,7 @@ status_t Visualizer::getWaveForm(uint8_t *waveform)
 
 status_t Visualizer::getFft(uint8_t *fft)
 {
-    if (fft == NULL) {
+    if (fft == nullptr) {
         return BAD_VALUE;
     }
     if (mCaptureSize == 0) {
@@ -350,7 +355,7 @@ void Visualizer::periodicCapture()
     Mutex::Autolock _l(mCaptureLock);
     ALOGV("periodicCapture() %p mCaptureCallBack %p mCaptureFlags 0x%08x",
             this, mCaptureCallBack, mCaptureFlags);
-    if (mCaptureCallBack != NULL &&
+    if (mCaptureCallBack != nullptr &&
         (mCaptureFlags & (CAPTURE_WAVEFORM|CAPTURE_FFT)) &&
         mCaptureSize != 0) {
         uint8_t waveform[mCaptureSize];
@@ -365,8 +370,8 @@ void Visualizer::periodicCapture()
         if (status != NO_ERROR) {
             return;
         }
-        uint8_t *wavePtr = NULL;
-        uint8_t *fftPtr = NULL;
+        uint8_t *wavePtr = nullptr;
+        uint8_t *fftPtr = nullptr;
         uint32_t waveSize = 0;
         uint32_t fftSize = 0;
         if (mCaptureFlags & CAPTURE_WAVEFORM) {
@@ -433,7 +438,7 @@ bool Visualizer::CaptureThread::threadLoop()
 {
     ALOGV("CaptureThread %p enter", this);
     sp<Visualizer> receiver = mReceiver.promote();
-    if (receiver == NULL) {
+    if (receiver == nullptr) {
         return false;
     }
     while (!exitPending())

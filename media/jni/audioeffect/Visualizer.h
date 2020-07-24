@@ -65,13 +65,15 @@ public:
     /* Constructor.
      * See AudioEffect constructor for details on parameters.
      */
-                        Visualizer(const String16& opPackageName,
-                                   int32_t priority = 0,
-                                   effect_callback_t cbf = NULL,
-                                   void* user = NULL,
-                                   audio_session_t sessionId = AUDIO_SESSION_OUTPUT_MIX);
+    Visualizer(const String16& opPackageName,
+                int32_t priority = 0,
+                effect_callback_t cbf = nullptr,
+                void* user = nullptr,
+                audio_session_t sessionId = AUDIO_SESSION_OUTPUT_MIX);
 
-                        ~Visualizer();
+    void onFirstRef() override;
+
+    ~Visualizer();
 
     // Declared 'final' because we call this in ~Visualizer().
     status_t    setEnabled(bool enabled) final;
