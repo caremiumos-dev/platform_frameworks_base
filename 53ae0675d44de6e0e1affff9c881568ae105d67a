@@ -16,6 +16,23 @@
       "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "931f16d2_21d6fb48",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1339996
+      },
+      "writtenOn": "2020-07-24T22:18:30Z",
+      "side": 1,
+      "message": "+2 since system property was already approved in aosp/1358091",
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
