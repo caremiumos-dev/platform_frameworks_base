@@ -608,7 +608,7 @@ public class ConnectivityManager {
     public static final int TYPE_BLUETOOTH   = 7;
 
     /**
-     * Dummy data connection.  This should not be used on shipping devices.
+     * Fake data connection.  This should not be used on shipping devices.
      * @deprecated This is not used any more.
      */
     @Deprecated
