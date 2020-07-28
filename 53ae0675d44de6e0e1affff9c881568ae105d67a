@@ -67,6 +67,121 @@
       "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7679ffa4_5806f809",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1060678
+      },
+      "writtenOn": "2020-07-28T22:34:04Z",
+      "side": 1,
+      "message": "allLocales.length",
+      "range": {
+        "startLine": 107,
+        "startChar": 45,
+        "endLine": 107,
+        "endChar": 47
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b68bd758_00205492",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1060678
+      },
+      "writtenOn": "2020-07-28T22:34:04Z",
+      "side": 1,
+      "message": "check nullability before the call\n\n  if (locales !\u003d null) {\n    locales \u003d ...\n  }",
+      "range": {
+        "startLine": 304,
+        "startChar": 8,
+        "endLine": 304,
+        "endChar": 15
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ccda6ccd_ee53a67d",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 1060678
+      },
+      "writtenOn": "2020-07-28T22:34:04Z",
+      "side": 1,
+      "message": "@NonNulll",
+      "range": {
+        "startLine": 323,
+        "startChar": 53,
+        "endLine": 323,
+        "endChar": 61
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d8ea8669_b5a3ba5c",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 1060678
+      },
+      "writtenOn": "2020-07-28T22:34:04Z",
+      "side": 1,
+      "message": "@NonNull",
+      "range": {
+        "startLine": 323,
+        "startChar": 19,
+        "endLine": 323,
+        "endChar": 29
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e337158b_53cc88bd",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1060678
+      },
+      "writtenOn": "2020-07-28T22:34:04Z",
+      "side": 1,
+      "message": "don\u0027t call removeExcludedLocales() if we have a \u0027null\u0027 locales list",
+      "range": {
+        "startLine": 325,
+        "startChar": 12,
+        "endLine": 325,
+        "endChar": 31
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
