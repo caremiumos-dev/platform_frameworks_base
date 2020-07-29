@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "dd23f496_7b65d5b2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2020-07-29T02:14:56Z",
+      "side": 1,
+      "message": "Do we want to abandon this now ?",
+      "revId": "60e84da662d4fcbd7e11beb4096d22f4df7bf776",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "43d22f47_2669899b",
         "filename": "core/java/android/net/DhcpInfo.java",
         "patchSetId": 2
