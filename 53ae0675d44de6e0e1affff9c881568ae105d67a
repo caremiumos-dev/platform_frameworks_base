@@ -93,6 +93,30 @@
     },
     {
       "key": {
+        "uuid": "09c6d3c6_55c06c94",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-29T08:47:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7679ffa4_5806f809",
+      "range": {
+        "startLine": 107,
+        "startChar": 45,
+        "endLine": 107,
+        "endChar": 47
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b68bd758_00205492",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 6
@@ -113,6 +137,30 @@
       "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a7933bb7_18894608",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-29T08:47:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b68bd758_00205492",
+      "range": {
+        "startLine": 304,
+        "startChar": 8,
+        "endLine": 304,
+        "endChar": 15
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     },
     {
       "key": {
@@ -162,6 +210,54 @@
     },
     {
       "key": {
+        "uuid": "94b4c1c1_847211d8",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-29T08:47:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ccda6ccd_ee53a67d",
+      "range": {
+        "startLine": 323,
+        "startChar": 53,
+        "endLine": 323,
+        "endChar": 61
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7bea96bd_7972badf",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-29T08:47:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d8ea8669_b5a3ba5c",
+      "range": {
+        "startLine": 323,
+        "startChar": 19,
+        "endLine": 323,
+        "endChar": 29
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e337158b_53cc88bd",
         "filename": "core/java/com/android/internal/app/LocalePicker.java",
         "patchSetId": 6
@@ -182,6 +278,30 @@
       "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d4136fb2_343fa9f8",
+        "filename": "core/java/com/android/internal/app/LocalePicker.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1682499
+      },
+      "writtenOn": "2020-07-29T08:47:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e337158b_53cc88bd",
+      "range": {
+        "startLine": 325,
+        "startChar": 12,
+        "endLine": 325,
+        "endChar": 31
+      },
+      "revId": "53ae0675d44de6e0e1affff9c881568ae105d67a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
