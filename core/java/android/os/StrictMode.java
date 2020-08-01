@@ -1816,6 +1816,10 @@ public final class StrictMode {
                 onCredentialProtectedPathAccess(path, UserHandle.USER_SYSTEM);
             }
         }
+
+        @Override
+        public void onBlockingOps() {
+        }
     };
 
     /**
