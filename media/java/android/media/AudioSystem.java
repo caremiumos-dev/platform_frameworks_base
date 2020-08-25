@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.audiofx.AudioEffect;
 import android.media.audiopolicy.AudioMix;
+import android.media.audiopolicy.AudioProductStrategy;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -1443,13 +1444,62 @@ public class AudioSystem
     /** @hide */
     @UnsupportedAppUsage
     public static native int getForceUse(int usage);
-    /** @hide */
+
+    /**
+     * @hide
+     * @deprecated Use {@link #initVolumeForAttributes() instead}
+     */
     @UnsupportedAppUsage
-    public static native int initStreamVolume(int stream, int indexMin, int indexMax);
+    public static int initStreamVolume(int stream, int indexMin, int indexMax) {
+        final AudioAttributes aa =
+                AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(stream);
+        if (aa.equals(new AudioAttributes.Builder().build())) {
+            Log.e(TAG, "no attributes for stream " + stream
+                    + ", prevent to overwrite default volume group");
+            return 0;
+        }
+        return initVolumeForAttributes(aa, indexMin, indexMax);
+    }
+
+    /**
+     * @deprecated Use {@link #setVolumeIndexForAttributes() instead}
+     */
     @UnsupportedAppUsage
-    private static native int setStreamVolumeIndex(int stream, int index, int device);
-    /** @hide */
-    public static native int getStreamVolumeIndex(int stream, int device);
+    private static int setStreamVolumeIndex(int stream, int index, int device) {
+        final AudioAttributes aa =
+                AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(stream);
+        if (aa.equals(new AudioAttributes.Builder().build())) {
+            Log.e(TAG, "no attributes for stream " + stream
+                    + ", prevent to overwrite default volume group");
+            return -1;
+        }
+        return setVolumeIndexForAttributes(aa , index, device);
+    }
+    /**
+     * @hide
+     * @deprecated Use {@link #getVolumeIndexForAttributes() instead}
+     */
+    public static int getStreamVolumeIndex(int stream, int device) {
+        final AudioAttributes aa =
+                AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(stream);
+        if (aa.equals(new AudioAttributes.Builder().build())) {
+            Log.e(TAG, "no attributes for stream " + stream);
+            return -1;
+        }
+        return getVolumeIndexForAttributes(aa, device);
+    }
+
+    /**
+     * @hide
+     * @param attributes the {@link AudioAttributes} to be considered
+     * @param indexMin to be applied
+     * @param indexMax to be applied
+     * @return command completion status.
+     */
+    @UnsupportedAppUsage
+    public static native int initVolumeForAttributes(
+            @NonNull AudioAttributes attributes, int indexMin, int indexMax);
+
     /**
      * @hide
      * set a volume for the given {@link AudioAttributes} and for all other stream that belong to

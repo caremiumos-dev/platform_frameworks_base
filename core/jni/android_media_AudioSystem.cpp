@@ -593,40 +593,17 @@ android_media_AudioSystem_getForceUse(JNIEnv *env, jobject thiz, jint usage)
 }
 
 static jint
-android_media_AudioSystem_initStreamVolume(JNIEnv *env, jobject thiz, jint stream, jint indexMin, jint indexMax)
+android_media_AudioSystem_initVolumeForAttributes(
+        JNIEnv *env, jobject thiz, jobject jaa, jint indexMin, jint indexMax)
 {
-    return (jint) check_AudioSystem_Command(AudioSystem::initStreamVolume(static_cast <audio_stream_type_t>(stream),
-                                                                   indexMin,
-                                                                   indexMax));
-}
-
-static jint
-android_media_AudioSystem_setStreamVolumeIndex(JNIEnv *env,
-                                               jobject thiz,
-                                               jint stream,
-                                               jint index,
-                                               jint device)
-{
-    return (jint) check_AudioSystem_Command(
-            AudioSystem::setStreamVolumeIndex(static_cast <audio_stream_type_t>(stream),
-                                              index,
-                                              (audio_devices_t)device));
-}
-
-static jint
-android_media_AudioSystem_getStreamVolumeIndex(JNIEnv *env,
-                                               jobject thiz,
-                                               jint stream,
-                                               jint device)
-{
-    int index;
-    if (AudioSystem::getStreamVolumeIndex(static_cast <audio_stream_type_t>(stream),
-                                          &index,
-                                          (audio_devices_t)device)
-            != NO_ERROR) {
-        index = -1;
+    // read the AudioAttributes values
+    JNIAudioAttributeHelper::UniqueAaPtr paa = JNIAudioAttributeHelper::makeUnique();
+    jint jStatus = JNIAudioAttributeHelper::nativeFromJava(env, jaa, paa.get());
+    if (jStatus != (jint)AUDIO_JAVA_SUCCESS) {
+        return jStatus;
     }
-    return (jint) index;
+    return (jint) check_AudioSystem_Command(
+                AudioSystem::initVolumeForAttributes(*(paa.get()), indexMin, indexMax));
 }
 
 static jint
@@ -2556,9 +2533,8 @@ static const JNINativeMethod gMethods[] =
          {"setPhoneState", "(II)I", (void *)android_media_AudioSystem_setPhoneState},
          {"setForceUse", "(II)I", (void *)android_media_AudioSystem_setForceUse},
          {"getForceUse", "(I)I", (void *)android_media_AudioSystem_getForceUse},
-         {"initStreamVolume", "(III)I", (void *)android_media_AudioSystem_initStreamVolume},
-         {"setStreamVolumeIndex", "(III)I", (void *)android_media_AudioSystem_setStreamVolumeIndex},
-         {"getStreamVolumeIndex", "(II)I", (void *)android_media_AudioSystem_getStreamVolumeIndex},
+         {"initVolumeForAttributes", "(Landroid/media/AudioAttributes;II)I",
+          (void *)android_media_AudioSystem_initVolumeForAttributes},
          {"setVolumeIndexForAttributes", "(Landroid/media/AudioAttributes;II)I",
           (void *)android_media_AudioSystem_setVolumeIndexForAttributes},
          {"getVolumeIndexForAttributes", "(Landroid/media/AudioAttributes;I)I",
