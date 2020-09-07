@@ -584,7 +584,14 @@ public final class RingtonePickerActivity extends AlertActivity implements
     }
 
     private Uri getCurrentlySelectedRingtoneUri() {
-      if (getCheckedItem() == mDefaultRingtonePos) {
+      if (getCheckedItem() == POS_UNKNOWN) {
+        /* When mExistingUri cannot be resolved or is null, and mHasDefaultItem is false,
+         * no item will be selected when the user opens the current picker interface.
+         * In the current situation, if the user clicks "ok" directly,
+         * the value of setSuccessResultWithRingtone should be null instead of mUriForDefaultItem.
+         */
+        return null;
+      } else if (getCheckedItem() == mDefaultRingtonePos) {
         // Use the default Uri that they originally gave us.
         return mUriForDefaultItem;
       } else if (getCheckedItem() == mSilentPos) {
