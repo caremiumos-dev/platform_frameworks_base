@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2dc17756_2adb7bd9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1289143
+      },
+      "writtenOn": "2020-09-19T17:08:45Z",
+      "side": 1,
+      "message": "I no longer have access to the owner account. The change will need to be rebased in order to be merged",
+      "revId": "89aca58656e22354c4e657bb15bfe4c68dbf5b5a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
