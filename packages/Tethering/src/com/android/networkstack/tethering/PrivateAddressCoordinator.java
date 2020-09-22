@@ -16,6 +16,7 @@
 package com.android.networkstack.tethering;
 
 import static android.net.TetheringManager.TETHERING_WIFI_P2P;
+import static android.net.util.PrefixUtils.asIpPrefix;
 
 import static java.util.Arrays.asList;
 
@@ -29,6 +30,7 @@ import android.net.ip.IpServer;
 import android.net.util.PrefixUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
 
@@ -78,6 +80,7 @@ public class PrivateAddressCoordinator {
     private final IpPrefix mTetheringPrefix;
     private final ConnectivityManager mConnectivityMgr;
     private final TetheringConfiguration mConfig;
+    private final SparseArray<LinkAddress> mCachedAddress;
 
     public PrivateAddressCoordinator(Context context, TetheringConfiguration config) {
         mDownstreams = new ArraySet<>();
@@ -86,6 +89,7 @@ public class PrivateAddressCoordinator {
         mConnectivityMgr = (ConnectivityManager) context.getSystemService(
                 Context.CONNECTIVITY_SERVICE);
         mConfig = config;
+        mCachedAddress = new SparseArray();
     }
 
     /**
@@ -156,10 +160,15 @@ public class PrivateAddressCoordinator {
      * returns null if there is no available address.
      */
     @Nullable
-    public LinkAddress requestDownstreamAddress(final IpServer ipServer) {
+    public LinkAddress requestDownstreamAddress(final IpServer ipServer, boolean useLastAddress) {
         if (mConfig.shouldEnableWifiP2pDedicatedIp()
                 && ipServer.interfaceType() == TETHERING_WIFI_P2P) {
             return new LinkAddress(LEGACY_WIFI_P2P_IFACE_ADDRESS);
+        }
+
+        final LinkAddress cachedAddress = mCachedAddress.get(ipServer.interfaceType());
+        if (useLastAddress && cachedAddress != null && !isConflict(asIpPrefix(cachedAddress))) {
+            return cachedAddress;
         }
 
         // Address would be 192.168.[subAddress]/24.
@@ -179,18 +188,21 @@ public class PrivateAddressCoordinator {
                 throw new IllegalStateException("Invalid address, shouldn't happen.", e);
             }
 
-            final IpPrefix prefix = new IpPrefix(addr, PREFIX_LENGTH);
-            // Check whether this prefix is in use.
-            if (isDownstreamPrefixInUse(prefix)) continue;
-            // Check whether this prefix is conflict with any current upstream network.
-            if (isConflictWithUpstream(prefix)) continue;
+            if (isConflict(new IpPrefix(addr, PREFIX_LENGTH))) continue;
 
             mDownstreams.add(ipServer);
-            return new LinkAddress(addr, PREFIX_LENGTH);
+            final LinkAddress newAddress = new LinkAddress(addr, PREFIX_LENGTH);
+            mCachedAddress.put(ipServer.interfaceType(), newAddress);
+            return newAddress;
         }
 
         // No available address.
         return null;
+    }
+
+    private boolean isConflict(final IpPrefix prefix) {
+        // Check whether this prefix is in use or conflict with any current upstream network.
+        return isDownstreamPrefixInUse(prefix) || isConflictWithUpstream(prefix);
     }
 
     /** Get random sub address value. Return value is in 0 ~ 0xffff. */
