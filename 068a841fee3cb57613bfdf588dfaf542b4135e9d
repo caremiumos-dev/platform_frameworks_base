@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b8c6fb39_039a8d37",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2020-09-24T15:49:43Z",
+      "side": 1,
+      "message": "I would consider a more polish wording that just was commented in the bug as more analysis is needed if this only affects media, why and how much before we make  a side effect of a potential bug a de facto documented behavior ",
+      "revId": "068a841fee3cb57613bfdf588dfaf542b4135e9d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
