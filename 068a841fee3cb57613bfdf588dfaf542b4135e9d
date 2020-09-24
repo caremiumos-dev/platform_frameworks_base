@@ -16,6 +16,24 @@
       "revId": "068a841fee3cb57613bfdf588dfaf542b4135e9d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "92a1559c_0d10bc69",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1002682
+      },
+      "writtenOn": "2020-09-24T19:11:57Z",
+      "side": 1,
+      "message": "Also we want to get rid of the \"use setMode(IN_CALL) to play your phone message on the earpiece\" hack we see over and over. So let\u0027s not encourage developers to do that here.",
+      "parentUuid": "b8c6fb39_039a8d37",
+      "revId": "068a841fee3cb57613bfdf588dfaf542b4135e9d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
