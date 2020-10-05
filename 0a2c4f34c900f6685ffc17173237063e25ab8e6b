@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bad4c02e_e8461048",
+        "filename": "services/core/java/com/android/server/media/MediaSessionService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 2403,
+      "author": {
+        "id": 1018371
+      },
+      "writtenOn": "2020-10-05T02:23:58Z",
+      "side": 0,
+      "message": "What about using getOrDefault?",
+      "range": {
+        "startLine": 2403,
+        "startChar": 33,
+        "endLine": 2403,
+        "endChar": 36
+      },
+      "revId": "0a2c4f34c900f6685ffc17173237063e25ab8e6b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
