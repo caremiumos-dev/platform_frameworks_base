@@ -18,6 +18,23 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "99a7116d_2f143be4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1568592
+      },
+      "writtenOn": "2020-10-13T13:37:07Z",
+      "side": 1,
+      "message": "Looks great! I agree with Selim\u0027s minor feedback, so once addressed we should be good.",
+      "revId": "031b275379422164c55bbcc19e31ae177285bb58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d9e7bf56_09853b7f",
