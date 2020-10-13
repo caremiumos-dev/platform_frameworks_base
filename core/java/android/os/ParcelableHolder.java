@@ -18,12 +18,22 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.util.MathUtils;
 
 /**
- * Parcelable containing the other Parcelable object.
+ * ParcelableHolder is the parcelable which can contain ohter parcelable.
+ * It helps a parcelable to be extended by other without modifying the original parcelable directly.
+ *
+ * <code>parcelable ExtendableParcelable {
+ *   Data d;
+ *   ParcelableHolder ext;
+ * }</code>
+ * <code>ExtendableParcelable.ext.setParcelable(new MyExtension());</code>
+ *
  * @hide
  */
+@SystemApi
 public final class ParcelableHolder implements Parcelable {
     /**
      * This is set by {@link #setParcelable}.
@@ -80,7 +90,7 @@ public final class ParcelableHolder implements Parcelable {
      * Write a parcelable into ParcelableHolder, the previous parcelable will be removed.
      * @return {@code false} if the parcelable's stability is more unstable ParcelableHolder.
      */
-    public synchronized boolean setParcelable(@Nullable Parcelable p) {
+    public boolean setParcelable(@Nullable Parcelable p) {
         // a ParcelableHolder can only hold things at its stability or higher
         if (p != null && this.getStability() > p.getStability()) {
             return false;
@@ -99,7 +109,7 @@ public final class ParcelableHolder implements Parcelable {
      *         the type written by (@link #setParcelable}.
      */
     @Nullable
-    public synchronized <T extends Parcelable> T getParcelable(@NonNull Class<T> clazz) {
+    public <T extends Parcelable> T getParcelable(@NonNull Class<T> clazz) {
         if (mParcel == null) {
             if (!clazz.isInstance(mParcelable)) {
                 return null;
@@ -123,7 +133,7 @@ public final class ParcelableHolder implements Parcelable {
     /**
      * Read ParcelableHolder from a parcel.
      */
-    public synchronized void readFromParcel(@NonNull Parcel parcel) {
+    public void readFromParcel(@NonNull Parcel parcel) {
         this.mStability = parcel.readInt();
 
         mParcelable = null;
@@ -145,7 +155,7 @@ public final class ParcelableHolder implements Parcelable {
     }
 
     @Override
-    public synchronized void writeToParcel(@NonNull Parcel parcel, int flags) {
+    public void writeToParcel(@NonNull Parcel parcel, int flags) {
         parcel.writeInt(this.mStability);
 
         if (mParcel != null) {
@@ -166,7 +176,7 @@ public final class ParcelableHolder implements Parcelable {
     }
 
     @Override
-    public synchronized int describeContents() {
+    public int describeContents() {
         if (mParcel != null) {
             return mParcel.hasFileDescriptors() ? Parcelable.CONTENTS_FILE_DESCRIPTOR : 0;
         }
