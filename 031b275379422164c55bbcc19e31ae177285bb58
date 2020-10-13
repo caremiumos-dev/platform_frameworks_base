@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "493f9dda_c043ae21",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1059880
+      },
+      "writtenOn": "2020-10-13T12:53:28Z",
+      "side": 1,
+      "message": "This looks pretty good, thanks for fixing!\nMatt / Beth, can you have a look as well?",
+      "revId": "031b275379422164c55bbcc19e31ae177285bb58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d9e7bf56_09853b7f",
+        "filename": "packages/SystemUI/src/com/android/systemui/media/MediaDataManager.kt",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1059880
+      },
+      "writtenOn": "2020-10-13T12:53:28Z",
+      "side": 1,
+      "message": "stylistically, this should probably not have an explicit type and then we can just call\ndrawable?.let ....",
+      "revId": "031b275379422164c55bbcc19e31ae177285bb58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9eddd961_55a08520",
+        "filename": "packages/SystemUI/src/com/android/systemui/media/MediaDataManager.kt",
+        "patchSetId": 3
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 1059880
+      },
+      "writtenOn": "2020-10-13T12:53:28Z",
+      "side": 1,
+      "message": "this explicit declaration can likely be dropped.",
+      "revId": "031b275379422164c55bbcc19e31ae177285bb58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
