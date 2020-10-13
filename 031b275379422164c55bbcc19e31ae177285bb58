@@ -52,6 +52,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a59d0f85_13e772fa",
+        "filename": "packages/SystemUI/src/com/android/systemui/media/MediaDataManager.kt",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1762940
+      },
+      "writtenOn": "2020-10-13T19:54:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d9e7bf56_09853b7f",
+      "revId": "031b275379422164c55bbcc19e31ae177285bb58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9eddd961_55a08520",
@@ -65,6 +83,24 @@
       "writtenOn": "2020-10-13T12:53:28Z",
       "side": 1,
       "message": "this explicit declaration can likely be dropped.",
+      "revId": "031b275379422164c55bbcc19e31ae177285bb58",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4bd72a2_84995517",
+        "filename": "packages/SystemUI/src/com/android/systemui/media/MediaDataManager.kt",
+        "patchSetId": 3
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 1762940
+      },
+      "writtenOn": "2020-10-13T19:54:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9eddd961_55a08520",
       "revId": "031b275379422164c55bbcc19e31ae177285bb58",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
