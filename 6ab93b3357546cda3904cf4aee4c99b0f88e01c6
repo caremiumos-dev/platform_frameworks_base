@@ -26,6 +26,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "093653a4_04599227",
+        "filename": "core/java/android/uwb/RangingParams.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1355916
+      },
+      "writtenOn": "2020-10-13T18:28:44Z",
+      "side": 1,
+      "message": "I\u0027m not sure I understand the question.\n\nYou can have multiple remote device addresses, but they must each be unique. You can only have a single channel number. If the channel is set, and then later set to a new value, the new value is used and replaces the old value.",
+      "parentUuid": "069480b6_07e80cff",
+      "range": {
+        "startLine": 276,
+        "startChar": 23,
+        "endLine": 276,
+        "endChar": 39
+      },
+      "revId": "6ab93b3357546cda3904cf4aee4c99b0f88e01c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "f41dd700_b911f609",
         "filename": "core/java/android/uwb/RangingParams.java",
         "patchSetId": 1
@@ -37,6 +61,30 @@
       "writtenOn": "2020-10-13T17:10:14Z",
       "side": 1,
       "message": "HashSet?",
+      "range": {
+        "startLine": 285,
+        "startChar": 29,
+        "endLine": 285,
+        "endChar": 33
+      },
+      "revId": "6ab93b3357546cda3904cf4aee4c99b0f88e01c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b23393e1_96cf969e",
+        "filename": "core/java/android/uwb/RangingParams.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1355916
+      },
+      "writtenOn": "2020-10-13T18:28:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f41dd700_b911f609",
       "range": {
         "startLine": 285,
         "startChar": 29,
@@ -60,6 +108,30 @@
       "writtenOn": "2020-10-13T17:10:14Z",
       "side": 1,
       "message": "HashSet?",
+      "range": {
+        "startLine": 305,
+        "startChar": 29,
+        "endLine": 305,
+        "endChar": 33
+      },
+      "revId": "6ab93b3357546cda3904cf4aee4c99b0f88e01c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "15946652_ea5dcdf4",
+        "filename": "core/java/android/uwb/RangingParams.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 305,
+      "author": {
+        "id": 1355916
+      },
+      "writtenOn": "2020-10-13T18:28:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b70e8a1d_2c35307b",
       "range": {
         "startLine": 305,
         "startChar": 29,
