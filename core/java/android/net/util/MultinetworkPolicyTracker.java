@@ -62,7 +62,11 @@ import java.util.List;
 public class MultinetworkPolicyTracker {
     private static String TAG = MultinetworkPolicyTracker.class.getSimpleName();
 
+    // The context is for the current user.
     private final Context mContext;
+    // The context is for all users, so register a BroadcastReceiver which can receive intents from
+    // all users.
+    private final Context mUserAllContext;
     private final Handler mHandler;
     private final Runnable mAvoidBadWifiCallback;
     private final List<Uri> mSettingsUris;
@@ -80,6 +84,7 @@ public class MultinetworkPolicyTracker {
 
     public MultinetworkPolicyTracker(Context ctx, Handler handler, Runnable avoidBadWifiCallback) {
         mContext = ctx;
+        mUserAllContext = ctx.createContextAsUser(UserHandle.ALL, 0 /* flags */);
         mHandler = handler;
         mAvoidBadWifiCallback = avoidBadWifiCallback;
         mSettingsUris = Arrays.asList(
@@ -114,8 +119,8 @@ public class MultinetworkPolicyTracker {
 
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
-        mContext.registerReceiverAsUser(
-                mBroadcastReceiver, UserHandle.ALL, intentFilter, null, mHandler);
+        mUserAllContext.registerReceiver(
+                mBroadcastReceiver, intentFilter, null /* broadcastPermission */, mHandler);
 
         reevaluate();
     }
@@ -123,7 +128,7 @@ public class MultinetworkPolicyTracker {
     public void shutdown() {
         mResolver.unregisterContentObserver(mSettingObserver);
 
-        mContext.unregisterReceiver(mBroadcastReceiver);
+        mUserAllContext.unregisterReceiver(mBroadcastReceiver);
     }
 
     public boolean getAvoidBadWifi() {

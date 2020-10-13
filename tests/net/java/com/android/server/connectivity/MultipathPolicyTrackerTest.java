@@ -34,6 +34,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,6 +55,7 @@ import android.net.NetworkTemplate;
 import android.net.StringNetworkSpecifier;
 import android.net.TelephonyNetworkSpecifier;
 import android.os.Handler;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.test.mock.MockContentResolver;
@@ -72,6 +75,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -127,8 +131,11 @@ public class MultipathPolicyTrackerTest {
 
         when(mContext.getResources()).thenReturn(mResources);
         when(mContext.getApplicationInfo()).thenReturn(new ApplicationInfo());
-        when(mContext.registerReceiverAsUser(mConfigChangeReceiverCaptor.capture(),
-                any(), argThat(f -> f.hasAction(ACTION_CONFIGURATION_CHANGED)), any(), any()))
+        final Context asUserContext = mock(Context.class, AdditionalAnswers.delegatesTo(mContext));
+        doReturn(UserHandle.ALL.getIdentifier()).when(asUserContext).getUserId();
+        when(mContext.createContextAsUser(eq(UserHandle.ALL), anyInt())).thenReturn(asUserContext);
+        when(mContext.registerReceiver(mConfigChangeReceiverCaptor.capture(),
+                argThat(f -> f.hasAction(ACTION_CONFIGURATION_CHANGED)), any(), any()))
                 .thenReturn(null);
 
         when(mDeps.getClock()).thenReturn(mClock);
