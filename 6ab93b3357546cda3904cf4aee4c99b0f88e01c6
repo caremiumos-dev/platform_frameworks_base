@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "069480b6_07e80cff",
+        "filename": "core/java/android/uwb/RangingParams.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1121403
+      },
+      "writtenOn": "2020-10-13T17:10:14Z",
+      "side": 1,
+      "message": "can channel number be set repeatedly?\n\nasking this because remote address cannot be added repeatedly, do we want the behavior to be consistent either way?",
+      "range": {
+        "startLine": 276,
+        "startChar": 23,
+        "endLine": 276,
+        "endChar": 39
+      },
+      "revId": "6ab93b3357546cda3904cf4aee4c99b0f88e01c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f41dd700_b911f609",
+        "filename": "core/java/android/uwb/RangingParams.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1121403
+      },
+      "writtenOn": "2020-10-13T17:10:14Z",
+      "side": 1,
+      "message": "HashSet?",
+      "range": {
+        "startLine": 285,
+        "startChar": 29,
+        "endLine": 285,
+        "endChar": 33
+      },
+      "revId": "6ab93b3357546cda3904cf4aee4c99b0f88e01c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b70e8a1d_2c35307b",
+        "filename": "core/java/android/uwb/RangingParams.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 305,
+      "author": {
+        "id": 1121403
+      },
+      "writtenOn": "2020-10-13T17:10:14Z",
+      "side": 1,
+      "message": "HashSet?",
+      "range": {
+        "startLine": 305,
+        "startChar": 29,
+        "endLine": 305,
+        "endChar": 33
+      },
+      "revId": "6ab93b3357546cda3904cf4aee4c99b0f88e01c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
