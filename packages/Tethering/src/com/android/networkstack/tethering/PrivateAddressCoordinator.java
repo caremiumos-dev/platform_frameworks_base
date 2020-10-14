@@ -176,6 +176,8 @@ public class PrivateAddressCoordinator {
             return new LinkAddress(LEGACY_WIFI_P2P_IFACE_ADDRESS);
         }
 
+        mDownstreams.add(ipServer);
+
         final LinkAddress cachedAddress = mCachedAddresses.get(ipServer.interfaceType());
         if (useLastAddress && cachedAddress != null
                 && !isConflictWithUpstream(asIpPrefix(cachedAddress))) {
@@ -185,13 +187,13 @@ public class PrivateAddressCoordinator {
         for (IpPrefix prefixRange : mTetheringPrefixes) {
             final LinkAddress newAddress = chooseDownstreamAddress(prefixRange);
             if (newAddress != null) {
-                mDownstreams.add(ipServer);
                 mCachedAddresses.put(ipServer.interfaceType(), newAddress);
                 return newAddress;
             }
         }
 
         // No available address.
+        mDownstreams.remove(ipServer);
         return null;
     }
 

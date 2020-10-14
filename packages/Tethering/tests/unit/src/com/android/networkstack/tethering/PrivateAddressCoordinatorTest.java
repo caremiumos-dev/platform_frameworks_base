@@ -227,8 +227,8 @@ public final class PrivateAddressCoordinatorTest {
                 new LinkAddress("192.168.88.23/16"), null,
                 makeNetworkCapabilities(TRANSPORT_WIFI));
         mPrivateAddressCoordinator.updateUpstreamPrefix(wifiUpstream);
-        verify(mHotspotIpServer, never()).sendMessage(IpServer.CMD_NOTIFY_PREFIX_CONFLICT);
-        verify(mUsbIpServer, never()).sendMessage(IpServer.CMD_NOTIFY_PREFIX_CONFLICT);
+        verify(mHotspotIpServer).sendMessage(IpServer.CMD_NOTIFY_PREFIX_CONFLICT);
+        verify(mUsbIpServer).sendMessage(IpServer.CMD_NOTIFY_PREFIX_CONFLICT);
     }
 
     private UpstreamNetworkState buildUpstreamNetworkState(final Network network,
