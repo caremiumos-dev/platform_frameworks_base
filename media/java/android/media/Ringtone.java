@@ -369,8 +369,7 @@ public class Ringtone {
         if (mLocalPlayer != null) {
             // do not play ringtones if stream volume is 0
             // (typically because ringer mode is silent).
-            if (mAudioManager.getStreamVolume(
-                    AudioAttributes.toLegacyStreamType(mAudioAttributes)) != 0) {
+            if (mAudioManager.getVolumeIndexForAttributes(mAudioAttributes) != 0) {
                 startLocalPlayer();
             }
         } else if (mAllowRemote && (mRemotePlayer != null) && (mUri != null)) {
@@ -460,7 +459,7 @@ public class Ringtone {
     }
 
     private boolean playFallbackRingtone() {
-        if (mAudioManager.getStreamVolume(AudioAttributes.toLegacyStreamType(mAudioAttributes))
+        if (mAudioManager.getVolumeIndexForAttributes(mAudioAttributes)
                 != 0) {
             int ringtoneType = RingtoneManager.getDefaultType(mUri);
             if (ringtoneType == -1 ||
