@@ -48,6 +48,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f7170255_a4aa0508",
+        "filename": "core/java/android/uwb/RangingParams.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1355916
+      },
+      "writtenOn": "2020-10-20T16:53:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "093653a4_04599227",
+      "range": {
+        "startLine": 276,
+        "startChar": 23,
+        "endLine": 276,
+        "endChar": 39
+      },
+      "revId": "6ab93b3357546cda3904cf4aee4c99b0f88e01c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f41dd700_b911f609",
