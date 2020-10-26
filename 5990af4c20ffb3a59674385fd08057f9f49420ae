@@ -16,6 +16,24 @@
       "message": "Hi, I\u0027m wondering where the failures reported by Treehugger Robot are coming from, as I can\u0027t see what failed.",
       "revId": "5990af4c20ffb3a59674385fd08057f9f49420ae",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7bb03a76_102a270b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1568592
+      },
+      "writtenOn": "2020-10-26T18:56:11Z",
+      "side": 1,
+      "message": "Looks like a failure to cherry pick for testing against other branches. Let me check how to proceed.",
+      "parentUuid": "ddc65123_9036b9c2",
+      "revId": "5990af4c20ffb3a59674385fd08057f9f49420ae",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
