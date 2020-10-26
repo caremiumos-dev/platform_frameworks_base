@@ -16,13 +16,13 @@
 
 package android.security.keystore2;
 
+import android.hardware.keymint.KeyParameter;
 import android.security.KeyStoreException;
 import android.security.KeyStoreOperation;
 import android.security.keymaster.KeymasterDefs;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyStoreCryptoOperation;
 import android.security.keystore.KeymasterUtils;
-import android.system.keystore2.KeyParameter;
 import android.util.Log;
 
 import java.security.InvalidAlgorithmParameterException;
