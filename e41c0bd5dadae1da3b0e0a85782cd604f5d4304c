@@ -16,6 +16,29 @@
       "message": "Hello\nPlease check my patch.",
       "revId": "e41c0bd5dadae1da3b0e0a85782cd604f5d4304c",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "79168600_1b08a36f",
+        "filename": "core/java/android/hardware/SystemSensorManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1797955
+      },
+      "writtenOn": "2020-11-10T02:39:23Z",
+      "side": 1,
+      "message": "please consider about \"final\" keyword",
+      "range": {
+        "startLine": 82,
+        "startChar": 9,
+        "endLine": 82,
+        "endChar": 10
+      },
+      "revId": "e41c0bd5dadae1da3b0e0a85782cd604f5d4304c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
