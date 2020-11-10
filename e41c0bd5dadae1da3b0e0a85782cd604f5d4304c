@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4fb702b0_e7d591ad",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1794910
+      },
+      "writtenOn": "2020-11-10T02:05:40Z",
+      "side": 1,
+      "message": "Hello\nPlease check my patch.",
+      "revId": "e41c0bd5dadae1da3b0e0a85782cd604f5d4304c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
