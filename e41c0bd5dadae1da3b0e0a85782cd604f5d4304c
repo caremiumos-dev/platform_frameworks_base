@@ -39,6 +39,30 @@
       },
       "revId": "e41c0bd5dadae1da3b0e0a85782cd604f5d4304c",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bd1a19f3_3f748a85",
+        "filename": "core/java/android/hardware/SystemSensorManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1794910
+      },
+      "writtenOn": "2020-11-10T04:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "79168600_1b08a36f",
+      "range": {
+        "startLine": 82,
+        "startChar": 9,
+        "endLine": 82,
+        "endChar": 10
+      },
+      "revId": "e41c0bd5dadae1da3b0e0a85782cd604f5d4304c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
