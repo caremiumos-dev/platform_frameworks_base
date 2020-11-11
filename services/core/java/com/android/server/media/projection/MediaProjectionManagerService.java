@@ -143,7 +143,8 @@ public final class MediaProjectionManagerService extends SystemService
      */
     private void handleForegroundServicesChanged(int pid, int uid, int serviceTypes) {
         synchronized (mLock) {
-            if (mProjectionGrant == null || mProjectionGrant.uid != uid) {
+            if (mProjectionGrant == null || mProjectionGrant.uid != uid
+                    || mProjectionGrant.pid != pid){
                 return;
             }
 
@@ -284,6 +285,7 @@ public final class MediaProjectionManagerService extends SystemService
                 throw new IllegalArgumentException("package name must not be empty");
             }
 
+            final int pid = Binder.getCallingPid();
             final UserHandle callingUser = Binder.getCallingUserHandle();
             long callingToken = Binder.clearCallingIdentity();
 
@@ -297,7 +299,7 @@ public final class MediaProjectionManagerService extends SystemService
                 }
 
                 projection = new MediaProjection(type, uid, packageName, ai.targetSdkVersion,
-                        ai.isPrivilegedApp());
+                        ai.isPrivilegedApp(), pid);
                 if (isPermanentGrant) {
                     mAppOps.setMode(AppOpsManager.OP_PROJECT_MEDIA,
                             projection.uid, projection.packageName, AppOpsManager.MODE_ALLOWED);
@@ -397,6 +399,7 @@ public final class MediaProjectionManagerService extends SystemService
 
     private final class MediaProjection extends IMediaProjection.Stub {
         public final int uid;
+        public final int pid;
         public final String packageName;
         public final UserHandle userHandle;
         private final int mTargetSdkVersion;
@@ -409,13 +412,14 @@ public final class MediaProjectionManagerService extends SystemService
         private boolean mRestoreSystemAlertWindow;
 
         MediaProjection(int type, int uid, String packageName, int targetSdkVersion,
-                boolean isPrivileged) {
+                boolean isPrivileged,int pid) {
             mType = type;
             this.uid = uid;
             this.packageName = packageName;
             userHandle = new UserHandle(UserHandle.getUserId(uid));
             mTargetSdkVersion = targetSdkVersion;
             mIsPrivileged = isPrivileged;
+            this.pid = pid;
         }
 
         @Override // Binder call
@@ -590,7 +594,7 @@ public final class MediaProjectionManagerService extends SystemService
         }
 
         public void dump(PrintWriter pw) {
-            pw.println("(" + packageName + ", uid=" + uid + "): " + typeToString(mType));
+            pw.println("(" + packageName + ", uid=" + uid + ", pid=" + pid + "): " + typeToString(mType));
         }
     }
 
