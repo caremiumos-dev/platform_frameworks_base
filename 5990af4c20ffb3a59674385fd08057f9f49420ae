@@ -34,6 +34,23 @@
       "parentUuid": "ddc65123_9036b9c2",
       "revId": "5990af4c20ffb3a59674385fd08057f9f49420ae",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8c9fbb5a_c7937db3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1004882
+      },
+      "writtenOn": "2020-11-12T10:25:05Z",
+      "side": 1,
+      "message": "I have uploaded a similar fix here, but it instead maintains the expected UI behaviour (icons etc) for both owner and guest:\nhttps://android-review.googlesource.com/c/platform/frameworks/base/+/1497098\n\nSony found this via a different usecase (casting), but it results in the same media notification related crash.",
+      "revId": "5990af4c20ffb3a59674385fd08057f9f49420ae",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
