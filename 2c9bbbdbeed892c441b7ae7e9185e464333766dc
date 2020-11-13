@@ -16,6 +16,23 @@
       "message": "Added reviewer",
       "revId": "2c9bbbdbeed892c441b7ae7e9185e464333766dc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f435650d_9141c444",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1094493
+      },
+      "writtenOn": "2020-11-13T17:32:49Z",
+      "side": 1,
+      "message": "This addresses the same issue as https://android-review.googlesource.com/c/platform/frameworks/base/+/1456124 - we will work on merging that other CL, so this one can be abandoned",
+      "revId": "2c9bbbdbeed892c441b7ae7e9185e464333766dc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
