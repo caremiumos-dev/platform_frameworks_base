@@ -16,6 +16,46 @@
       "message": "ping for review",
       "revId": "7f63e76dd3f3d8975b1e08ddfcb9dabd059382b8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "69039027_6d643eba",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1018371
+      },
+      "writtenOn": "2020-11-18T03:03:46Z",
+      "side": 1,
+      "message": "+2, if getOverriddenKeyEvents() is guaranteed to return always nonnull.",
+      "revId": "7f63e76dd3f3d8975b1e08ddfcb9dabd059382b8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "13e2d174_95a2fe2b",
+        "filename": "services/core/java/com/android/server/media/MediaSessionService.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 2401,
+      "author": {
+        "id": 1018371
+      },
+      "writtenOn": "2020-11-18T03:03:46Z",
+      "side": 1,
+      "message": "Does it return a non null object?",
+      "range": {
+        "startLine": 2401,
+        "startChar": 52,
+        "endLine": 2401,
+        "endChar": 74
+      },
+      "revId": "7f63e76dd3f3d8975b1e08ddfcb9dabd059382b8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
