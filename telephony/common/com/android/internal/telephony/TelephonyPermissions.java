@@ -18,6 +18,7 @@ package com.android.internal.telephony;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.Manifest;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppOpsManager;
 import android.content.Context;
@@ -34,8 +35,10 @@ import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -650,5 +653,93 @@ public final class TelephonyPermissions {
         }
 
         throw new SecurityException(message + ": Only shell user can call it");
+    }
+
+    private static void throwPhoneStateException(String message) {
+        throw new SecurityException("No READ_PHONE_STATE permission: " + message);
+    }
+
+    /**
+     * Enforce a minimum READ_PHONE_STATE (family) privilege and return the max permission level.
+     *
+     * @param context a Context.
+     * @param minPhoneStatePrivilege a manifest permission string, one of:
+     *          READ_PHONE_STATE which is inferior to
+     *          READ_PRECISE_PHONE_STATE which is inferior to
+     *          READ_PRIVILEGED_PHONE_STATE. A null value will check and return privileges but
+     *          will not throw a SecurityException if the app has none.
+     * @param carrierPrivilegeEquivalence a manifest permission string to treat carrier privilege
+     *          as the equivalent of. For instance, if READ_PRECISE is passed, then an app with
+     *          carrier privilege will be treated as having READ_PRECISE. A value of null will
+     *          not grant access based on Carrier Privilege.
+     * @param subId the subId to check permissions against or INVALID_SUBSCRIPTION_ID if
+     *          subscription-specific privilege isn't enforced.
+     * @param callingPackage the calling package or null if unavailable.
+     * @param callingFeatureId passed from userland.
+     * @param message the additional message information if permission is not granted.
+     *
+     * @return the maximum READ_PHONE_STATE privilege possessed by the caller or null if the
+     *         permission is granted but the AppOp is revoked.
+     */
+    public static String queryAndEnforceReadPhoneStateForUser(
+            @NonNull Context context,
+            @Nullable String minPhoneStatePrivilege,
+            @Nullable String carrierPrivilegeEquivalence,
+            int subId,
+            @Nullable String callingPackage,
+            @Nullable String callingFeatureId,
+            @NonNull String message,
+            int pid,
+            int uid) {
+        String grantedPermission = null;
+
+        List<String> allowedPermissions = new ArrayList<>();
+        switch(minPhoneStatePrivilege) {
+            case android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE:
+                allowedPermissions.add(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE);
+                // fall through
+            case android.Manifest.permission.READ_PRECISE_PHONE_STATE:
+                allowedPermissions.add(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE);
+                // fall through
+            case android.Manifest.permission.READ_PHONE_STATE:
+                allowedPermissions.add(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE);
+                break;
+            default:
+                throwPhoneStateException(message);
+        }
+
+        for (String permission : allowedPermissions) {
+            if (context.check(permission, pid, uid) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                grantedPermission = permission;
+                break;
+            }
+        }
+
+        if (grantedPermission == null && carrierPrivilegeEquivalence != null) {
+            if (SubscriptionManager.isValidSubscriptionId(subId) && 
+                    checkCarrierPrivilegeForSubId(context, subId)) {
+                grantedPermission = carrierPrivilegeEquivalence;
+            } else if (subId == SubscriptionManager.INVALID_SUBSCRIPTION_ID &&
+                    checkCarrierPrivilegeForAnySubId(context, Binder.getCallingUid())) {
+                grantedPermission = carrierPrivilegeEquivalence;
+            }
+        }
+
+        if (grantedPermission == null) {
+            if (minPhoneStatePrivilege != null) throwPhoneStateException(message);
+            return null;
+        }
+
+        // We have READ_PHONE_STATE permission, so return true as long as the AppOps bit hasn't been
+        // revoked.
+        AppOpsManager appOps = context.getSystemService(AppOpsManager.class);
+        if (appOps.noteOp(AppOpsManager.OPSTR_READ_PHONE_STATE, uid,
+                callingPackage, callingFeatureId, null)
+                        == AppOpsManager.MODE_ALLOWED) {
+            return grantedPermission;
+        } else {
+            return null;
+        }
     }
 }
