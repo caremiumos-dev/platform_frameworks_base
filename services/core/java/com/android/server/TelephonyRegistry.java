@@ -2678,6 +2678,20 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         }
     }
 
+    private boolean queryAndEnforceReadPhoneStateAccess(Record r, int minSdk) {
+        final String phoneStatePermission =
+                TelephonyPermissions.queryAndEnforceReadPhoneStateForUser(
+                    mContext,
+                    android.Manifest.permission.READ_PHONE_STATE,
+                    android.Manifest.permission.READ_PRECISE_PHONE_STATE,
+                    subId,
+                    callingPackage,
+                    callingFeatureId,
+                    "getServiceStateForSubscriber",
+                    r.callerPid,
+                    r.callerUid);
+    }
+
     private boolean checkFineLocationAccess(Record r, int minSdk) {
         LocationAccessPolicy.LocationPermissionQuery query =
                 new LocationAccessPolicy.LocationPermissionQuery.Builder()
