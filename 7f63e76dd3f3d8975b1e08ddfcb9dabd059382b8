@@ -56,6 +56,30 @@
       },
       "revId": "7f63e76dd3f3d8975b1e08ddfcb9dabd059382b8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e0d0e0b5_6fcfdec5",
+        "filename": "services/core/java/com/android/server/media/MediaSessionService.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 2401,
+      "author": {
+        "id": 1339423
+      },
+      "writtenOn": "2020-11-23T07:27:51Z",
+      "side": 1,
+      "message": "Good point. Since there is no way to ensure that a class that overrides getOverriddenKeyEvents() returns a non-null object, adding null check.",
+      "parentUuid": "13e2d174_95a2fe2b",
+      "range": {
+        "startLine": 2401,
+        "startChar": 52,
+        "endLine": 2401,
+        "endChar": 74
+      },
+      "revId": "7f63e76dd3f3d8975b1e08ddfcb9dabd059382b8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
