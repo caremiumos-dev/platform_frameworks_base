@@ -46,6 +46,7 @@ import static android.net.INetworkMonitor.NETWORK_VALIDATION_PROBE_HTTPS;
 import static android.net.INetworkMonitor.NETWORK_VALIDATION_PROBE_PRIVDNS;
 import static android.net.INetworkMonitor.NETWORK_VALIDATION_RESULT_PARTIAL;
 import static android.net.INetworkMonitor.NETWORK_VALIDATION_RESULT_VALID;
+import static android.net.NetworkCapabilities.LINK_BANDWIDTH_UNSPECIFIED;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_CBS;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_DUN;
@@ -56,8 +57,10 @@ import static android.net.NetworkCapabilities.NET_CAPABILITY_IA;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_IMS;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_MMS;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_CONGESTED;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_PARTIAL_CONNECTIVITY;
@@ -5360,6 +5363,91 @@ public class ConnectivityServiceTest {
         LinkProperties lp = (LinkProperties) callbackObj;
         assertEquals(dnsServers.size(), lp.getDnsServers().size());
         assertTrue(lp.getDnsServers().containsAll(dnsServers));
+    }
+
+    @Test
+    public void testApplyUnderlyingNetworkCapabilities() throws Exception {
+        mCellNetworkAgent = new TestNetworkAgentWrapper(TRANSPORT_CELLULAR);
+        mWiFiNetworkAgent = new TestNetworkAgentWrapper(TRANSPORT_WIFI);
+        mCellNetworkAgent.connect(false);
+        mWiFiNetworkAgent.connect(false);
+
+        final NetworkCapabilities cellNc = new NetworkCapabilities()
+                .addTransportType(TRANSPORT_CELLULAR)
+                .addCapability(NET_CAPABILITY_INTERNET)
+                .addCapability(NET_CAPABILITY_NOT_CONGESTED)
+                .setLinkDownstreamBandwidthKbps(10);
+        final NetworkCapabilities wifiNc = new NetworkCapabilities()
+                .addTransportType(TRANSPORT_WIFI)
+                .addCapability(NET_CAPABILITY_INTERNET)
+                .addCapability(NET_CAPABILITY_NOT_METERED)
+                .addCapability(NET_CAPABILITY_NOT_ROAMING)
+                .addCapability(NET_CAPABILITY_NOT_CONGESTED)
+                .addCapability(NET_CAPABILITY_NOT_SUSPENDED)
+                .setLinkUpstreamBandwidthKbps(20);
+        mCellNetworkAgent.setNetworkCapabilities(cellNc, true);
+        mWiFiNetworkAgent.setNetworkCapabilities(wifiNc, true);
+        waitForIdle();
+
+        final Network mobile = mCellNetworkAgent.getNetwork();
+        final Network wifi = mWiFiNetworkAgent.getNetwork();
+
+        final NetworkCapabilities caps = new NetworkCapabilities();
+
+        mService.applyUnderlyingNetworkCapabilities(new Network[]{}, caps, false);
+        assertTrue(caps.hasTransport(TRANSPORT_VPN));
+        assertFalse(caps.hasTransport(TRANSPORT_CELLULAR));
+        assertFalse(caps.hasTransport(TRANSPORT_WIFI));
+        assertEquals(LINK_BANDWIDTH_UNSPECIFIED, caps.getLinkDownstreamBandwidthKbps());
+        assertEquals(LINK_BANDWIDTH_UNSPECIFIED, caps.getLinkUpstreamBandwidthKbps());
+        assertFalse(caps.hasCapability(NET_CAPABILITY_NOT_METERED));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_ROAMING));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_CONGESTED));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_SUSPENDED));
+
+        mService.applyUnderlyingNetworkCapabilities(new Network[]{mobile}, caps, false);
+        assertTrue(caps.hasTransport(TRANSPORT_VPN));
+        assertTrue(caps.hasTransport(TRANSPORT_CELLULAR));
+        assertFalse(caps.hasTransport(TRANSPORT_WIFI));
+        assertEquals(10, caps.getLinkDownstreamBandwidthKbps());
+        assertEquals(LINK_BANDWIDTH_UNSPECIFIED, caps.getLinkUpstreamBandwidthKbps());
+        assertFalse(caps.hasCapability(NET_CAPABILITY_NOT_METERED));
+        assertFalse(caps.hasCapability(NET_CAPABILITY_NOT_ROAMING));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_CONGESTED));
+        assertFalse(caps.hasCapability(NET_CAPABILITY_NOT_SUSPENDED));
+
+        mService.applyUnderlyingNetworkCapabilities(new Network[]{wifi}, caps, false);
+        assertTrue(caps.hasTransport(TRANSPORT_VPN));
+        assertFalse(caps.hasTransport(TRANSPORT_CELLULAR));
+        assertTrue(caps.hasTransport(TRANSPORT_WIFI));
+        assertEquals(LINK_BANDWIDTH_UNSPECIFIED, caps.getLinkDownstreamBandwidthKbps());
+        assertEquals(20, caps.getLinkUpstreamBandwidthKbps());
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_METERED));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_ROAMING));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_CONGESTED));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_SUSPENDED));
+
+        mService.applyUnderlyingNetworkCapabilities(new Network[]{wifi}, caps, true);
+        assertTrue(caps.hasTransport(TRANSPORT_VPN));
+        assertFalse(caps.hasTransport(TRANSPORT_CELLULAR));
+        assertTrue(caps.hasTransport(TRANSPORT_WIFI));
+        assertEquals(LINK_BANDWIDTH_UNSPECIFIED, caps.getLinkDownstreamBandwidthKbps());
+        assertEquals(20, caps.getLinkUpstreamBandwidthKbps());
+        assertFalse(caps.hasCapability(NET_CAPABILITY_NOT_METERED));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_ROAMING));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_CONGESTED));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_SUSPENDED));
+
+        mService.applyUnderlyingNetworkCapabilities(new Network[]{mobile, wifi}, caps, false);
+        assertTrue(caps.hasTransport(TRANSPORT_VPN));
+        assertTrue(caps.hasTransport(TRANSPORT_CELLULAR));
+        assertTrue(caps.hasTransport(TRANSPORT_WIFI));
+        assertEquals(10, caps.getLinkDownstreamBandwidthKbps());
+        assertEquals(20, caps.getLinkUpstreamBandwidthKbps());
+        assertFalse(caps.hasCapability(NET_CAPABILITY_NOT_METERED));
+        assertFalse(caps.hasCapability(NET_CAPABILITY_NOT_ROAMING));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_CONGESTED));
+        assertTrue(caps.hasCapability(NET_CAPABILITY_NOT_SUSPENDED));
     }
 
     @Test
