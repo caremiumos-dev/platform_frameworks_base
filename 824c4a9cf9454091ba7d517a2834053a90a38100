@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bfe6b898_66e7d5fd",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1339423
+      },
+      "writtenOn": "2020-11-25T12:13:23Z",
+      "side": 1,
+      "message": "Presubmit test failures are irrelevant to this CL.",
+      "revId": "824c4a9cf9454091ba7d517a2834053a90a38100",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
