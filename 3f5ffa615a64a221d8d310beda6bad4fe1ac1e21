@@ -48,6 +48,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "8d4fd7bd_5d0b8e41",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1415877
+      },
+      "writtenOn": "2020-11-25T02:06:16Z",
+      "side": 1,
+      "message": "I meant that the current impl writes \"stability\" even when it\u0027s empty.",
+      "parentUuid": "13133958_4d9590e3",
+      "range": {
+        "startLine": 7,
+        "startChar": 25,
+        "endLine": 7,
+        "endChar": 42
+      },
+      "revId": "3f5ffa615a64a221d8d310beda6bad4fe1ac1e21",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "8ef00e59_21bbac71",
