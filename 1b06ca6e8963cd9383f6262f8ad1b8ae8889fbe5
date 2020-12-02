@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1c02ca57_d1424970",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1308163
+      },
+      "writtenOn": "2020-12-02T08:35:48Z",
+      "side": 1,
+      "message": "CaptivePortalTest#testLogEvent() also uses MetricsEvent, do you want to modify it as well?",
+      "revId": "1b06ca6e8963cd9383f6262f8ad1b8ae8889fbe5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
