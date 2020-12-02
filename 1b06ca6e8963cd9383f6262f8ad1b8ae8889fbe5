@@ -16,6 +16,24 @@
       "message": "CaptivePortalTest#testLogEvent() also uses MetricsEvent, do you want to modify it as well?",
       "revId": "1b06ca6e8963cd9383f6262f8ad1b8ae8889fbe5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c8c54063_fe82f2c8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1288034
+      },
+      "writtenOn": "2020-12-02T11:12:03Z",
+      "side": 1,
+      "message": "Hmm I think the functional test should be updated when updating the code that calls it on the class; right now I think it\u0027s fine as having the tests build without depending on private connectivity classes is also not an objective.",
+      "parentUuid": "1c02ca57_d1424970",
+      "revId": "1b06ca6e8963cd9383f6262f8ad1b8ae8889fbe5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }

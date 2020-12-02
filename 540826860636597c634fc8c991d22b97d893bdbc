@@ -22,6 +22,30 @@
       },
       "revId": "540826860636597c634fc8c991d22b97d893bdbc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7ae869e0_19bcb88d",
+        "filename": "core/java/android/net/CaptivePortal.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 1288034
+      },
+      "writtenOn": "2020-12-02T11:12:03Z",
+      "side": 0,
+      "message": "Yes EventId is a @hide class, so the annotation is not part of the API; it\u0027s just annotated for convenience of development I think.",
+      "parentUuid": "ba89a92c_a1b5fca6",
+      "range": {
+        "startLine": 179,
+        "startChar": 25,
+        "endLine": 179,
+        "endChar": 45
+      },
+      "revId": "540826860636597c634fc8c991d22b97d893bdbc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
