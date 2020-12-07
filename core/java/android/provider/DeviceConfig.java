@@ -403,6 +403,14 @@ public final class DeviceConfig {
     public static final String NAMESPACE_PERMISSIONS = "permissions";
 
     /**
+     * Namespace for resume on reboot related features.
+     *
+     * @hide
+     */
+    @SystemApi
+    public static final String NAMESPACE_RESUME_ON_REBOOT = "resume_on_reboot";
+
+    /**
      * Namespace for all widget related features.
      *
      * @hide
