@@ -5908,7 +5908,7 @@ public class ConnectivityServiceTest {
 
     private void assertDefaultNetworkCapabilities(int userId, NetworkAgentWrapper... networks) {
         final NetworkCapabilities[] defaultCaps = mService.getDefaultNetworkCapabilitiesForUser(
-                userId, "com.android.calling.package");
+                userId, "com.android.calling.package", "com.test");
         final String defaultCapsString = Arrays.toString(defaultCaps);
         assertEquals(defaultCapsString, defaultCaps.length, networks.length);
         final Set<NetworkCapabilities> defaultCapsSet = new ArraySet<>(defaultCaps);
@@ -7557,7 +7557,8 @@ public class ConnectivityServiceTest {
         when(mLocationManager.isLocationEnabledForUser(any())).thenReturn(locationToggle);
 
         if (op != null) {
-            when(mAppOpsManager.noteOp(eq(op), eq(Process.myUid()), eq(mContext.getPackageName())))
+            when(mAppOpsManager.noteOp(eq(op), eq(Process.myUid()),
+                    eq(mContext.getPackageName()), eq(getAttributionTag()), anyString()))
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
         }
 
@@ -7570,7 +7571,7 @@ public class ConnectivityServiceTest {
         final NetworkCapabilities netCap = new NetworkCapabilities().setOwnerUid(ownerUid);
 
         return mService.createWithLocationInfoSanitizedIfNecessaryWhenParceled(
-                netCap, callerUid, mContext.getPackageName()).getOwnerUid();
+                netCap, callerUid, mContext.getPackageName(), getAttributionTag()).getOwnerUid();
     }
 
     private void verifyWifiInfoCopyNetCapsForCallerPermission(
@@ -7580,7 +7581,7 @@ public class ConnectivityServiceTest {
         final NetworkCapabilities netCap = new NetworkCapabilities().setTransportInfo(wifiInfo);
 
         mService.createWithLocationInfoSanitizedIfNecessaryWhenParceled(
-                netCap, callerUid, mContext.getPackageName());
+                netCap, callerUid, mContext.getPackageName(), getAttributionTag());
         verify(wifiInfo).makeCopy(eq(shouldMakeCopyWithLocationSensitiveFieldsParcelable));
     }
 
