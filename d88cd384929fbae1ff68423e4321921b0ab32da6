@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "448a5542_4bdd0b11",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1060959
+      },
+      "writtenOn": "2020-12-17T15:00:15Z",
+      "side": 1,
+      "message": "oh, duh, need to update the allowlist in soong for sdk_version: none too.",
+      "revId": "d88cd384929fbae1ff68423e4321921b0ab32da6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
