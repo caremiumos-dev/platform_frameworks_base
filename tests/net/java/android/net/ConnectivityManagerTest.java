@@ -214,7 +214,8 @@ public class ConnectivityManagerTest {
 
         // register callback
         when(mService.requestNetwork(
-                any(), captor.capture(), anyInt(), any(), anyInt(), any(), nullable(String.class)))
+                any(), captor.capture(), anyInt(), any(), anyInt(), anyInt(), any(),
+                nullable(String.class)))
                 .thenReturn(request);
         manager.requestNetwork(request, callback, handler);
 
@@ -243,7 +244,8 @@ public class ConnectivityManagerTest {
 
         // register callback
         when(mService.requestNetwork(
-                any(), captor.capture(), anyInt(), any(), anyInt(), any(), nullable(String.class)))
+                any(), captor.capture(), anyInt(), any(), anyInt(), anyInt(), any(),
+                nullable(String.class)))
                 .thenReturn(req1);
         manager.requestNetwork(req1, callback, handler);
 
@@ -262,7 +264,8 @@ public class ConnectivityManagerTest {
 
         // callback can be registered again
         when(mService.requestNetwork(
-                any(), captor.capture(), anyInt(), any(), anyInt(), any(), nullable(String.class)))
+                any(), captor.capture(), anyInt(), any(), anyInt(), anyInt(), any(),
+                nullable(String.class)))
                 .thenReturn(req2);
         manager.requestNetwork(req2, callback, handler);
 
@@ -286,8 +289,9 @@ public class ConnectivityManagerTest {
         info.targetSdkVersion = VERSION_CODES.N_MR1 + 1;
 
         when(mCtx.getApplicationInfo()).thenReturn(info);
-        when(mService.requestNetwork(any(), any(), anyInt(), any(), anyInt(), any(),
-                nullable(String.class))).thenReturn(request);
+        when(mService.requestNetwork(
+                any(), any(), anyInt(), any(), anyInt(), anyInt(), any(), nullable(String.class)))
+                .thenReturn(request);
 
         Handler handler = new Handler(Looper.getMainLooper());
         manager.requestNetwork(request, callback, handler);

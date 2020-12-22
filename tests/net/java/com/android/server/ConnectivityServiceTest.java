@@ -3228,8 +3228,8 @@ public class ConnectivityServiceTest {
             networkCapabilities.addTransportType(TRANSPORT_WIFI)
                     .setNetworkSpecifier(new MatchAllNetworkSpecifier());
             mService.requestNetwork(networkCapabilities, null, 0, null,
-                    ConnectivityManager.TYPE_WIFI, mContext.getPackageName(),
-                    getAttributionTag());
+                    ConnectivityManager.TYPE_WIFI, NetworkCallback.DEFAULT_FLAGS,
+                    mContext.getPackageName(), getAttributionTag());
         });
 
         class NonParcelableSpecifier extends NetworkSpecifier {
@@ -7571,17 +7571,20 @@ public class ConnectivityServiceTest {
         final NetworkCapabilities netCap = new NetworkCapabilities().setOwnerUid(ownerUid);
 
         return mService.createWithLocationInfoSanitizedIfNecessaryWhenParceled(
-                netCap, callerUid, mContext.getPackageName(), getAttributionTag()).getOwnerUid();
+                netCap, false, callerUid, mContext.getPackageName(), getAttributionTag())
+                .getOwnerUid();
     }
 
     private void verifyWifiInfoCopyNetCapsForCallerPermission(
-            int callerUid, boolean shouldMakeCopyWithLocationSensitiveFieldsParcelable) {
+            int callerUid, boolean removeLocationSensitiveInfoInTransportInfo,
+            boolean shouldMakeCopyWithLocationSensitiveFieldsParcelable) {
         final WifiInfo wifiInfo = mock(WifiInfo.class);
         when(wifiInfo.hasLocationSensitiveFields()).thenReturn(true);
         final NetworkCapabilities netCap = new NetworkCapabilities().setTransportInfo(wifiInfo);
 
         mService.createWithLocationInfoSanitizedIfNecessaryWhenParceled(
-                netCap, callerUid, mContext.getPackageName(), getAttributionTag());
+                netCap, removeLocationSensitiveInfoInTransportInfo, callerUid,
+                mContext.getPackageName(), getAttributionTag());
         verify(wifiInfo).makeCopy(eq(shouldMakeCopyWithLocationSensitiveFieldsParcelable));
     }
 
@@ -7595,7 +7598,14 @@ public class ConnectivityServiceTest {
         assertEquals(myUid, getOwnerUidNetCapsForCallerPermission(myUid, myUid));
 
         verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
+                false /* removeLocationSensitiveInfoInTransportInfo */,
                 true /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
+
+        // Ensure that we remove location info if the request asks us to remove it even if the app
+        // has necessary permissions.
+        verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
+                true /* removeLocationSensitiveInfoInTransportInfo */,
+                false /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
     }
 
     @Test
@@ -7608,7 +7618,14 @@ public class ConnectivityServiceTest {
         assertEquals(myUid, getOwnerUidNetCapsForCallerPermission(myUid, myUid));
 
         verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
+                false /* removeLocationSensitiveInfoInTransportInfo */,
                 true /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
+
+        // Ensure that we remove location info if the request asks us to remove it even if the app
+        // has necessary permissions.
+        verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
+                true /* removeLocationSensitiveInfoInTransportInfo */,
+                false /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
     }
 
     @Test
@@ -7621,7 +7638,8 @@ public class ConnectivityServiceTest {
         assertEquals(Process.INVALID_UID, getOwnerUidNetCapsForCallerPermission(myUid, myUid));
 
         verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
-                false/* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
+                false /* removeLocationSensitiveInfoInTransportInfo */,
+                false /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
     }
 
     @Test
@@ -7632,9 +7650,6 @@ public class ConnectivityServiceTest {
 
         final int myUid = Process.myUid();
         assertEquals(Process.INVALID_UID, getOwnerUidNetCapsForCallerPermission(myUid + 1, myUid));
-
-        verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
-                true /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
     }
 
     @Test
@@ -7649,7 +7664,8 @@ public class ConnectivityServiceTest {
         assertEquals(Process.INVALID_UID, getOwnerUidNetCapsForCallerPermission(myUid, myUid));
 
         verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
-                false/* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
+                false /* removeLocationSensitiveInfoInTransportInfo */,
+                false /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
     }
 
     @Test
@@ -7662,7 +7678,8 @@ public class ConnectivityServiceTest {
         assertEquals(Process.INVALID_UID, getOwnerUidNetCapsForCallerPermission(myUid, myUid));
 
         verifyWifiInfoCopyNetCapsForCallerPermission(myUid,
-                false/* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
+                false /* removeLocationSensitiveInfoInTransportInfo */,
+                false /* shouldMakeCopyWithLocationSensitiveFieldsParcelable */);
     }
 
     private void setupConnectionOwnerUid(int vpnOwnerUid, @VpnManager.VpnType int vpnType)

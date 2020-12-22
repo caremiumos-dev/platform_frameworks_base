@@ -24876,6 +24876,7 @@ package android.net {
     method @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) public android.net.LinkProperties getLinkProperties(@Nullable android.net.Network);
     method @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) public int getMultipathPreference(@Nullable android.net.Network);
     method @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) public android.net.NetworkCapabilities getNetworkCapabilities(@Nullable android.net.Network);
+    method @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) public android.net.NetworkCapabilities getNetworkCapabilitiesWithLocationInfoInTransportInfo(@Nullable android.net.Network);
     method @Deprecated @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) public android.net.NetworkInfo getNetworkInfo(int);
     method @Deprecated @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) public android.net.NetworkInfo getNetworkInfo(@Nullable android.net.Network);
     method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) public int getNetworkPreference();
@@ -24941,6 +24942,7 @@ package android.net {
 
   public static class ConnectivityManager.NetworkCallback {
     ctor public ConnectivityManager.NetworkCallback();
+    ctor public ConnectivityManager.NetworkCallback(int);
     method public void onAvailable(@NonNull android.net.Network);
     method public void onBlockedStatusChanged(@NonNull android.net.Network, boolean);
     method public void onCapabilitiesChanged(@NonNull android.net.Network, @NonNull android.net.NetworkCapabilities);
@@ -24948,6 +24950,8 @@ package android.net {
     method public void onLosing(@NonNull android.net.Network, int);
     method public void onLost(@NonNull android.net.Network);
     method public void onUnavailable();
+    field public static final int FLAG_INCLUDE_LOCATION_INFO_IN_TRANSPORT_INFO = 1; // 0x1
+    field public static final int FLAG_NONE = 0; // 0x0
   }
 
   public static interface ConnectivityManager.OnNetworkActiveListener {

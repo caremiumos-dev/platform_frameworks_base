@@ -1438,6 +1438,13 @@ public class ConnectivityManager {
      * Get the {@link android.net.NetworkCapabilities} for the given {@link Network}.  This
      * will return {@code null} if the network is unknown.
      *
+     * Note: This will remove any location sensitive data in {@link TransportInfo} embedded in
+     * {@link NetworkCapabilities#getTransportInfo()}. Some transport info instances like
+     * {@link android.net.wifi.WifiInfo} contains location sensitive information. Retrieving
+     * these location sensitive information (subject to app's location permissions) will be
+     * noted by system. To include any location sensitive data in {@link TransportInfo},
+     * use {@link #getNetworkCapabilitiesWithLocationInfoInTransportInfo(Network)}.
+     *
      * @param network The {@link Network} object identifying the network in question.
      * @return The {@link android.net.NetworkCapabilities} for the network, or {@code null}.
      */
@@ -1446,6 +1453,34 @@ public class ConnectivityManager {
     public NetworkCapabilities getNetworkCapabilities(@Nullable Network network) {
         try {
             return mService.getNetworkCapabilities(
+                    network, mContext.getOpPackageName(), getAttributionTag());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Get the {@link android.net.NetworkCapabilities} for the given {@link Network}.  This
+     * will return {@code null} if the network is unknown.
+     *
+     * Note: This will include any location sensitive data in {@link TransportInfo} embedded in
+     * {@link NetworkCapabilities#getTransportInfo()}. Some transport info instances like
+     * {@link android.net.wifi.WifiInfo} contains location sensitive information. Retrieving
+     * these location sensitive information (subject to app's location permissions) will be
+     * noted by system. To remove any location sensitive data in {@link TransportInfo},
+     * use {@link #getNetworkCapabilities(Network)}.
+     *
+     * @param network The {@link Network} object identifying the network in question.
+     * @return The {@link android.net.NetworkCapabilities} for the network, or {@code null}.
+     *
+     * @see NetworkCallback#FLAG_INCLUDE_LOCATION_INFO_IN_TRANSPORT_INFO
+     */
+    @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
+    @Nullable
+    public NetworkCapabilities getNetworkCapabilitiesWithLocationInfoInTransportInfo(
+            @Nullable Network network) {
+        try {
+            return mService.getNetworkCapabilitiesWithLocationInfoInTransportInfo(
                     network, mContext.getOpPackageName(), getAttributionTag());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -3356,6 +3391,51 @@ public class ConnectivityManager {
      */
     public static class NetworkCallback {
         /**
+         * No flags associated with this callback.
+         */
+        public static final int FLAG_NONE = 0;
+        /**
+         * Use this flag to include any location sensitive data in {@link TransportInfo} embedded in
+         * {@link NetworkCapabilities#getTransportInfo()} provided via the callback. Some transport
+         * info instances like {@link android.net.wifi.WifiInfo} contains location sensitive
+         * information. Retrieving these location sensitive information (subject to app's location
+         * permissions) will be noted by system.
+         * Note: Without this flag any {@link NetworkCapabilities} provided via the callback does
+         * not include location sensitive info in {@link TransportInfo}.
+         *
+         * @see #getNetworkCapabilitiesWithLocationInfoInTransportInfo(Network)
+         */
+        public static final int FLAG_INCLUDE_LOCATION_INFO_IN_TRANSPORT_INFO  = 1 << 0;
+
+        /** @hide */
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef(flag = true, prefix = "FLAG_", value = {
+                FLAG_NONE,
+                FLAG_INCLUDE_LOCATION_INFO_IN_TRANSPORT_INFO
+        })
+        public @interface NetworkCallbackFlag { }
+
+        /**
+         * Default set of flags enabled in the default constructor {@link #NetworkCallback()}.
+         * @hide
+         */
+        public static final int DEFAULT_FLAGS = FLAG_NONE;
+        /**
+         * All the valid flags for error checking.
+         */
+        private static final int VALID_FLAGS =
+                FLAG_NONE | FLAG_INCLUDE_LOCATION_INFO_IN_TRANSPORT_INFO;
+
+        public NetworkCallback() {
+            this(DEFAULT_FLAGS);
+        }
+
+        public NetworkCallback(@NetworkCallbackFlag int flags) {
+            Preconditions.checkArgument((flags & VALID_FLAGS) == flags);
+            mFlags = flags;
+        }
+
+        /**
          * Called when the framework connects to a new network to evaluate whether it satisfies this
          * request. If evaluation succeeds, this callback may be followed by an {@link #onAvailable}
          * callback. There is no guarantee that this new network will satisfy any requests, or that
@@ -3561,6 +3641,7 @@ public class ConnectivityManager {
         public void onBlockedStatusChanged(@NonNull Network network, boolean blocked) {}
 
         private NetworkRequest networkRequest;
+        private final int mFlags;
     }
 
     /**
@@ -3751,14 +3832,15 @@ public class ConnectivityManager {
                 }
                 Messenger messenger = new Messenger(handler);
                 Binder binder = new Binder();
+                final int callbackFlags = callback.mFlags;
                 if (action == LISTEN) {
                     request = mService.listenForNetwork(
-                            need, messenger, binder, callingPackageName,
+                            need, messenger, binder, callbackFlags, callingPackageName,
                             getAttributionTag());
                 } else {
                     request = mService.requestNetwork(
-                            need, messenger, timeoutMs, binder, legacyType, callingPackageName,
-                            getAttributionTag());
+                            need, messenger, timeoutMs, binder, legacyType, callbackFlags,
+                            callingPackageName, getAttributionTag());
                 }
                 if (request != null) {
                     sCallbacks.put(request, callback);
