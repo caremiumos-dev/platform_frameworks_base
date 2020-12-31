@@ -80,6 +80,7 @@ public class NetworkTemplate implements Parcelable {
     public static final int MATCH_WIFI_WILDCARD = 7;
     public static final int MATCH_BLUETOOTH = 8;
     public static final int MATCH_PROXY = 9;
+    public static final int MATCH_CARRIER_WILDCARD = 10;
 
     /**
      * Include all network types when filtering. This is meant to merge in with the
@@ -98,6 +99,11 @@ public class NetworkTemplate implements Parcelable {
      */
     public static final int NETWORK_TYPE_5G_NSA = -2;
 
+    /**
+     * The specific subscriberId which can be used to filter null subscriberId.
+     */
+    public static final String SUBSCRIBER_ID_ANY = "non-null";
+
     private static boolean isKnownMatchRule(final int rule) {
         switch (rule) {
             case MATCH_MOBILE:
@@ -107,6 +113,7 @@ public class NetworkTemplate implements Parcelable {
             case MATCH_WIFI_WILDCARD:
             case MATCH_BLUETOOTH:
             case MATCH_PROXY:
+            case MATCH_CARRIER_WILDCARD:
                 return true;
 
             default:
@@ -189,6 +196,16 @@ public class NetworkTemplate implements Parcelable {
     }
 
     /**
+     * Template to combine all {@link ConnectivityManager#TYPE_WIFI} networks with the given SSID
+     * and subscriberId. Call with the given {@code SUBSCRIBER_ID_ANY} for the subscriberId to
+     * get all of the non-null subscriberId networks.
+     */
+    public static NetworkTemplate buildTemplateWifi(@Nullable String subscriberId,
+            @Nullable String networkId) {
+        return new NetworkTemplate(MATCH_WIFI, subscriberId, networkId);
+    }
+
+    /**
      * Template to combine all {@link ConnectivityManager#TYPE_ETHERNET} style
      * networks together.
      */
@@ -211,6 +228,13 @@ public class NetworkTemplate implements Parcelable {
      */
     public static NetworkTemplate buildTemplateProxy() {
         return new NetworkTemplate(MATCH_PROXY, null, null);
+    }
+
+    /**
+     * Template to combine all carrier networks with the given IMSI.
+     */
+    public static NetworkTemplate buildTemplateCarrierWildcard(@NonNull String subscriberId) {
+        return new NetworkTemplate(MATCH_CARRIER_WILDCARD, subscriberId, null);
     }
 
     private final int mMatchRule;
@@ -399,6 +423,8 @@ public class NetworkTemplate implements Parcelable {
                 return matchesBluetooth(ident);
             case MATCH_PROXY:
                 return matchesProxy(ident);
+            case MATCH_CARRIER_WILDCARD:
+                return matchesCarrierWildcard(ident);
             default:
                 // We have no idea what kind of network template we are, so we
                 // just claim not to match anything.
@@ -529,7 +555,17 @@ public class NetworkTemplate implements Parcelable {
     private boolean matchesWifi(NetworkIdentity ident) {
         switch (ident.mType) {
             case TYPE_WIFI:
-                return Objects.equals(
+                boolean isMatchScriberId = true;
+                if (mSubscriberId != null) {
+                    if (mSubscriberId.equals(SUBSCRIBER_ID_ANY)) {
+                        isMatchScriberId = ident.mSubscriberId != null;
+                    } else {
+                        isMatchScriberId = ident.mSubscriberId != null
+                                && !ArrayUtils.isEmpty(mMatchSubscriberIds)
+                                && ArrayUtils.contains(mMatchSubscriberIds, ident.mSubscriberId);
+                    }
+                }
+                return isMatchScriberId && Objects.equals(
                         sanitizeSsid(mNetworkId), sanitizeSsid(ident.mNetworkId));
             default:
                 return false;
@@ -544,6 +580,15 @@ public class NetworkTemplate implements Parcelable {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Check if matches carrier network. The carrier networks means it includes the subscriberId.
+     */
+    private boolean matchesCarrierWildcard(NetworkIdentity ident) {
+        return ident.mSubscriberId != null
+                && !ArrayUtils.isEmpty(mMatchSubscriberIds)
+                && ArrayUtils.contains(mMatchSubscriberIds, ident.mSubscriberId);
     }
 
     private boolean matchesMobileWildcard(NetworkIdentity ident) {
@@ -598,6 +643,8 @@ public class NetworkTemplate implements Parcelable {
                 return "BLUETOOTH";
             case MATCH_PROXY:
                 return "PROXY";
+            case MATCH_CARRIER_WILDCARD:
+                return "CARRIER_WILDCARD";
             default:
                 return "UNKNOWN(" + matchRule + ")";
         }
