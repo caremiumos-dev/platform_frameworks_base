@@ -20,6 +20,7 @@ import android.app.PendingIntent;
 import android.net.ConnectionInfo;
 import android.net.ConnectivityDiagnosticsManager;
 import android.net.IConnectivityDiagnosticsCallback;
+import android.net.ISocketKeepaliveCallback;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkAgentConfig;
@@ -27,7 +28,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.NetworkState;
-import android.net.ISocketKeepaliveCallback;
+import android.net.OemNetworkPreferences;
 import android.net.ProxyInfo;
 import android.net.UidRange;
 import android.os.Bundle;
@@ -239,4 +240,6 @@ interface IConnectivityManager
     void unregisterNetworkActivityListener(in INetworkActivityListener l);
 
     boolean isDefaultNetworkActive();
+
+    void setOemNetworkPreference(in OemNetworkPreferences preference);
 }
