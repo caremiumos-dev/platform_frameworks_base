@@ -394,6 +394,15 @@ public final class RouteInfo implements Parcelable {
     }
 
     /**
+     * Checks if this route is unicast route.
+     *
+     * @return true if this route is of type {@link #RTN_UNICAST}.
+     */
+    public boolean isUnicast() {
+        return mType == RTN_UNICAST;
+    }
+
+    /**
      * Retrieves the MTU size for this route.
      *
      * @return The MTU size, or 0 if it has not been set.

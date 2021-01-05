@@ -19,6 +19,9 @@ package android.net;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.app.compat.CompatChanges;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.os.Parcel;
@@ -52,6 +55,14 @@ import java.util.StringJoiner;
  *
  */
 public final class LinkProperties implements Parcelable {
+    /**
+     * The {@link #getRoutes()} now can contain excluded as well as included routes. Use
+     * {@link RouteInfo#getType()} to determine route type.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.R)
+    static final long EXCLUDED_ROUTES = 157330618L;
+
     // The interface described by the network link.
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private String mIfaceName;
@@ -685,6 +696,18 @@ public final class LinkProperties implements Parcelable {
         return -1;
     }
 
+    private List<RouteInfo> getIncludedRoutes() {
+        List<RouteInfo> includedRoutes = new ArrayList<>();
+
+        for (int i = 0; i < mRoutes.size(); i++) {
+            if (mRoutes.get(i).isUnicast()) {
+                includedRoutes.add(mRoutes.get(i));
+            }
+        }
+
+        return includedRoutes;
+    }
+
     /**
      * Adds a {@link RouteInfo} to this {@code LinkProperties}, if a {@link RouteInfo}
      * with the same {@link RouteInfo.RouteKey} with different properties
@@ -741,7 +764,11 @@ public final class LinkProperties implements Parcelable {
      * @return An unmodifiable {@link List} of {@link RouteInfo} for this link.
      */
     public @NonNull List<RouteInfo> getRoutes() {
-        return Collections.unmodifiableList(mRoutes);
+        if (CompatChanges.isChangeEnabled(LinkProperties.EXCLUDED_ROUTES)) {
+            return Collections.unmodifiableList(mRoutes);
+        } else {
+            return Collections.unmodifiableList(getIncludedRoutes());
+        }
     }
 
     /**
@@ -761,7 +788,7 @@ public final class LinkProperties implements Parcelable {
      */
     @SystemApi
     public @NonNull List<RouteInfo> getAllRoutes() {
-        List<RouteInfo> routes = new ArrayList<>(mRoutes);
+        List<RouteInfo> routes = new ArrayList<>(getRoutes());
         for (LinkProperties stacked: mStackedLinks.values()) {
             routes.addAll(stacked.getAllRoutes());
         }
