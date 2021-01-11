@@ -3476,6 +3476,10 @@ public class ConnectivityService extends IConnectivityManager.Stub
         // there's a full rematch right after. Currently, deleting it breaks tests that check for
         // the default network disconnecting. Find out why, fix the rematch code, and delete this.
         if (nai.isSatisfyingRequest(mDefaultRequest.requestId)) {
+final NetworkRequestInfo defaultNri = mNetworkRequests.get(mDefaultRequest);
+Log.d(TAG, "Setting mDefaultNetworkNai to null, was " + nai.toShortString()
++ " defaultNri.mSatisfier=" + ((defaultNri.mSatisfier != null ) ? defaultNri.mSatisfier.toShortString() : null));
+//defaultNri.mSatisfier = null;
             mDefaultNetworkNai = null;
             updateDataActivityTracking(null /* newNetwork */, nai);
             notifyLockdownVpn(nai);
@@ -4927,8 +4931,15 @@ public class ConnectivityService extends IConnectivityManager.Stub
      */
     private void propagateUnderlyingNetworkCapabilities(Network updatedNetwork) {
         ensureRunningOnConnectivityServiceThread();
+if (updatedNetwork != null) Log.d(TAG, "Propagating capabilities for " + updatedNetwork);
         for (NetworkAgentInfo nai : mNetworkAgentInfos) {
+if (updatedNetwork != null) Log.d(TAG, "Considering " + nai.toShortString()
++ " hasUnderlyingNetwork=" + hasUnderlyingNetwork(nai, updatedNetwork)
++ " underlying=" + Arrays.toString(underlyingNetworksOrDefault(nai.declaredUnderlyingNetworks))
++ " default=" + ((getDefaultNetwork() != null) ? getDefaultNetwork().toShortString() : null)
++ " defaultNai=" + ((mDefaultNetworkNai != null) ? mDefaultNetworkNai.toShortString() : null));
             if (updatedNetwork == null || hasUnderlyingNetwork(nai, updatedNetwork)) {
+Log.d(TAG, "Propagating update to " + nai.toShortString());
                 updateCapabilitiesForNetwork(nai);
             }
         }
@@ -7258,7 +7269,12 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
         for (final NetworkRequestInfo nri : mNetworkRequests.values()) {
             if (nri.request.isListen()) continue;
+if (nri.request.requestId == mDefaultRequest.requestId) Log.d(TAG, "Rematching default:"
++ " mSatisfier=" + ((nri.mSatisfier != null) ? nri.mSatisfier.toShortString() : null));
             final NetworkAgentInfo bestNetwork = mNetworkRanker.getBestNetwork(nri.request, nais);
+if (nri.request.requestId == mDefaultRequest.requestId) Log.d(TAG, "New best for default:"
++ ((bestNetwork != null) ? bestNetwork.toShortString() : null)
++ " mSatisfier=" + ((nri.mSatisfier != null) ? nri.mSatisfier.toShortString() : null));
             if (bestNetwork != nri.mSatisfier) {
                 // bestNetwork may be null if no network can satisfy this request.
                 changes.addRequestReassignment(new NetworkReassignment.RequestReassignment(
