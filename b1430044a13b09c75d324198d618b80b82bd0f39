@@ -95,6 +95,75 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "179fadf1_21751baf",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5959,
+      "author": {
+        "id": 1308163
+      },
+      "writtenOn": "2021-01-18T18:59:58Z",
+      "side": 1,
+      "message": "I think the problem is that the current design has no chance to compare the NC of previous underlying network and the NC of current underlying network of VPN, which makes \"prevSuspended !\u003d suspended\" never be true in updateCapabilities() and results in onNetworkResumed() won\u0027t be fired.\n\n- In previous design(e.g. Android R):\nmakeDefault() ----\u003e updateAllVpnsCapabilities() ----\u003e updateVpnCapabilities()\n- In current design:\nmakeDefault() ----\u003e propagateUnderlyingNetworkCapabilities() --X--\u003e updateCapabilitiesForNetwork()",
+      "range": {
+        "startLine": 5958,
+        "startChar": 8,
+        "endLine": 5959,
+        "endChar": 68
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "55aa26e8_6e729b40",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5966,
+      "author": {
+        "id": 1308163
+      },
+      "writtenOn": "2021-01-18T18:59:58Z",
+      "side": 1,
+      "message": "If CS can get a NetworkInfo update from VPN, maybe the problem could be fixed in CS#mixInInfo()?",
+      "range": {
+        "startLine": 5966,
+        "startChar": 63,
+        "endLine": 5966,
+        "endChar": 99
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "50e32af4_7ac21f1f",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5968,
+      "author": {
+        "id": 1308163
+      },
+      "writtenOn": "2021-01-18T18:59:58Z",
+      "side": 1,
+      "message": "If line#5966 can be fixed, then there is no problem here.",
+      "range": {
+        "startLine": 5968,
+        "startChar": 8,
+        "endLine": 5968,
+        "endChar": 72
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "74f8aec8_0aef7418",
@@ -137,6 +206,29 @@
         "startChar": 8,
         "endLine": 5979,
         "endChar": 36
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "925029f4_d61e7219",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5990,
+      "author": {
+        "id": 1308163
+      },
+      "writtenOn": "2021-01-18T18:59:58Z",
+      "side": 1,
+      "message": "It seems like the case that getUnfilteredActiveNetworkState() returns NetworkState.EMPTY.\nIf so, it means NAI#declaredUnderlyingNetworks is non-null but length is 0?",
+      "range": {
+        "startLine": 5990,
+        "startChar": 49,
+        "endLine": 5990,
+        "endChar": 55
       },
       "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
