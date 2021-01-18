@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "efbd07e6_6133fc16",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5915,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-01-18T15:53:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "269fb3d3_c9f6de22",
+      "range": {
+        "startLine": 5915,
+        "startChar": 0,
+        "endLine": 5915,
+        "endChar": 55
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "93b19e3e_59918b86",
         "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
         "patchSetId": 16
@@ -49,6 +73,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "28eb7cc2_7bec4914",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5939,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-01-18T15:53:41Z",
+      "side": 1,
+      "message": "For now I think yes. One of the bugs here can easily be fixed by accepting sending extra suspended/resumed callbacks compared to what we do now. It will be go to know that those extra callbacks exist.\n\nAlso - even if we don\u0027t check this, how do we skip it? TestNetworkCallback tends to want to return all callbacks one at a time.",
+      "parentUuid": "93b19e3e_59918b86",
+      "range": {
+        "startLine": 5939,
+        "startChar": 7,
+        "endLine": 5939,
+        "endChar": 67
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "74f8aec8_0aef7418",
         "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
         "patchSetId": 16
@@ -60,6 +108,30 @@
       "writtenOn": "2021-01-18T09:13:59Z",
       "side": 1,
       "message": "I\u0027m curious whether this first callback is caused by resuming the cell agent, or if we really have two callbacks sent by the switch.",
+      "range": {
+        "startLine": 5979,
+        "startChar": 8,
+        "endLine": 5979,
+        "endChar": 36
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d7aea279_16ebfef6",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5979,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-01-18T15:53:41Z",
+      "side": 1,
+      "message": "Added an expectNoCallback after the resume and the test still passes. So they\u0027re both sent by the switch.",
+      "parentUuid": "74f8aec8_0aef7418",
       "range": {
         "startLine": 5979,
         "startChar": 8,
