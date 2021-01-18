@@ -4935,11 +4935,13 @@ public class ConnectivityService extends IConnectivityManager.Stub
     }
 
     private boolean isUidBlockedByVpn(NetworkAgentInfo nai, int uid, List<UidRange> blockedUidRanges) {
-        // Determine whether this UID is blocked because of always-on VPN lockdown. If a VPN applies
-        // to the UID, then the UID is not blocked because always-on VPN lockdown applies only when
-        // a VPN is not up.
-        final NetworkAgentInfo vpnNai = getVpnForUid(uid);
-        if (vpnNai != null && !vpnNai.networkAgentConfig.allowBypass) return false;
+        // Determine whether this UID is blocked because of always-on VPN lockdown. If a secure VPN
+        // applies to the UID, then the UID is not blocked because always-on VPN lockdown applies
+        // only when a secure VPN is not up.
+        if (nai != null && nai.isVPN() && !nai.networkAgentConfig.allowBypass &&
+                nai.networkCapabilities.appliesToUid(uid)) {
+            return false;
+        }
         for (UidRange range : blockedUidRanges) {
             if (range.contains(uid)) return true;
         }
