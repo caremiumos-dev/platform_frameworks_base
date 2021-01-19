@@ -95,6 +95,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e31ce1e_5ce489c1",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5939,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-01-19T03:06:17Z",
+      "side": 1,
+      "message": "Indeed, that makes sense. I mean, we can get it to ignore some, but it\u0027s not going to be better than to actually check it\u0027s\u0027 there.",
+      "parentUuid": "28eb7cc2_7bec4914",
+      "range": {
+        "startLine": 5939,
+        "startChar": 7,
+        "endLine": 5939,
+        "endChar": 67
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "179fadf1_21751baf",
