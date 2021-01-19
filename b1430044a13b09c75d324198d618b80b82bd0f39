@@ -142,6 +142,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8bc829dc_054a3f5a",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5959,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-01-19T03:33:25Z",
+      "side": 1,
+      "message": "Actually I think this is a problem in R as well.  The reason I wrote this test is b/172870110 , which affects R. I do have a fix that works, I think: aosp/1547497 . Please take a look at that if you can.",
+      "parentUuid": "179fadf1_21751baf",
+      "range": {
+        "startLine": 5958,
+        "startChar": 8,
+        "endLine": 5959,
+        "endChar": 68
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "55aa26e8_6e729b40",
@@ -155,6 +179,30 @@
       "writtenOn": "2021-01-18T18:59:58Z",
       "side": 1,
       "message": "If CS can get a NetworkInfo update from VPN, maybe the problem could be fixed in CS#mixInInfo()?",
+      "range": {
+        "startLine": 5966,
+        "startChar": 63,
+        "endLine": 5966,
+        "endChar": 99
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0c1d608c_ba4b7369",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5966,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-01-19T03:33:25Z",
+      "side": 1,
+      "message": "See aosp/1547497 .",
+      "parentUuid": "55aa26e8_6e729b40",
       "range": {
         "startLine": 5966,
         "startChar": 63,
@@ -248,6 +296,30 @@
       "writtenOn": "2021-01-18T18:59:58Z",
       "side": 1,
       "message": "It seems like the case that getUnfilteredActiveNetworkState() returns NetworkState.EMPTY.\nIf so, it means NAI#declaredUnderlyingNetworks is non-null but length is 0?",
+      "range": {
+        "startLine": 5990,
+        "startChar": 49,
+        "endLine": 5990,
+        "endChar": 55
+      },
+      "revId": "b1430044a13b09c75d324198d618b80b82bd0f39",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "12764784_3bc51dc5",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 16
+      },
+      "lineNbr": 5990,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-01-19T03:33:25Z",
+      "side": 1,
+      "message": "I believe this is fixed in aosp/1547496 which will be autosubmitting together with this CL.",
+      "parentUuid": "925029f4_d61e7219",
       "range": {
         "startLine": 5990,
         "startChar": 49,
