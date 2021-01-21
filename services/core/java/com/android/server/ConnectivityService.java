@@ -1740,6 +1740,10 @@ public class ConnectivityService extends IConnectivityManager.Stub
     NetworkCapabilities networkCapabilitiesRestrictedForCallerPermissions(
             NetworkCapabilities nc, int callerPid, int callerUid) {
         final NetworkCapabilities newNc = new NetworkCapabilities(nc);
+        if (callerUid == Process.SYSTEM_UID) {
+            return newNc;
+        }
+
         if (!checkSettingsPermission(callerPid, callerUid)) {
             newNc.setUids(null);
             newNc.setSSID(null);
