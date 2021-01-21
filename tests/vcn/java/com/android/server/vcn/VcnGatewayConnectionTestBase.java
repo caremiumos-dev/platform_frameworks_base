@@ -27,10 +27,13 @@ import static org.mockito.Mockito.verify;
 
 import android.annotation.NonNull;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.InetAddresses;
 import android.net.IpSecConfig;
 import android.net.IpSecManager;
 import android.net.IpSecTransform;
 import android.net.IpSecTunnelInterfaceResponse;
+import android.net.LinkAddress;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -46,10 +49,16 @@ import com.android.server.IpSecService;
 import org.junit.Before;
 import org.mockito.ArgumentCaptor;
 
+import java.net.InetAddress;
 import java.util.UUID;
 
 public class VcnGatewayConnectionTestBase {
     protected static final ParcelUuid TEST_SUB_GRP = new ParcelUuid(UUID.randomUUID());
+    protected static final InetAddress TEST_DNS_ADDR =
+            InetAddresses.parseNumericAddress("192.0.2.1");
+    protected static final LinkAddress TEST_INTERNAL_ADDR =
+            new LinkAddress(InetAddresses.parseNumericAddress("192.0.2.2"), 32);
+
     protected static final int TEST_IPSEC_SPI_VALUE = 0x1234;
     protected static final int TEST_IPSEC_SPI_RESOURCE_ID = 1;
     protected static final int TEST_IPSEC_TRANSFORM_RESOURCE_ID = 2;
@@ -77,6 +86,7 @@ public class VcnGatewayConnectionTestBase {
     @NonNull protected final UnderlyingNetworkTracker mUnderlyingNetworkTracker;
 
     @NonNull protected final IpSecService mIpSecSvc;
+    @NonNull protected final ConnectivityManager mConnMgr;
 
     protected VcnIkeSession mMockIkeSession;
     protected VcnGatewayConnection mGatewayConnection;
@@ -92,6 +102,10 @@ public class VcnGatewayConnectionTestBase {
 
         mIpSecSvc = mock(IpSecService.class);
         setupIpSecManager(mContext, mIpSecSvc);
+
+        mConnMgr = mock(ConnectivityManager.class);
+        VcnTestUtils.setupSystemService(
+                mContext, mConnMgr, Context.CONNECTIVITY_SERVICE, ConnectivityManager.class);
 
         doReturn(mContext).when(mVcnContext).getContext();
         doReturn(mTestLooper.getLooper()).when(mVcnContext).getLooper();
