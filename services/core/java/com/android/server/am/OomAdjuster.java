@@ -210,7 +210,6 @@ public final class OomAdjuster {
 
     private final int mNumSlots;
     private ArrayList<ProcessRecord> mTmpProcessList = new ArrayList<ProcessRecord>();
-    private ArrayList<UidRecord> mTmpBecameIdle = new ArrayList<UidRecord>();
     private ActiveUids mTmpUidRecords;
     private ArrayDeque<ProcessRecord> mTmpQueue;
 
@@ -925,8 +924,7 @@ public final class OomAdjuster {
     }
 
     private void updateUidsLocked(ActiveUids activeUids, final long nowElapsed) {
-        ArrayList<UidRecord> becameIdle = mTmpBecameIdle;
-        becameIdle.clear();
+        ArrayList<UidRecord> becameIdle = new ArrayList<UidRecord>();
 
         // Update from any uid changes.
         if (mLocalPowerManager != null) {
