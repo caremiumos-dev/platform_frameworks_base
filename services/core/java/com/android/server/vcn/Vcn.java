@@ -86,6 +86,7 @@ public class Vcn extends Handler {
     @NonNull private final ParcelUuid mSubscriptionGroup;
     @NonNull private final Dependencies mDeps;
     @NonNull private final VcnNetworkRequestListener mRequestListener;
+    @NonNull private final SafemodeListener mSafemodeListener;
 
     @NonNull
     private final Map<VcnGatewayConnectionConfig, VcnGatewayConnection> mVcnGatewayConnections =
@@ -100,8 +101,9 @@ public class Vcn extends Handler {
             @NonNull VcnContext vcnContext,
             @NonNull ParcelUuid subscriptionGroup,
             @NonNull VcnConfig config,
-            @NonNull TelephonySubscriptionSnapshot snapshot) {
-        this(vcnContext, subscriptionGroup, config, snapshot, new Dependencies());
+            @NonNull TelephonySubscriptionSnapshot snapshot,
+            @NonNull SafemodeListener safemodeListener) {
+        this(vcnContext, subscriptionGroup, config, snapshot, safemodeListener, new Dependencies());
     }
 
     @VisibleForTesting(visibility = Visibility.PRIVATE)
@@ -110,10 +112,12 @@ public class Vcn extends Handler {
             @NonNull ParcelUuid subscriptionGroup,
             @NonNull VcnConfig config,
             @NonNull TelephonySubscriptionSnapshot snapshot,
+            @NonNull SafemodeListener safemodeListener,
             @NonNull Dependencies deps) {
         super(Objects.requireNonNull(vcnContext, "Missing vcnContext").getLooper());
         mVcnContext = vcnContext;
         mSubscriptionGroup = Objects.requireNonNull(subscriptionGroup, "Missing subscriptionGroup");
+        mSafemodeListener = Objects.requireNonNull(safemodeListener, "Missing safemodeListener");
         mDeps = Objects.requireNonNull(deps, "Missing deps");
         mRequestListener = new VcnNetworkRequestListener();
 

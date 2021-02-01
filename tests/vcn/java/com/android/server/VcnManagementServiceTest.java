@@ -66,6 +66,7 @@ import android.telephony.TelephonyManager;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.server.vcn.SafemodeListener;
 import com.android.server.vcn.TelephonySubscriptionTracker;
 import com.android.server.vcn.Vcn;
 import com.android.server.vcn.VcnContext;
@@ -142,6 +143,9 @@ public class VcnManagementServiceTest {
     private final TelephonySubscriptionTracker mSubscriptionTracker =
             mock(TelephonySubscriptionTracker.class);
 
+    private final ArgumentCaptor<SafemodeListener> mSafemodeListenerCaptor =
+            ArgumentCaptor.forClass(SafemodeListener.class);
+
     private final VcnManagementService mVcnMgmtSvc;
 
     private final IVcnUnderlyingNetworkPolicyListener mMockPolicyListener =
@@ -184,7 +188,7 @@ public class VcnManagementServiceTest {
         doAnswer((invocation) -> {
             // Mock-within a doAnswer is safe, because it doesn't actually run nested.
             return mock(Vcn.class);
-        }).when(mMockDeps).newVcn(any(), any(), any(), any());
+        }).when(mMockDeps).newVcn(any(), any(), any(), any(), any());
 
         final PersistableBundle bundle =
                 PersistableBundleUtils.fromMap(
@@ -307,7 +311,7 @@ public class VcnManagementServiceTest {
         TelephonySubscriptionSnapshot snapshot =
                 triggerSubscriptionTrackerCbAndGetSnapshot(Collections.singleton(TEST_UUID_1));
         verify(mMockDeps)
-                .newVcn(eq(mVcnContext), eq(TEST_UUID_1), eq(TEST_VCN_CONFIG), eq(snapshot));
+                .newVcn(eq(mVcnContext), eq(TEST_UUID_1), eq(TEST_VCN_CONFIG), eq(snapshot), any());
     }
 
     @Test
@@ -485,7 +489,8 @@ public class VcnManagementServiceTest {
                         eq(mVcnContext),
                         eq(TEST_UUID_2),
                         eq(TEST_VCN_CONFIG),
-                        eq(TelephonySubscriptionSnapshot.EMPTY_SNAPSHOT));
+                        eq(TelephonySubscriptionSnapshot.EMPTY_SNAPSHOT),
+                        any());
 
         // Verify Vcn is updated if it was previously started
         mVcnMgmtSvc.setVcnConfig(TEST_UUID_2, TEST_VCN_CONFIG, TEST_PACKAGE_NAME);
@@ -633,5 +638,24 @@ public class VcnManagementServiceTest {
         mVcnMgmtSvc.clearVcnConfig(TEST_UUID_2);
 
         verify(mMockPolicyListener).onPolicyChanged();
+    }
+
+    @Test
+    public void testSafemodeListenerOnEnteredSafemode() {
+        TelephonySubscriptionSnapshot snapshot =
+                triggerSubscriptionTrackerCbAndGetSnapshot(Collections.singleton(TEST_UUID_1));
+        verify(mMockDeps)
+                .newVcn(
+                        eq(mVcnContext),
+                        eq(TEST_UUID_1),
+                        eq(TEST_VCN_CONFIG),
+                        eq(snapshot),
+                        mSafemodeListenerCaptor.capture());
+
+        SafemodeListener safemodeListener = mSafemodeListenerCaptor.getValue();
+
+        safemodeListener.onEnteredSafemode();
+
+        assertTrue(mVcnMgmtSvc.getVcnsInSafemode().contains(TEST_UUID_1));
     }
 }
