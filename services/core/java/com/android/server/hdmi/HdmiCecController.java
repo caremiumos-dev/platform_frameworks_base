@@ -564,7 +564,7 @@ final class HdmiCecController {
     // Run a Runnable on IO thread.
     // It should be careful to access member variables on IO thread because
     // it can be accessed from system thread as well.
-    private void runOnIoThread(Runnable runnable) {
+    void runOnIoThread(Runnable runnable) {
         mIoHandler.post(runnable);
     }
 

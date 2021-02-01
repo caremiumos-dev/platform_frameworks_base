@@ -99,6 +99,7 @@ public class HdmiCecLocalDevicePlayback extends HdmiCecLocalDeviceSource {
     @ServiceThreadOnly
     protected void onAddressAllocated(int logicalAddress, int reason) {
         assertRunOnServiceThread();
+        super.onAddressAllocated(logicalAddress, reason);
         if (reason == mService.INITIATED_BY_ENABLE_CEC) {
             mService.setAndBroadcastActiveSource(mService.getPhysicalAddress(),
                     getDeviceInfo().getDeviceType(), Constants.ADDR_BROADCAST);
@@ -195,11 +196,18 @@ public class HdmiCecLocalDevicePlayback extends HdmiCecLocalDeviceSource {
             mService.sendCecCommand(HdmiCecMessageBuilder.buildInactiveSource(
                     mAddress, mService.getPhysicalAddress()));
         }
-        boolean wasActiveSource = mIsActiveSource;
+        // Cancel the feature of no sending <Standby> if it's in not active state.
+        // There are 2 reasons:
+        // 1.Tv might broadcast routing message which make playback into inactive state when tv
+        // receives <InActive Source> message.
+        // 2.The active state of playback might not be initiated in some scenarios. For example,
+        // playback hotplugs in tv's current active port and tv does not send routing message.
+        // boolean wasActiveSource = mIsActiveSource;
         // Invalidate the internal active source record when goes to standby
         // This set will also update mIsActiveSource
         mService.setActiveSource(Constants.ADDR_INVALID, Constants.INVALID_PHYSICAL_ADDRESS);
-        if (initiatedByCec || !mAutoTvOff || !wasActiveSource) {
+        if (initiatedByCec || !mAutoTvOff /*|| !wasActiveSource*/) {
+            HdmiLogger.info("onStandby no send <Standby> with mAutoTvOff=" + mAutoTvOff);
             return;
         }
         switch (standbyAction) {
@@ -306,9 +314,10 @@ public class HdmiCecLocalDevicePlayback extends HdmiCecLocalDeviceSource {
         if (!mIsActiveSource) {
             return;
         }
-        // Wake up the device if the power is in standby mode, or its screen is off -
-        // which can happen if the device is holding a partial lock.
-        if (mService.isPowerStandbyOrTransient() || !mService.getPowerManager().isScreenOn()) {
+        // Wake up the device if the power is in standby mode.
+        // Cancel screen condition. If user powers down after one touch play,
+        // then it will be instantly waken up because now the screen is off.
+        if (mService.isPowerStandby()/* || !mService.getPowerManager().isScreenOn()*/) {
             mService.wakeUp();
         }
     }
@@ -444,9 +453,10 @@ public class HdmiCecLocalDevicePlayback extends HdmiCecLocalDeviceSource {
     @Override
     @ServiceThreadOnly
     protected void disableDevice(boolean initiatedByCec, PendingActionClearedCallback callback) {
-        super.disableDevice(initiatedByCec, callback);
-
         assertRunOnServiceThread();
+        HdmiLogger.debug("disableDevice " + initiatedByCec);
+        super.disableDevice(initiatedByCec, callback);
+        removeAllActions();
         checkIfPendingActionsCleared();
     }
 

@@ -377,6 +377,7 @@ public class HdmiCecLocalDeviceAudioSystem extends HdmiCecLocalDeviceSource {
     @ServiceThreadOnly
     protected void onAddressAllocated(int logicalAddress, int reason) {
         assertRunOnServiceThread();
+        super.onAddressAllocated(logicalAddress, reason);
         if (reason == mService.INITIATED_BY_ENABLE_CEC) {
             mService.setAndBroadcastActiveSource(mService.getPhysicalAddress(),
                     getDeviceInfo().getDeviceType(), Constants.ADDR_BROADCAST);

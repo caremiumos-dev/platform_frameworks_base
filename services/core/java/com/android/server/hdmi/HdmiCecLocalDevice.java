@@ -17,6 +17,7 @@
 package com.android.server.hdmi;
 
 import android.annotation.Nullable;
+import android.hardware.hdmi.HdmiControlManager;
 import android.hardware.hdmi.HdmiDeviceInfo;
 import android.hardware.hdmi.IHdmiControlCallback;
 import android.hardware.input.InputManager;
@@ -202,7 +203,9 @@ abstract class HdmiCecLocalDevice {
     }
 
     /** Called once a logical address of the local device is allocated. */
-    protected abstract void onAddressAllocated(int logicalAddress, int reason);
+    protected void onAddressAllocated(int logicalAddress, int reason) {
+        HdmiLogger.info("onAddressAllocated " + logicalAddress + " " + reason);
+    }
 
     /** Get the preferred logical address from system properties. */
     protected abstract int getPreferredAddress();
@@ -828,7 +831,6 @@ abstract class HdmiCecLocalDevice {
         assertRunOnServiceThread();
         action.finish(false);
         mActions.remove(action);
-        checkIfPendingActionsCleared();
     }
 
     // Remove all actions matched with the given Class type.
@@ -837,6 +839,17 @@ abstract class HdmiCecLocalDevice {
         assertRunOnServiceThread();
         removeActionExcept(clazz, null);
     }
+
+    // Remove all actions
+    @ServiceThreadOnly
+    void removeAllActions() {
+        assertRunOnServiceThread();
+        for (HdmiCecFeatureAction action : mActions) {
+            action.finish(false);
+        }
+        mActions.clear();
+    }
+
 
     // Remove all actions matched with the given Class type besides |exception|.
     @ServiceThreadOnly
@@ -851,7 +864,6 @@ abstract class HdmiCecLocalDevice {
                 iter.remove();
             }
         }
-        checkIfPendingActionsCleared();
     }
 
     protected void checkIfPendingActionsCleared() {
@@ -965,7 +977,11 @@ abstract class HdmiCecLocalDevice {
      * @param standbyAction Intent action that drives the standby process, either {@link
      *     HdmiControlService#STANDBY_SCREEN_OFF} or {@link HdmiControlService#STANDBY_SHUTDOWN}
      */
-    protected void onStandby(boolean initiatedByCec, int standbyAction) {}
+    protected void onStandby(boolean initiatedByCec, int standbyAction) {
+        HdmiLogger.debug("onStandby");
+        mDeviceInfo = HdmiUtils.cloneHdmiDeviceInfo(mDeviceInfo,
+                HdmiControlManager.POWER_STATUS_STANDBY);
+    }
 
     /**
      * Disable device. {@code callback} is used to get notified when all pending actions are
@@ -1128,6 +1144,9 @@ abstract class HdmiCecLocalDevice {
         pw.println("mDeviceInfo: " + mDeviceInfo);
         pw.println("mActiveSource: " + getActiveSource());
         pw.println(String.format("mActiveRoutingPath: 0x%04x", mActiveRoutingPath));
+        for (HdmiCecFeatureAction action : mActions) {
+            pw.println("action: " + action);
+        }
     }
 
     /** Calculates the physical address for {@code activePortId}.

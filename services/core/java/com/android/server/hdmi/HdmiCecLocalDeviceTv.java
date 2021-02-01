@@ -196,6 +196,7 @@ final class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
     @ServiceThreadOnly
     protected void onAddressAllocated(int logicalAddress, int reason) {
         assertRunOnServiceThread();
+        super.onAddressAllocated(logicalAddress, reason);
         List<HdmiPortInfo> ports = mService.getPortInfo();
         for (HdmiPortInfo port : ports) {
             mArcFeatureEnabled.put(port.getId(), port.isArcSupported());

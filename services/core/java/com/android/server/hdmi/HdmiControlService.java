@@ -75,6 +75,7 @@ import android.provider.Settings.Global;
 import android.sysprop.HdmiProperties;
 import android.text.TextUtils;
 import android.util.ArraySet;
+import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -95,6 +96,8 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -177,6 +180,9 @@ public class HdmiControlService extends SystemService {
     static final int STANDBY_SCREEN_OFF = 0;
     static final int STANDBY_SHUTDOWN = 1;
 
+    static final int AWAIT_TIME = 5000;
+    private CountDownLatch mShutdownLatch;
+
     // Logical address of the active source.
     @GuardedBy("mLock")
     protected final ActiveSource mActiveSource = new ActiveSource();
@@ -224,6 +230,7 @@ public class HdmiControlService extends SystemService {
         @Override
         public void onReceive(Context context, Intent intent) {
             assertRunOnServiceThread();
+            HdmiLogger.debug("receive " + intent.getAction());
             boolean isReboot = SystemProperties.get(SHUTDOWN_ACTION_PROPERTY).contains("1");
             switch (intent.getAction()) {
                 case Intent.ACTION_SCREEN_OFF:
@@ -514,10 +521,10 @@ public class HdmiControlService extends SystemService {
             mCecController = HdmiCecController.create(this);
         }
         if (mCecController != null) {
+            mCecController.setOption(OptionKey.ENABLE_CEC, mHdmiControlEnabled);
             if (mHdmiControlEnabled) {
                 initializeCec(INITIATED_BY_BOOT_UP);
             } else {
-                mCecController.setOption(OptionKey.ENABLE_CEC, false);
             }
         } else {
             Slog.i(TAG, "Device does not support HDMI-CEC.");
@@ -2862,6 +2869,8 @@ public class HdmiControlService extends SystemService {
     @ServiceThreadOnly
     void wakeUp() {
         assertRunOnServiceThread();
+        HdmiLogger.info("Hdmi cec wake up!");
+        HdmiLogger.debug("HDMI-CEC wake up " + Log.getStackTraceString(new Exception(TAG)));
         mWakeUpMessageReceived = true;
         mPowerManager.wakeUp(SystemClock.uptimeMillis(), PowerManager.WAKE_REASON_HDMI,
                 "android.server.hdmi:WAKE");
@@ -2875,6 +2884,7 @@ public class HdmiControlService extends SystemService {
         if (!canGoToStandby()) {
             return;
         }
+        HdmiLogger.info("Hdmi cec standby!");
         mStandbyMessageReceived = true;
         mPowerManager.goToSleep(SystemClock.uptimeMillis(), PowerManager.GO_TO_SLEEP_REASON_HDMI, 0);
         // PowerManger will send the broadcast Intent.ACTION_SCREEN_OFF and after this gets
@@ -2893,6 +2903,7 @@ public class HdmiControlService extends SystemService {
     @ServiceThreadOnly
     private void onWakeUp() {
         assertRunOnServiceThread();
+        HdmiLogger.info("onWakeUp current power status " + mPowerStatus);
         mPowerStatus = HdmiControlManager.POWER_STATUS_TRANSIENT_TO_ON;
         if (mCecController != null) {
             if (mHdmiControlEnabled) {
@@ -2912,6 +2923,11 @@ public class HdmiControlService extends SystemService {
     @VisibleForTesting
     protected void onStandby(final int standbyAction) {
         assertRunOnServiceThread();
+        HdmiLogger.info("onStandby current power status " + mPowerStatus);
+        if (!mHdmiControlEnabled) {
+            HdmiLogger.error("onStandby hdmi disabled!");
+            return;
+        }
         mPowerStatus = HdmiControlManager.POWER_STATUS_TRANSIENT_TO_STANDBY;
         invokeVendorCommandListenersOnControlStateChanged(false,
                 HdmiControlManager.CONTROL_STATE_CHANGED_REASON_STANDBY);
@@ -2926,6 +2942,8 @@ public class HdmiControlService extends SystemService {
             return;
         }
 
+        mShutdownLatch = new CountDownLatch(1);
+
         disableDevices(new PendingActionClearedCallback() {
             @Override
             public void onCleared(HdmiCecLocalDevice device) {
@@ -2939,6 +2957,23 @@ public class HdmiControlService extends SystemService {
                 }
             }
         });
+
+        if (mShutdownLatch != null) {
+            HdmiLogger.info("onStandby wait all work ends " + mShutdownLatch);
+            try {
+                mShutdownLatch.await(AWAIT_TIME, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Slog.e(TAG, "shut down lock notify fail " + e);
+            }
+        }
+
+        // We should make sure the previous messages including <Standby> message
+        // on IO Thread has been sent.
+        if (!isAudioSystemDevice()) {
+            mCecController.setOption(OptionKey.SYSTEM_CEC_CONTROL, false);
+            mMhlController.setOption(OPTION_MHL_SERVICE_CONTROL, DISABLED);
+        }
+        HdmiLogger.info("onStandbyCompleted finally finished.");
     }
 
     private boolean canGoToStandby() {
@@ -2977,6 +3012,7 @@ public class HdmiControlService extends SystemService {
     private void disableDevices(PendingActionClearedCallback callback) {
         if (mCecController != null) {
             for (HdmiCecLocalDevice device : mCecController.getLocalDeviceList()) {
+                HdmiLogger.debug("disableDevices " + device);
                 device.disableDevice(mStandbyMessageReceived, callback);
             }
         }
@@ -2996,9 +3032,10 @@ public class HdmiControlService extends SystemService {
     @ServiceThreadOnly
     private void onStandbyCompleted(int standbyAction) {
         assertRunOnServiceThread();
-        Slog.v(TAG, "onStandbyCompleted");
+        HdmiLogger.info("onStandbyCompleted " + standbyAction);
 
         if (mPowerStatus != HdmiControlManager.POWER_STATUS_TRANSIENT_TO_STANDBY) {
+            HdmiLogger.error("onStandbyCompleted unexpected power status:" + mPowerStatus);
             return;
         }
         mPowerStatus = HdmiControlManager.POWER_STATUS_STANDBY;
@@ -3006,10 +3043,12 @@ public class HdmiControlService extends SystemService {
             device.onStandby(mStandbyMessageReceived, standbyAction);
         }
         mStandbyMessageReceived = false;
-        if (!isAudioSystemDevice()) {
-            mCecController.setOption(OptionKey.SYSTEM_CEC_CONTROL, false);
-            mMhlController.setOption(OPTION_MHL_SERVICE_CONTROL, DISABLED);
-        }
+        mCecController.runOnIoThread(()->{
+            // Release the latch
+            if (mShutdownLatch != null) {
+                mShutdownLatch.countDown();
+            }
+        });
     }
 
     private void addVendorCommandListener(IHdmiVendorCommandListener listener, int deviceType) {
