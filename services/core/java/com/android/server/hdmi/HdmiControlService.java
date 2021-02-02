@@ -406,6 +406,8 @@ public class HdmiControlService extends SystemService {
     // Set to true if the logical address allocation is completed.
     private boolean mAddressAllocated = false;
 
+    private HdmiCecActiveness mActiveness;
+
     // Buffer for processing the incoming cec messages while allocating logical addresses.
     private final class CecMessageBuffer {
         private List<HdmiCecMessage> mBuffer = new ArrayList<>();
@@ -488,6 +490,9 @@ public class HdmiControlService extends SystemService {
         }
         mLocalDevices = deviceTypes;
         mSettingsObserver = new SettingsObserver(mHandler);
+        if (isPlaybackDevice()) {
+            mActiveness = new HdmiCecActiveness(context);
+        }
     }
 
     protected static List<Integer> getIntList(String string) {
@@ -525,6 +530,7 @@ public class HdmiControlService extends SystemService {
             if (mHdmiControlEnabled) {
                 initializeCec(INITIATED_BY_BOOT_UP);
             } else {
+                setActiveness(HdmiCecActiveness.CEC_DISABLED);
             }
         } else {
             Slog.i(TAG, "Device does not support HDMI-CEC.");
@@ -809,6 +815,12 @@ public class HdmiControlService extends SystemService {
         mCecController.setOption(OptionKey.SYSTEM_CEC_CONTROL, true);
         mCecController.setLanguage(mMenuLanguage);
         initializeLocalDevices(initiatedBy);
+    }
+
+    void setActiveness(String state) {
+        if (mActiveness != null) {
+            mActiveness.setState(state);
+        }
     }
 
     @ServiceThreadOnly
@@ -2885,6 +2897,7 @@ public class HdmiControlService extends SystemService {
             return;
         }
         HdmiLogger.info("Hdmi cec standby!");
+        setActiveness(HdmiCecActiveness.CEC_INACTIVE);
         mStandbyMessageReceived = true;
         mPowerManager.goToSleep(SystemClock.uptimeMillis(), PowerManager.GO_TO_SLEEP_REASON_HDMI, 0);
         // PowerManger will send the broadcast Intent.ACTION_SCREEN_OFF and after this gets
@@ -2928,6 +2941,7 @@ public class HdmiControlService extends SystemService {
             HdmiLogger.error("onStandby hdmi disabled!");
             return;
         }
+        setActiveness(HdmiCecActiveness.CEC_INACTIVE);
         mPowerStatus = HdmiControlManager.POWER_STATUS_TRANSIENT_TO_STANDBY;
         invokeVendorCommandListenersOnControlStateChanged(false,
                 HdmiControlManager.CONTROL_STATE_CHANGED_REASON_STANDBY);
@@ -3257,6 +3271,8 @@ public class HdmiControlService extends SystemService {
                         mCecController.setOption(OptionKey.SYSTEM_CEC_CONTROL, false);
                         mMhlController.setOption(OPTION_MHL_ENABLE, DISABLED);
                         clearLocalDevices();
+
+                        setActiveness(HdmiCecActiveness.CEC_DISABLED);
                     }
                 });
             }
@@ -3311,7 +3327,8 @@ public class HdmiControlService extends SystemService {
         // playback will claim active source. Otherwise audio system will.
         if (deviceType == HdmiDeviceInfo.DEVICE_PLAYBACK) {
             HdmiCecLocalDevicePlayback playback = playback();
-            playback.setIsActiveSource(true);
+            setActiveSource(playback.getDeviceInfo().getLogicalAddress(),
+                    playback.getDeviceInfo().getPhysicalAddress());
             playback.wakeUpIfActiveSource();
             playback.maySendActiveSource(source);
             setActiveSource(playback.mAddress, physicalAddress);
@@ -3319,10 +3336,9 @@ public class HdmiControlService extends SystemService {
 
         if (deviceType == HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM) {
             HdmiCecLocalDeviceAudioSystem audioSystem = audioSystem();
-            if (playback() != null) {
-                audioSystem.setIsActiveSource(false);
-            } else {
-                audioSystem.setIsActiveSource(true);
+            if (playback() == null) {
+                setActiveSource(audioSystem.getDeviceInfo().getLogicalAddress(),
+                        audioSystem .getDeviceInfo().getPhysicalAddress());
                 audioSystem.wakeUpIfActiveSource();
                 audioSystem.maySendActiveSource(source);
                 setActiveSource(audioSystem.mAddress, physicalAddress);
@@ -3342,16 +3358,14 @@ public class HdmiControlService extends SystemService {
         HdmiCecLocalDevicePlayback playback = playback();
         HdmiCecLocalDeviceAudioSystem audioSystem = audioSystem();
         if (playback != null) {
-            playback.setIsActiveSource(true);
+            setActiveSource(playback.getDeviceInfo().getLogicalAddress(),
+                    playback.getDeviceInfo().getPhysicalAddress());
             playback.wakeUpIfActiveSource();
             playback.maySendActiveSource(sourceAddress);
-            if (audioSystem != null) {
-                audioSystem.setIsActiveSource(false);
-            }
-            setActiveSource(playback.mAddress, physicalAddress);
         } else {
             if (audioSystem != null) {
-                audioSystem.setIsActiveSource(true);
+                setActiveSource(audioSystem.getDeviceInfo().getLogicalAddress(),
+                        audioSystem .getDeviceInfo().getPhysicalAddress());
                 audioSystem.wakeUpIfActiveSource();
                 audioSystem.maySendActiveSource(sourceAddress);
                 setActiveSource(audioSystem.mAddress, physicalAddress);

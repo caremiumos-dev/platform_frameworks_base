@@ -244,7 +244,7 @@ public class HdmiCecLocalDevicePlayback extends HdmiCecLocalDeviceSource {
     @VisibleForTesting
     void setIsActiveSource(boolean on) {
         assertRunOnServiceThread();
-        mIsActiveSource = on;
+        super.setIsActiveSource(on);
         if (on) {
             getWakeLock().acquire();
         } else {

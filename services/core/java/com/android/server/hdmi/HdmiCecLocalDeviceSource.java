@@ -139,7 +139,6 @@ abstract class HdmiCecLocalDeviceSource extends HdmiCecLocalDevice {
         if (!getActiveSource().equals(activeSource)) {
             setActiveSource(activeSource);
         }
-        setIsActiveSource(physicalAddress == mService.getPhysicalAddress());
         updateDevicePowerStatus(logicalAddress, HdmiControlManager.POWER_STATUS_ON);
         if (isRoutingControlFeatureEnabled()) {
             switchInputOnReceivingNewActivePath(physicalAddress);
@@ -243,7 +242,20 @@ abstract class HdmiCecLocalDeviceSource extends HdmiCecLocalDevice {
     @ServiceThreadOnly
     void setIsActiveSource(boolean on) {
         assertRunOnServiceThread();
-        mIsActiveSource = on;
+        if (mDeviceType == HdmiDeviceInfo.DEVICE_PLAYBACK) {
+            HdmiLogger.info("setIsActiveSource " + on + " cur:" + mIsActiveSource);
+            updateActiveness(on);
+            mIsActiveSource = on;
+        }
+    }
+
+    @ServiceThreadOnly
+    private void updateActiveness(boolean on) {
+        if (on) {
+            mService.setActiveness(HdmiCecActiveness.CEC_ACTIVE);
+        } else {
+            mService.setActiveness(HdmiCecActiveness.CEC_INACTIVE);
+        }
     }
 
     @ServiceThreadOnly
