@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "92989e1b_2ee4dded",
+        "filename": "core/java/android/app/RemoteInput.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1399318
+      },
+      "writtenOn": "2021-02-03T11:37:49Z",
+      "side": 1,
+      "message": "Thanks!",
+      "parentUuid": "31377b02_b43f8a46",
+      "revId": "714afdbfd80622e71014f749d3cbbc368b74a685",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4e7884b8_2b669c29",
@@ -31,6 +49,24 @@
       "writtenOn": "2021-02-02T21:54:24Z",
       "side": 1,
       "message": "Similar as comment above",
+      "revId": "714afdbfd80622e71014f749d3cbbc368b74a685",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7df42fd9_cdd5bf5e",
+        "filename": "core/java/android/app/RemoteInput.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1399318
+      },
+      "writtenOn": "2021-02-03T11:37:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4e7884b8_2b669c29",
       "revId": "714afdbfd80622e71014f749d3cbbc368b74a685",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
