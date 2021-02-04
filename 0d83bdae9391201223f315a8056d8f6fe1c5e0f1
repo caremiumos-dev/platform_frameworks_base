@@ -16,6 +16,52 @@
       "message": "Thanks! Please take a look.",
       "revId": "0d83bdae9391201223f315a8056d8f6fe1c5e0f1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e6e2a67d_12efeb98",
+        "filename": "core/java/android/app/RemoteInput.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1060562
+      },
+      "writtenOn": "2021-02-04T14:41:46Z",
+      "side": 1,
+      "message": "rename to something platform appropriate",
+      "range": {
+        "startLine": 119,
+        "startChar": 21,
+        "endLine": 119,
+        "endChar": 38
+      },
+      "revId": "0d83bdae9391201223f315a8056d8f6fe1c5e0f1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e966839b_5ffaf4cf",
+        "filename": "core/java/android/app/RemoteInput.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1060562
+      },
+      "writtenOn": "2021-02-04T14:41:46Z",
+      "side": 1,
+      "message": "there\u0027s already a field for semantic action type on Action itself - see the constants on https://developer.android.com/reference/android/app/Notification.Action",
+      "range": {
+        "startLine": 168,
+        "startChar": 37,
+        "endLine": 169,
+        "endChar": 27
+      },
+      "revId": "0d83bdae9391201223f315a8056d8f6fe1c5e0f1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
