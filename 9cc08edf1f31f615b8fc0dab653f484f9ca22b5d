@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d2f633bd_60f0c16e",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 2347,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-10T09:03:06Z",
+      "side": 0,
+      "message": "So we were doing this which only ever affects info.detailedState, but never read it in the subsequent code ? Awesome.",
+      "range": {
+        "startLine": 2342,
+        "startChar": 0,
+        "endLine": 2347,
+        "endChar": 9
+      },
+      "revId": "9cc08edf1f31f615b8fc0dab653f484f9ca22b5d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3848799a_e6669ac3",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 3498,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-10T09:03:06Z",
+      "side": 0,
+      "message": "If I\u0027m reading this correctly, the broadcast for the VPN will be sent by mLegacyTypeTracker.remove in l.3507, so it used to be called after the legacy lockdown broadcast for the underyling network. Your new version will send it in the reverse order.\n\nI don\u0027t think it\u0027s a problem, especially given that other places do the VPN broadcast first, and I\u0027m not even sure there\u0027s any guarantee of broadcasts being ordered.",
+      "range": {
+        "startLine": 3498,
+        "startChar": 20,
+        "endLine": 3498,
+        "endChar": 37
+      },
+      "revId": "9cc08edf1f31f615b8fc0dab653f484f9ca22b5d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
