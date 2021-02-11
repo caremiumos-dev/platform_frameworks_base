@@ -45,6 +45,30 @@
       },
       "revId": "9cc08edf1f31f615b8fc0dab653f484f9ca22b5d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "60e9a18a_e166edc1",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 3498,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 0,
+      "message": "Before this CL, the \"extra\" legacy lockdown broadcast for the underlying network was sent any time any NetworkInfo on the system changed state. This seems unnecessary and harmful because:\n\n- Most non-default network connections don\u0027t send CONNECTIVITY_ACTION any more. This was only used by startUsingNetworkFeature, which is not allowed for any app targeting M or above.\n- If the default network changes, there will be a CONNECTIVITY_ACTION, but if the default network switched, the VPN will disconnect anyway, so it does not seem useful to send the extra broadcast.\n\nAfter this CL, the broadcast is only sent when the VPN connects, so it will not be sent out here. This is hopefully good enough emulation.",
+      "parentUuid": "3848799a_e6669ac3",
+      "range": {
+        "startLine": 3498,
+        "startChar": 20,
+        "endLine": 3498,
+        "endChar": 37
+      },
+      "revId": "9cc08edf1f31f615b8fc0dab653f484f9ca22b5d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }

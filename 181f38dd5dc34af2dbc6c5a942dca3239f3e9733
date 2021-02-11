@@ -24,6 +24,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3b1a34d6_89f46a7d",
+        "filename": "packages/Connectivity/framework/src/android/net/ConnectivityManager.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 1241,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "This was a not very good attempt to describe the various special cases in connectivity APIs that check mLockdownEnabled.\n\nWe\u0027ve already deleted one of them, which is that when legacy lockdown is on, VPNs could not call setUnderlyingNetworks.\n\nThe remaining one is that when a legacy lockdown VPN is enabled, the legacy NetworkInfo-based APIs, and getDefaultNetworkCapabilitiesForUser which is used by statusbar, behave as though VPNs didn\u0027t have underlying networks. \n\nI\u0027m not sure that these special cases still make sense though, so maybe we can delete them in S. Removed this bullet point in the hope that we can do that.",
+      "parentUuid": "76448d82_0f737e8c",
+      "range": {
+        "startLine": 1241,
+        "startChar": 44,
+        "endLine": 1241,
+        "endChar": 51
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "69ab3aa1_5103a7c2",
@@ -37,6 +61,30 @@
       "writtenOn": "2021-02-10T09:03:06Z",
       "side": 1,
       "message": "Should this @RequirePermission(NETWORK_SETTINGS) or did you intend to put this later when exposing ?",
+      "range": {
+        "startLine": 1248,
+        "startChar": 5,
+        "endLine": 1248,
+        "endChar": 7
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9e81de3d_c7013daa",
+        "filename": "packages/Connectivity/framework/src/android/net/ConnectivityManager.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 1248,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Permission checks were entirely missing :-\\. Fixed.",
+      "parentUuid": "69ab3aa1_5103a7c2",
       "range": {
         "startLine": 1248,
         "startChar": 5,
@@ -70,6 +118,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e0865f02_1f0ff2f3",
+        "filename": "packages/Connectivity/framework/src/android/net/ConnectivityManager.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 1249,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Ack. Generally speaking, I\u0027d prefer to limit use of this backwards compatibility mode as much as possible, so I\u0027m loath to add any more features to it.",
+      "parentUuid": "7a97e1d0_fbe9dcf5",
+      "range": {
+        "startLine": 1249,
+        "startChar": 44,
+        "endLine": 1249,
+        "endChar": 59
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "55512ed3_e7d929e8",
@@ -83,6 +155,30 @@
       "writtenOn": "2021-02-10T09:03:06Z",
       "side": 1,
       "message": "nit : \"maybeSend\" ? As this will only do it if lockdown is enabled.",
+      "range": {
+        "startLine": 760,
+        "startChar": 21,
+        "endLine": 760,
+        "endChar": 25
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d1e18416_3fa675f7",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 760,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "55512ed3_e7d929e8",
       "range": {
         "startLine": 760,
         "startChar": 21,
@@ -116,6 +212,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4abfe618_d3a56302",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 764,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bdd9aa38_641f48f9",
+      "range": {
+        "startLine": 764,
+        "startChar": 27,
+        "endLine": 764,
+        "endChar": 34
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6f85e68f_308d08bf",
@@ -129,6 +249,30 @@
       "writtenOn": "2021-02-10T09:03:06Z",
       "side": 1,
       "message": "This wtf serves little purpose considering l.767 will crash ; did you mean to return ?",
+      "range": {
+        "startLine": 765,
+        "startChar": 16,
+        "endLine": 765,
+        "endChar": 23
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e81a115e_d09ef8d5",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 765,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Oops. Done",
+      "parentUuid": "6f85e68f_308d08bf",
       "range": {
         "startLine": 765,
         "startChar": 16,
@@ -162,6 +306,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3a095e91_998b63d3",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 793,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Yes, sorry. Too many rebases :-)",
+      "parentUuid": "0c948f48_b1e3f124",
+      "range": {
+        "startLine": 793,
+        "startChar": 88,
+        "endLine": 793,
+        "endChar": 96
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "8e5d3e69_5c68470b",
@@ -175,6 +343,30 @@
       "writtenOn": "2021-02-10T09:03:06Z",
       "side": 1,
       "message": "I don\u0027t know well how to fix this, but if I\u0027m reading this correctly, this gets called transitively by getLegacyLockdownState from filterNetworkInfo, which is called from binder threads.\n\nThat means it\u0027s possible that between l.5107 and l.5111 the default network has changed and this method returns the wrong result. In fact, it\u0027s also possible mLockdownEnabled changes between l.5117 and l.5123, and we return CONNECTING instead of the original state.",
+      "range": {
+        "startLine": 5104,
+        "startChar": 20,
+        "endLine": 5104,
+        "endChar": 45
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e764fad8_787d306a",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 5104,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Yes, there may be some tearing while the default network is switching. The fact that the VPN\u0027s underlying network is static in legacyLockdownNai.declaredUnderlyingNetworks helps avoid that.\n\nI\u0027ve removed the check in 5117 because it was superfluous (already done in 5097 called by 5123), which also helps a bit, but I don\u0027t think there\u0027s a way to avoid tearing without blocking the handler thread.\n\nThat said, I don\u0027t think it\u0027s too bad. The tearing can only happen when this method is not called on the handler thread. So in particular, the broadcasts sent by LegacyTypeTracker should not be affected because they only run on the handler thread.\n\nI wrote up this comment:\n\n        // This method can be called both on any thread. When called from threads other than the\n        // handler thread (e.g., legacy connectivity APIs running on binder threads), it may return\n        // inconsistent state if, for example, the default network has changed in the meantime.\n\nbut I don\u0027t know if it\u0027s worth adding it, since pretty much any (non-trivial) synchronous API call has this problem.",
+      "parentUuid": "8e5d3e69_5c68470b",
       "range": {
         "startLine": 5104,
         "startChar": 20,
@@ -208,6 +400,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1c2b24d7_abfbb615",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 5111,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "145db95e_5936d093",
+      "range": {
+        "startLine": 5111,
+        "startChar": 31,
+        "endLine": 5111,
+        "endChar": 39
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1030162d_0375bbae",
@@ -221,6 +437,30 @@
       "writtenOn": "2021-02-10T09:03:06Z",
       "side": 1,
       "message": "You shouldn\u0027t need to do this immediately after clearCapabilities I think ?",
+      "range": {
+        "startLine": 167,
+        "startChar": 17,
+        "endLine": 167,
+        "endChar": 33
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3984a6e7_0b3f65d1",
+        "filename": "services/core/java/com/android/server/net/LockdownVpnTracker.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Ah, yes. Done.",
+      "parentUuid": "1030162d_0375bbae",
       "range": {
         "startLine": 167,
         "startChar": 17,
@@ -254,6 +494,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2376dc27_5e90fbd1",
+        "filename": "services/core/java/com/android/server/net/LockdownVpnTracker.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "It\u0027s true that getting the type like this is racy. Mostly it\u0027s for the code below that does:\n\n    EventLogTags.writeLockdownVpnConnecting(egressType);\n\nNot sure what to do here. Perhaps we can just remove it. I don\u0027t know if those logs are actually useful to anyone. Left as is in this CL; will upload a follow-up to remove it so we can discuss there.",
+      "parentUuid": "230141e4_edf7ff89",
+      "range": {
+        "startLine": 178,
+        "startChar": 69,
+        "endLine": 178,
+        "endChar": 88
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4b416fbe_965062a0",
@@ -277,6 +541,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bba20542_105f9ded",
+        "filename": "services/core/java/com/android/server/net/LockdownVpnTracker.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Added a comment explaining why. Neither of the reasons for this is a big deal but doing it this way seems marginally more correct.",
+      "parentUuid": "4b416fbe_965062a0",
+      "range": {
+        "startLine": 229,
+        "startChar": 67,
+        "endLine": 229,
+        "endChar": 74
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e1f8cad3_fb4647c9",
@@ -290,6 +578,30 @@
       "writtenOn": "2021-02-10T09:03:06Z",
       "side": 1,
       "message": "Sure but not necessarily in the shape of a non-null array. ConnectivityService#startLegacyVpn calls Vpn#startLegacyVpn with a null argument, even after this patch. In a sense it still has an underlying network, but ISTM this comment is meant in the spirit that it must have a non-null array in the context of this test.\n\nSo :\n- If the comment here means legacy VPN will no longer work when passed null as underlying (which I see no reason for, but anyway) then you may have to fix CS#startLegacyVpn.\n- If not, then I don\u0027t see what\u0027s wrong with just calling setUnderlyingNetworks(null) here (and possibly in LockdownVpnTracker:229)\n\n(if this has to do with the new sendLegacyLockdownBroadcast reading from vpnNai.declaredUnderlyingNetworks, this is set to contain the default network immediately when null is received)",
+      "range": {
+        "startLine": 7328,
+        "startChar": 63,
+        "endLine": 7328,
+        "endChar": 67
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "53b63af8_bb42078d",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 7328,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "\"Legacy VPN\" !\u003d \"legacy lockdown VPN\". Here I\u0027m just talking about LegacyLockdownTracker. We *could* fix legacy VPN to do this as well, and I think doing so would be more correct, but I don\u0027t know if it\u0027s worth it.\n\nAs for why I think we need to pass this in, I think that\u0027s the same question as your other comment https://android-review.googlesource.com/c/platform/frameworks/base/+/1553463/comment/230141e4_edf7ff89/ , right?\n\nIf so, I think the answer is: it makes things marginally more correct, and there doesn\u0027t seem to be any reason not to do that.",
+      "parentUuid": "e1f8cad3_fb4647c9",
       "range": {
         "startLine": 7328,
         "startChar": 63,
@@ -325,6 +637,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "7a0a22df_4bf5f7b0",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 7477,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Sending these callbacks would be incorrect because the legacy lockdown VPN (like all legacy VPNs) is fixed to the underlying network it picked when it started. I didn\u0027t mean to comment them out, sorry. Deleted instead.",
+      "parentUuid": "cabe3eee_8c0ecdd4",
+      "range": {
+        "startLine": 7477,
+        "startChar": 8,
+        "endLine": 7477,
+        "endChar": 11
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "12cf792b_034612d5",
         "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
         "patchSetId": 37
@@ -336,6 +672,30 @@
       "writtenOn": "2021-02-10T09:03:06Z",
       "side": 1,
       "message": "Nit : if you had a system default callback in this test, you could call .getLastAvailableNetwork() on it and be always sure the test sends what CS thinks is the system default network.",
+      "range": {
+        "startLine": 7492,
+        "startChar": 36,
+        "endLine": 7492,
+        "endChar": 64
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b99742d1_52812814",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 7492,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-11T14:01:11Z",
+      "side": 1,
+      "message": "Good idea. Added.",
+      "parentUuid": "12cf792b_034612d5",
       "range": {
         "startLine": 7492,
         "startChar": 36,
