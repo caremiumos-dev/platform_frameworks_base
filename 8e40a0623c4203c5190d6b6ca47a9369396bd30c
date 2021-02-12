@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "46545565_75d5bc6b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 40
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-12T05:41:53Z",
+      "side": 1,
+      "message": "Sending what I have. Will continue looking through it later today.",
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "764c3249_a3a0df53",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5096,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-12T05:41:53Z",
+      "side": 1,
+      "message": "So in this patch this is harmless ? The next patch makes this the only driver, but it being commented out in the previous patchset made it clear this had no impact on the logic. Now this comes in at difficult to predict times, and in this patch this boolean still kind of needs to be in sync with a number of other things in the mVpns array. I\u0027d be a bit less scared with the TODO back. ...then again it\u0027s not like there is any risk of leaving it at this patch so.",
+      "range": {
+        "startLine": 5096,
+        "startChar": 28,
+        "endLine": 5096,
+        "endChar": 44
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7dfe1e86_8809150d",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5114,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-12T05:41:53Z",
+      "side": 1,
+      "message": "10000, now that you\u0027ve updated the uid below ?",
+      "range": {
+        "startLine": 5114,
+        "startChar": 62,
+        "endLine": 5114,
+        "endChar": 63
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}

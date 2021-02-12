@@ -142,6 +142,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "faa3f3a6_58f0b6f6",
+        "filename": "packages/Connectivity/framework/src/android/net/ConnectivityManager.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 1249,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-12T05:41:53Z",
+      "side": 1,
+      "message": "I didn\u0027t mean it as a feature – the profile needs to be prepared anyway. It would be one more safeguard against a case where Settings calls this and unknowingly enables the wrong profile.\n\nBut this particular landmine was there before this patch anyway, so.",
+      "parentUuid": "e0865f02_1f0ff2f3",
+      "range": {
+        "startLine": 1249,
+        "startChar": 44,
+        "endLine": 1249,
+        "endChar": 59
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "55512ed3_e7d929e8",
@@ -377,6 +401,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9311efa2_c3b3b09c",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 5104,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-12T05:41:53Z",
+      "side": 1,
+      "message": "I don\u0027t think our synchronous methods have internal tearing generally. You certainly can\u0027t rely on getting consistent result between return values of two of them, or with the callbacks, but I don\u0027t think you can get, say, a NC that\u0027s teared halfway through states because we make defensive copies all the time. Well, maybe there is some of it some of the time that we missed. But this one seems a bit glaring. And it could be fixed with locking... but then that\u0027s what you want to remove.\n\nThat being said, I agree with you it\u0027s not necessarily too bad. IIUC, the followup patches move out the state that should kept synchronized with the lockdown boolean, making this a lot less prone to this kind of tearing – hopefully you may get a result that\u0027s locally wrong but not internally inconsistent.\n\nI gues what I\u0027m trying to say is : okay, fine",
+      "parentUuid": "e764fad8_787d306a",
+      "range": {
+        "startLine": 5104,
+        "startChar": 20,
+        "endLine": 5104,
+        "endChar": 45
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "145db95e_5936d093",
@@ -508,6 +556,30 @@
       "side": 1,
       "message": "It\u0027s true that getting the type like this is racy. Mostly it\u0027s for the code below that does:\n\n    EventLogTags.writeLockdownVpnConnecting(egressType);\n\nNot sure what to do here. Perhaps we can just remove it. I don\u0027t know if those logs are actually useful to anyone. Left as is in this CL; will upload a follow-up to remove it so we can discuss there.",
       "parentUuid": "230141e4_edf7ff89",
+      "range": {
+        "startLine": 178,
+        "startChar": 69,
+        "endLine": 178,
+        "endChar": 88
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "09e12079_e727b383",
+        "filename": "services/core/java/com/android/server/net/LockdownVpnTracker.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-12T05:41:53Z",
+      "side": 1,
+      "message": "I think I stand by my suggestion of logging the interface name instead. It\u0027s a superset of the information, it\u0027s not deprecated, and it\u0027s useful.",
+      "parentUuid": "2376dc27_5e90fbd1",
       "range": {
         "startLine": 178,
         "startChar": 69,
