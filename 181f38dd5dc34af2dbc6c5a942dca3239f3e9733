@@ -590,6 +590,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "67f3385f_e1d205f4",
+        "filename": "services/core/java/com/android/server/net/LockdownVpnTracker.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-12T06:54:10Z",
+      "side": 1,
+      "message": "Ack, that makes sense. Will address in aosp/1585566 which is already uploaded. Right now that CL logs the transports, which is a bit more code than I\u0027d like just for logging. I can make it log the interface name instead.",
+      "parentUuid": "09e12079_e727b383",
+      "range": {
+        "startLine": 178,
+        "startChar": 69,
+        "endLine": 178,
+        "endChar": 88
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4b416fbe_965062a0",

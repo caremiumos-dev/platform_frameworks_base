@@ -41,6 +41,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2112e248_fde5a988",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5096,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-12T06:54:10Z",
+      "side": 1,
+      "message": "[Note: I wasn\u0027t planning to merge this CL separately from the CLs that move the code to VpnManagerService. So the rest of this comment might or might not be relevant.]\n\nI think the threading and ordering are the same regardless of whether this code is here in CS or over in VpnManagerService.\n\nStarting from this CL, ConnectivityService doesn\u0027t look at mVpns at all for any networking logic; all VPN information comes through the NetworkAgents. (If you think about it, this statement is kind of proved by the fact that the next CL, and the one after that, simply move the code out to a different class. The fact that that move is a simple move with no logic changes means that the VPN code that is still here in CS is actually not tied to the networking parts of CS at all.)\n\nIn this CL, and going forward, all VPN IPC, such as establish, prepare, etc. etc. run on binder threads just like they did before. These lock mVpns and do what they need to do. As far as the rest of CS is concerned, what they do is irrelevant because it doesn\u0027t see any of those effects. What is relevant to the rest of CS is that at some point in the future, the handler thread will receive a message from a NetworkAgent indicating that a VPN agent connected, or disconnected, or IP addresses have been added or removed, etc. Those messages will be procesed in order as usual.\n\nThat\u0027s true of this method as well. When certain IPCs are called, Vpn.java will call setLegacyLockdownVpnEnabled. That hits the handler loop. Then, when the VPN successfully connects, it will register a NetworkAgent, and that will hit the handler loop (and, obviously, is guaranteed to be processed after the setLegacyLockdownVpnEnabled is processed).\n\nOn the other hand, the isLockdownVpnEnabled method is conceptually part of the VPN code. It accesses data in mVpns, and the rest of CS doesn\u0027t use it for anything.\n\nThe one place where these are sort of entwined in this CL is the broadcastreceivers. In this CL, the receiver for users being added/removed runs on the CS handler thread. That means that those operations on mVpns occur on the CS handler thread and as such cannot execute concurrently with the CS handler thread. I don\u0027t think that\u0027s a problem though, but if it were, it is one we can easily overcome by merging this CL at the same time as the CLs that moves the code to VpnManagerService and thus processes those broadcasts on the VpnManagerService handler thread. I was planning to do that anyway.",
+      "parentUuid": "764c3249_a3a0df53",
+      "range": {
+        "startLine": 5096,
+        "startChar": 28,
+        "endLine": 5096,
+        "endChar": 44
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7dfe1e86_8809150d",
@@ -54,6 +78,30 @@
       "writtenOn": "2021-02-12T05:41:53Z",
       "side": 1,
       "message": "10000, now that you\u0027ve updated the uid below ?",
+      "range": {
+        "startLine": 5114,
+        "startChar": 62,
+        "endLine": 5114,
+        "endChar": 63
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9ab47022_2ac7fd2a",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5114,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-12T06:54:10Z",
+      "side": 1,
+      "message": "Oops, this should have said \"userId 0\". Fixed in aosp/1585566.",
+      "parentUuid": "7dfe1e86_8809150d",
       "range": {
         "startLine": 5114,
         "startChar": 62,
