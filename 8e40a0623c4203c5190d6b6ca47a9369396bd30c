@@ -18,6 +18,46 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a6463d83_7b47e167",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 40
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "Nothing important to say any more. Only nits that may be fixed as drive-by in followups or even not at all.",
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9b5b2647_94692d02",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 769,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "nit : double space",
+      "range": {
+        "startLine": 769,
+        "startChar": 50,
+        "endLine": 769,
+        "endChar": 52
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "764c3249_a3a0df53",
@@ -65,6 +105,53 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6cc73c7d_1fe9a983",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5096,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "As you\u0027re mentioning, if this is merged together with the next patch, it\u0027s not relevant.\n\nBut just for the record I don\u0027t think this is entirely true, in particular the one place that\u0027s discordant is the specific value of mLockdownEnabled seen by other threads. The boolean will change, strictly speaking, at different times after this patch and after the following one (unless it\u0027s *always* true that this specific instruction is always a no-op because the boolean is already that value, which I can\u0027t really rule out but I\u0027m also not convinced of). So it\u0027s possible the exact timing at which point some other thread than the handler thread will observe the write is slightly different. Everything else in your comment is accurate I think, but this is specifically what I was referring to.\n\nBut again, as long as you merge this together with the next patch, it\u0027s not relevant.",
+      "parentUuid": "2112e248_fde5a988",
+      "range": {
+        "startLine": 5096,
+        "startChar": 28,
+        "endLine": 5096,
+        "endChar": 44
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "90b792a2_544daf58",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5113,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "No strong objection but considering l.5116 will return in this case anyway, is this premature optimization ?",
+      "range": {
+        "startLine": 5111,
+        "startChar": 7,
+        "endLine": 5113,
+        "endChar": 9
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7dfe1e86_8809150d",
@@ -107,6 +194,52 @@
         "startChar": 62,
         "endLine": 5114,
         "endChar": 63
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5f05e5b0_15cbb665",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5130,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "Given that it\u0027s actually possible this runs on a different thread than the handler thread, I think it\u0027d be a little bit safer if we started by stashing nai.declaredUnderlyingNetworks in a local in l.5119 to avoid any rare case of index out of bounds here.",
+      "range": {
+        "startLine": 5130,
+        "startChar": 54,
+        "endLine": 5130,
+        "endChar": 80
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "51c917cd_03068fb7",
+        "filename": "services/core/java/com/android/server/net/LockdownVpnTracker.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "double space",
+      "range": {
+        "startLine": 231,
+        "startChar": 67,
+        "endLine": 231,
+        "endChar": 69
       },
       "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"

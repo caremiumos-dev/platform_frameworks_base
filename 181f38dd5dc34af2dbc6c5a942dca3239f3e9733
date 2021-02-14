@@ -708,6 +708,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "de83a29f_551314f3",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 7328,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "Agree with the reasoning, but then let\u0027s fix the comment to say \"The legacy lockdown VPN tracker\" instead of just \"The legacy lockdown VPN\". In a followup is fine of course.",
+      "parentUuid": "53b63af8_bb42078d",
+      "range": {
+        "startLine": 7328,
+        "startChar": 63,
+        "endLine": 7328,
+        "endChar": 67
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cabe3eee_8c0ecdd4",
@@ -792,6 +816,30 @@
       "side": 1,
       "message": "Good idea. Added.",
       "parentUuid": "12cf792b_034612d5",
+      "range": {
+        "startLine": 7492,
+        "startChar": 36,
+        "endLine": 7492,
+        "endChar": 64
+      },
+      "revId": "181f38dd5dc34af2dbc6c5a942dca3239f3e9733",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b83fb4a9_d4622af5",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 37
+      },
+      "lineNbr": 7492,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-02-14T03:55:26Z",
+      "side": 1,
+      "message": "You now have a system default callback, but you still aren\u0027t calling .getLastAvailableNetwork 😊",
+      "parentUuid": "b99742d1_52812814",
       "range": {
         "startLine": 7492,
         "startChar": 36,
