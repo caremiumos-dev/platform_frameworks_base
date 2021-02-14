@@ -35,6 +35,23 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0d6f1cc1_600ef4f2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 40
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-14T23:57:57Z",
+      "side": 1,
+      "message": "Will address comments in aosp/1585566.",
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9b5b2647_94692d02",
@@ -48,6 +65,30 @@
       "writtenOn": "2021-02-14T03:55:26Z",
       "side": 1,
       "message": "nit : double space",
+      "range": {
+        "startLine": 769,
+        "startChar": 50,
+        "endLine": 769,
+        "endChar": 52
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "84146573_7973f10f",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 769,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-14T23:57:57Z",
+      "side": 1,
+      "message": "Oops. Done.",
+      "parentUuid": "9b5b2647_94692d02",
       "range": {
         "startLine": 769,
         "startChar": 50,
@@ -152,6 +193,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fe95279e_4f9d5e2a",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5113,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-14T23:57:57Z",
+      "side": 1,
+      "message": "Maybe.\n\nFrom a performance perspective, the volatile read is likely the same as taking the mNetworkForNetId lock (which, however, might be contended). Then there\u0027s a loop over an array of a handful of elements (usually 2 or 3) and a few boolean checks. If there\u0027s no VPN, this is very fast. If there\u0027s a VPN, then for each VPN, a Set iterator needs to be allocated, and all the UID ranges of the VPN need to be scanned. This could potentially be dozens of elements, and while that happens, the mNetworkForNetId lock is held.\n\nGiven that this boolean is false pretty much 100% of the time, I think it\u0027s better to leave as is.",
+      "parentUuid": "90b792a2_544daf58",
+      "range": {
+        "startLine": 5111,
+        "startChar": 7,
+        "endLine": 5113,
+        "endChar": 9
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7dfe1e86_8809150d",
@@ -212,6 +277,30 @@
       "writtenOn": "2021-02-14T03:55:26Z",
       "side": 1,
       "message": "Given that it\u0027s actually possible this runs on a different thread than the handler thread, I think it\u0027d be a little bit safer if we started by stashing nai.declaredUnderlyingNetworks in a local in l.5119 to avoid any rare case of index out of bounds here.",
+      "range": {
+        "startLine": 5130,
+        "startChar": 54,
+        "endLine": 5130,
+        "endChar": 80
+      },
+      "revId": "8e40a0623c4203c5190d6b6ca47a9369396bd30c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "151d0578_4151cde6",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 40
+      },
+      "lineNbr": 5130,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-14T23:57:57Z",
+      "side": 1,
+      "message": "Excellent suggestion, thanks. Done.",
+      "parentUuid": "5f05e5b0_15cbb665",
       "range": {
         "startLine": 5130,
         "startChar": 54,
