@@ -292,6 +292,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public static final int VCN_ERROR_CLASS_INFORMATIONAL = 1;
 
     /**
@@ -299,6 +300,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public static final int VCN_ERROR_CLASS_CONFIGURATION_ISSUE = 2;
 
     /** @hide */
@@ -322,6 +324,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public static final int VCN_ERROR_CODE_INTERNAL_FAILURE = VCN_ERROR_CODE_INFORMATIONAL_BASE + 1;
 
     /**
@@ -333,6 +336,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public static final int VCN_ERROR_CODE_GATEWAY_CONNECTION_DIED =
             VCN_ERROR_CODE_INFORMATIONAL_BASE + 2;
 
@@ -344,6 +348,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public static final int VCN_ERROR_CODE_GATEWAY_NETWORK_LOST =
             VCN_ERROR_CODE_INFORMATIONAL_BASE + 3;
 
@@ -355,6 +360,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public static final int VCN_ERROR_CODE_AUTHENTICATION_FAILED =
             VCN_ERROR_CODE_CONFIGURATION_BASE + 1;
 
@@ -367,6 +373,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public static final int VCN_ERROR_CODE_REMOTE_ERROR = VCN_ERROR_CODE_CONFIGURATION_BASE + 2;
 
     // TODO: make VcnStatusCallback @SystemApi
@@ -378,6 +385,7 @@ public class VcnManager {
      *
      * @hide
      */
+    @SystemApi
     public abstract static class VcnStatusCallback {
         private VcnStatusCallbackBinder mCbBinder;
 
@@ -428,7 +436,6 @@ public class VcnManager {
      * @param executor The {@link Executor} to be used for invoking callbacks
      * @param callback The VcnStatusCallback to be registered
      * @throws IllegalStateException if callback is currently registered with VcnManager
-     * @hide
      */
     public void registerVcnStatusCallback(
             @NonNull ParcelUuid subscriptionGroup,
@@ -461,7 +468,6 @@ public class VcnManager {
      * was registered with.
      *
      * @param callback The callback to be unregistered
-     * @hide
      */
     public void unregisterVcnStatusCallback(@NonNull VcnStatusCallback callback) {
         requireNonNull(callback, "callback must not be null");

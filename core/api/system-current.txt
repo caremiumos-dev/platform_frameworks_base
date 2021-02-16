@@ -6849,7 +6849,22 @@ package android.net.vcn {
   public class VcnManager {
     method @RequiresPermission(android.Manifest.permission.NETWORK_FACTORY) public void addVcnUnderlyingNetworkPolicyListener(@NonNull java.util.concurrent.Executor, @NonNull android.net.vcn.VcnManager.VcnUnderlyingNetworkPolicyListener);
     method @NonNull @RequiresPermission(android.Manifest.permission.NETWORK_FACTORY) public android.net.vcn.VcnUnderlyingNetworkPolicy getUnderlyingNetworkPolicy(@NonNull android.net.NetworkCapabilities, @NonNull android.net.LinkProperties);
+    method public void registerVcnStatusCallback(@NonNull android.os.ParcelUuid, @NonNull java.util.concurrent.Executor, @NonNull android.net.vcn.VcnManager.VcnStatusCallback);
     method public void removeVcnUnderlyingNetworkPolicyListener(@NonNull android.net.vcn.VcnManager.VcnUnderlyingNetworkPolicyListener);
+    method public void unregisterVcnStatusCallback(@NonNull android.net.vcn.VcnManager.VcnStatusCallback);
+    field public static final int VCN_ERROR_CLASS_CONFIGURATION_ISSUE = 2; // 0x2
+    field public static final int VCN_ERROR_CLASS_INFORMATIONAL = 1; // 0x1
+    field public static final int VCN_ERROR_CODE_AUTHENTICATION_FAILED = 101; // 0x65
+    field public static final int VCN_ERROR_CODE_GATEWAY_CONNECTION_DIED = 2; // 0x2
+    field public static final int VCN_ERROR_CODE_GATEWAY_NETWORK_LOST = 3; // 0x3
+    field public static final int VCN_ERROR_CODE_INTERNAL_FAILURE = 1; // 0x1
+    field public static final int VCN_ERROR_CODE_REMOTE_ERROR = 102; // 0x66
+  }
+
+  public abstract static class VcnManager.VcnStatusCallback {
+    ctor public VcnManager.VcnStatusCallback();
+    method public abstract void onEnteredSafeMode();
+    method public abstract void onGatewayConnectionError(@NonNull int[], int, int, @Nullable Throwable);
   }
 
   public static interface VcnManager.VcnUnderlyingNetworkPolicyListener {
