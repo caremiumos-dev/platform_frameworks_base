@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "94bd3eaf_53ca5421",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-02-19T08:10:54Z",
+      "side": 1,
+      "message": "Failures are a mixture of GCE quota errors - b/180644088 - and OOM errors in AutomaticBrightnessController - b/180636644.",
+      "revId": "eca4d9081f62d579eabb498eb95f2e767138c121",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
