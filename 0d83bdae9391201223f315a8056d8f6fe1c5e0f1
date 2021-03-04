@@ -35,6 +35,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5600a1ad_1c4ccd5e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1399318
+      },
+      "writtenOn": "2021-03-04T18:45:36Z",
+      "side": 1,
+      "message": "Thanks! This one is currently on hold, but Gerrit automatically added reviewers, sorry!",
+      "parentUuid": "e21049eb_deaf16e4",
+      "revId": "0d83bdae9391201223f315a8056d8f6fe1c5e0f1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e6e2a67d_12efeb98",
@@ -48,6 +66,30 @@
       "writtenOn": "2021-02-04T14:41:46Z",
       "side": 1,
       "message": "rename to something platform appropriate",
+      "range": {
+        "startLine": 119,
+        "startChar": 21,
+        "endLine": 119,
+        "endChar": 38
+      },
+      "revId": "0d83bdae9391201223f315a8056d8f6fe1c5e0f1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b6f8a503_37fbfb95",
+        "filename": "core/java/android/app/RemoteInput.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1399318
+      },
+      "writtenOn": "2021-03-04T18:45:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e6e2a67d_12efeb98",
       "range": {
         "startLine": 119,
         "startChar": 21,
