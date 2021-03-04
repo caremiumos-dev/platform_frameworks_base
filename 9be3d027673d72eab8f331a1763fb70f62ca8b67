@@ -41,6 +41,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3cd980bf_af0fdd68",
+        "filename": "packages/Connectivity/framework/src/android/net/ConnectivityManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1267,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-03-04T08:32:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b733ab4f_76bb398e",
+      "range": {
+        "startLine": 1267,
+        "startChar": 24,
+        "endLine": 1267,
+        "endChar": 72
+      },
+      "revId": "9be3d027673d72eab8f331a1763fb70f62ca8b67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "853342ff_993568fa",
@@ -54,6 +78,30 @@
       "writtenOn": "2021-03-03T15:39:58Z",
       "side": 1,
       "message": "Do we need to keep this? Is it being deleted in a future CL? If not, add a TODO to delete it?",
+      "range": {
+        "startLine": 1892,
+        "startChar": 26,
+        "endLine": 1892,
+        "endChar": 44
+      },
+      "revId": "9be3d027673d72eab8f331a1763fb70f62ca8b67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4ad7d3fa_ab306bb3",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1892,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-03-04T08:32:22Z",
+      "side": 1,
+      "message": "In previous meeting we thought it is not safe, since there are some usages on the dashboard.\nTODO added.",
+      "parentUuid": "853342ff_993568fa",
       "range": {
         "startLine": 1892,
         "startChar": 26,
@@ -87,6 +135,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f57cde19_b9af11ea",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1899,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-03-04T08:32:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f7bc9f52_7484c1d6",
+      "range": {
+        "startLine": 1899,
+        "startChar": 12,
+        "endLine": 1899,
+        "endChar": 63
+      },
+      "revId": "9be3d027673d72eab8f331a1763fb70f62ca8b67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "12135115_3bb492e5",
@@ -100,6 +172,30 @@
       "writtenOn": "2021-03-03T15:39:58Z",
       "side": 1,
       "message": "If you want to make this easy to test in CTS (highly recommended / required) would suggest NETWORK_SETTINGS as well, since that can be obtained by the shell using adoptShellPermissionIdentity.\n\nIf you do this, remember to update the RequiresPermission annotation on ConnectivityManager.",
+      "range": {
+        "startLine": 1912,
+        "startChar": 24,
+        "endLine": 1912,
+        "endChar": 53
+      },
+      "revId": "9be3d027673d72eab8f331a1763fb70f62ca8b67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cd268513_77814a99",
+        "filename": "services/core/java/com/android/server/ConnectivityService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1912,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-03-04T08:32:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "12135115_3bb492e5",
       "range": {
         "startLine": 1912,
         "startChar": 24,
@@ -133,6 +229,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "88ea5d3d_4ae68c26",
+        "filename": "services/core/java/com/android/server/connectivity/NetworkAgentInfo.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 895,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-03-04T08:32:22Z",
+      "side": 1,
+      "message": "Ooops.",
+      "parentUuid": "d5c3857d_efd84389",
+      "range": {
+        "startLine": 894,
+        "startChar": 0,
+        "endLine": 895,
+        "endChar": 17
+      },
+      "revId": "9be3d027673d72eab8f331a1763fb70f62ca8b67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0038ef73_33fc3a98",
@@ -156,6 +276,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "32255bc8_eb4fd164",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 10692,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-03-04T08:32:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0038ef73_33fc3a98",
+      "range": {
+        "startLine": 10689,
+        "startChar": 0,
+        "endLine": 10692,
+        "endChar": 83
+      },
+      "revId": "9be3d027673d72eab8f331a1763fb70f62ca8b67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1e36d42a_bb5e23ec",
@@ -169,6 +313,30 @@
       "writtenOn": "2021-03-03T15:39:58Z",
       "side": 1,
       "message": "This really seems like a bad idea, but it\u0027s what the system does today, and we definitely shouldn\u0027t change that in this CL. Thanks for adding test coverage for it.",
+      "range": {
+        "startLine": 10716,
+        "startChar": 38,
+        "endLine": 10716,
+        "endChar": 94
+      },
+      "revId": "9be3d027673d72eab8f331a1763fb70f62ca8b67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "24e43f88_a248a6b9",
+        "filename": "tests/net/java/com/android/server/ConnectivityServiceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 10716,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-03-04T08:32:22Z",
+      "side": 1,
+      "message": "Ack.\nI think this deserves a TODO.\nLet\u0027s revisit it later.",
+      "parentUuid": "1e36d42a_bb5e23ec",
       "range": {
         "startLine": 10716,
         "startChar": 38,
