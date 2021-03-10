@@ -3167,8 +3167,43 @@ public abstract class PackageManager {
     public static final String FEATURE_VR_HEADTRACKING = "android.hardware.vr.headtracking";
 
     /**
-     * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}:
-     * The device has a StrongBox hardware-backed Keystore.
+     * Feature for {@link #getSystemAvailableFeatures} and
+     * {@link #hasSystemFeature(String, int)}: If this feature is supported, the device implements
+     * the <a href="https://source.android.com/security/keystore/">Hardware-Backed Keystore</a>
+     * backed by an isolated execution environment. The version indicates which features are
+     * implented in the isolated execution environment:
+     * <ul>
+     * <li>100: Hardware support for ECDH and support for app-generated attestation keys.
+     * <li>41: Hardware enforcement of device-unlocked keys.
+     * <li>40: Support for wrapped key import.
+     * <li>30: Optional support for ID attestation.
+     * <li>20: Attestation and hardware key version binding support.
+     * <li>10: AES, HMAC, ECDSA and RSA support, with hardware-backed digesting and
+     * padding. Authentication binding support.
+     * </ul>
+     * If this feature is not supported the device may still implement Hardware-Backed Keystore,
+     * it's just not known which features are backed by an isolated execution environment.
+     */
+    @SdkConstant(SdkConstantType.FEATURE)
+    public static final String FEATURE_HARDWARE_KEYSTORE = "android.hardware.hardware_keystore";
+
+    /**
+     * Feature for {@link #getSystemAvailableFeatures} and
+     * {@link #hasSystemFeature(String, int)}: If this feature is supported, the device implements
+     * the <a href="https://source.android.com/security/best-practices/hardware#strongbox-keymaster">
+     * StrongBox Hardware-Backed Keystore</a>. The version indicates which features are
+     * implemented in StrongBox:
+     * <ul>
+     * <li>100: Hardware support for ECDH and support for app-generated attestation keys.
+     * <li>41: Hardware enforcement of device-unlocked keys.
+     * <li>40: Support for wrapped key import.
+     * <li>30: Optional support for ID attestation.
+     * <li>20: Attestation and hardware key version binding support.
+     * <li>10: AES, HMAC, ECDSA and RSA support, with hardware-backed digesting and
+     * padding. Authentication binding support.
+     * </ul>
+     * If this feature is not supported the device may still implement StrongBox Hardware-Backed
+     * Keystore, it's just not known which features are implemented.
      */
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_STRONGBOX_KEYSTORE =
