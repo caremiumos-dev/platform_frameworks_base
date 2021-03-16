@@ -549,17 +549,6 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public void onBootPhase(int phase) {
-            if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
-                mUms.cleanupPartialUsers();
-
-                if (mUms.mPm.isDeviceUpgrading()) {
-                    mUms.cleanupPreCreatedUsers();
-                }
-            }
-        }
-
-        @Override
         public void onStartUser(@UserIdInt int userId) {
             synchronized (mUms.mUsersLock) {
                 final UserData user = mUms.getUserDataLU(userId);
@@ -647,6 +636,11 @@ public class UserManagerService extends IUserManager.Stub {
         mContext.registerReceiver(mDisableQuietModeCallback,
                 new IntentFilter(ACTION_DISABLE_QUIET_MODE_AFTER_UNLOCK),
                 null, mHandler);
+
+        cleanupPartialUsers();
+        if (mPm.isDeviceUpgrading()) {
+            cleanupPreCreatedUsers();
+        }
     }
 
     /**
