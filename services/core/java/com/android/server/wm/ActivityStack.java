@@ -927,7 +927,8 @@ class ActivityStack extends Task {
         mCurrentUser = userId;
 
         super.switchUser(userId);
-        if (isLeafTask() && showToCurrentUser()) {
+        if (isLeafTask() && showToCurrentUser()
+                && getParent() != null && getParent().asTask() != null) {
             getParent().positionChildAt(POSITION_TOP, this, false /*includeParents*/);
         }
     }
