@@ -5106,6 +5106,11 @@ public class AudioService extends IAudioService.Stub
                     if (DEBUG_VOL)
                         Log.v(TAG, "getActiveStreamType: Forcing STREAM_NOTIFICATION stream active");
                     return AudioSystem.STREAM_NOTIFICATION;
+                } else if (wasStreamActiveRecently(
+                        AudioSystem.STREAM_MUSIC, sStreamOverrideDelayMs)) {
+                    if (DEBUG_VOL)
+                        Log.v(TAG, "getActiveStreamType: Forcing STREAM_MUSIC stream active");
+                    return AudioSystem.STREAM_MUSIC;
                 } else {
                     if (DEBUG_VOL) {
                         Log.v(TAG, "getActiveStreamType: Forcing DEFAULT_VOL_STREAM_NO_PLAYBACK("
@@ -5149,6 +5154,10 @@ public class AudioService extends IAudioService.Stub
                         AudioSystem.STREAM_RING, sStreamOverrideDelayMs)) {
                     if (DEBUG_VOL) Log.v(TAG, "getActiveStreamType: Forcing STREAM_RING");
                     return AudioSystem.STREAM_RING;
+                } else if (AudioSystem.isStreamActive(
+                        AudioSystem.STREAM_MUSIC, sStreamOverrideDelayMs)) {
+                    if (DEBUG_VOL) Log.v(TAG, "getActiveStreamType: Forcing STREAM_MUSIC");
+                    return AudioSystem.STREAM_MUSIC;
                 } else {
                     if (DEBUG_VOL) {
                         Log.v(TAG, "getActiveStreamType: Forcing DEFAULT_VOL_STREAM_NO_PLAYBACK("
