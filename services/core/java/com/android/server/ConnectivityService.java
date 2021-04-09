@@ -139,6 +139,7 @@ import android.net.Network;
 import android.net.NetworkAgent;
 import android.net.NetworkAgentConfig;
 import android.net.NetworkCapabilities;
+import android.net.NetworkCreateParcel;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.DetailedState;
 import android.net.NetworkMonitorManager;
@@ -3751,14 +3752,22 @@ public class ConnectivityService extends IConnectivityManager.Stub
     private boolean createNativeNetwork(@NonNull NetworkAgentInfo networkAgent) {
         try {
             // This should never fail.  Specifying an already in use NetID will cause failure.
+            final NetworkCreateParcel config = new NetworkCreateParcel();
+            config.netId = networkAgent.network.getNetId();
             if (networkAgent.isVPN()) {
-                mNetd.networkCreateVpn(networkAgent.network.getNetId(),
-                        (networkAgent.networkAgentConfig == null
-                                || !networkAgent.networkAgentConfig.allowBypass));
+                config.networkType = INetd.TYPE_NET_VIRTUAL;
+                config.secure = (networkAgent.networkAgentConfig == null
+                                || !networkAgent.networkAgentConfig.allowBypass);
+                config.vpnType = getVpnType(networkAgent);
+                if (config.vpnType == VpnManager.TYPE_VPN_NONE) {
+                    loge("Unable to get VPN type from network " + networkAgent.network.getNetId());
+                    return false;
+                }
             } else {
-                mNetd.networkCreatePhysical(networkAgent.network.getNetId(),
-                        getNetworkPermission(networkAgent.networkCapabilities));
+                config.networkType = INetd.TYPE_NET_PHYSICAL;
+                config.permission = getNetworkPermission(networkAgent.networkCapabilities);
             }
+            mNetd.networkCreate(config);
             mDnsResolver.createNetworkCache(networkAgent.network.getNetId());
             mDnsManager.updateTransportsForNetwork(networkAgent.network.getNetId(),
                     networkAgent.networkCapabilities.getTransportTypes());

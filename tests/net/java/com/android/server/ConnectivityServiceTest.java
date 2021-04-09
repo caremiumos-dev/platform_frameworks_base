@@ -214,6 +214,7 @@ import android.net.Network;
 import android.net.NetworkAgent;
 import android.net.NetworkAgentConfig;
 import android.net.NetworkCapabilities;
+import android.net.NetworkCreateParcel;
 import android.net.NetworkFactory;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.DetailedState;
@@ -473,6 +474,9 @@ public class ConnectivityServiceTest {
 
     private ArgumentCaptor<ResolverParamsParcel> mResolverParamsParcelCaptor =
             ArgumentCaptor.forClass(ResolverParamsParcel.class);
+
+    private ArgumentCaptor<NetworkCreateParcel> mNetworkCreateParcelCaptor =
+            ArgumentCaptor.forClass(NetworkCreateParcel.class);
 
     // This class exists to test bindProcessToNetwork and getBoundNetworkForProcess. These methods
     // do not go through ConnectivityService but talk to netd directly, so they don't automatically
@@ -2877,8 +2881,11 @@ public class ConnectivityServiceTest {
             wifiNetwork.set(mWiFiNetworkAgent.getNetwork());
             assertNotNull(wifiNetwork.get());
             try {
-                verify(mMockNetd).networkCreatePhysical(wifiNetwork.get().getNetId(),
-                        INetd.PERMISSION_NONE);
+                verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+                NetworkCreateParcel Params = mNetworkCreateParcelCaptor.getValue();
+                assertEquals(wifiNetwork.get().getNetId(), Params.netId);
+                assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+                assertEquals(INetd.PERMISSION_NONE, Params.permission);
             } catch (RemoteException impossible) {
                 fail();
             }
@@ -8323,7 +8330,11 @@ public class ConnectivityServiceTest {
         final int cellNetId = mCellNetworkAgent.getNetwork().netId;
         waitForIdle();
 
-        verify(mMockNetd, times(1)).networkCreatePhysical(eq(cellNetId), anyInt());
+        verify(mMockNetd, times(1)).networkCreate(mNetworkCreateParcelCaptor.capture());
+        NetworkCreateParcel Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(cellNetId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+
         assertRoutesAdded(cellNetId, ipv6Subnet, defaultRoute);
         verify(mMockDnsResolver, times(1)).createNetworkCache(eq(cellNetId));
         verify(mMockNetd, times(1)).networkAddInterface(cellNetId, MOBILE_IFNAME);
@@ -11946,8 +11957,11 @@ public class ConnectivityServiceTest {
         mSystemDefaultNetworkCallback.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
         mDefaultNetworkCallback.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
         mProfileDefaultNetworkCallback.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
-        inOrder.verify(mMockNetd).networkCreatePhysical(mCellNetworkAgent.getNetwork().netId,
-                INetd.PERMISSION_NONE);
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        NetworkCreateParcel Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(mCellNetworkAgent.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_NONE, Params.permission);
 
         final TestOnCompleteListener listener = new TestOnCompleteListener();
         mCm.setProfileNetworkPreference(testHandle, PROFILE_NETWORK_PREFERENCE_ENTERPRISE,
@@ -11974,8 +11988,11 @@ public class ConnectivityServiceTest {
         mProfileDefaultNetworkCallback.expectAvailableCallbacksUnvalidated(workAgent);
         mSystemDefaultNetworkCallback.assertNoCallback();
         mDefaultNetworkCallback.assertNoCallback();
-        inOrder.verify(mMockNetd).networkCreatePhysical(workAgent.getNetwork().netId,
-                INetd.PERMISSION_SYSTEM);
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(workAgent.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_SYSTEM, Params.permission);
         inOrder.verify(mMockNetd).networkAddUidRanges(workAgent.getNetwork().netId,
                 uidRangeFor(testHandle));
         inOrder.verify(mMockNetd).networkRemoveUidRanges(mCellNetworkAgent.getNetwork().netId,
@@ -12018,8 +12035,11 @@ public class ConnectivityServiceTest {
         mSystemDefaultNetworkCallback.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
         mDefaultNetworkCallback.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
         mProfileDefaultNetworkCallback.assertNoCallback();
-        inOrder.verify(mMockNetd).networkCreatePhysical(mCellNetworkAgent.getNetwork().netId,
-                INetd.PERMISSION_NONE);
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(mCellNetworkAgent.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_NONE, Params.permission);
 
         // When the agent disconnects, test that the app on the work profile falls back to the
         // default network.
@@ -12049,8 +12069,11 @@ public class ConnectivityServiceTest {
 
         mProfileDefaultNetworkCallback.expectAvailableCallbacksUnvalidated(workAgent2);
         assertNoCallbacks(mSystemDefaultNetworkCallback, mDefaultNetworkCallback);
-        inOrder.verify(mMockNetd).networkCreatePhysical(workAgent2.getNetwork().netId,
-                INetd.PERMISSION_SYSTEM);
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(workAgent2.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_SYSTEM, Params.permission);
         inOrder.verify(mMockNetd).networkAddUidRanges(workAgent2.getNetwork().netId,
                 uidRangeFor(testHandle));
 
@@ -12095,8 +12118,11 @@ public class ConnectivityServiceTest {
         mCm.setProfileNetworkPreference(testHandle, PROFILE_NETWORK_PREFERENCE_ENTERPRISE,
                 r -> r.run(), listener);
         listener.expectOnComplete();
-        inOrder.verify(mMockNetd).networkCreatePhysical(mCellNetworkAgent.getNetwork().netId,
-                INetd.PERMISSION_NONE);
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        NetworkCreateParcel Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(mCellNetworkAgent.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_NONE, Params.permission);
         inOrder.verify(mMockNetd).networkAddUidRanges(workAgent.getNetwork().netId,
                 uidRangeFor(testHandle));
 
@@ -12148,10 +12174,17 @@ public class ConnectivityServiceTest {
         mDefaultNetworkCallback.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
         mProfileDefaultNetworkCallback.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
         app4Cb.expectAvailableThenValidatedCallbacks(mCellNetworkAgent);
-        inOrder.verify(mMockNetd).networkCreatePhysical(mCellNetworkAgent.getNetwork().netId,
-                INetd.PERMISSION_NONE);
-        inOrder.verify(mMockNetd).networkCreatePhysical(workAgent.getNetwork().netId,
-                INetd.PERMISSION_SYSTEM);
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        NetworkCreateParcel Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(mCellNetworkAgent.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_NONE, Params.permission);
+
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(workAgent.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_SYSTEM, Params.permission);
 
         final TestOnCompleteListener listener = new TestOnCompleteListener();
         mCm.setProfileNetworkPreference(testHandle2, PROFILE_NETWORK_PREFERENCE_ENTERPRISE,
@@ -12203,8 +12236,11 @@ public class ConnectivityServiceTest {
         mCm.setProfileNetworkPreference(testHandle, PROFILE_NETWORK_PREFERENCE_ENTERPRISE,
                 r -> r.run(), listener);
         listener.expectOnComplete();
-        inOrder.verify(mMockNetd).networkCreatePhysical(mCellNetworkAgent.getNetwork().netId,
-                INetd.PERMISSION_NONE);
+        inOrder.verify(mMockNetd).networkCreate(mNetworkCreateParcelCaptor.capture());
+        NetworkCreateParcel Params = mNetworkCreateParcelCaptor.getValue();
+        assertEquals(mCellNetworkAgent.getNetwork().netId, Params.netId);
+        assertEquals(INetd.TYPE_NET_PHYSICAL, Params.networkType);
+        assertEquals(INetd.PERMISSION_NONE, Params.permission);
         inOrder.verify(mMockNetd).networkAddUidRanges(mCellNetworkAgent.getNetwork().netId,
                 uidRangeFor(testHandle));
 
