@@ -8023,8 +8023,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             holder = getContentProviderExternalUnchecked(name, null, callingUid,
                     "*getmimetype*", userId);
             if (holder != null) {
-                final IBinder providerConnection = holder.connection;
                 final ComponentName providerName = holder.info.getComponentName();
+                final int innerUserId = userId;
                 // Note: creating a new Runnable instead of using a lambda here since lambdas in
                 // java provide no guarantee that there will be a new instance returned every call.
                 // Hence, it's possible that a cached copy is returned and the ANR is executed on
@@ -8033,7 +8033,13 @@ public class ActivityManagerService extends IActivityManager.Stub
                     @Override
                     public void run() {
                         Log.w(TAG, "Provider " + providerName + " didn't return from getType().");
-                        appNotRespondingViaProvider(providerConnection);
+                        ContentProviderRecord cpr = null;
+                        synchronized (this) {
+                            cpr = mProviderMap.getProviderByName(name, innerUserId);
+                        }
+                        if (cpr != null && cpr.proc !=null) {
+                            mAnrHelper.appNotResponding(cpr.proc, "ContentProvider not responding");
+                        }
                     }
                 };
                 mHandler.postDelayed(providerNotResponding, 1000);
