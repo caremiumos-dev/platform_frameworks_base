@@ -198,6 +198,10 @@ abstract class HdmiCecLocalDevice {
     void init() {
         assertRunOnServiceThread();
         mPreferredAddress = getPreferredAddress();
+        // Clear the callback message if the pending action callback exist after wake up.
+        if (mPendingActionClearedCallback != null) {
+            mPendingActionClearedCallback.onCleared(this);
+        }
         mPendingActionClearedCallback = null;
     }
 
