@@ -19,6 +19,7 @@ package com.android.server.vcn;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.os.Looper;
+import android.util.LocalLog;
 
 import java.util.Objects;
 
@@ -31,14 +32,17 @@ public class VcnContext {
     @NonNull private final Context mContext;
     @NonNull private final Looper mLooper;
     @NonNull private final VcnNetworkProvider mVcnNetworkProvider;
+    @NonNull private final LocalLog mLocalLog;
 
     public VcnContext(
             @NonNull Context context,
             @NonNull Looper looper,
-            @NonNull VcnNetworkProvider vcnNetworkProvider) {
+            @NonNull VcnNetworkProvider vcnNetworkProvider,
+            @NonNull LocalLog localLog) {
         mContext = Objects.requireNonNull(context, "Missing context");
         mLooper = Objects.requireNonNull(looper, "Missing looper");
         mVcnNetworkProvider = Objects.requireNonNull(vcnNetworkProvider, "Missing networkProvider");
+        mLocalLog = Objects.requireNonNull(localLog, "Missing localLog");
     }
 
     @NonNull
@@ -54,6 +58,11 @@ public class VcnContext {
     @NonNull
     public VcnNetworkProvider getVcnNetworkProvider() {
         return mVcnNetworkProvider;
+    }
+
+    @NonNull
+    public LocalLog getLocalLog() {
+        return mLocalLog;
     }
 
     /**
