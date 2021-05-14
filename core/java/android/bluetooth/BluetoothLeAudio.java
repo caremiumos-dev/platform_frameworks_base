@@ -23,6 +23,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
+import android.annotation.SystemApi;
 import android.content.Context;
 import android.os.Binder;
 import android.os.IBinder;
@@ -90,6 +91,34 @@ public final class BluetoothLeAudio implements BluetoothProfile, AutoCloseable {
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_LE_AUDIO_ACTIVE_DEVICE_CHANGED =
             "android.bluetooth.action.LE_AUDIO_ACTIVE_DEVICE_CHANGED";
+
+    /**
+     * TODO Update value according to Assigned Numbers
+     * Indicates conversation between humans as, for example, in telephony or video calls.
+     * @hide
+     */
+    public static final int CONTEXT_TYPE_CONVERSATIONAL = 0x0002;
+
+    /**
+     * TODO Update value according to Assigned Numbers
+     * Indicates media as, for example, in music, public radio, podcast or video soundtrack.
+     * @hide
+     */
+    public static final int CONTEXT_TYPE_MEDIA = 0x0004;
+
+    /**
+     * Indicates group audio support for input direction
+     * @hide
+     */
+    @SystemApi
+    public static final int AUDIO_DIRECTION_INPUT_BIT = 0;
+
+    /**
+     * Indicates group audio support for output direction
+     * @hide
+     */
+    @SystemApi
+    public static final int AUDIO_DIRECTION_OUTPUT_BIT = 1;
 
     /**
      * This represents an invalid group ID.
@@ -415,6 +444,32 @@ public final class BluetoothLeAudio implements BluetoothProfile, AutoCloseable {
         }
     }
 
+    /**
+     * Get group supporting audio direction.
+     *
+     * <p> Supported direction bits:
+     * {@link #AUDIO_DIRECTION_OUTPUT_BIT}, {@link #AUDIO_DIRECTION_INPUT_BIT}
+     *
+     * @param groupId LE Audio group ID
+     * @return array of bytes containing bit number matching audio directions
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.BLUETOOTH)
+    public @Nullable byte [] getGroupAudioDirections(int groupId) {
+        if (VDBG) log("getGroupAudioDirections()");
+        try {
+            final IBluetoothLeAudio service = getService();
+            if (service != null && mAdapter.isEnabled()) {
+                return service.getGroupAudioDirections(groupId);
+            }
+            if (service == null) Log.w(TAG, "Proxy not attached to service");
+            return null;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Stack:" + Log.getStackTraceString(new Throwable()));
+            return null;
+        }
+    }
 
     /**
      * Helper for converting a state to a string.

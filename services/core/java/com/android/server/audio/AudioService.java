@@ -2892,6 +2892,30 @@ public class AudioService extends IAudioService.Stub
         return AudioSystem.STREAM_MUSIC;
     }
 
+    /*package*/ byte [] getGroupAudioDirections(int groupId) {
+        return getGroupAudioDirections(groupId);
+    }
+
+    /*package*/ int getLeAudioStreamType() {
+        return getLeAudioStreamType(mMode);
+    }
+
+    private int getLeAudioStreamType(int mode) {
+        switch (mode) {
+            case AudioSystem.MODE_IN_COMMUNICATION:
+            case AudioSystem.MODE_IN_CALL:
+                return AudioSystem.STREAM_VOICE_CALL;
+            case AudioSystem.MODE_NORMAL:
+            default:
+                // other conditions will influence the stream type choice, read on...
+                break;
+        }
+        if (mVoiceActive.get()) {
+            return AudioSystem.STREAM_VOICE_CALL;
+        }
+        return AudioSystem.STREAM_MUSIC;
+    }
+
     private AtomicBoolean mVoiceActive = new AtomicBoolean(false);
 
     private final IPlaybackConfigDispatcher mVoiceActivityMonitor =
@@ -5503,6 +5527,31 @@ public class AudioService extends IAudioService.Stub
         }
         mDeviceBroker.postBluetoothHearingAidDeviceConnectionState(
                 device, state, suppressNoisyIntent, musicDevice, "AudioService");
+    }
+
+    /**
+     * See AudioManager.setBluetoothLeAudioDeviceConnectionState()
+     * TODO Le Audio is focused on groups rather than devices - avoid bluetooth device context.
+     */
+    public void setBluetoothLeAudioDeviceConnectionState(
+            @NonNull BluetoothDevice device, @BtProfileConnectionState int state,
+            boolean suppressNoisyIntent, int groupId)
+    {
+        if (device == null) {
+            throw new IllegalArgumentException("Illegal null device");
+        }
+        if (state != BluetoothProfile.STATE_CONNECTED
+                && state != BluetoothProfile.STATE_DISCONNECTED) {
+            throw new IllegalArgumentException("Illegal BluetoothProfile state for device "
+                    + " (dis)connection, got " + state);
+        }
+        if (state == BluetoothProfile.STATE_CONNECTED) {
+            mPlaybackMonitor.registerPlaybackCallback(mVoiceActivityMonitor, true);
+        } else {
+            mPlaybackMonitor.unregisterPlaybackCallback(mVoiceActivityMonitor);
+        }
+        mDeviceBroker.postBluetoothLeAudioDeviceConnectionState(device, state, suppressNoisyIntent,
+                groupId, "AudioService");
     }
 
     /**

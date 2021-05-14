@@ -19,8 +19,10 @@ import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHearingAid;
+import android.bluetooth.BluetoothLeAudio;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.media.AudioDeviceAttributes;
@@ -49,6 +51,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -419,6 +422,95 @@ public class AudioDeviceInventory {
             } else if (!isConnected && state == BluetoothProfile.STATE_CONNECTED) {
                 makeHearingAidDeviceAvailable(address, BtHelper.getName(btDevice), streamType,
                         "onSetHearingAidConnectionState");
+            }
+        }
+    }
+
+    /*package*/ void onSetLeAudioConnectionState(BluetoothDevice btDevice,
+                @AudioService.BtProfileConnectionState int state, byte [] supportedAudioDirections,
+                int streamType) {
+        String address = btDevice.getAddress();
+        if (!BluetoothAdapter.checkBluetoothAddress(address)) {
+            address = "";
+        }
+        AudioService.sDeviceLogger.log(new AudioEventLogger.StringEvent(
+                "onSetLeAudioConnectionState addr=" + address));
+
+        synchronized (mDevicesLock) {
+            BluetoothClass btClass = btDevice.getBluetoothClass();
+            final int majorDevClass = btClass.getMajorDeviceClass();
+            final int devClass = btClass.getDeviceClass();
+            DeviceInfo dii = null;
+            DeviceInfo dio = null;
+            boolean isConnected = false;
+            int deviceInput = AudioSystem.DEVICE_NONE;
+            int deviceOutput = AudioSystem.DEVICE_NONE;
+            BitSet groupAudioDirections = BitSet.valueOf(supportedAudioDirections);
+            boolean isSupportedByDeviceOutput = groupAudioDirections
+                    .get(BluetoothLeAudio.AUDIO_DIRECTION_OUTPUT_BIT);
+            boolean isSupportedByDeviceInput = groupAudioDirections
+                    .get(BluetoothLeAudio.AUDIO_DIRECTION_INPUT_BIT);
+
+            if (btClass == null ||
+                    (btClass.getMajorDeviceClass() != BluetoothClass.Device.Major.AUDIO_VIDEO)) {
+                if (isSupportedByDeviceOutput) {
+                    deviceOutput = AudioSystem.DEVICE_OUT_BLE_HEADSET;
+                }
+
+                if (streamType == AudioSystem.STREAM_VOICE_CALL && isSupportedByDeviceInput) {
+                    deviceInput = AudioSystem.DEVICE_IN_BLE_HEADSET;
+                }
+            } else {
+                if (streamType == AudioSystem.STREAM_VOICE_CALL && isSupportedByDeviceInput) {
+                    /* There is only one Le Audio input device - In BLE Headset */
+                    deviceInput = AudioSystem.DEVICE_IN_BLE_HEADSET;
+                }
+
+                if (isSupportedByDeviceOutput) {
+                    switch (devClass) {
+                        case BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET:
+                        case BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE:
+                        case BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES: {
+                            deviceOutput = AudioSystem.DEVICE_OUT_BLE_HEADSET;
+                        }
+                        break;
+                        case BluetoothClass.Device.AUDIO_VIDEO_LOUDSPEAKER:
+                        case BluetoothClass.Device.AUDIO_VIDEO_PORTABLE_AUDIO:
+                        case BluetoothClass.Device.AUDIO_VIDEO_SET_TOP_BOX:
+                        case BluetoothClass.Device.AUDIO_VIDEO_HIFI_AUDIO:
+                        case BluetoothClass.Device.AUDIO_VIDEO_VIDEO_CONFERENCING: {
+                            deviceOutput = AudioSystem.DEVICE_OUT_BLE_SPEAKER;
+                        }
+                        break;
+                        case BluetoothClass.Device.AUDIO_VIDEO_MICROPHONE: {
+                            /* Microphone should be only input device */
+                        }
+                        break;
+                        default: {
+                            Log.w(TAG, "onSetLeAudioConnectionState, using default output device");
+                            deviceOutput = AudioSystem.DEVICE_OUT_BLE_HEADSET;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (deviceOutput != AudioSystem.DEVICE_NONE) {
+                String key = DeviceInfo.makeDeviceListKey(deviceOutput, btDevice.getAddress());
+                dio = mConnectedDevices.get(key);
+                isConnected = dio != null;
+            }
+            if (deviceInput != AudioSystem.DEVICE_NONE) {
+                String key = DeviceInfo.makeDeviceListKey(deviceInput, btDevice.getAddress());
+                dii = mConnectedDevices.get(key);
+                isConnected = dii != null;
+            }
+
+            if (isConnected && state != BluetoothProfile.STATE_CONNECTED) {
+                makeLeAudioDeviceUnavailable(address, deviceInput, deviceOutput);
+            } else if (!isConnected && state == BluetoothProfile.STATE_CONNECTED) {
+                makeLeAudioDeviceAvailable(address, BtHelper.getName(btDevice), streamType,
+                        deviceInput, deviceOutput, "onSetLeAudioConnectionState");
             }
         }
     }
@@ -943,6 +1035,37 @@ public class AudioDeviceInventory {
         }
     }
 
+    /*package*/ int  setBluetoothLeAudioDeviceConnectionState(
+            @NonNull BluetoothDevice device, @AudioService.BtProfileConnectionState int state,
+            boolean suppressNoisyIntent, int groupId) {
+        int delay;
+        synchronized (mDevicesLock) {
+            /* Active device become null and it's previous device is not connected anymore */
+            if (!suppressNoisyIntent) {
+                int intState = (state == BluetoothLeAudio.STATE_CONNECTED) ? 1 : 0;
+                /* Pick highest delay for Le Audio device group */
+                delay = checkSendBecomingNoisyIntentInt(AudioSystem.DEVICE_OUT_BLE_HEADSET,
+                        intState, AudioSystem.DEVICE_NONE);
+
+                int new_delay = checkSendBecomingNoisyIntentInt(AudioSystem.DEVICE_OUT_BLE_SPEAKER,
+                        intState, AudioSystem.DEVICE_NONE);
+                if (new_delay > delay) {
+                    delay = new_delay;
+                }
+
+                new_delay = checkSendBecomingNoisyIntentInt(AudioSystem.DEVICE_IN_BLE_HEADSET,
+                        intState, AudioSystem.DEVICE_NONE);
+                if (new_delay > delay) {
+                    delay = new_delay;
+                }
+            } else {
+                delay = 0;
+            }
+            mDeviceBroker.postSetLeAudioConnectionState(state, device, groupId, delay);
+            return delay;
+        }
+    }
+
 
     //-------------------------------------------------------------------
     // Internal utilities
@@ -1112,6 +1235,53 @@ public class AudioDeviceInventory {
                 .set(MediaMetrics.Property.DEVICE,
                         AudioSystem.getDeviceName(AudioSystem.DEVICE_OUT_HEARING_AID))
                 .record();
+    }
+
+    @GuardedBy("mDevicesLock")
+    private void makeLeAudioDeviceAvailable(
+            String address, String name, int streamType, int inputDevice, int outputDevice,
+            String eventSource) {
+        if (inputDevice != AudioSystem.DEVICE_NONE) {
+            AudioSystem.setDeviceConnectionState(inputDevice,
+                    AudioSystem.DEVICE_STATE_AVAILABLE, address, name,
+                    AudioSystem.AUDIO_FORMAT_DEFAULT);
+            mConnectedDevices.put(
+                    DeviceInfo.makeDeviceListKey(inputDevice, address),
+                    new DeviceInfo(inputDevice, name, address, AudioSystem.AUDIO_FORMAT_DEFAULT));
+            mDeviceBroker.postAccessoryPlugMediaUnmute(inputDevice);
+        }
+
+        if (outputDevice != AudioSystem.DEVICE_NONE) {
+            mDeviceBroker.setBluetoothA2dpOnInt(true, false /*fromA2dp*/, eventSource);
+            AudioSystem.setDeviceConnectionState(outputDevice,
+                    AudioSystem.DEVICE_STATE_AVAILABLE, address, name,
+                    AudioSystem.AUDIO_FORMAT_DEFAULT);
+            mConnectedDevices.put(
+                    DeviceInfo.makeDeviceListKey(outputDevice, address),
+                    new DeviceInfo(outputDevice, name, address, AudioSystem.AUDIO_FORMAT_DEFAULT));
+            mDeviceBroker.postAccessoryPlugMediaUnmute(outputDevice);
+        }
+
+        mDeviceBroker.postApplyVolumeOnDevice(streamType,
+                outputDevice != AudioSystem.DEVICE_NONE ? outputDevice : inputDevice,
+                "makeLeAudioDeviceAvailable");
+    }
+
+    @GuardedBy("mDevicesLock")
+    private void makeLeAudioDeviceUnavailable(String address, int inputDevice, int outputDevice) {
+        if (inputDevice != AudioSystem.DEVICE_NONE) {
+            AudioSystem.setDeviceConnectionState(inputDevice, AudioSystem.DEVICE_STATE_UNAVAILABLE,
+                    address, "", AudioSystem.AUDIO_FORMAT_DEFAULT);
+            mConnectedDevices.remove(DeviceInfo.makeDeviceListKey(inputDevice, address));
+        }
+
+        if (outputDevice != AudioSystem.DEVICE_NONE) {
+            AudioSystem.setDeviceConnectionState(outputDevice, AudioSystem.DEVICE_STATE_UNAVAILABLE,
+                    address, "", AudioSystem.AUDIO_FORMAT_DEFAULT);
+            mConnectedDevices.remove(DeviceInfo.makeDeviceListKey(outputDevice, address));
+        }
+
+        setCurrentAudioRouteNameIfPossible(null, false /*fromA2dp*/);
     }
 
     @GuardedBy("mDevicesLock")

@@ -1580,6 +1580,12 @@ package android.bluetooth {
     field public static final String ACTION_CONNECTION_STATE_CHANGED = "android.bluetooth.input.profile.action.CONNECTION_STATE_CHANGED";
   }
 
+  public final class BluetoothLeAudio implements java.lang.AutoCloseable android.bluetooth.BluetoothProfile {
+    method @Nullable @RequiresPermission(android.Manifest.permission.BLUETOOTH) public byte[] getGroupAudioDirections(int);
+    field public static final int AUDIO_DIRECTION_INPUT_BIT = 0; // 0x0
+    field public static final int AUDIO_DIRECTION_OUTPUT_BIT = 1; // 0x1
+  }
+
   public final class BluetoothMap implements java.lang.AutoCloseable android.bluetooth.BluetoothProfile {
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_PRIVILEGED) public void close();
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_PRIVILEGED) protected void finalize();

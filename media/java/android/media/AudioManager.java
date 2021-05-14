@@ -5273,6 +5273,29 @@ public class AudioManager {
         }
     }
 
+    /**
+    * Indicate Le Audio connection state change and eventually suppress
+    * the {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY} intent.
+    * @param device Bluetooth device connected/disconnected
+    * @param state new connection state (BluetoothProfile.STATE_xxx)
+    * (either {@link android.bluetooth.BluetoothProfile.leaudio} or
+    * {@link android.bluetooth.BluetoothProfile.LE_AUDIO})
+    * @param suppressNoisyIntent if true the
+    * {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY} intent will not be sent.
+    * @param groupId Le Audio active group ID
+    * {@hide}
+    */
+    public void setBluetoothLeAudioDeviceConnectionState(BluetoothDevice device, int state,
+            boolean suppressNoisyIntent, int groupId) {
+        final IAudioService service = getService();
+        try {
+            service.setBluetoothLeAudioDeviceConnectionState(device, state, suppressNoisyIntent,
+                    groupId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
      /**
      * Indicate A2DP source or sink connection state change and eventually suppress
      * the {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY} intent.
