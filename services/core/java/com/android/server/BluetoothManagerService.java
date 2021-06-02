@@ -2452,6 +2452,12 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL, BLUETOOTH_PERM);
     }
 
+    private boolean isBleState(int state) {
+        return state == BluetoothAdapter.STATE_BLE_ON
+                || state == BluetoothAdapter.STATE_BLE_TURNING_ON
+                || state == BluetoothAdapter.STATE_BLE_TURNING_OFF;
+    }
+
     private void bluetoothStateChangeHandler(int prevState, int newState) {
         boolean isStandardBroadcast = true;
         if (prevState == newState) { // No change. Nothing to do.
@@ -2470,8 +2476,13 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                 sendBluetoothServiceDownCallback();
                 unbindAndFinish();
                 sendBleStateChanged(prevState, newState);
-                // Don't broadcast as it has already been broadcast before
-                isStandardBroadcast = false;
+
+                // If the previous state is not BLE_TURNING_OFF then it could be a crash
+                if (isBleState(prevState)) {
+                    // Don't broadcast classic state change in BLE states as it has already
+                    // been broadcast before
+                    isStandardBroadcast = false;
+                }
 
             } else if (!intermediate_off) {
                 // connect to GattService
@@ -2523,6 +2534,11 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
             if (prevState == BluetoothAdapter.STATE_BLE_ON) {
                 // Show prevState of BLE_ON as OFF to standard users
                 prevState = BluetoothAdapter.STATE_OFF;
+            }
+            if (DBG) {
+                Slog.d(TAG,
+                        "Sending State Change: " + BluetoothAdapter.nameForState(prevState) + " > "
+                                + BluetoothAdapter.nameForState(newState));
             }
             Intent intent = new Intent(BluetoothAdapter.ACTION_STATE_CHANGED);
             intent.putExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, prevState);
