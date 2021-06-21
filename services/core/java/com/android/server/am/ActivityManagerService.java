@@ -8094,30 +8094,40 @@ public class ActivityManagerService extends IActivityManager.Stub
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
         final int safeUserId = mUserController.unsafeConvertIncomingUser(userId);
-        final long ident = canClearIdentity(callingPid, callingUid, userId)
-                ? Binder.clearCallingIdentity() : 0;
-        try {
-            final ContentProviderHolder holder = getContentProviderExternalUnchecked(name, null,
-                    callingUid, "*getmimetype*", safeUserId);
-            if (holder != null) {
-                holder.provider.getTypeAsync(uri, new RemoteCallback(result -> {
-                    final long identity = Binder.clearCallingIdentity();
-                    try {
-                        removeContentProviderExternalUnchecked(name, null, safeUserId);
-                    } finally {
-                        Binder.restoreCallingIdentity(identity);
-                    }
-                    resultCallback.sendResult(result);
-                }));
-            } else {
-                resultCallback.sendResult(Bundle.EMPTY);
+        final boolean canClearIden = canClearIdentity(callingPid, callingUid, userId);
+        final long realCallingIden = Binder.clearCallingIdentity();
+        Binder.restoreCallingIdentity(realCallingIden);
+        BackgroundThread.getHandler().post(() -> {
+            // If the caller died, we should do nothing
+            if (!resultCallback.isAlive()) {
+                return;
             }
-        } catch (RemoteException e) {
-            Log.w(TAG, "Content provider dead retrieving " + uri, e);
-            resultCallback.sendResult(Bundle.EMPTY);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+            if (!canClearIden) {
+                Binder.restoreCallingIdentity(realCallingIden);
+            }
+            final ContentProviderHolder holder = getContentProviderExternalUnchecked(name, null,
+                callingUid, "*getmimetype*", safeUserId);
+            try {
+                if (holder != null) {
+                    holder.provider.getTypeAsync(uri, new RemoteCallback(result -> {
+                        final long identity = Binder.clearCallingIdentity();
+                        try {
+                            removeContentProviderExternalUnchecked(name, null, safeUserId);
+                        } finally {
+                            Binder.restoreCallingIdentity(identity);
+                        }
+                        resultCallback.sendResult(result);
+                    }));
+                } else {
+                    resultCallback.sendResult(Bundle.EMPTY);
+                }
+            } catch (RemoteException e) {
+                Log.w(TAG, "Content provider dead retrieving " + uri, e);
+                resultCallback.sendResult(Bundle.EMPTY);
+            } finally {
+                Binder.clearCallingIdentity();
+            }
+        });
     }
 
     int checkContentProviderUriPermission(Uri uri, int userId, int callingUid, int modeFlags) {
