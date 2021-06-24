@@ -16,6 +16,29 @@
       "message": "Thanks, incorporated.",
       "revId": "8f38401e7b8d66069a7e90f31ca0be7eb49fd531",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "49dc75f1_68a18ce3",
+        "filename": "core/java/com/android/internal/os/ZygoteInit.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 663,
+      "author": {
+        "id": 1038443
+      },
+      "writtenOn": "2021-06-24T19:07:11Z",
+      "side": 1,
+      "message": "drop",
+      "range": {
+        "startLine": 663,
+        "startChar": 34,
+        "endLine": 663,
+        "endChar": 74
+      },
+      "revId": "8f38401e7b8d66069a7e90f31ca0be7eb49fd531",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
