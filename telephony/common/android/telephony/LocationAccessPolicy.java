@@ -41,6 +41,7 @@ import com.android.internal.telephony.util.TelephonyUtils;
 public final class LocationAccessPolicy {
     private static final String TAG = "LocationAccessPolicy";
     private static final boolean DBG = false;
+    private static boolean sAlwaysAllowPrivilegedProcessToAccessLocation = true;
     public static final int MAX_SDK_FOR_ANY_ENFORCEMENT = Build.VERSION_CODES.CUR_DEVELOPMENT;
 
     public enum LocationPermissionResult {
@@ -306,13 +307,10 @@ public final class LocationAccessPolicy {
     /** Check if location permissions have been granted */
     public static LocationPermissionResult checkLocationPermission(
             Context context, LocationPermissionQuery query) {
-        // Always allow the phone process, system server, and network stack to access location.
-        // This avoid breaking legacy code that rely on public-facing APIs to access cell location,
-        // and it doesn't create an info leak risk because the cell location is stored in the phone
-        // process anyway, and the system server already has location access.
-        if (query.callingUid == Process.PHONE_UID || query.callingUid == Process.SYSTEM_UID
+        if (sAlwaysAllowPrivilegedProcessToAccessLocation
+                && (query.callingUid == Process.PHONE_UID || query.callingUid == Process.SYSTEM_UID
                 || query.callingUid == Process.NETWORK_STACK_UID
-                || query.callingUid == Process.ROOT_UID) {
+                || query.callingUid == Process.ROOT_UID)) {
             return LocationPermissionResult.ALLOWED;
         }
 
@@ -342,6 +340,17 @@ public final class LocationAccessPolicy {
         // At this point, we're out of location checks to do. If the app bypassed all the previous
         // ones due to the SDK backwards compatibility schemes, allow it access.
         return LocationPermissionResult.ALLOWED;
+    }
+
+    /**
+     * Whether always allow the phone process, system server, and network stack to access location.
+     * True by default to avoid breaking legacy code that rely on public-facing APIs to access cell
+     * location, and it doesn't create an info leak risk because the cell location is stored in the
+     * phone process anyway, and the system server already has location access.
+     * @hide
+     */
+    public static void alwaysAllowPrivilegedProcessToAccessLocationForTesting(boolean allow) {
+        sAlwaysAllowPrivilegedProcessToAccessLocation = allow;
     }
 
 
