@@ -24,6 +24,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4ca78e57_bb9a1590",
+        "filename": "core/java/com/android/internal/os/ZygoteInit.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 526,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2021-06-24T15:29:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0111e5e_36f4ecb1",
+      "range": {
+        "startLine": 521,
+        "startChar": 0,
+        "endLine": 526,
+        "endChar": 13
+      },
+      "revId": "5dcb139993ef7b481c18b784e00896602a03c227",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0f5e9e7f_bdfc8af6",
@@ -47,6 +71,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "378d1b69_871d046c",
+        "filename": "core/java/com/android/internal/os/ZygoteInit.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 558,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2021-06-24T15:29:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0f5e9e7f_bdfc8af6",
+      "range": {
+        "startLine": 558,
+        "startChar": 12,
+        "endLine": 558,
+        "endChar": 41
+      },
+      "revId": "5dcb139993ef7b481c18b784e00896602a03c227",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a2c653b9_f64ae62a",
@@ -60,6 +108,30 @@
       "writtenOn": "2021-06-24T13:49:27Z",
       "side": 1,
       "message": "Looking at previous code, this should never be null.",
+      "range": {
+        "startLine": 560,
+        "startChar": 16,
+        "endLine": 560,
+        "endChar": 18
+      },
+      "revId": "5dcb139993ef7b481c18b784e00896602a03c227",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d4bfe3f2_963e6d24",
+        "filename": "core/java/com/android/internal/os/ZygoteInit.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 560,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2021-06-24T15:29:55Z",
+      "side": 1,
+      "message": "Left as is: if SYSTEMSERVERCLASSPATH is null, cl could be null from getOrCreateSystemServerClassLoader().",
+      "parentUuid": "a2c653b9_f64ae62a",
       "range": {
         "startLine": 560,
         "startChar": 16,
@@ -106,6 +178,24 @@
       "writtenOn": "2021-06-24T13:49:27Z",
       "side": 1,
       "message": "if (is_system_server) ?",
+      "revId": "5dcb139993ef7b481c18b784e00896602a03c227",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c2da090a_f77873f6",
+        "filename": "core/jni/com_android_internal_os_Zygote.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1578,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2021-06-24T15:29:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "71d9d682_8e6f9565",
       "revId": "5dcb139993ef7b481c18b784e00896602a03c227",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
