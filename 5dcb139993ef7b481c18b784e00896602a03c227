@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d16707f2_49a9079f",
+        "filename": "core/java/com/android/internal/os/ZygoteInit.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 589,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2021-06-24T13:40:20Z",
+      "side": 1,
+      "message": "Previously we called createPathClassLoader with parsedArgs.mTargetSdkVersion, e.g. L548 in the original. This code is called from JNI so don\u0027t have that as an argument.",
+      "range": {
+        "startLine": 589,
+        "startChar": 20,
+        "endLine": 589,
+        "endChar": 57
+      },
+      "revId": "5dcb139993ef7b481c18b784e00896602a03c227",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
