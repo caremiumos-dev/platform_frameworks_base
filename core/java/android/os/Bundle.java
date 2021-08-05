@@ -16,15 +16,23 @@
 
 package android.os;
 
+import static android.os.Parcel.VAL_BUNDLE;
+import static android.os.Parcel.VAL_LIST;
+import static android.os.Parcel.VAL_PARCELABLE;
+import static android.os.Parcel.VAL_PARCELABLEARRAY;
+import static android.os.Parcel.VAL_SPARSEARRAY;
+
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.util.Size;
 import android.util.SizeF;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.Preconditions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -327,6 +335,8 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
                     fdFound = true;
                 }
             } else {
+                // TODO: Optimize this
+                unparcel(/* itemwise */ true);
                 // It's been unparcelled, so we need to walk the map
                 for (int i=mMap.size()-1; i>=0; i--) {
                     Object obj = mMap.valueAt(i);
@@ -391,7 +401,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public Bundle filterValues() {
-        unparcel();
+        unparcel(/* itemwise */ true);
         Bundle bundle = this;
         if (mMap != null) {
             ArrayMap<String, Object> map = mMap;
@@ -932,7 +942,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public Size getSize(@Nullable String key) {
         unparcel();
-        final Object o = mMap.get(key);
+        final Object o = getValue(key);
         try {
             return (Size) o;
         } catch (ClassCastException e) {
@@ -952,7 +962,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public SizeF getSizeF(@Nullable String key) {
         unparcel();
-        final Object o = mMap.get(key);
+        final Object o = getValue(key);
         try {
             return (SizeF) o;
         } catch (ClassCastException e) {
@@ -972,7 +982,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public Bundle getBundle(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
+        Object o = getValue(key);
         if (o == null) {
             return null;
         }
@@ -999,7 +1009,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public <T extends Parcelable> T getParcelable(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
+        Object o = getValue(key);
         if (o == null) {
             return null;
         }
@@ -1026,7 +1036,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public Parcelable[] getParcelableArray(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
+        Object o = getValue(key);
         if (o == null) {
             return null;
         }
@@ -1053,7 +1063,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public <T extends Parcelable> ArrayList<T> getParcelableArrayList(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
+        Object o = getValue(key);
         if (o == null) {
             return null;
         }
@@ -1077,7 +1087,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public <T extends Parcelable> SparseArray<T> getSparseParcelableArray(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
+        Object o = getValue(key);
         if (o == null) {
             return null;
         }
@@ -1226,7 +1236,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public IBinder getBinder(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
+        Object o = getValue(key);
         if (o == null) {
             return null;
         }
@@ -1254,7 +1264,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     @Nullable
     public IBinder getIBinder(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
+        Object o = getValue(key);
         if (o == null) {
             return null;
         }
@@ -1263,6 +1273,35 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
         } catch (ClassCastException e) {
             typeWarning(key, o, "IBinder", e);
             return null;
+        }
+    }
+
+    /** @hide */
+    @Override
+    protected Object getValueAt(int i) {
+        String key = mMap.keyAt(i);
+        Object object = mMap.valueAt(i);
+        if (object instanceof LazyValue) {
+            LazyValue value = (LazyValue) object;
+            synchronized (this) {
+                object = value.read(key, getClassLoader());
+            }
+            mMap.setValueAt(i, object);
+        }
+        return object;
+    }
+
+    /** @hide */
+    @Override
+    protected void unparcel(boolean itemwise) {
+        synchronized (this) {
+            super.unparcel(itemwise);
+            if (itemwise) {
+                for (int i = 0, n = mMap.size(); i < n; i++) {
+                    // Triggers deserialization of i-th item, if needed
+                    getValueAt(i);
+                }
+            }
         }
     }
 
@@ -1300,11 +1339,56 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
     public void writeToParcel(Parcel parcel, int flags) {
         final boolean oldAllowFds = parcel.pushAllowFds((mFlags & FLAG_ALLOW_FDS) != 0);
         try {
-            super.writeToParcelInner(parcel, flags);
+            writeToParcelInner(parcel, flags);
         } finally {
             parcel.restoreAllowFds(oldAllowFds);
         }
     }
+
+    /** @hide */
+    @Override
+    protected void writeMapToParcel(Parcel out, ArrayMap<String, Object> map) {
+        if (map == null) {
+            out.writeInt(-1);
+            return;
+        }
+        int n = map.size();
+        out.writeInt(n);
+        for (int i = 0; i < n; i++) {
+            out.writeString(map.keyAt(i));
+            writeValueToParcel(out, map.valueAt(i));
+        }
+    }
+
+    private void writeValueToParcel(Parcel out, Object object) {
+        if (object instanceof LazyValue) {
+            LazyValue value = (LazyValue) object;
+            Parcel in = value.source;
+            in.setDataPosition(value.position);
+            out.writeInt(in.readInt()); // Type
+            out.writeInt(in.readInt()); // Length
+            out.appendFrom(in, in.dataPosition(), value.length); // Object
+            return;
+        }
+        int type = Parcel.getValueType(object);
+        if (isLazy(type)) {
+            out.writeInt(type);
+            // Length
+            int length = out.dataPosition();
+            out.writeInt(-1); // Placeholder
+            // Object
+            int start = out.dataPosition();
+            out.writeValueNoHelper(type, object);
+            int end = out.dataPosition();
+            // Backpatch length
+            out.setDataPosition(length);
+            out.writeInt(end - start);
+            out.setDataPosition(end);
+        } else {
+            out.writeValue(object);
+        }
+    }
+
 
     /**
      * Reads the Parcel contents into this Bundle, typically in order for
@@ -1312,9 +1396,55 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
      * @param parcel The parcel to overwrite this bundle from.
      */
     public void readFromParcel(Parcel parcel) {
-        super.readFromParcelInner(parcel);
+        readFromParcelInner(parcel);
         mFlags = FLAG_ALLOW_FDS;
         maybePrefillHasFds();
+    }
+
+    /** @hide */
+    @Override
+    protected boolean readMapFromParcelLocked(Parcel parcel, ArrayMap<String, Object> map, int n,
+            ClassLoader loader, boolean parcelledByNative) {
+        Preconditions.checkState(!parcelledByNative, "Bundle can't be parcelled by native code");
+        boolean canRecycleParcel = true;
+        while (n > 0) {
+            String key = parcel.readString();
+            Object value = readValueFromParcel(parcel, loader);
+            if (value instanceof LazyValue) {
+                // We need to keep the parcel for lazy deserialization
+                canRecycleParcel = false;
+            }
+            map.append(key, value);
+            n--;
+        }
+        map.validate();
+        return canRecycleParcel;
+    }
+
+    private Object readValueFromParcel(Parcel in, ClassLoader loader) {
+        int start = in.dataPosition();
+        int type = in.readInt();
+        if (isLazy(type)) {
+            int length = in.readInt();
+            in.setDataPosition(in.dataPosition() + length);
+            return new LazyValue(in, start, length, type);
+        } else {
+            in.setDataPosition(start);
+            return in.readValue(loader);
+        }
+    }
+
+    private boolean isLazy(int type) {
+        switch (type) {
+            case VAL_PARCELABLE:
+            case VAL_PARCELABLEARRAY:
+            case VAL_LIST:
+            case VAL_SPARSEARRAY:
+            case VAL_BUNDLE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -1359,5 +1489,52 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
         }
 
         proto.end(token);
+    }
+
+    private static class LazyValue {
+        public final Parcel source;
+        public final int position;
+        public final int length;
+        public final int type;
+
+        LazyValue(Parcel source, int position, int length, int type) {
+            this.source = source;
+            this.position = position;
+            this.length = length;
+            this.type = type;
+        }
+
+        /**
+         * Reads the value from {@link #source} by positioning the cursor. At the end restores the
+         * cursor to thre previous position.
+         */
+        public Object read(String key, ClassLoader loader) {
+            int restore = source.dataPosition();
+            final Object object;
+            try {
+                source.setDataPosition(position);
+                int type = source.readInt();
+                int length = source.readInt();
+                int start = source.dataPosition();
+                object = source.readValue(type, loader);
+                int actual = source.dataPosition() - start;
+                if (actual != length) {
+                    Log.w(TAG,
+                            "Unparcelling of " + object + " of type "
+                                    + Parcel.valueTypeToString(type) + " for key \"" + key
+                                    + "\" consumed " + actual + " bytes, but " + length
+                                    + " expected.");
+                }
+            } finally {
+                source.setDataPosition(restore);
+            }
+            return object;
+        }
+
+        @Override
+        public String toString() {
+            return "LazyValue{" + Parcel.valueTypeToString(type) + "@" + position + "+" + length
+                    + '}';
+        }
     }
 }

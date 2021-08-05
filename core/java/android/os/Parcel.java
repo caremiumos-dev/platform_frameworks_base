@@ -228,36 +228,36 @@ public final class Parcel {
     private static final Parcel[] sHolderPool = new Parcel[POOL_SIZE];
 
     // Keep in sync with frameworks/native/include/private/binder/ParcelValTypes.h.
-    private static final int VAL_NULL = -1;
-    private static final int VAL_STRING = 0;
-    private static final int VAL_INTEGER = 1;
-    private static final int VAL_MAP = 2;
-    private static final int VAL_BUNDLE = 3;
-    private static final int VAL_PARCELABLE = 4;
-    private static final int VAL_SHORT = 5;
-    private static final int VAL_LONG = 6;
-    private static final int VAL_FLOAT = 7;
-    private static final int VAL_DOUBLE = 8;
-    private static final int VAL_BOOLEAN = 9;
-    private static final int VAL_CHARSEQUENCE = 10;
-    private static final int VAL_LIST  = 11;
-    private static final int VAL_SPARSEARRAY = 12;
-    private static final int VAL_BYTEARRAY = 13;
-    private static final int VAL_STRINGARRAY = 14;
-    private static final int VAL_IBINDER = 15;
-    private static final int VAL_PARCELABLEARRAY = 16;
-    private static final int VAL_OBJECTARRAY = 17;
-    private static final int VAL_INTARRAY = 18;
-    private static final int VAL_LONGARRAY = 19;
-    private static final int VAL_BYTE = 20;
-    private static final int VAL_SERIALIZABLE = 21;
-    private static final int VAL_SPARSEBOOLEANARRAY = 22;
-    private static final int VAL_BOOLEANARRAY = 23;
-    private static final int VAL_CHARSEQUENCEARRAY = 24;
-    private static final int VAL_PERSISTABLEBUNDLE = 25;
-    private static final int VAL_SIZE = 26;
-    private static final int VAL_SIZEF = 27;
-    private static final int VAL_DOUBLEARRAY = 28;
+    /** @hide */ static final int VAL_NULL = -1;
+    /** @hide */ static final int VAL_STRING = 0;
+    /** @hide */ static final int VAL_INTEGER = 1;
+    /** @hide */ static final int VAL_MAP = 2;
+    /** @hide */ static final int VAL_BUNDLE = 3;
+    /** @hide */ static final int VAL_PARCELABLE = 4;
+    /** @hide */ static final int VAL_SHORT = 5;
+    /** @hide */ static final int VAL_LONG = 6;
+    /** @hide */ static final int VAL_FLOAT = 7;
+    /** @hide */ static final int VAL_DOUBLE = 8;
+    /** @hide */ static final int VAL_BOOLEAN = 9;
+    /** @hide */ static final int VAL_CHARSEQUENCE = 10;
+    /** @hide */ static final int VAL_LIST  = 11;
+    /** @hide */ static final int VAL_SPARSEARRAY = 12;
+    /** @hide */ static final int VAL_BYTEARRAY = 13;
+    /** @hide */ static final int VAL_STRINGARRAY = 14;
+    /** @hide */ static final int VAL_IBINDER = 15;
+    /** @hide */ static final int VAL_PARCELABLEARRAY = 16;
+    /** @hide */ static final int VAL_OBJECTARRAY = 17;
+    /** @hide */ static final int VAL_INTARRAY = 18;
+    /** @hide */ static final int VAL_LONGARRAY = 19;
+    /** @hide */ static final int VAL_BYTE = 20;
+    /** @hide */ static final int VAL_SERIALIZABLE = 21;
+    /** @hide */ static final int VAL_SPARSEBOOLEANARRAY = 22;
+    /** @hide */ static final int VAL_BOOLEANARRAY = 23;
+    /** @hide */ static final int VAL_CHARSEQUENCEARRAY = 24;
+    /** @hide */ static final int VAL_PERSISTABLEBUNDLE = 25;
+    /** @hide */ static final int VAL_SIZE = 26;
+    /** @hide */ static final int VAL_SIZEF = 27;
+    /** @hide */ static final int VAL_DOUBLEARRAY = 28;
 
     // The initial int32 in a Binder call's reply Parcel header:
     // Keep these in sync with libbinder's binder/Status.h.
@@ -377,16 +377,20 @@ public final class Parcel {
         }
     };
 
-    /**
-     * @hide
-     */
+    /** @hide */
     public static class ReadWriteHelper {
+        private final boolean mSupportsLazy;
 
         @UnsupportedAppUsage
         public ReadWriteHelper() {
+            this(/* supportsLazy */ false);
         }
 
-        public static final ReadWriteHelper DEFAULT = new ReadWriteHelper();
+        private ReadWriteHelper(boolean supportsLazy) {
+            mSupportsLazy = supportsLazy;
+        }
+
+        public static final ReadWriteHelper DEFAULT = new ReadWriteHelper(/* supportsLazy */ true);
 
         /**
          * Called when writing a string to a parcel. Subclasses wanting to write a string
@@ -464,6 +468,15 @@ public final class Parcel {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the current {@link ReadWriteHelper}.
+     *
+     * @hide
+     */
+    public ReadWriteHelper getReadWriteHelper() {
+        return mReadWriteHelper;
     }
 
     /**
@@ -1795,106 +1808,194 @@ public final class Parcel {
      * should be used).</p>
      */
     public final void writeValue(@Nullable Object v) {
+        mReadWriteHelper.writeValue(this, v);
+    }
+
+    /**
+     * Same as {@link #writeValueNoHelper(int, Object)} but derives the type from the object itself
+     * and prefixes the object with the type.
+     *
+     * @hide
+     */
+    public void writeValueNoHelper(@Nullable Object v) {
+        int type = getValueType(v);
+        writeInt(type);
+        writeValueNoHelper(type, v);
+    }
+
+    /** @hide */
+    public static int getValueType(@Nullable Object v) {
         if (v == null) {
-            writeInt(VAL_NULL);
+            return VAL_NULL;
         } else if (v instanceof String) {
-            writeInt(VAL_STRING);
-            writeString((String) v);
+            return VAL_STRING;
         } else if (v instanceof Integer) {
-            writeInt(VAL_INTEGER);
-            writeInt((Integer) v);
+            return VAL_INTEGER;
         } else if (v instanceof Map) {
-            writeInt(VAL_MAP);
-            writeMap((Map) v);
+            return VAL_MAP;
         } else if (v instanceof Bundle) {
             // Must be before Parcelable
-            writeInt(VAL_BUNDLE);
-            writeBundle((Bundle) v);
+            return VAL_BUNDLE;
         } else if (v instanceof PersistableBundle) {
-            writeInt(VAL_PERSISTABLEBUNDLE);
-            writePersistableBundle((PersistableBundle) v);
+            // Must be before Parcelable
+            return VAL_PERSISTABLEBUNDLE;
+        } else if (v instanceof SizeF) {
+            // Must be before Parcelable
+            return VAL_SIZEF;
         } else if (v instanceof Parcelable) {
             // IMPOTANT: cases for classes that implement Parcelable must
-            // come before the Parcelable case, so that their specific VAL_*
+            // come before the Parcelable case, so that their speci fic VAL_*
             // types will be written.
-            writeInt(VAL_PARCELABLE);
-            writeParcelable((Parcelable) v, 0);
+            return VAL_PARCELABLE;
         } else if (v instanceof Short) {
-            writeInt(VAL_SHORT);
-            writeInt(((Short) v).intValue());
+            return VAL_SHORT;
         } else if (v instanceof Long) {
-            writeInt(VAL_LONG);
-            writeLong((Long) v);
+            return VAL_LONG;
         } else if (v instanceof Float) {
-            writeInt(VAL_FLOAT);
-            writeFloat((Float) v);
+            return VAL_FLOAT;
         } else if (v instanceof Double) {
-            writeInt(VAL_DOUBLE);
-            writeDouble((Double) v);
+            return VAL_DOUBLE;
         } else if (v instanceof Boolean) {
-            writeInt(VAL_BOOLEAN);
-            writeInt((Boolean) v ? 1 : 0);
+            return VAL_BOOLEAN;
         } else if (v instanceof CharSequence) {
             // Must be after String
-            writeInt(VAL_CHARSEQUENCE);
-            writeCharSequence((CharSequence) v);
+            return VAL_CHARSEQUENCE;
         } else if (v instanceof List) {
-            writeInt(VAL_LIST);
-            writeList((List) v);
+            return VAL_LIST;
         } else if (v instanceof SparseArray) {
-            writeInt(VAL_SPARSEARRAY);
-            writeSparseArray((SparseArray) v);
+            return VAL_SPARSEARRAY;
         } else if (v instanceof boolean[]) {
-            writeInt(VAL_BOOLEANARRAY);
-            writeBooleanArray((boolean[]) v);
+            return VAL_BOOLEANARRAY;
         } else if (v instanceof byte[]) {
-            writeInt(VAL_BYTEARRAY);
-            writeByteArray((byte[]) v);
+            return VAL_BYTEARRAY;
         } else if (v instanceof String[]) {
-            writeInt(VAL_STRINGARRAY);
-            writeStringArray((String[]) v);
+            return VAL_STRINGARRAY;
         } else if (v instanceof CharSequence[]) {
             // Must be after String[] and before Object[]
-            writeInt(VAL_CHARSEQUENCEARRAY);
-            writeCharSequenceArray((CharSequence[]) v);
+            return VAL_CHARSEQUENCEARRAY;
         } else if (v instanceof IBinder) {
-            writeInt(VAL_IBINDER);
-            writeStrongBinder((IBinder) v);
+            return VAL_IBINDER;
         } else if (v instanceof Parcelable[]) {
-            writeInt(VAL_PARCELABLEARRAY);
-            writeParcelableArray((Parcelable[]) v, 0);
+            return VAL_PARCELABLEARRAY;
         } else if (v instanceof int[]) {
-            writeInt(VAL_INTARRAY);
-            writeIntArray((int[]) v);
+            return VAL_INTARRAY;
         } else if (v instanceof long[]) {
-            writeInt(VAL_LONGARRAY);
-            writeLongArray((long[]) v);
+            return VAL_LONGARRAY;
         } else if (v instanceof Byte) {
-            writeInt(VAL_BYTE);
-            writeInt((Byte) v);
+            return VAL_BYTE;
         } else if (v instanceof Size) {
-            writeInt(VAL_SIZE);
-            writeSize((Size) v);
-        } else if (v instanceof SizeF) {
-            writeInt(VAL_SIZEF);
-            writeSizeF((SizeF) v);
+            return VAL_SIZE;
         } else if (v instanceof double[]) {
-            writeInt(VAL_DOUBLEARRAY);
-            writeDoubleArray((double[]) v);
+            return VAL_DOUBLEARRAY;
         } else {
             Class<?> clazz = v.getClass();
             if (clazz.isArray() && clazz.getComponentType() == Object.class) {
                 // Only pure Object[] are written here, Other arrays of non-primitive types are
                 // handled by serialization as this does not record the component type.
-                writeInt(VAL_OBJECTARRAY);
-                writeArray((Object[]) v);
+                return VAL_OBJECTARRAY;
             } else if (v instanceof Serializable) {
                 // Must be last
-                writeInt(VAL_SERIALIZABLE);
-                writeSerializable((Serializable) v);
+                return VAL_SERIALIZABLE;
             } else {
-                throw new RuntimeException("Parcel: unable to marshal value " + v);
+                throw new RuntimeException("Parcel: unknown type for value " + v);
             }
+        }
+    }
+    /**
+     * Writes value {@code v} in the parcel.
+     *
+     * @hide
+     */
+    public void writeValueNoHelper(int type, @Nullable Object v) {
+        switch (type) {
+            case VAL_NULL:
+                break;
+            case VAL_STRING:
+                writeString((String) v);
+                break;
+            case VAL_INTEGER:
+                writeInt((Integer) v);
+                break;
+            case VAL_MAP:
+                writeMap((Map) v);
+                break;
+            case VAL_BUNDLE:
+                writeBundle((Bundle) v);
+                break;
+            case VAL_PERSISTABLEBUNDLE:
+                writePersistableBundle((PersistableBundle) v);
+                break;
+            case VAL_PARCELABLE:
+                writeParcelable((Parcelable) v, 0);
+                break;
+            case VAL_SHORT:
+                writeInt(((Short) v).intValue());
+                break;
+            case VAL_LONG:
+                writeLong((Long) v);
+                break;
+            case VAL_FLOAT:
+                writeFloat((Float) v);
+                break;
+            case VAL_DOUBLE:
+                writeDouble((Double) v);
+                break;
+            case VAL_BOOLEAN:
+                writeInt((Boolean) v ? 1 : 0);
+                break;
+            case VAL_CHARSEQUENCE:
+                writeCharSequence((CharSequence) v);
+                break;
+            case VAL_LIST:
+                writeList((List) v);
+                break;
+            case VAL_SPARSEARRAY:
+                writeSparseArray((SparseArray) v);
+                break;
+            case VAL_BOOLEANARRAY:
+                writeBooleanArray((boolean[]) v);
+                break;
+            case VAL_BYTEARRAY:
+                writeByteArray((byte[]) v);
+                break;
+            case VAL_STRINGARRAY:
+                writeStringArray((String[]) v);
+                break;
+            case VAL_CHARSEQUENCEARRAY:
+                writeCharSequenceArray((CharSequence[]) v);
+                break;
+            case VAL_IBINDER:
+                writeStrongBinder((IBinder) v);
+                break;
+            case VAL_PARCELABLEARRAY:
+                writeParcelableArray((Parcelable[]) v, 0);
+                break;
+            case VAL_INTARRAY:
+                writeIntArray((int[]) v);
+                break;
+            case VAL_LONGARRAY:
+                writeLongArray((long[]) v);
+                break;
+            case VAL_BYTE:
+                writeInt((Byte) v);
+                break;
+            case VAL_SIZE:
+                writeSize((Size) v);
+                break;
+            case VAL_SIZEF:
+                writeSizeF((SizeF) v);
+                break;
+            case VAL_DOUBLEARRAY:
+                writeDoubleArray((double[]) v);
+                break;
+            case VAL_OBJECTARRAY:
+                writeArray((Object[]) v);
+                break;
+            case VAL_SERIALIZABLE:
+                writeSerializable((Serializable) v);
+                break;
+            default:
+                throw new RuntimeException("Parcel: unable to marshal value " + v);
         }
     }
 
@@ -3166,8 +3267,17 @@ public final class Parcel {
      */
     @Nullable
     public final Object readValue(@Nullable ClassLoader loader) {
-        int type = readInt();
+        return readValue(readInt(), loader);
+    }
 
+    /**
+     * Reads a value from the parcel of type {@code type}. Does NOT read the int representing the
+     * type first.
+     *
+     * @hide
+     */
+    @Nullable
+    public Object readValue(int type, @Nullable ClassLoader loader) {
         switch (type) {
         case VAL_NULL:
             return null;
@@ -3690,5 +3800,40 @@ public final class Parcel {
      */
     public long getBlobAshmemSize() {
         return nativeGetBlobAshmemSize(mNativePtr);
+    }
+
+    /** @hide */
+    public static String valueTypeToString(int type) {
+        switch (type) {
+            case VAL_NULL: return "VAL_NULL";
+            case VAL_INTEGER: return "VAL_INTEGER";
+            case VAL_MAP: return "VAL_MAP";
+            case VAL_BUNDLE: return "VAL_BUNDLE";
+            case VAL_PERSISTABLEBUNDLE: return "VAL_PERSISTABLEBUNDLE";
+            case VAL_PARCELABLE: return "VAL_PARCELABLE";
+            case VAL_SHORT: return "VAL_SHORT";
+            case VAL_LONG: return "VAL_LONG";
+            case VAL_FLOAT: return "VAL_FLOAT";
+            case VAL_DOUBLE: return "VAL_DOUBLE";
+            case VAL_BOOLEAN: return "VAL_BOOLEAN";
+            case VAL_CHARSEQUENCE: return "VAL_CHARSEQUENCE";
+            case VAL_LIST: return "VAL_LIST";
+            case VAL_SPARSEARRAY: return "VAL_SPARSEARRAY";
+            case VAL_BOOLEANARRAY: return "VAL_BOOLEANARRAY";
+            case VAL_BYTEARRAY: return "VAL_BYTEARRAY";
+            case VAL_STRINGARRAY: return "VAL_STRINGARRAY";
+            case VAL_CHARSEQUENCEARRAY: return "VAL_CHARSEQUENCEARRAY";
+            case VAL_IBINDER: return "VAL_IBINDER";
+            case VAL_PARCELABLEARRAY: return "VAL_PARCELABLEARRAY";
+            case VAL_INTARRAY: return "VAL_INTARRAY";
+            case VAL_LONGARRAY: return "VAL_LONGARRAY";
+            case VAL_BYTE: return "VAL_BYTE";
+            case VAL_SIZE: return "VAL_SIZE";
+            case VAL_SIZEF: return "VAL_SIZEF";
+            case VAL_DOUBLEARRAY: return "VAL_DOUBLEARRAY";
+            case VAL_OBJECTARRAY: return "VAL_OBJECTARRAY";
+            case VAL_SERIALIZABLE: return "VAL_SERIALIZABLE";
+            default: return "UNKNOWN(" + type + ")";
+        }
     }
 }
