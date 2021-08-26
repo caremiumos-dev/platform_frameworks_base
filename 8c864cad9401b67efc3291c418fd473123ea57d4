@@ -23,6 +23,29 @@
       },
       "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "58e441a3_e7a25b6a",
+        "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1254,
+      "author": {
+        "id": 1443524
+      },
+      "writtenOn": "2021-08-26T21:29:51Z",
+      "side": 1,
+      "message": "replacing with ln 1218  is better ?",
+      "range": {
+        "startLine": 1253,
+        "startChar": 32,
+        "endLine": 1254,
+        "endChar": 97
+      },
+      "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
