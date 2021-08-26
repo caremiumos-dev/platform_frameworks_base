@@ -1507,6 +1507,12 @@ package android.bluetooth {
     method public void onOobData(int, @NonNull android.bluetooth.OobData);
   }
 
+  public final class BluetoothClass implements Parcelable {
+    method BluetoothClass(int);
+    field public static final int PROFILE_A2DP = 1;
+    field public static final int PROFILE_HEADSET = 0;
+  }
+
   public final class BluetoothDevice implements android.os.Parcelable {
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_PRIVILEGED) public boolean cancelBondProcess();
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_PRIVILEGED) public boolean createBondOutOfBand(int, @Nullable android.bluetooth.OobData, @Nullable android.bluetooth.OobData);

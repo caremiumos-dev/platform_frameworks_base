@@ -16,9 +16,9 @@
 
 package android.bluetooth;
 
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -66,7 +66,7 @@ public final class BluetoothClass implements Parcelable {
     private final int mClass;
 
     /** @hide */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
+    @SystemApi
     public BluetoothClass(int classInt) {
         mClass = classInt;
     }
@@ -327,10 +327,10 @@ public final class BluetoothClass implements Parcelable {
     }
 
     /** @hide */
-    @UnsupportedAppUsage
+    @SystemApi
     public static final int PROFILE_HEADSET = 0;
     /** @hide */
-    @UnsupportedAppUsage
+    @SystemApi
     public static final int PROFILE_A2DP = 1;
     /** @hide */
     public static final int PROFILE_OPP = 2;
