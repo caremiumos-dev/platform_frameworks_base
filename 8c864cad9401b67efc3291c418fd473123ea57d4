@@ -1,0 +1,28 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dae3f55a_5768eae3",
+        "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1328424
+      },
+      "writtenOn": "2021-08-26T13:39:11Z",
+      "side": 1,
+      "message": "\u003e Lines longer than 100 characters should be wrapped to improve readability; see https://source.android.com/setup/contribute/code-style#limit-line-length for more details.\n\nPlease fix.",
+      "parentUuid": "cab7354e_35692cb7",
+      "range": {
+        "startLine": 235,
+        "startChar": 0,
+        "endLine": 235,
+        "endChar": 134
+      },
+      "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
