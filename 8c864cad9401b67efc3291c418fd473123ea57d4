@@ -27,6 +27,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "d640a244_0e829f47",
+        "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1241,
+      "author": {
+        "id": 1328424
+      },
+      "writtenOn": "2021-08-29T15:44:50Z",
+      "side": 1,
+      "message": "Moving to below #1279 is better? (same as events grouped in #1210)",
+      "range": {
+        "startLine": 1241,
+        "startChar": 0,
+        "endLine": 1241,
+        "endChar": 42
+      },
+      "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "58e441a3_e7a25b6a",
         "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
         "patchSetId": 2
