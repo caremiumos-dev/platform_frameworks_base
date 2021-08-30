@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "ae33e16d_0351d9bd",
+        "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1241,
+      "author": {
+        "id": 1443524
+      },
+      "writtenOn": "2021-08-30T15:31:10Z",
+      "side": 1,
+      "message": "Yes. its better",
+      "parentUuid": "d640a244_0e829f47",
+      "range": {
+        "startLine": 1241,
+        "startChar": 0,
+        "endLine": 1241,
+        "endChar": 42
+      },
+      "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "58e441a3_e7a25b6a",
         "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
         "patchSetId": 2
