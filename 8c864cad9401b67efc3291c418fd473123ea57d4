@@ -25,6 +25,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e8ed27de_38b44a69",
+        "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1501832
+      },
+      "writtenOn": "2021-09-01T02:08:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dae3f55a_5768eae3",
+      "range": {
+        "startLine": 235,
+        "startChar": 0,
+        "endLine": 235,
+        "endChar": 134
+      },
+      "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d640a244_0e829f47",
@@ -72,6 +96,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f891cdc9_be647379",
+        "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1241,
+      "author": {
+        "id": 1501832
+      },
+      "writtenOn": "2021-09-01T02:08:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae33e16d_0351d9bd",
+      "range": {
+        "startLine": 1241,
+        "startChar": 0,
+        "endLine": 1241,
+        "endChar": 42
+      },
+      "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "58e441a3_e7a25b6a",
@@ -85,6 +133,30 @@
       "writtenOn": "2021-08-26T21:29:51Z",
       "side": 1,
       "message": "replacing with ln 1218  is better ?",
+      "range": {
+        "startLine": 1253,
+        "startChar": 32,
+        "endLine": 1254,
+        "endChar": 97
+      },
+      "revId": "8c864cad9401b67efc3291c418fd473123ea57d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5ce49907_d882de13",
+        "filename": "services/core/java/com/android/server/tv/TvInputHardwareManager.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1254,
+      "author": {
+        "id": 1501832
+      },
+      "writtenOn": "2021-09-01T02:08:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "58e441a3_e7a25b6a",
       "range": {
         "startLine": 1253,
         "startChar": 32,
