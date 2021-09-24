@@ -1902,6 +1902,8 @@ public class Activity extends ContextThemeWrapper
     @CallSuper
     protected void onResume() {
         if (DEBUG_LIFECYCLE) Slog.v(TAG, "onResume " + this);
+        Toast.makeText(getApplicationContext(), "onResume called: "
+                       + this, Toast.LENGTH_SHORT).show();
         dispatchActivityResumed();
         mActivityTransitionState.onResume(this);
         enableAutofillCompatibilityIfNeeded();
