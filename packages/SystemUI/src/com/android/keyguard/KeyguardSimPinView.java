@@ -303,7 +303,7 @@ public class KeyguardSimPinView extends KeyguardPinBasedInputView {
     protected void verifyPasswordAndUnlock() {
         String entry = mPasswordEntry.getText();
 
-        if (entry.length() < 4) {
+        if (entry.length() < 4 || entry.length() > 8) {
             // otherwise, display a message to the user, and don't submit.
             mSecurityMessageDisplay.setMessage(R.string.kg_invalid_sim_pin_hint);
             resetPasswordText(true /* animate */, true /* announce */);
