@@ -773,6 +773,8 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                             mStartAccessory)
                     .putExtra(UsbManager.EXTRA_ACCESSORY_HANDSHAKE_END,
                             accessoryHandShakeEnd);
+            intent.addFlags(Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND
+                    | Intent.FLAG_RECEIVER_FOREGROUND);
 
             if (DEBUG) {
                 Slog.d(TAG, "broadcasting " + intent + " extras: " + intent.getExtras());
