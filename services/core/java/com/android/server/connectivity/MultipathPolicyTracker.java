@@ -229,7 +229,7 @@ public class MultipathPolicyTracker {
                     NetworkTemplate.MATCH_MOBILE, subscriberId, new String[] { subscriberId },
                     null, NetworkStats.METERED_ALL, NetworkStats.ROAMING_ALL,
                     NetworkStats.DEFAULT_NETWORK_NO, NETWORK_TYPE_ALL, OEM_MANAGED_ALL,
-                    SUBSCRIBER_ID_MATCH_RULE_EXACT);
+                    SUBSCRIBER_ID_MATCH_RULE_EXACT, mSubId, new int[] { mSubId });
             mUsageCallback = new UsageCallback() {
                 @Override
                 public void onThresholdReached(int networkType, String subscriberId) {

@@ -355,7 +355,8 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
     private static final int VERSION_ADDED_CYCLE = 11;
     private static final int VERSION_ADDED_NETWORK_TYPES = 12;
     private static final int VERSION_SUPPORTED_CARRIER_USAGE = 13;
-    private static final int VERSION_LATEST = VERSION_SUPPORTED_CARRIER_USAGE;
+    private static final int VERSION_ADDED_SUB_ID = 14;
+    private static final int VERSION_LATEST = VERSION_ADDED_SUB_ID;
 
     @VisibleForTesting
     public static final int TYPE_WARNING = SystemMessage.NOTE_NET_WARNING;
@@ -2463,11 +2464,19 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                         } else {
                             inferred = false;
                         }
+
+                        final int subId;
+                        if (version >= VERSION_ADDED_SUB_ID) {
+                            subId = readIntAttribute(in, ATTR_SUB_ID);
+                        } else {
+                            subId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+                        }
                         final NetworkTemplate template = new NetworkTemplate(templateType,
                                 subscriberId, new String[] { subscriberId },
                                 networkId, templateMeteredness, NetworkStats.ROAMING_ALL,
                                 NetworkStats.DEFAULT_NETWORK_ALL, NetworkTemplate.NETWORK_TYPE_ALL,
-                                NetworkTemplate.OEM_MANAGED_ALL, subscriberIdMatchRule);
+                                NetworkTemplate.OEM_MANAGED_ALL, subscriberIdMatchRule, subId,
+                                new int[] { subId });
                         if (template.isPersistable()) {
                             mNetworkPolicy.put(template, new NetworkPolicy(template, cycleRule,
                                     warningBytes, limitBytes, lastWarningSnooze,
@@ -2682,6 +2691,10 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                 final String subscriberId = template.getSubscriberId();
                 if (subscriberId != null) {
                     out.attribute(null, ATTR_SUBSCRIBER_ID, subscriberId);
+                }
+                final int subId = template.getSubId();
+                if (subId > 0) {
+                    writeIntAttribute(out, ATTR_SUB_ID, subId);
                 }
                 writeIntAttribute(out, ATTR_SUBSCRIBER_ID_MATCH_RULE,
                         template.getSubscriberIdMatchRule());
