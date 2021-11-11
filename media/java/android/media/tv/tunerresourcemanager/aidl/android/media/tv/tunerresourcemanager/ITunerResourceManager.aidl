@@ -354,4 +354,30 @@ interface ITunerResourceManager {
      */
     boolean isHigherPriority(in ResourceClientProfile challengerProfile,
             in ResourceClientProfile holderProfile);
+
+    /**
+     * Returns a priority for the given use case type and the client's foreground or background
+     * status.
+     *
+     * @param useCase the use case type of the client. When the given use case type is invalid,
+     *        the default use case type will be used. {@see TvInputService#PriorityHintUseCaseType}.
+     * @param pid the pid of the client. When the pid is invalid, background status will be used as
+     *        a client's status. Otherwise, client's app corresponding to the given session id will
+     *        be used as a client. {@see TvInputService#onCreateSession(String, String)}.
+     *
+     * @return the client priority..
+     */
+    int getClientPriority(int useCase, int pid);
+
+    /**
+     * Returns a config priority for the given use case type and the foreground or background
+     * status.
+     *
+     * @param useCase the use case type of the client. When the given use case type is invalid,
+     *        the default use case type will be used. {@see TvInputService#PriorityHintUseCaseType}.
+     * @param isForeground {@code true} if foreground, {@code false} otherwise.
+     *
+     * @return the config priority.
+     */
+    int getConfigPriority(int useCase, boolean isForeground);
 }
