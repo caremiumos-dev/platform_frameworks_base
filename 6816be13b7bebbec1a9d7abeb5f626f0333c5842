@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c36236a1_ae152ad0",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 842,
+      "author": {
+        "id": 1385042
+      },
+      "writtenOn": "2021-11-15T14:46:12Z",
+      "side": 1,
+      "message": "I think also IllegalStateException.",
+      "range": {
+        "startLine": 842,
+        "startChar": 38,
+        "endLine": 842,
+        "endChar": 56
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
