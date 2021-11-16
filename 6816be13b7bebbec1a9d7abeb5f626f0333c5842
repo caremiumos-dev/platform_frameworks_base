@@ -99,6 +99,30 @@
       },
       "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "74310cfb_7ff05e2b",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 842,
+      "author": {
+        "id": 1385042
+      },
+      "writtenOn": "2021-11-16T07:37:19Z",
+      "side": 1,
+      "message": "I see. It\u0027s good to know, thanks.\nI saw some other methods throws it, so does it mean this is optional?",
+      "parentUuid": "1ad6d04e_84f657a7",
+      "range": {
+        "startLine": 842,
+        "startChar": 38,
+        "endLine": 842,
+        "endChar": 56
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
