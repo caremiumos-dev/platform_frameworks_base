@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fe67b3ac_00f25cef",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-16T07:28:33Z",
+      "side": 1,
+      "message": "1. Yes, however I think it is no harm to add that support given that we are adding the metered field anyway.\n2. In NPMS we will use mMergedSubscriberIds to normalize the template anyway, hence it is not necessary to persist subscriber Id array.",
+      "parentUuid": "012fa8f0_7d233cec",
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c36236a1_ae152ad0",
