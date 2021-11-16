@@ -123,6 +123,30 @@
       },
       "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9dc68553_f10f7c23",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 842,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-16T08:41:32Z",
+      "side": 1,
+      "message": "It fails lint with \"BannedThrow\" if you are at API surface.\nOther than that I don\u0027t see a rule say it should or shouldn\u0027t be thrown.\n\nMaybe jchalard@ will have more context.",
+      "parentUuid": "74310cfb_7ff05e2b",
+      "range": {
+        "startLine": 842,
+        "startChar": 38,
+        "endLine": 842,
+        "endChar": 56
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
