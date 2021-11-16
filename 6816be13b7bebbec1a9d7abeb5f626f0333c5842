@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "012fa8f0_7d233cec",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1368080
+      },
+      "writtenOn": "2021-11-16T06:52:01Z",
+      "side": 1,
+      "message": "LGTM for this code change. But some comments about the design.\n\nIIRC, we decided to bypass cloud backup/restore handing before because the only use case SUBSCRIBER_ID_MATCH_RULE_ALL is wifi data usage. But it doesn\u0027t need to backup it in the current design, so it is fine to bypass it since it never happen.\n\nhttps://source.corp.google.com/android/frameworks/base/core/java/android/net/NetworkTemplate.java;l\u003d293?q\u003dcheckValidSubscriberIdMatchRule\u0026sq\u003dpackage:android\n\nAnd not sure if that is the use case you might plan to enhancement on T. Don\u0027t we need to store whole subscriberIds list since it might be integrated after normalized?",
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c36236a1_ae152ad0",
