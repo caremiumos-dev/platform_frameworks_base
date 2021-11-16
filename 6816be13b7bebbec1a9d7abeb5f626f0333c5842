@@ -22,6 +22,30 @@
       },
       "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1ad6d04e_84f657a7",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 842,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-16T06:07:08Z",
+      "side": 1,
+      "message": "IIUC IllegalStateException is a runtime exception so it should not be put at function signature.",
+      "parentUuid": "c36236a1_ae152ad0",
+      "range": {
+        "startLine": 842,
+        "startChar": 38,
+        "endLine": 842,
+        "endChar": 56
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
