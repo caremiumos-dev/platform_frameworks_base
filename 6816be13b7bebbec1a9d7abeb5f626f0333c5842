@@ -56,6 +56,52 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "4dce05da_5584e474",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-17T07:12:27Z",
+      "side": 1,
+      "message": "Can you add some comments about what these mean ? Is it like a database version ?\n\nIf so I would encourage you to have simply VERSION_1 and VERSION_2. Right now it looks like you have version names, which you could also do, but while \"init\" is kind of understandable, \"carrier\" doesn\u0027t exactly clearly communicate what this version is about.",
+      "range": {
+        "startLine": 71,
+        "startChar": 29,
+        "endLine": 71,
+        "endChar": 41
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b055a773_cf523b62",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-17T07:12:27Z",
+      "side": 1,
+      "message": "Do you want to annotate this with an intdef (in some other patch)",
+      "range": {
+        "startLine": 335,
+        "startChar": 27,
+        "endLine": 335,
+        "endChar": 30
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c36236a1_ae152ad0",
         "filename": "core/java/android/net/NetworkTemplate.java",
         "patchSetId": 1
@@ -144,6 +190,122 @@
         "startChar": 38,
         "endLine": 842,
         "endChar": 56
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c261d6f4_0ae8d1a5",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 842,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-17T07:12:27Z",
+      "side": 1,
+      "message": "Yes it\u0027s optional. You can write it when you want to clarify that it\u0027s thrown and that you\u0027d prefer callers to handle it.\n\nUsually IllegalStateException is a programming error on the caller\u0027s part, so normally you never catch it (instead you find and fix the bug).",
+      "parentUuid": "74310cfb_7ff05e2b",
+      "range": {
+        "startLine": 842,
+        "startChar": 38,
+        "endLine": 842,
+        "endChar": 56
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "74031ec9_74f10609",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 856,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-17T07:12:27Z",
+      "side": 1,
+      "message": "I think this works, but it was really difficult to figure out the interactions between this and mMatchSubscriberIds. Do you want to describe here what should happen to saving/restoring the subscriber ID, including how mMatchSubscriberIds here ?\nIt could be something like :\n\n  The rule describes how the plan should behave, and after restore it should\n  still have the same limits/\u003cwhatever\u003e. The subscriber ID however is local to\n  this device and it would not make sense to save it and restore it (it may\n  point to a subscription that doesn\u0027t exist on the new device, and the new\n  device may not even have the same carrier anyway).\n  mMatchSubscriberIds is computed by NPMS and represents a list of subscriber\n  IDs to check for for a particular carrier. This list also depends on the\n  device and will be recomputed for a given subscriber ID.",
+      "range": {
+        "startLine": 856,
+        "startChar": 21,
+        "endLine": 856,
+        "endChar": 43
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "401bf161_51a1cdcd",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 878,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-17T07:12:27Z",
+      "side": 1,
+      "message": "You don\u0027t know that – this is a public method.",
+      "range": {
+        "startLine": 878,
+        "startChar": 54,
+        "endLine": 878,
+        "endChar": 84
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5d1b5d39_2d5addf6",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 887,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-17T07:12:27Z",
+      "side": 1,
+      "message": "nit : you can just write return here",
+      "range": {
+        "startLine": 887,
+        "startChar": 12,
+        "endLine": 887,
+        "endChar": 17
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "822a153a_0a58b1ec",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 888,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-17T07:12:27Z",
+      "side": 1,
+      "message": "What does this mean for a device with 2 SIMs that is reset ?\ne.g. I buy a device and download an eSIM for carrier1. This becomes subscription ID 1. Later, I insert a SIM for carrier2, and this becomes subscription ID 2. I set policy for carrier 1 to limit at 1GB and for carrier 2 to limit at 2GB.\n\nNow I reset the device, and because the physical SIM is present immediately carrier2 becomes subscriber ID 1. I download the eSIM later, and it becomes subscriber ID 2. If I understand correctly, this scenario ends up with my device having both policies on subscriber ID 1, which is not what the user expects.",
+      "range": {
+        "startLine": 888,
+        "startChar": 20,
+        "endLine": 888,
+        "endChar": 32
       },
       "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
