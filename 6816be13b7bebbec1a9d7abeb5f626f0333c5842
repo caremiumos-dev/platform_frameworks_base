@@ -77,6 +77,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9a5222bf_043d5d0f",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-19T06:28:48Z",
+      "side": 1,
+      "message": "It\u0027s the version number that we used it when restoring NetworkTemplate from bytes.\nVERSION_# would do the trick, but with a meaningful name it should be more readible.\nTry to add comment and rename to make it more readible.\nSee if it works for you.",
+      "parentUuid": "4dce05da_5584e474",
+      "range": {
+        "startLine": 71,
+        "startChar": 29,
+        "endLine": 71,
+        "endChar": 41
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b055a773_cf523b62",
@@ -90,6 +114,30 @@
       "writtenOn": "2021-11-17T07:12:27Z",
       "side": 1,
       "message": "Do you want to annotate this with an intdef (in some other patch)",
+      "range": {
+        "startLine": 335,
+        "startChar": 27,
+        "endLine": 335,
+        "endChar": 30
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ce4e37df_f87be4d7",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-19T06:28:48Z",
+      "side": 1,
+      "message": "Noted, wIll be addressed in later pathes of aosp/1886877",
+      "parentUuid": "b055a773_cf523b62",
       "range": {
         "startLine": 335,
         "startChar": 27,
@@ -242,6 +290,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8a91152e_e21d0590",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 856,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-19T06:28:48Z",
+      "side": 1,
+      "message": "Hmmm not sure what confuses you, but above description is not exactly correct:\n1. subscriber Id is a global unique id that represent the sim card, so we did backup it at l.853.\n2. mMatchSubscriberIds is not necessarily need to be computed by NPMS. Anyone needs to match networks with multiple IMSI at the same time can set mMatchSubscriberIds.\n3. Their interaction is inside the matchesSubscriberId. Where it checks rule \u003d\u003d MATCH_RULL_ALL(don\u0027t care about the NetworkIdentity IMSI) || (template IMSIs contains NetworkIdentity IMSI)\n````\npublic boolean matchesSubscriberId(@Nullable String subscriberId) {\n        return mSubscriberIdMatchRule \u003d\u003d SUBSCRIBER_ID_MATCH_RULE_ALL\n                || ArrayUtils.contains(mMatchSubscriberIds, subscriberId);\n    }\n````                \n\nSo I\u0027ll say to put the below javadoc at the definition of mSubscriberIdMatchRule. See if it solve your concern:\nThe subscriber Id match rule defines how the template should match networks with specific subscriberId(s). See NetworkTemplate#SUBSCRIBER_ID_MATCH_RULE_* for detail.",
+      "parentUuid": "74031ec9_74f10609",
+      "range": {
+        "startLine": 856,
+        "startChar": 21,
+        "endLine": 856,
+        "endChar": 43
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "401bf161_51a1cdcd",
@@ -255,6 +327,54 @@
       "writtenOn": "2021-11-17T07:12:27Z",
       "side": 1,
       "message": "You don\u0027t know that – this is a public method.",
+      "range": {
+        "startLine": 878,
+        "startChar": 54,
+        "endLine": 878,
+        "endChar": 84
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9be67a2e_0af60585",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 878,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-19T06:28:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "401bf161_51a1cdcd",
+      "range": {
+        "startLine": 878,
+        "startChar": 54,
+        "endLine": 878,
+        "endChar": 84
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4187c501_5e905f11",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 878,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-19T06:28:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "401bf161_51a1cdcd",
       "range": {
         "startLine": 878,
         "startChar": 54,
@@ -288,6 +408,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "adcd3210_e600093b",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 887,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-19T06:28:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5d1b5d39_2d5addf6",
+      "range": {
+        "startLine": 887,
+        "startChar": 12,
+        "endLine": 887,
+        "endChar": 17
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "822a153a_0a58b1ec",
@@ -301,6 +445,30 @@
       "writtenOn": "2021-11-17T07:12:27Z",
       "side": 1,
       "message": "What does this mean for a device with 2 SIMs that is reset ?\ne.g. I buy a device and download an eSIM for carrier1. This becomes subscription ID 1. Later, I insert a SIM for carrier2, and this becomes subscription ID 2. I set policy for carrier 1 to limit at 1GB and for carrier 2 to limit at 2GB.\n\nNow I reset the device, and because the physical SIM is present immediately carrier2 becomes subscriber ID 1. I download the eSIM later, and it becomes subscriber ID 2. If I understand correctly, this scenario ends up with my device having both policies on subscriber ID 1, which is not what the user expects.",
+      "range": {
+        "startLine": 888,
+        "startChar": 20,
+        "endLine": 888,
+        "endChar": 32
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f9f67d42_8ff8fab2",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 888,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-19T06:28:48Z",
+      "side": 1,
+      "message": "No the subscriber Id(IMSI) is the longer one and it is stored on the card, so the problem you described never happens since it never changes.\n\nI think what you are talking about is the subscription ID/subId which will changes after device reset. That\u0027s a good point, but not for this CL since we don\u0027t have subId field yet.\nI think it will happen in pratice when we are doing the Remove IMSI project. Noted on the doc and let\u0027s discuss that in later meeting.",
+      "parentUuid": "822a153a_0a58b1ec",
       "range": {
         "startLine": 888,
         "startChar": 20,
