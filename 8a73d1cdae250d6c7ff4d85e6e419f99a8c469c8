@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bfff74cc_f826fb43",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "Initial (usually \"init\" is short for the verb \"initialize\")",
+      "range": {
+        "startLine": 72,
+        "startChar": 7,
+        "endLine": 72,
+        "endChar": 11
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f72c329b_84a18a5b",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 871,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "So this means if a user uses a T device, and then later initializes an S device, their backup is gone, because the old code will simply throw and refuse to restore.\n\nI guess that\u0027s not great but maybe acceptable",
+      "range": {
+        "startLine": 871,
+        "startChar": 63,
+        "endLine": 871,
+        "endChar": 78
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e652785d_1b755c39",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 888,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "This turn of phrase suggests this is sometimes wrong. But IIUC, this is never wrong ; this is always what the old behavior used to be.",
+      "range": {
+        "startLine": 888,
+        "startChar": 15,
+        "endLine": 888,
+        "endChar": 28
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b6308ced_28b721c2",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 894,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "Unused",
+      "range": {
+        "startLine": 894,
+        "startChar": 30,
+        "endLine": 894,
+        "endChar": 33
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c9798296_08d4db82",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 903,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "Suggest having e as the cause",
+      "range": {
+        "startLine": 903,
+        "startChar": 88,
+        "endLine": 903,
+        "endChar": 89
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}

@@ -101,6 +101,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0bf8c51d_878a25de",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "I don\u0027t think the name is more readable per se. There are two places where you\u0027ll see the name.\n❶ At definition site, i.e. here. Here, you could have it simply explained in comments.\n/* Initial version */\nVERSION_1\n/* Version 2 adds support for carrier template */\nVERSION_2\n\n❷ At use site. The problem with the use site is that you don\u0027t really know what comes after what. So you\u0027ll look at VERSION_SUPPORT_CARRIER_TEMPLATE and VERSION_SUPPORT_TRANSMOGRIUM and you won\u0027t know which came first.\n\nThat\u0027s why I thought 1 and 2 were better.\n\nNow maybe you can argue that at the use site, when you write the code you always write for the latest version, and when you read then you\u0027ll always see it in order in the code because previous versions are always supported. And you could add a comment about order at the use site.\n\nWith this in mind, if you prefer your current scheme I will not insist further, so up to you.",
+      "parentUuid": "9a5222bf_043d5d0f",
+      "range": {
+        "startLine": 71,
+        "startChar": 29,
+        "endLine": 71,
+        "endChar": 41
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b055a773_cf523b62",
@@ -314,6 +338,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "90f732c2_7b2fd9d7",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 856,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "Ah I see. For some reason I was under the impression that this was the subId and not the subscriberId.",
+      "parentUuid": "8a91152e_e21d0590",
+      "range": {
+        "startLine": 856,
+        "startChar": 21,
+        "endLine": 856,
+        "endChar": 43
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "401bf161_51a1cdcd",
@@ -469,6 +517,30 @@
       "side": 1,
       "message": "No the subscriber Id(IMSI) is the longer one and it is stored on the card, so the problem you described never happens since it never changes.\n\nI think what you are talking about is the subscription ID/subId which will changes after device reset. That\u0027s a good point, but not for this CL since we don\u0027t have subId field yet.\nI think it will happen in pratice when we are doing the Remove IMSI project. Noted on the doc and let\u0027s discuss that in later meeting.",
       "parentUuid": "822a153a_0a58b1ec",
+      "range": {
+        "startLine": 888,
+        "startChar": 20,
+        "endLine": 888,
+        "endChar": 32
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7cef77af_36b314c9",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 888,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-23T08:06:11Z",
+      "side": 1,
+      "message": "As long as everything is subscriberID-based, there shouldn\u0027t be a problem at all I think.\n\nUpon device reset, the stats are erased right ? So there isn\u0027t an old subId in the DB to get wrong.",
+      "parentUuid": "f9f67d42_8ff8fab2",
       "range": {
         "startLine": 888,
         "startChar": 20,
