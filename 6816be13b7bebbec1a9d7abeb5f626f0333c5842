@@ -125,6 +125,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5e526f7a_20644fdd",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1385042
+      },
+      "writtenOn": "2021-11-24T03:50:08Z",
+      "side": 1,
+      "message": "What about VERSION_#_$name?",
+      "parentUuid": "0bf8c51d_878a25de",
+      "range": {
+        "startLine": 71,
+        "startChar": 29,
+        "endLine": 71,
+        "endChar": 41
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b055a773_cf523b62",
