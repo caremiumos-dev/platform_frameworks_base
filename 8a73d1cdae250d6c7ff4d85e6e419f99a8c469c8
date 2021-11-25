@@ -95,6 +95,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b4c5ae1e_d7814743",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 871,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2021-11-25T09:59:52Z",
+      "side": 1,
+      "message": "The part that concerns me is the part where the data can\u0027t be restored and is lost.\n\nSuppose I purchase a Pixel 7 and set up my data plan. Later, I drop it and break it, but my brother gives me their old Pixel 4, which was updated to S but not to T. My setup is gone.",
+      "parentUuid": "6bc68a52_49292db2",
+      "range": {
+        "startLine": 871,
+        "startChar": 63,
+        "endLine": 871,
+        "endChar": 78
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e652785d_1b755c39",
