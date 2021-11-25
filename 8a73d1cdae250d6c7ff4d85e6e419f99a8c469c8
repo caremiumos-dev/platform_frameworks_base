@@ -24,6 +24,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ad44931c_2d669bca",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-25T09:53:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bfff74cc_f826fb43",
+      "range": {
+        "startLine": 72,
+        "startChar": 7,
+        "endLine": 72,
+        "endChar": 11
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f72c329b_84a18a5b",
@@ -37,6 +61,30 @@
       "writtenOn": "2021-11-23T08:06:11Z",
       "side": 1,
       "message": "So this means if a user uses a T device, and then later initializes an S device, their backup is gone, because the old code will simply throw and refuse to restore.\n\nI guess that\u0027s not great but maybe acceptable",
+      "range": {
+        "startLine": 871,
+        "startChar": 63,
+        "endLine": 871,
+        "endChar": 78
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6bc68a52_49292db2",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 871,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-25T09:53:44Z",
+      "side": 1,
+      "message": "Not sure what part concerns you.\nBut generally speaking, the original code already did some checks and throw new BackupUtils.BadVersionException.\nBut the new check conditions are slightly tighter than T.\nSince the caller should already be awared of BadVersionException, this is not too bad I think @@\".",
+      "parentUuid": "f72c329b_84a18a5b",
       "range": {
         "startLine": 871,
         "startChar": 63,
@@ -70,6 +118,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f0046749_0c520bef",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 888,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-25T09:53:44Z",
+      "side": 1,
+      "message": "Done， tried to rephrase, see if it works for you.",
+      "parentUuid": "e652785d_1b755c39",
+      "range": {
+        "startLine": 888,
+        "startChar": 15,
+        "endLine": 888,
+        "endChar": 28
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b6308ced_28b721c2",
@@ -93,6 +165,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6b917f8c_c560de48",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 894,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-25T09:53:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b6308ced_28b721c2",
+      "range": {
+        "startLine": 894,
+        "startChar": 30,
+        "endLine": 894,
+        "endChar": 33
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c9798296_08d4db82",
@@ -106,6 +202,30 @@
       "writtenOn": "2021-11-23T08:06:11Z",
       "side": 1,
       "message": "Suggest having e as the cause",
+      "range": {
+        "startLine": 903,
+        "startChar": 88,
+        "endLine": 903,
+        "endChar": 89
+      },
+      "revId": "8a73d1cdae250d6c7ff4d85e6e419f99a8c469c8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5c0034f8_13dcabd3",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 903,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-25T09:53:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c9798296_08d4db82",
       "range": {
         "startLine": 903,
         "startChar": 88,

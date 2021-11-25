@@ -173,6 +173,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4401a4b7_0221a653",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-25T09:53:44Z",
+      "side": 1,
+      "message": "Done but with BACKUP_ prefix since the version is only for cloud backup/restore but not for parcelable.",
+      "parentUuid": "cd70b8ac_2ae4264d",
+      "range": {
+        "startLine": 71,
+        "startChar": 29,
+        "endLine": 71,
+        "endChar": 41
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b055a773_cf523b62",
@@ -589,6 +613,30 @@
       "side": 1,
       "message": "As long as everything is subscriberID-based, there shouldn\u0027t be a problem at all I think.\n\nUpon device reset, the stats are erased right ? So there isn\u0027t an old subId in the DB to get wrong.",
       "parentUuid": "f9f67d42_8ff8fab2",
+      "range": {
+        "startLine": 888,
+        "startChar": 20,
+        "endLine": 888,
+        "endChar": 32
+      },
+      "revId": "6816be13b7bebbec1a9d7abeb5f626f0333c5842",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b7dca15c_02340186",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 888,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-25T09:53:44Z",
+      "side": 1,
+      "message": "Right, but if there are 2 SIM cards.\nThe subIds after reset might be assigned in different order.\nThat is why cloud backup/restore fails if the policy doesn\u0027t contain IMSI.",
+      "parentUuid": "7cef77af_36b314c9",
       "range": {
         "startLine": 888,
         "startChar": 20,
