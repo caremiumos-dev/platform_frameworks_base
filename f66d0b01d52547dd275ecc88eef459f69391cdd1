@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e81d746e_5ffd2297",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 857,
+      "author": {
+        "id": 1000835
+      },
+      "writtenOn": "2021-11-26T02:44:44Z",
+      "side": 1,
+      "message": "Have you looked at existing callers to ensure that nothing will crash due to this exception?\n\nLooks like SettingsBackupAgent, which calls this code, will just attempt to persist all policies returned by NetworkPolicyManager#getNetworkPolicies as long as they are non-null and not inferred.\n\nIs there a guarantee somewhere that nothing will ever write a NetworkPolicy that is not persistable? Is it possible that such a policy might already exist on disk on some devices?",
+      "range": {
+        "startLine": 857,
+        "startChar": 12,
+        "endLine": 857,
+        "endChar": 43
+      },
+      "revId": "f66d0b01d52547dd275ecc88eef459f69391cdd1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
