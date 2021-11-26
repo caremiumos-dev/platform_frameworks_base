@@ -69,7 +69,6 @@ filegroup {
         // Java/AIDL sources under frameworks/base
         ":framework-annotations",
         ":framework-blobstore-sources",
-        ":framework-connectivity-nsd-sources",
         ":framework-core-sources",
         ":framework-drm-sources",
         ":framework-graphics-nonupdatable-sources",
@@ -294,6 +293,7 @@ java_defaults {
     defaults: ["framework-aidl-export-defaults"],
     srcs: [
         ":framework-non-updatable-sources",
+        ":framework-connectivity-nsd-sources",
         "core/java/**/*.logtags",
         ":apex-info-list",
     ],

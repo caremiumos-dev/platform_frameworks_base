@@ -1,0 +1,9 @@
+// Signature format: 2.0
+package android.net.nsd {
+
+  public final class NsdFrameworkInitializer {
+    method public static void registerServiceWrappers();
+  }
+
+}
+

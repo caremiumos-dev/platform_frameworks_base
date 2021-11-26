@@ -52,3 +52,19 @@ filegroup {
         "//frameworks/base",
     ],
 }
+
+java_sdk_library {
+    name: "framework-connectivity-nsd",
+    api_only: true,
+    defaults: ["framework-module-defaults"],
+    // TODO: build against module API
+    platform_apis: true,
+    srcs: [
+        ":framework-connectivity-nsd-sources",
+    ],
+    libs: [
+        "unsupportedappusage",
+        "app-compat-annotations",
+    ],
+    permitted_packages: ["android.net.nsd"],
+}

@@ -241,6 +241,7 @@ modules_public_stubs = [
     "conscrypt.module.public.api.stubs",
     "framework-appsearch.stubs",
     "framework-connectivity.stubs",
+    "framework-connectivity-nsd.stubs",
     "framework-graphics.stubs",
     "framework-media.stubs",
     "framework-mediaprovider.stubs",
@@ -260,6 +261,7 @@ modules_system_stubs = [
     "conscrypt.module.public.api.stubs", // Only has public stubs
     "framework-appsearch.stubs.system",
     "framework-connectivity.stubs.system",
+    "framework-connectivity-nsd.stubs.system",
     "framework-graphics.stubs.system",
     "framework-media.stubs.system",
     "framework-mediaprovider.stubs.system",

@@ -265,14 +265,6 @@ package android.net {
 
 }
 
-package android.net.nsd {
-
-  public final class NsdFrameworkInitializer {
-    method public static void registerServiceWrappers();
-  }
-
-}
-
 package android.os {
 
   public final class BatteryStatsManager {
