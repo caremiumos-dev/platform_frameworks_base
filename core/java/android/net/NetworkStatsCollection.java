@@ -32,6 +32,7 @@ import static android.text.format.DateUtils.WEEK_IN_MILLIS;
 
 import static com.android.internal.net.NetworkUtilsInternal.multiplySafeByRational;
 
+import android.net.netstats.NetworkStatsDataMigrationUtils;
 import android.os.Binder;
 import android.service.NetworkStatsCollectionKeyProto;
 import android.service.NetworkStatsCollectionProto;
@@ -90,14 +91,15 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
     /** Default buffer size from BufferedInputStream */
     private static final int BUFFER_SIZE = 8192;
 
-    private static final int VERSION_NETWORK_INIT = 1;
+    public static final int VERSION_NETWORK_INIT = 1;
 
     private static final int VERSION_UID_INIT = 1;
     private static final int VERSION_UID_WITH_IDENT = 2;
     private static final int VERSION_UID_WITH_TAG = 3;
     private static final int VERSION_UID_WITH_SET = 4;
 
-    private static final int VERSION_UNIFIED_INIT = 16;
+    public static final int VERSION_UNIFIED_INIT = 16;
+    public static final int VERSION_MAINLINED_STATS = 17;
 
     private ArrayMap<Key, NetworkStatsHistory> mStats = new ArrayMap<>();
 
@@ -389,7 +391,7 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
     /**
      * Record given {@link NetworkStatsHistory} into this collection.
      */
-    private void recordHistory(Key key, NetworkStatsHistory history) {
+    public void recordHistory(Key key, NetworkStatsHistory history) {
         if (history.size() == 0) return;
         noteRecordedHistory(history.getStart(), history.getEnd(), history.getTotalBytes());
 
@@ -449,7 +451,7 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
 
         final int version = in.readInt();
         switch (version) {
-            case VERSION_UNIFIED_INIT: {
+            case VERSION_MAINLINED_STATS: {
                 // uid := size *(NetworkIdentitySet size *(uid set tag NetworkStatsHistory))
                 final int identSize = in.readInt();
                 for (int i = 0; i < identSize; i++) {
@@ -469,7 +471,11 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
                 break;
             }
             default: {
-                throw new ProtocolException("unexpected version: " + version);
+                if (version < VERSION_MAINLINED_STATS) {
+                    NetworkStatsDataMigrationUtils.readPlatformCollection(this, in, version);
+                } else {
+                    throw new ProtocolException("unexpected version: " + version);
+                }
             }
         }
     }
@@ -494,7 +500,7 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
         }
 
         out.writeInt(FILE_MAGIC);
-        out.writeInt(VERSION_UNIFIED_INIT);
+        out.writeInt(VERSION_MAINLINED_STATS);
 
         out.writeInt(keysByIdent.size());
         for (NetworkIdentitySet ident : keysByIdent.keySet()) {
@@ -513,57 +519,13 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
     }
 
     /**
-     * Read legacy network summary statistics file format into the collection,
-     * See {@code NetworkStatsService#maybeUpgradeLegacyStatsLocked}.
-     *
-     * @deprecated
-     */
-    @Deprecated
-    public void readLegacyNetwork(File file) throws IOException {
-        final AtomicFile inputFile = new AtomicFile(file);
-
-        DataInputStream in = null;
-        try {
-            in = new DataInputStream(new BufferedInputStream(inputFile.openRead()));
-
-            // verify file magic header intact
-            final int magic = in.readInt();
-            if (magic != FILE_MAGIC) {
-                throw new ProtocolException("unexpected magic: " + magic);
-            }
-
-            final int version = in.readInt();
-            switch (version) {
-                case VERSION_NETWORK_INIT: {
-                    // network := size *(NetworkIdentitySet NetworkStatsHistory)
-                    final int size = in.readInt();
-                    for (int i = 0; i < size; i++) {
-                        final NetworkIdentitySet ident = new NetworkIdentitySet(in);
-                        final NetworkStatsHistory history = new NetworkStatsHistory(in);
-
-                        final Key key = new Key(ident, UID_ALL, SET_ALL, TAG_NONE);
-                        recordHistory(key, history);
-                    }
-                    break;
-                }
-                default: {
-                    throw new ProtocolException("unexpected version: " + version);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            // missing stats is okay, probably first boot
-        } finally {
-            IoUtils.closeQuietly(in);
-        }
-    }
-
-    /**
      * Read legacy Uid statistics file format into the collection,
      * See {@code NetworkStatsService#maybeUpgradeLegacyStatsLocked}.
      *
      * @deprecated
      */
     @Deprecated
+    // FIXME: Move to NetworkStatsDataMigrationUtil
     public void readLegacyUid(File file, boolean onlyTags) throws IOException {
         final AtomicFile inputFile = new AtomicFile(file);
 
@@ -771,7 +733,8 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
         return false;
     }
 
-    private static class Key implements Comparable<Key> {
+    // FIXME: Class 'Key' is public, should be declared in a file named 'Key.java'
+    public static class Key implements Comparable<Key> {
         public final NetworkIdentitySet ident;
         public final int uid;
         public final int set;
@@ -779,7 +742,7 @@ public class NetworkStatsCollection implements FileRotator.Reader, FileRotator.W
 
         private final int mHashCode;
 
-        Key(NetworkIdentitySet ident, int uid, int set, int tag) {
+        public Key(NetworkIdentitySet ident, int uid, int set, int tag) {
             this.ident = ident;
             this.uid = uid;
             this.set = set;

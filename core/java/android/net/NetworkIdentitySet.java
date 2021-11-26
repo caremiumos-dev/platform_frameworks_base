@@ -34,13 +34,14 @@ import java.util.HashSet;
  */
 public class NetworkIdentitySet extends HashSet<NetworkIdentity> implements
         Comparable<NetworkIdentitySet> {
-    private static final int VERSION_INIT = 1;
-    private static final int VERSION_ADD_ROAMING = 2;
-    private static final int VERSION_ADD_NETWORK_ID = 3;
-    private static final int VERSION_ADD_METERED = 4;
-    private static final int VERSION_ADD_DEFAULT_NETWORK = 5;
-    private static final int VERSION_ADD_OEM_MANAGED_NETWORK = 6;
+    public static final int VERSION_INIT = 1;
+    public static final int VERSION_ADD_ROAMING = 2;
+    public static final int VERSION_ADD_NETWORK_ID = 3;
+    public static final int VERSION_ADD_METERED = 4;
+    public static final int VERSION_ADD_DEFAULT_NETWORK = 5;
+    public static final int VERSION_ADD_OEM_MANAGED_NETWORK = 6;
 
+    // TODO: @SystemApi when ready.
     public NetworkIdentitySet() {
     }
 

@@ -29,6 +29,7 @@ import android.net.NetworkStatsCollection;
 import android.net.NetworkStatsHistory;
 import android.net.NetworkTemplate;
 import android.net.TrafficStats;
+import android.net.netstats.NetworkStatsDataMigrationUtils;
 import android.os.Binder;
 import android.os.DropBoxManager;
 import android.service.NetworkStatsRecorderProto;
@@ -425,7 +426,7 @@ public class NetworkStatsRecorder {
         mRotator.deleteAll();
 
         final NetworkStatsCollection collection = new NetworkStatsCollection(mBucketDuration);
-        collection.readLegacyNetwork(file);
+        NetworkStatsDataMigrationUtils.readLegacyNetwork(collection, file);
 
         final long startMillis = collection.getStartMillis();
         final long endMillis = collection.getEndMillis();

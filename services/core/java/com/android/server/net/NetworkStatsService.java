@@ -110,6 +110,7 @@ import android.net.TelephonyNetworkSpecifier;
 import android.net.TrafficStats;
 import android.net.UnderlyingNetworkInfo;
 import android.net.Uri;
+import android.net.netstats.NetworkStatsDataMigrationUtils;
 import android.net.netstats.provider.INetworkStatsProvider;
 import android.net.netstats.provider.INetworkStatsProviderCallback;
 import android.net.netstats.provider.NetworkStatsProvider;
@@ -213,7 +214,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
     private final NetworkStatsSettings mSettings;
     private final NetworkStatsObservers mStatsObservers;
 
-    private final File mSystemDir;
     private final File mBaseDir;
 
     private final PowerManager.WakeLock mWakeLock;
@@ -354,12 +354,9 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
     @NonNull
     private final NetworkStatsSubscriptionsMonitor mNetworkStatsSubscriptionsMonitor;
 
-    private static @NonNull File getDefaultSystemDir() {
-        return new File(Environment.getDataDirectory(), "system");
-    }
-
-    private static @NonNull File getDefaultBaseDir() {
-        File baseDir = new File(getDefaultSystemDir(), "netstats");
+    private static @NonNull File getBaseDir() {
+        final File systemDir = new File(Environment.getDataDirectory(), "system");
+        File baseDir = new File(systemDir, "netstats_mm");
         baseDir.mkdirs();
         return baseDir;
     }
@@ -415,8 +412,7 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
         final NetworkStatsService service = new NetworkStatsService(context, networkManager,
                 alarmManager, wakeLock, getDefaultClock(),
                 new DefaultNetworkStatsSettings(context), new NetworkStatsFactory(),
-                new NetworkStatsObservers(), getDefaultSystemDir(), getDefaultBaseDir(),
-                new Dependencies());
+                new NetworkStatsObservers(), getBaseDir(), new Dependencies());
         service.registerLocalService();
 
         return service;
@@ -428,7 +424,7 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
     NetworkStatsService(Context context, INetworkManagementService networkManager,
             AlarmManager alarmManager, PowerManager.WakeLock wakeLock, Clock clock,
             NetworkStatsSettings settings, NetworkStatsFactory factory,
-            NetworkStatsObservers statsObservers, File systemDir, File baseDir,
+            NetworkStatsObservers statsObservers, File baseDir,
             @NonNull Dependencies deps) {
         mContext = Objects.requireNonNull(context, "missing Context");
         mNetworkManager = Objects.requireNonNull(networkManager,
@@ -439,7 +435,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
         mWakeLock = Objects.requireNonNull(wakeLock, "missing WakeLock");
         mStatsFactory = Objects.requireNonNull(factory, "missing factory");
         mStatsObservers = Objects.requireNonNull(statsObservers, "missing NetworkStatsObservers");
-        mSystemDir = Objects.requireNonNull(systemDir, "missing systemDir");
         mBaseDir = Objects.requireNonNull(baseDir, "missing baseDir");
         mUseBpfTrafficStats = new File("/sys/fs/bpf/map_netd_app_uid_stats_map").exists();
         mDeps = Objects.requireNonNull(deps, "missing Dependencies");
@@ -613,30 +608,52 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
 
     @GuardedBy("mStatsLock")
     private void maybeUpgradeLegacyStatsLocked() {
+        final File systemDir = NetworkStatsDataMigrationUtils.getPlatformSystemDir();
         File file;
         try {
-            file = new File(mSystemDir, "netstats.bin");
+            file = new File(systemDir, "netstats.bin");
             if (file.exists()) {
                 mDevRecorder.importLegacyNetworkLocked(file);
                 file.delete();
             }
 
-            file = new File(mSystemDir, "netstats_xt.bin");
+            file = new File(systemDir, "netstats_xt.bin");
             if (file.exists()) {
                 file.delete();
             }
 
-            file = new File(mSystemDir, "netstats_uid.bin");
+            file = new File(systemDir, "netstats_uid.bin");
             if (file.exists()) {
                 mUidRecorder.importLegacyUidLocked(file);
                 mUidTagRecorder.importLegacyUidLocked(file);
                 file.delete();
+            }
+
+            final File baseDir = NetworkStatsDataMigrationUtils.getPlatformBaseDir();
+            if(baseDir.exists()) {
+                try {
+                    importPlatformCollectionsLocked();
+                } catch (RuntimeException e) {
+                    // 1. Clear content of owned recorders to prevent partial import.
+                    // 2. Log.wtf
+                }
             }
         } catch (IOException e) {
             Log.wtf(TAG, "problem during legacy upgrade", e);
         } catch (OutOfMemoryError e) {
             Log.wtf(TAG, "problem during legacy upgrade", e);
         }
+    }
+
+    private void importPlatformCollectionsLocked() {
+        // 1. Create temp recorders based on the provided baseDir.
+        // 2. Get collections from the temp recorders.
+        //   a. Option 1: Pass the File/Flag into the temp recorder, so the collection knows
+        //                it needs to call NetworkStatsDataMigrationUtils.readPlatformCollection.
+        //   b. Option 2: Use version control to let collection know whether it should call the
+        //                util.
+        // 3. Feed collections into the recorders.
+        // 4. Delete the files in the baseDir.
     }
 
     /**

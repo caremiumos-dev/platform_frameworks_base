@@ -65,9 +65,9 @@ import java.util.Random;
  * @hide
  */
 public class NetworkStatsHistory implements Parcelable {
-    private static final int VERSION_INIT = 1;
-    private static final int VERSION_ADD_PACKETS = 2;
-    private static final int VERSION_ADD_ACTIVE = 3;
+    public static final int VERSION_INIT = 1;
+    public static final int VERSION_ADD_PACKETS = 2;
+    public static final int VERSION_ADD_ACTIVE = 3;
 
     public static final int FIELD_ACTIVE_TIME = 0x01;
     public static final int FIELD_RX_BYTES = 0x02;
@@ -88,6 +88,24 @@ public class NetworkStatsHistory implements Parcelable {
     private long[] txPackets;
     private long[] operations;
     private long totalBytes;
+
+    // Constructor that allows partners could create the object to import their usage.
+    // FIXME: Should use Lists at the API surface.
+    // TODO: @SystemApi when ready. Or replace with more suitable one.
+    public NetworkStatsHistory(long bucketDuration, long[] bucketStart, long[] activeTime,
+            long[] rxBytes, long[] rxPackets, long[] txBytes, long[] txPackets,
+            long[] operations, int bucketCount, long totalBytes) {
+        this.bucketDuration = bucketDuration;
+        this.bucketStart= bucketStart;
+        this.activeTime = activeTime;
+        this.rxBytes = rxBytes;
+        this.rxPackets= rxPackets;
+        this.txBytes = txBytes;
+        this.txPackets = txPackets;
+        this.operations = operations;
+        this.bucketCount = bucketCount;
+        this.totalBytes = totalBytes;
+    }
 
     public static class Entry {
         public static final long UNKNOWN = -1;
