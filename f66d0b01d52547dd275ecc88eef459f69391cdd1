@@ -22,6 +22,30 @@
       },
       "revId": "f66d0b01d52547dd275ecc88eef459f69391cdd1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d92cf178_3b83e6f2",
+        "filename": "core/java/android/net/NetworkTemplate.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 857,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2021-11-26T03:12:30Z",
+      "side": 1,
+      "message": "It is unlikely NPMS will have non-persistable templates but we don\u0027t have any guarantee.\nAnd it looks like SettingsBackupAgent did not handle exceptions like this.\nThus, change to log.wtf since we might still want to catch such case if happens.\nSee if it works for you.",
+      "parentUuid": "e81d746e_5ffd2297",
+      "range": {
+        "startLine": 857,
+        "startChar": 12,
+        "endLine": 857,
+        "endChar": 43
+      },
+      "revId": "f66d0b01d52547dd275ecc88eef459f69391cdd1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
