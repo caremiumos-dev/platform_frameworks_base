@@ -1,0 +1,334 @@
+{
+  "comments": [
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074211",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [],
+      "key": {
+        "uuid": "610d3a20_8a873b81",
+        "filename": "tests/PackageUpdate/Android.mk",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Android.​mk files are being deprecated, please use blueprint files (go/soong) to define the modules",
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074213",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [],
+      "key": {
+        "uuid": "abcb4854_77ec85c0",
+        "filename": "tests/PackageUpdate/app-generate/template/AndroidManifest.xml",
+        "patchSetId": 3
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Lines longer than 100 characters should be wrapped to improve readability; see https://source.android.com/setup/contribute/code-style#limit-line-length for more details.",
+      "range": {
+        "startLine": 8,
+        "startChar": 0,
+        "endLine": 8,
+        "endChar": 110
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074215",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [
+        {
+          "fixId": "db95d14a_46dc9aa0",
+          "description": "Change to \"tests/PackageUpdate/autoflash.bash\"",
+          "replacements": [
+            {
+              "path": "tests/PackageUpdate/autoflash.bash",
+              "range": {
+                "startLine": 28,
+                "startChar": 13,
+                "endLine": 28,
+                "endChar": 24
+              },
+              "replacement": "environment"
+            }
+          ]
+        }
+      ],
+      "key": {
+        "uuid": "6513ebdc_a4af3ec4",
+        "filename": "tests/PackageUpdate/autoflash.bash",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Common typo found: \"environemnt\" -- should it be \"environment\"?\nNote: a line containing \"common_typos_disable\" or \"common_typos_enable\" will turn off or on (respectively) the linter for subsequent lines in the file. Alternatively include the token \"NOTYPO\" within a line to skip typo linting that line or include \u0027No-Typo-Check: \u003creason\u003e\u0027in the commit message.",
+      "range": {
+        "startLine": 28,
+        "startChar": 13,
+        "endLine": 28,
+        "endChar": 24
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074213",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [],
+      "key": {
+        "uuid": "07e290c3_4cbb3153",
+        "filename": "tests/PackageUpdate/harnesses/tradefed/src/com/android/tests/pkgup/ResultReporter.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Lines longer than 100 characters should be wrapped to improve readability; see https://source.android.com/setup/contribute/code-style#limit-line-length for more details.",
+      "range": {
+        "startLine": 252,
+        "startChar": 0,
+        "endLine": 252,
+        "endChar": 107
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074215",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [
+        {
+          "fixId": "134dac1c_a9554c2d",
+          "description": "Change to \"tests/PackageUpdate/reporting/make_report.py\"",
+          "replacements": [
+            {
+              "path": "tests/PackageUpdate/reporting/make_report.py",
+              "range": {
+                "startLine": 287,
+                "startChar": 29,
+                "endLine": 287,
+                "endChar": 34
+              },
+              "replacement": " e.g.:"
+            }
+          ]
+        }
+      ],
+      "key": {
+        "uuid": "29f6e785_8aea6527",
+        "filename": "tests/PackageUpdate/reporting/make_report.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Common typo found: \" e.g:\" -- should it be \" e.g.:\"?\nNote: a line containing \"common_typos_disable\" or \"common_typos_enable\" will turn off or on (respectively) the linter for subsequent lines in the file. Alternatively include the token \"NOTYPO\" within a line to skip typo linting that line or include \u0027No-Typo-Check: \u003creason\u003e\u0027in the commit message.",
+      "range": {
+        "startLine": 287,
+        "startChar": 29,
+        "endLine": 287,
+        "endChar": 34
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074215",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [
+        {
+          "fixId": "ef8bef9f_eff7a760",
+          "description": "Change to \"tests/PackageUpdate/reporting/make_report.py\"",
+          "replacements": [
+            {
+              "path": "tests/PackageUpdate/reporting/make_report.py",
+              "range": {
+                "startLine": 296,
+                "startChar": 20,
+                "endLine": 296,
+                "endChar": 25
+              },
+              "replacement": " e.g.:"
+            }
+          ]
+        }
+      ],
+      "key": {
+        "uuid": "b3e02757_06ef9472",
+        "filename": "tests/PackageUpdate/reporting/make_report.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Common typo found: \" e.g:\" -- should it be \" e.g.:\"?\nNote: a line containing \"common_typos_disable\" or \"common_typos_enable\" will turn off or on (respectively) the linter for subsequent lines in the file. Alternatively include the token \"NOTYPO\" within a line to skip typo linting that line or include \u0027No-Typo-Check: \u003creason\u003e\u0027in the commit message.",
+      "range": {
+        "startLine": 296,
+        "startChar": 20,
+        "endLine": 296,
+        "endChar": 25
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074215",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [
+        {
+          "fixId": "d43da207_8242e297",
+          "description": "Change to \"tests/PackageUpdate/reporting/make_report.py\"",
+          "replacements": [
+            {
+              "path": "tests/PackageUpdate/reporting/make_report.py",
+              "range": {
+                "startLine": 297,
+                "startChar": 24,
+                "endLine": 297,
+                "endChar": 29
+              },
+              "replacement": " e.g.:"
+            }
+          ]
+        }
+      ],
+      "key": {
+        "uuid": "d1a1c977_262bce31",
+        "filename": "tests/PackageUpdate/reporting/make_report.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Common typo found: \" e.g:\" -- should it be \" e.g.:\"?\nNote: a line containing \"common_typos_disable\" or \"common_typos_enable\" will turn off or on (respectively) the linter for subsequent lines in the file. Alternatively include the token \"NOTYPO\" within a line to skip typo linting that line or include \u0027No-Typo-Check: \u003creason\u003e\u0027in the commit message.",
+      "range": {
+        "startLine": 297,
+        "startChar": 24,
+        "endLine": 297,
+        "endChar": 29
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074215",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [
+        {
+          "fixId": "8d643afc_e82ed4bd",
+          "description": "Change to \"tests/PackageUpdate/run_test.bash\"",
+          "replacements": [
+            {
+              "path": "tests/PackageUpdate/run_test.bash",
+              "range": {
+                "startLine": 345,
+                "startChar": 44,
+                "endLine": 345,
+                "endChar": 59
+              },
+              "replacement": "does not exist"
+            }
+          ]
+        }
+      ],
+      "key": {
+        "uuid": "1626b7ff_edb80b0a",
+        "filename": "tests/PackageUpdate/run_test.bash",
+        "patchSetId": 3
+      },
+      "lineNbr": 345,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Common typo found: \"does not exists\" -- should it be \"does not exist\"?\nNote: a line containing \"common_typos_disable\" or \"common_typos_enable\" will turn off or on (respectively) the linter for subsequent lines in the file. Alternatively include the token \"NOTYPO\" within a line to skip typo linting that line or include \u0027No-Typo-Check: \u003creason\u003e\u0027in the commit message.",
+      "range": {
+        "startLine": 345,
+        "startChar": 44,
+        "endLine": 345,
+        "endChar": 59
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000018074215",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/630345?revision\u003d3",
+      "fixSuggestions": [
+        {
+          "fixId": "973752f8_c0e34a5d",
+          "description": "Change to \"tests/PackageUpdate/testcase_parser.py\"",
+          "replacements": [
+            {
+              "path": "tests/PackageUpdate/testcase_parser.py",
+              "range": {
+                "startLine": 411,
+                "startChar": 40,
+                "endLine": 411,
+                "endChar": 55
+              },
+              "replacement": "does not exist"
+            }
+          ]
+        }
+      ],
+      "key": {
+        "uuid": "0ef25f46_c5c67ae6",
+        "filename": "tests/PackageUpdate/testcase_parser.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 411,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-12-06T18:15:47Z",
+      "side": 1,
+      "message": "Common typo found: \"does not exists\" -- should it be \"does not exist\"?\nNote: a line containing \"common_typos_disable\" or \"common_typos_enable\" will turn off or on (respectively) the linter for subsequent lines in the file. Alternatively include the token \"NOTYPO\" within a line to skip typo linting that line or include \u0027No-Typo-Check: \u003creason\u003e\u0027in the commit message.",
+      "range": {
+        "startLine": 411,
+        "startChar": 40,
+        "endLine": 411,
+        "endChar": 55
+      },
+      "revId": "492d7382f5cae6b365d9fb3f3673798df7a2e127",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
