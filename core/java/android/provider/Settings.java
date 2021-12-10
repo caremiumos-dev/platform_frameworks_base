@@ -12766,6 +12766,14 @@ public final class Settings {
         @Readable
         public static final String PRIVATE_DNS_DEFAULT_MODE = "private_dns_default_mode";
 
+        /**
+         * Feature flag to enable or disable the Block Unencrypted DNS feature.
+         *
+         * @hide
+         */
+        @Readable
+        public static final String PRIVATE_DNS_BLOCK_UNENCRYPTED_DNS =
+                "private_dns_block_unencrypted_dns";
 
         /** {@hide} */
         @Readable

@@ -414,6 +414,7 @@ public class SettingsBackupTest {
                     Settings.Global.POWER_BUTTON_SUPPRESSION_DELAY_AFTER_GESTURE_WAKE,
                     Settings.Global.POWER_MANAGER_CONSTANTS,
                     Settings.Global.PREFERRED_NETWORK_MODE,
+                    Settings.Global.PRIVATE_DNS_BLOCK_UNENCRYPTED_DNS,
                     Settings.Global.PRIVATE_DNS_DEFAULT_MODE,
                     Settings.Global.PROVISIONING_APN_ALARM_DELAY_IN_MS,
                     Settings.Global.RADIO_BLUETOOTH,
