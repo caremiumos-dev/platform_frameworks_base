@@ -286,6 +286,109 @@ public final class BluetoothStatusCodes {
     public static final int ERROR_LE_AUDIO_BROADCAST_SOURCE_DISABLE_ENCRYPTION_FAILED = 1115;
 
     /**
+     * Indicates that starting the search for LE Audio Broadcast Sources failed
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_START_SEARCH_FAILED = 1116;
+
+    /**
+     * Indicates that stopping the search for LE Audio Broadcast Sources failed
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_STOP_SEARCH_FAILED = 1117;
+
+    /**
+     * Indicates that selecting an LE Audio Broadcast Source failed
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_SELECT_SOURCE_FAILED = 1118;
+
+    /**
+     * Indicates that adding information about an LE Audio Broadcast Source to a
+     *  Scan Delegator failed
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_ADD_SOURCE_FAILED = 1119;
+
+    /**
+     * Indicates that updating information about an LE Audio Broadcast Source that exists on a
+     *  Scan Delegator failed
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_UPDATE_SOURCE_FAILED = 1120;
+
+    /**
+     * Indicates that removing information about an LE Audio Broadcast Source that exists on a
+     *  Scan Delegator failed
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_REMOVE_SOURCE_FAILED = 1121;
+
+    /**
+     * Indicates that connecting to a BASS server on a Scan Delegator failed.
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_CONNECT_FAILED = 1122;
+
+    /**
+     * Indicates that disconnecting from a BASS server on a Scan Delegator failed.
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_DISCONNECT_FAILED = 1123;
+
+    /**
+     * Indicates that registering Broadcast Assistant callbacks for a Scan Delegator failed.
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_REGISTER_CALLBACK_FAILED = 1124;
+
+    /**
+     * Indicates that unregistering Broadcast Assistant callbacks for a Scan Delegator failed.
+     * <p>
+     * Example solution: Change parameters and try again. If error persists, the app can report
+     * telemetry and/or log the error in a bugreport.
+     *
+     * @hide
+     */
+    public static final int ERROR_LE_AUDIO_BROADCAST_ASSISTANT_UNREGISTER_CALLBACK_FAILED = 1125;
+
+    /**
      * Indicates that an unknown error has occurred has occurred.
      */
     public static final int ERROR_UNKNOWN = Integer.MAX_VALUE;
