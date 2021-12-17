@@ -713,6 +713,10 @@
     <protected-broadcast android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
     <protected-broadcast android:name="android.app.action.ACTION_SHOW_NEW_USER_DISCLAIMER" />
 
+    <!-- Added in T -->
+    <protected-broadcast
+        android:name="com.android.bluetooth.btservice.BLUETOOTH_COUNTER_METRICS_ACTION" />
+
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
     <!-- ====================================================================== -->
