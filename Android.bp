@@ -448,9 +448,14 @@ filegroup {
 filegroup {
     name: "framework-connectivityT-shared-srcs",
     srcs: [
+        "core/java/android/util/CharsetUtils.java",
         "core/java/android/util/IndentingPrintWriter.java",
+        "core/java/com/android/internal/util/FastDataInput.java",
+        "core/java/com/android/internal/util/FastDataOutput.java",
         "core/java/com/android/internal/util/FileRotator.java",
+        "core/java/com/android/internal/util/ProcFileReader.java",
         "telephony/java/android/telephony/Annotation.java",
+        ":framework-javastream-protos",
     ]
 }
 

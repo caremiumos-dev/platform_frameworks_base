@@ -61,7 +61,7 @@ filegroup {
         ":framework-connectivity-netstats-aidl-export-sources",
     ],
     visibility: [
-        "//visibility:private",
+        "//packages/modules/Connectivity/framework",
     ],
 }
 
