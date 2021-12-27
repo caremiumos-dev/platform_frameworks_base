@@ -445,6 +445,15 @@ filegroup {
     ],
 }
 
+filegroup {
+    name: "framework-connectivityT-shared-srcs",
+    srcs: [
+        "core/java/android/util/IndentingPrintWriter.java",
+        "core/java/com/android/internal/util/FileRotator.java",
+        "telephony/java/android/telephony/Annotation.java",
+    ]
+}
+
 // Build ext.jar
 // ============================================================
 java_library {
