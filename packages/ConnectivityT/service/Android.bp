@@ -29,7 +29,7 @@ filegroup {
     ],
     path: "src",
     visibility: [
-        "//visibility:private",
+        "//packages/modules/Connectivity/framework",
     ],
 }
 
