@@ -67,3 +67,39 @@ aidl_interface {
         "media_permission-aidl",
     ],
 }
+
+aidl_interface {
+    name: "android.media.audio.common.types",
+    vendor_available: true,
+    host_supported: true,
+    double_loadable: true,
+    flags: [
+        "-Werror",
+        "-Weverything",
+    ],
+    local_include_dir: "aidl",
+    srcs: [
+        "aidl/android/media/audio/common/AudioChannelMaskStable.aidl",
+        "aidl/android/media/audio/common/AudioContentTypeStable.aidl",
+        "aidl/android/media/audio/common/AudioSourceStable.aidl",
+        "aidl/android/media/audio/common/AudioUsageStable.aidl",
+    ],
+    stability: "vintf",
+    backend: {
+        cpp: {
+            min_sdk_version: "29",
+            apex_available: [
+                "//apex_available:platform",
+                "com.android.media",
+            ],
+        },
+        java: {
+            sdk_version: "module_current",
+        },
+        ndk: {
+            vndk: {
+                enabled: true,
+            },
+        },
+    },
+}
