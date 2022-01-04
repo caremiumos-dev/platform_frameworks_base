@@ -1,0 +1,69 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b2416adb_e70c62b9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2022-01-04T03:10:55Z",
+      "side": 1,
+      "message": "LGTM assume fix the lint warning. I think this change is more correct than previous because it update the usage when tethering change its upstream and tethering would always update upstream callback when tethering is enabled and disabled. But please update commit message explain why this is safe.",
+      "revId": "1d75b3149f49c5cb5b1e0e9abca292aae18b0bd2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d0b0be14_c58193d8",
+        "filename": "packages/ConnectivityT/service/src/com/android/server/net/NetworkStatsService.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 533,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2022-01-04T03:10:55Z",
+      "side": 1,
+      "message": "\u003e Prefer to use mContext.getSystemService(TetheringManager.class) instead to avoid the cast.\n\nPlease fix.",
+      "parentUuid": "8172689a_a3796b5f",
+      "range": {
+        "startLine": 533,
+        "startChar": 16,
+        "endLine": 533,
+        "endChar": 61
+      },
+      "revId": "1d75b3149f49c5cb5b1e0e9abca292aae18b0bd2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fbd6eb41_4f468a0a",
+        "filename": "packages/ConnectivityT/service/src/com/android/server/net/NetworkStatsService.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 592,
+      "author": {
+        "id": 1308504
+      },
+      "writtenOn": "2022-01-04T03:10:55Z",
+      "side": 1,
+      "message": "\u003e Prefer to use mContext.getSystemService(TetheringManager.class) instead to avoid the cast.\n\nPlease fix.",
+      "parentUuid": "9bd90e32_736fe425",
+      "range": {
+        "startLine": 592,
+        "startChar": 16,
+        "endLine": 592,
+        "endChar": 61
+      },
+      "revId": "1d75b3149f49c5cb5b1e0e9abca292aae18b0bd2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
