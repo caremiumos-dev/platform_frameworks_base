@@ -7555,6 +7555,12 @@ public class PackageManagerService extends IPackageManager.Stub
                     /* excludePreCreated= */ false));
             t.traceEnd();
 
+            if (mFirstBoot) {
+                t.traceBegin("setFirstBoot: ");
+                mInstaller.setFirstBoot();
+                t.traceEnd();
+            }
+
             mPermissionManager.readLegacyPermissionsTEMP(mSettings.mPermissions);
             mPermissionManager.readLegacyPermissionStateTEMP();
 
