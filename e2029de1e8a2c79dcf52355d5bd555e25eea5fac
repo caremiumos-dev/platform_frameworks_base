@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f5cda411_d5f1ae57",
+        "filename": "core/api/module-lib-current.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 1015428
+      },
+      "writtenOn": "2022-01-17T09:41:28Z",
+      "side": 1,
+      "message": "on* is for callbacks ; this is not a callback. Let\u0027s call this notifyStatsProviderWarningOrLimitReached.",
+      "range": {
+        "startLine": 230,
+        "startChar": 154,
+        "endLine": 230,
+        "endChar": 190
+      },
+      "revId": "e2029de1e8a2c79dcf52355d5bd555e25eea5fac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
