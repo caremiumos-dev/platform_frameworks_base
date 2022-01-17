@@ -25,8 +25,8 @@ public final class InternalNetworkManagementException
         extends RuntimeException implements Parcelable {
 
     /* @hide */
-    public InternalNetworkManagementException(@NonNull final Throwable t) {
-        super(t);
+    public InternalNetworkManagementException(@NonNull final String errorMessage) {
+        super(errorMessage);
     }
 
     private InternalNetworkManagementException(@NonNull final Parcel source) {
