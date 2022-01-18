@@ -637,6 +637,15 @@ public final class DeviceConfig {
     @TestApi
     public static final String NAMESPACE_CONSTRAIN_DISPLAY_APIS = "constrain_display_apis";
 
+    /**
+     * Namespace for Android Rubidium related features.
+     *
+     * @hide
+     */
+    @SystemApi
+    @TestApi
+    public static final String NAMESPACE_ADSERVICES = "adservices";
+
     private static final Object sLock = new Object();
     @GuardedBy("sLock")
     private static ArrayMap<OnPropertiesChangedListener, Pair<String, Executor>> sListeners =
