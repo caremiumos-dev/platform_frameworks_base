@@ -46,6 +46,54 @@
       },
       "revId": "7b7fb22416f4343f540df2eddb6d83aaa4104449",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bcdbe578_7518262b",
+        "filename": "services/core/java/com/android/server/pm/UserDataPreparer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1137063
+      },
+      "writtenOn": "2022-01-25T19:13:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c6dd5189_842eb7af",
+      "range": {
+        "startLine": 124,
+        "startChar": 0,
+        "endLine": 124,
+        "endChar": 115
+      },
+      "revId": "7b7fb22416f4343f540df2eddb6d83aaa4104449",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "24b763f2_ebf52030",
+        "filename": "services/core/java/com/android/server/pm/UserDataPreparer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1137063
+      },
+      "writtenOn": "2022-01-25T19:13:56Z",
+      "side": 1,
+      "message": "It might.  The call graph here is complex, but the callers generally don\u0027t seem to be catching runtime exceptions.\n\nCrashing system_server is still an improvement over the current behavior, which allows the device to continue without encryption.  In reality, the device is unusable and must be factory reset.  I am happy to consider any better suggestions of how this error should be handled, but for now I am just trying to stop the bleeding.",
+      "parentUuid": "22100a4c_cd362b6d",
+      "range": {
+        "startLine": 124,
+        "startChar": 30,
+        "endLine": 124,
+        "endChar": 46
+      },
+      "revId": "7b7fb22416f4343f540df2eddb6d83aaa4104449",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
