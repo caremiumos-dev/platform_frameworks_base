@@ -1,0 +1,51 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c6dd5189_842eb7af",
+        "filename": "services/core/java/com/android/server/pm/UserDataPreparer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1480715
+      },
+      "writtenOn": "2022-01-25T16:50:57Z",
+      "side": 1,
+      "message": "\u003e Lines longer than 100 characters should be wrapped to improve readability; see https://source.android.com/setup/contribute/code-style#limit-line-length for more details.\n\nPlease fix.",
+      "parentUuid": "32db07da_25011a01",
+      "range": {
+        "startLine": 124,
+        "startChar": 0,
+        "endLine": 124,
+        "endChar": 115
+      },
+      "revId": "7b7fb22416f4343f540df2eddb6d83aaa4104449",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "22100a4c_cd362b6d",
+        "filename": "services/core/java/com/android/server/pm/UserDataPreparer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1480715
+      },
+      "writtenOn": "2022-01-25T16:50:57Z",
+      "side": 1,
+      "message": "Looks like this exception will be re-thrown? Would this cause the system server to crash?",
+      "range": {
+        "startLine": 124,
+        "startChar": 30,
+        "endLine": 124,
+        "endChar": 46
+      },
+      "revId": "7b7fb22416f4343f540df2eddb6d83aaa4104449",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
