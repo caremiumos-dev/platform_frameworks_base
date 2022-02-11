@@ -16,6 +16,23 @@
       "message": "https://googleplex-android-review.googlesource.com/c/platform/frameworks/base/+/16845203 should resolve the merge conflicts",
       "revId": "10120266d6efe50e6a3542faee70abeb7c492040",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f6f5e6cd_acef7cf5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003247
+      },
+      "writtenOn": "2022-02-11T19:15:49Z",
+      "side": 1,
+      "message": "Identical as patchset 2 (differs only in merged in annotation).\n\nThe TH result on patchset 2 was successful on aosp-master, and failed due to merge/cherrypick conflicts on internal master.  That has been resolved, by cherrypicking this to internal and submitting it there.  Now as a result of that this patch is a no-op (will merge blank) into internal master, so the test results from TH run on patchset 2 are sufficient.\n\nWorst case we\u0027ll hit another merge conflict and resolve it manually.  But it\u0027s unlikely.",
+      "revId": "10120266d6efe50e6a3542faee70abeb7c492040",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
