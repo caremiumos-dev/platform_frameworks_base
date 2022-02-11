@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ee97b8b3_a26a8f4d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003247
+      },
+      "writtenOn": "2022-02-11T16:53:22Z",
+      "side": 1,
+      "message": "https://googleplex-android-review.googlesource.com/c/platform/frameworks/base/+/16845203 should resolve the merge conflicts",
+      "revId": "10120266d6efe50e6a3542faee70abeb7c492040",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
