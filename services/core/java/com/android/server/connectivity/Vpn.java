@@ -81,7 +81,9 @@ import android.net.ipsec.ike.ChildSessionParams;
 import android.net.ipsec.ike.IkeSession;
 import android.net.ipsec.ike.IkeSessionCallback;
 import android.net.ipsec.ike.IkeSessionParams;
+import android.net.ipsec.ike.exceptions.IkeNetworkLostException;
 import android.net.ipsec.ike.exceptions.IkeProtocolException;
+import android.net.ipsec.ike.exceptions.IkeTimeoutException;
 import android.os.Binder;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -2802,6 +2804,11 @@ public class Vpn {
             disconnectVpnRunner();
         }
 
+        private <T extends Exception, U extends T> boolean isException(T exception, Class<U> type) {
+            return type.isInstance(exception)
+                    || (exception != null && type.isInstance(exception.getCause()));
+        }
+
         /**
          * Handles loss of a session
          *
@@ -2848,6 +2855,24 @@ public class Vpn {
                 // Failed to build IKE/ChildSessionParams; fatal profile configuration error
                 markFailedAndDisconnect(exception);
                 return;
+            } else if (isException(exception, UnknownHostException.class)) {
+                sendEventToVpnManagerApp(VpnManager.CATEGORY_EVENT_NETWORK_ERROR,
+                        VpnManager.ERROR_CLASS_NOT_RECOVERABLE,
+                        VpnManager.ERROR_CODE_NETWORK_UNKNOWN_HOST);
+                markFailedAndDisconnect(exception);
+                return;
+            } else if (isException(exception, IkeTimeoutException.class)) {
+                sendEventToVpnManagerApp(VpnManager.CATEGORY_EVENT_NETWORK_ERROR,
+                        VpnManager.ERROR_CLASS_RECOVERABLE,
+                        VpnManager.ERROR_CODE_NETWORK_PROTOCOL_TIMEOUT);
+            } else if (isException(exception, IkeNetworkLostException.class)) {
+                sendEventToVpnManagerApp(VpnManager.CATEGORY_EVENT_NETWORK_ERROR,
+                        VpnManager.ERROR_CLASS_RECOVERABLE, VpnManager.ERROR_CODE_NETWORK_LOST);
+            } else if (isException(exception, IOException.class)) {
+                sendEventToVpnManagerApp(VpnManager.CATEGORY_EVENT_NETWORK_ERROR,
+                        VpnManager.ERROR_CLASS_RECOVERABLE, VpnManager.ERROR_CODE_NETWORK_IO);
+            } else if (exception != null) {
+                Log.d(TAG, "onSessionLost: exception = " + exception);
             }
 
             mActiveNetwork = null;
