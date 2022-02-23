@@ -1473,6 +1473,32 @@ public final class MediaCodecInfo {
                 sampleRates = new int[] { 44100, 48000, 96000, 192000 };
                 bitRates = Range.create(16000, 2688000);
                 maxChannels = 24;
+            } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS)) {
+                sampleRates = new int[] { 44100, 48000 };
+                bitRates = Range.create(96000, 1524000);
+                maxChannels = 6;
+            } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS_HD)) {
+                sampleRates = new int[] { 44100, 48000, 88200, 96000, 176400, 192000 };
+                bitRates = Range.create(96000, 24500000);
+                maxChannels = 8;
+            // TODO - use also codec profile
+            //} else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS_HD_MA)) {
+            //    sampleRates = new int[] { 44100, 48000, 88200, 96000, 176400, 192000 };
+            //    bitRates = Range.create(96000, 24500000);
+            //    maxChannels = 8;
+            //} else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS_HD_LBR)) {
+            //    sampleRates = new int[] { 22050, 24000, 44100, 48000 };
+            //    bitRates = Range.create(32000, 768000);
+            //    maxChannels = 8;
+            } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS_UHD)) {
+                sampleRates = new int[] { 44100, 48000, 88200, 96000, 176400, 192000 };
+                bitRates = Range.create(96000, 24500000);
+                maxChannels = 32;
+            // TODO - use also codec profile
+            //} else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_DTS_UHD_P2)) {
+            //    sampleRates = new int[] { 48000 };
+            //    bitRates = Range.create(96000, 768000);
+            //    maxChannels = 10;
             } else {
                 Log.w(TAG, "Unsupported mime " + mime);
                 mParent.mError |= ERROR_UNSUPPORTED;
