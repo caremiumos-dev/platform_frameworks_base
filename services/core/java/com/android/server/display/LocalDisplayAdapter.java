@@ -324,19 +324,35 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 // modes to reuse.
                 DisplayModeRecord record = findDisplayModeRecord(mode, alternativeRefreshRates);
                 if (record == null) {
-                    float[] alternativeRates = new float[alternativeRefreshRates.size()];
-                    for (int j = 0; j < alternativeRates.length; j++) {
-                        alternativeRates[j] = alternativeRefreshRates.get(j);
-                    }
-                    record = new DisplayModeRecord(mode, alternativeRates);
                     modesAdded = true;
                 }
+                 /*always create mode with new id:
+                 *1. when its new display, we need new id for it, or we may get error modesetting.
+                 *2. when display not changed, we can re-use mSupporteModes, we can abandon records.
+                 */
+                float[] alternativeRates = new float[alternativeRefreshRates.size()];
+                for (int j = 0; j < alternativeRates.length; j++) {
+                   alternativeRates[j] = alternativeRefreshRates.get(j);
+                }
+                record = new DisplayModeRecord(mode, alternativeRates);
                 records.add(record);
             }
+           boolean recordsChanged = records.size() != mSupportedModes.size() || modesAdded;
+           if (recordsChanged) {
+                mSupportedModes.clear();
+                for (DisplayModeRecord record : records) {
+                    mSupportedModes.put(record.mMode.getModeId(), record);
+                }
 
+                Slog.d(TAG, "Update supported modes.");
+                for (int i = 0; i < mSupportedModes.size(); i++) {
+                    Slog.d(TAG, "  " + mSupportedModes.valueAt(i));
+                }
+            }
             // Get the currently active mode
             DisplayModeRecord activeRecord = null;
-            for (DisplayModeRecord record : records) {
+            for (int i = 0; i < mSupportedModes.size(); i++) {
+                DisplayModeRecord record = mSupportedModes.valueAt(i);
                 if (record.hasMatchingMode(mActiveSfDisplayMode)) {
                     activeRecord = record;
                     break;
@@ -398,16 +414,11 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 }
             }
 
-            boolean recordsChanged = records.size() != mSupportedModes.size() || modesAdded;
             // If the records haven't changed then we're done here.
             if (!recordsChanged) {
                 return activeModeChanged || preferredModeChanged;
             }
 
-            mSupportedModes.clear();
-            for (DisplayModeRecord record : records) {
-                mSupportedModes.put(record.mMode.getModeId(), record);
-            }
 
             // For a new display, we need to initialize the default mode ID.
             if (mDefaultModeId == INVALID_MODE_ID) {
