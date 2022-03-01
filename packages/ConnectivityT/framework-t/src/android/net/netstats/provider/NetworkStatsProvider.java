@@ -16,6 +16,8 @@
 
 package android.net.netstats.provider;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
@@ -26,7 +28,7 @@ import android.os.RemoteException;
  * A base class that allows external modules to implement a custom network statistics provider.
  * @hide
  */
-@SystemApi
+@SystemApi(client = MODULE_LIBRARIES)
 public abstract class NetworkStatsProvider {
     /**
      * A value used by {@link #onSetLimit}, {@link #onSetAlert} and {@link #onSetWarningAndLimit}
