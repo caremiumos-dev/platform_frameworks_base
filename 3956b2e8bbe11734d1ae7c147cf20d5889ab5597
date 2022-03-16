@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6ecb5ec1_60f754ea",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1299481
+      },
+      "writtenOn": "2022-03-16T21:22:57Z",
+      "side": 1,
+      "message": "Can we add this annotation? It looks like even the internal code verifies if the method returned null or not.",
+      "revId": "3956b2e8bbe11734d1ae7c147cf20d5889ab5597",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
