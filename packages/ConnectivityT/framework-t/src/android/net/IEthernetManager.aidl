@@ -42,4 +42,5 @@ interface IEthernetManager
         in IEthernetNetworkManagementListener listener);
     void connectNetwork(String iface, in IEthernetNetworkManagementListener listener);
     void disconnectNetwork(String iface, in IEthernetNetworkManagementListener listener);
+    void setEthernetEnabled(boolean enabled);
 }
