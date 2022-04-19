@@ -1095,6 +1095,12 @@ public class Vpn {
                 if (!VpnConfig.LEGACY_VPN.equals(mPackage)) {
                     mAppOpsManager.finishOp(
                             AppOpsManager.OPSTR_ESTABLISH_VPN_MANAGER, mOwnerUID, mPackage, null);
+                    // The underlying network, NetworkCapabilities and LinkProperties are not
+                    // necessary to send to VPN app since the purpose of this event is to notify
+                    // VPN app that VPN is deactivated by the user.
+                    sendEventToVpnManagerApp(VpnManager.CATEGORY_EVENT_DEACTIVATED_BY_USER,
+                            -1 /* errorClass */, -1 /* errorCode*/, mPackage, getSessionKey(),
+                            null /* underlyingNetwork */, null /* nc */, null /* lp */);
                 }
                 // cleanupVpnStateLocked() is called from mVpnRunner.exit()
                 mVpnRunner.exit();
