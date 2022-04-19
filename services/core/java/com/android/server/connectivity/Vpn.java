@@ -684,6 +684,32 @@ public class Vpn {
         return true;
     }
 
+    private boolean sendEventToVpnManagerApp(@NonNull String category, int errorClass,
+            int errorCode, @NonNull String packageName, @Nullable String sessionKey,
+            @Nullable Network underlyingNetwork, @Nullable NetworkCapabilities nc,
+            @Nullable LinkProperties lp) {
+        final Intent intent = new Intent(VpnManager.ACTION_VPN_MANAGER_EVENT);
+        intent.setPackage(packageName);
+        intent.addCategory(category);
+        intent.putExtra(VpnManager.EXTRA_VPN_PROFILE_STATE, makeVpnProfileState());
+        intent.putExtra(VpnManager.EXTRA_SESSION_KEY, sessionKey);
+        intent.putExtra(VpnManager.EXTRA_UNDERLYING_NETWORK, underlyingNetwork);
+        intent.putExtra(VpnManager.EXTRA_UNDERLYING_NETWORK_CAPABILITIES, nc);
+        intent.putExtra(VpnManager.EXTRA_UNDERLYING_LINK_PROPERTIES, lp);
+        intent.putExtra(VpnManager.EXTRA_TIMESTAMP_MILLIS, SystemClock.elapsedRealtime());
+        if (!VpnManager.CATEGORY_EVENT_DEACTIVATED_BY_USER.equals(category)
+                || !VpnManager.CATEGORY_EVENT_ALWAYS_ON_STATE_CHANGED.equals(category)) {
+            intent.putExtra(VpnManager.EXTRA_ERROR_CLASS, errorClass);
+            intent.putExtra(VpnManager.EXTRA_ERROR_CODE, errorCode);
+        }
+        try {
+            return mUserIdContext.startService(intent) != null;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Service of VpnManager app " + intent + " failed to start", e);
+            return false;
+        }
+    }
+
     /**
      * Configures an always-on VPN connection through a specific application. This connection is
      * automatically granted and persisted after a reboot.
@@ -706,9 +732,36 @@ public class Vpn {
             boolean lockdown,
             @Nullable List<String> lockdownAllowlist) {
         enforceControlPermissionOrInternalCaller();
+        // mPackage & mSessionKey will be reset if VPN always-on is going to be disabled.
+        // Store mPackage to know that the event should send to which VPN app.
+        final String oldPackage = mPackage;
+        // Store mSessionKey since the VPN app might want to know about it.
+        final String sessionKey = getSessionKey();
 
         if (setAlwaysOnPackageInternal(packageName, lockdown, lockdownAllowlist)) {
             saveAlwaysOnPackage();
+            String targetPackage = null;
+            if (packageName != null && !VpnConfig.LEGACY_VPN.equals(packageName)) {
+                // When VPN always-on is enabled, Settings will call
+                // VpnManager#setAlwaysOnVpnPackageForUser with package name. So if the package
+                // name is not null and it is not LEGACY_VPN, which means VPN always-on of VPN app
+                // is enabled.
+                targetPackage = packageName;
+            } else if (packageName == null && oldPackage != null
+                    && !VpnConfig.LEGACY_VPN.equals(oldPackage)) {
+                // When VPN always-on is disabled, Settings will call
+                // VpnManager#setAlwaysOnVpnPackageForUser with null package name. So if the package
+                // name is null and oldPackage(namely mPackage) is not LEGACY_VPN, which means VPN
+                // always-on of VPN app is disabled.
+                targetPackage = oldPackage;
+            }
+
+            // The underlying network, NetworkCapabilities and LinkProperties are not necessary to
+            // send to the VPN app since the purpose of this event is to notify the VPN app that the
+            // VPN always-on status is changed.
+            sendEventToVpnManagerApp(VpnManager.CATEGORY_EVENT_ALWAYS_ON_STATE_CHANGED,
+                    -1 /* errorClass */, -1 /* errorCode*/, targetPackage, sessionKey,
+                    null /* underlyingNetwork */, null /* nc */, null /* lp */);
             return true;
         }
         return false;
