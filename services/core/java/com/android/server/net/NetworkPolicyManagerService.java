@@ -1371,6 +1371,7 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
      */
     @GuardedBy("mNetworkPoliciesSecondLock")
     void updateNotificationsNL() {
+        Log.e(TAG, "updateNotificationsNL(), Test TH for performance regression.");
         if (LOGV) Slog.v(TAG, "updateNotificationsNL()");
         Trace.traceBegin(TRACE_TAG_NETWORK, "updateNotificationsNL");
 
