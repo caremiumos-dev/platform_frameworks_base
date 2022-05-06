@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "48736fb6_a414cf44",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1068291
+      },
+      "writtenOn": "2022-05-06T08:30:56Z",
+      "side": 1,
+      "message": "The issue of mocking AudioDeviceInfo has to be resolved for the tests to run.",
+      "revId": "6381bda60aa2d79fdd03cfad35a9232913e4f403",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
