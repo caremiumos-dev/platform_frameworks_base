@@ -41,6 +41,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0b6a027b_d094cee0",
+        "filename": "core/java/com/android/internal/util/VirtualRefBasePtr.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2022-05-06T18:14:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f6794a80_40ab9aed",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 53
+      },
+      "revId": "074413b52ed9ceb651c1417c1b6caa7b9dab3904",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2a63829b_3078e363",
@@ -54,6 +78,30 @@
       "writtenOn": "2022-05-06T17:19:40Z",
       "side": 1,
       "message": "nit: use @link for this method",
+      "range": {
+        "startLine": 38,
+        "startChar": 7,
+        "endLine": 38,
+        "endChar": 34
+      },
+      "revId": "074413b52ed9ceb651c1417c1b6caa7b9dab3904",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3b4ad13c_4ebf4fc5",
+        "filename": "core/java/com/android/internal/util/VirtualRefBasePtr.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2022-05-06T18:14:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2a63829b_3078e363",
       "range": {
         "startLine": 38,
         "startChar": 7,
