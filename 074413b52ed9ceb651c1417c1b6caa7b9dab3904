@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "493485bf_bc21f558",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1042828
+      },
+      "writtenOn": "2022-05-06T17:13:30Z",
+      "side": 1,
+      "message": "As far as I can tell, there are only LAST_RESORT_SUGGESTION reviewers for this file. jreck@ is the only author, but I think he\u0027s both out and not an OWNER either.",
+      "revId": "074413b52ed9ceb651c1417c1b6caa7b9dab3904",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
