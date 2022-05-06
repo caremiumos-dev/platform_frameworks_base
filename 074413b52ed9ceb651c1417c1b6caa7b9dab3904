@@ -16,6 +16,52 @@
       "message": "As far as I can tell, there are only LAST_RESORT_SUGGESTION reviewers for this file. jreck@ is the only author, but I think he\u0027s both out and not an OWNER either.",
       "revId": "074413b52ed9ceb651c1417c1b6caa7b9dab3904",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f6794a80_40ab9aed",
+        "filename": "core/java/com/android/internal/util/VirtualRefBasePtr.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1006497
+      },
+      "writtenOn": "2022-05-06T17:19:40Z",
+      "side": 1,
+      "message": "Let\u0027s not leave TODOs in the Javadoc. You can add it as a separate comment, but they should\u0027t be part of the public class documentation.\n\nAlso, per the static analyzer, consider using a bug number rather than a specific name.",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 53
+      },
+      "revId": "074413b52ed9ceb651c1417c1b6caa7b9dab3904",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2a63829b_3078e363",
+        "filename": "core/java/com/android/internal/util/VirtualRefBasePtr.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1006497
+      },
+      "writtenOn": "2022-05-06T17:19:40Z",
+      "side": 1,
+      "message": "nit: use @link for this method",
+      "range": {
+        "startLine": 38,
+        "startChar": 7,
+        "endLine": 38,
+        "endChar": 34
+      },
+      "revId": "074413b52ed9ceb651c1417c1b6caa7b9dab3904",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
