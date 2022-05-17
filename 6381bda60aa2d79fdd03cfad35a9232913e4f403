@@ -16,6 +16,29 @@
       "message": "The issue of mocking AudioDeviceInfo has to be resolved for the tests to run.",
       "revId": "6381bda60aa2d79fdd03cfad35a9232913e4f403",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b4a23314_3039ffa9",
+        "filename": "services/tests/servicestests/src/com/android/server/hdmi/HdmiCecLocalDeviceAudioSystemTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 329,
+      "author": {
+        "id": 1725686
+      },
+      "writtenOn": "2022-05-17T15:08:18Z",
+      "side": 1,
+      "message": "Can we do this without mocking AudioDeviceInfo? Can we create a new AudioDeviceInfo instance with the encodings, channel counts and sample rates set to these values?",
+      "range": {
+        "startLine": 326,
+        "startChar": 0,
+        "endLine": 329,
+        "endChar": 69
+      },
+      "revId": "6381bda60aa2d79fdd03cfad35a9232913e4f403",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
