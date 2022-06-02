@@ -192,7 +192,7 @@ class WallpaperController {
             mFindResults.setWallpaperTarget(w);
             return true;
         } else if (hasWallpaper && w.isOnScreen()
-                && (mWallpaperTarget == w || w.isDrawFinishedLw())) {
+                && (mWallpaperTarget == w || w.isDrawFinishedLw()) && !mService.mPolicy.isKeyguardUnoccluding()) {
             if (DEBUG_WALLPAPER) Slog.v(TAG, "Found wallpaper target: " + w);
             mFindResults.setWallpaperTarget(w);
             if (w == mWallpaperTarget && w.isAnimating(TRANSITION | PARENTS)) {
