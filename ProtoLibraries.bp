@@ -14,12 +14,15 @@
 
 gensrcs {
     name: "framework-javastream-protos",
-    depfile: true,
 
     tools: [
         "aprotoc",
         "protoc-gen-javastream",
         "soong_zip",
+    ],
+
+    tool_files: [
+        ":libprotobuf-internal-protos",
     ],
 
     cmd: "mkdir -p $(genDir)/$(in) " +
@@ -47,17 +50,19 @@ gensrcs {
 
 gensrcs {
     name: "framework-cppstream-protos",
-    depfile: true,
 
     tools: [
         "aprotoc",
         "protoc-gen-cppstream",
     ],
 
+    tool_files: [
+        ":libprotobuf-internal-protos",
+    ],
+
     cmd: "mkdir -p $(genDir) " +
         "&& $(location aprotoc) " +
         "  --plugin=$(location protoc-gen-cppstream) " +
-        "  --dependency_out=$(depfile) " +
         "  --cppstream_out=$(genDir) " +
         "  -Iexternal/protobuf/src " +
         "  -I . " +
