@@ -16,6 +16,40 @@
       "message": "Yay !",
       "revId": "936857a54616132d31bb9abd3c76cb0b7504d94a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4561a45d_1204ddb4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1060959
+      },
+      "writtenOn": "2022-06-22T13:29:14Z",
+      "side": 1,
+      "message": "doesn\u0027t ",
+      "revId": "936857a54616132d31bb9abd3c76cb0b7504d94a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b741a425_3225c6b0",
+        "filename": "services/net/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1060959
+      },
+      "writtenOn": "2022-06-22T13:29:14Z",
+      "side": 1,
+      "message": "Remi, this should be removed. You should use the existing library in libs instead of bundling these statically into whatever is using this filegroup",
+      "revId": "936857a54616132d31bb9abd3c76cb0b7504d94a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
