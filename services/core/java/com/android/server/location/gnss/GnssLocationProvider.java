@@ -50,6 +50,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.app.AlarmManager;
 import android.app.AppOpsManager;
+import android.app.timedetector.NetworkTimeSuggestion;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -98,11 +99,12 @@ import com.android.internal.location.GpsNetInitiatedHandler;
 import com.android.internal.location.GpsNetInitiatedHandler.GpsNiNotification;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.FgThread;
+import com.android.server.LocalServices;
 import com.android.server.location.gnss.GnssSatelliteBlocklistHelper.GnssSatelliteBlocklistCallback;
-import com.android.server.location.gnss.NtpTimeHelper.InjectNtpTimeCallback;
 import com.android.server.location.gnss.hal.GnssNative;
 import com.android.server.location.injector.Injector;
 import com.android.server.location.provider.AbstractLocationProvider;
+import com.android.server.timedetector.TimeDetectorInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -121,7 +123,7 @@ import java.util.Set;
  * {@hide}
  */
 public class GnssLocationProvider extends AbstractLocationProvider implements
-        InjectNtpTimeCallback, GnssSatelliteBlocklistCallback, GnssNative.BaseCallbacks,
+        GnssSatelliteBlocklistCallback, GnssNative.BaseCallbacks,
         GnssNative.LocationCallbacks, GnssNative.SvStatusCallbacks, GnssNative.AGpsCallbacks,
         GnssNative.PsdsCallbacks, GnssNative.NotificationCallbacks,
         GnssNative.LocationRequestCallbacks, GnssNative.TimeCallbacks {
@@ -145,7 +147,6 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
     private static final int AGPS_SUPL_MODE_MSB = 0x01;
 
     // handler messages
-    private static final int INJECT_NTP_TIME = 5;
     private static final int DOWNLOAD_PSDS_DATA = 6;
     private static final int REQUEST_LOCATION = 16;
     private static final int REPORT_LOCATION = 17; // HAL reports location
@@ -293,7 +294,7 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
     private boolean mSuplEsEnabled = false;
 
     private final LocationExtras mLocationExtras = new LocationExtras();
-    private final NtpTimeHelper mNtpTimeHelper;
+    private final TimeDetectorInternal mTimeDetectorInternal;
     private final GnssSatelliteBlocklistHelper mGnssSatelliteBlocklistHelper;
 
     // Available only on GNSS HAL 2.0 implementations and later.
@@ -430,7 +431,7 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
         mNetworkConnectivityHandler = new GnssNetworkConnectivityHandler(context,
                 GnssLocationProvider.this::onNetworkAvailable, mHandler.getLooper(), mNIHandler);
 
-        mNtpTimeHelper = new NtpTimeHelper(mContext, mHandler.getLooper(), this);
+        mTimeDetectorInternal = LocalServices.getService(TimeDetectorInternal.class);
         mGnssSatelliteBlocklistHelper =
                 new GnssSatelliteBlocklistHelper(mContext,
                         mHandler.getLooper(), this);
@@ -525,18 +526,9 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
     }
 
     /**
-     * Implements {@link InjectNtpTimeCallback#injectTime}
-     */
-    @Override
-    public void injectTime(long time, long timeReference, int uncertainty) {
-        mGnssNative.injectTime(time, timeReference, uncertainty);
-    }
-
-    /**
      * Implements {@link GnssNetworkConnectivityHandler.GnssNetworkListener#onNetworkAvailable()}
      */
     private void onNetworkAvailable() {
-        mNtpTimeHelper.onNetworkAvailable();
         // Download only if supported, (prevents an unnecessary on-boot download)
         if (mSupportsPsds) {
             synchronized (mLock) {
@@ -1349,11 +1341,6 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
                 /* userResponse= */ 0);
     }
 
-    private void requestUtcTime() {
-        if (DEBUG) Log.d(TAG, "utcTimeRequest");
-        sendMessage(INJECT_NTP_TIME, 0, null);
-    }
-
     private void requestRefLocation() {
         TelephonyManager phone = (TelephonyManager)
                 mContext.getSystemService(Context.TELEPHONY_SERVICE);
@@ -1410,9 +1397,6 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
         public void handleMessage(Message msg) {
             int message = msg.what;
             switch (message) {
-                case INJECT_NTP_TIME:
-                    mNtpTimeHelper.retrieveAndInjectNtpTime();
-                    break;
                 case REQUEST_LOCATION:
                     handleRequestLocation(msg.arg1 == 1, (boolean) msg.obj);
                     break;
@@ -1442,8 +1426,6 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
      */
     private String messageIdAsString(int message) {
         switch (message) {
-            case INJECT_NTP_TIME:
-                return "INJECT_NTP_TIME";
             case REQUEST_LOCATION:
                 return "REQUEST_LOCATION";
             case DOWNLOAD_PSDS_DATA:
@@ -1503,12 +1485,33 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
             GnssCapabilities newCapabilities) {
         mHandler.post(() -> {
             if (mGnssNative.getCapabilities().hasOnDemandTime()) {
-                mNtpTimeHelper.enablePeriodicTimeInjection();
-                requestUtcTime();
+                // TODO Must check for dupes.
+                mTimeDetectorInternal.addNetworkTimeListener(this);
+                injectLatestNetworkTimeIfAvailable();
+            } else {
+                // TODO Must be no-op if not registered
+                mTimeDetectorInternal.removeNetworkTimeListener(this);
             }
 
             restartLocationRequest();
         });
+    }
+
+    private void injectLatestNetworkTimeIfAvailable() {
+        NetworkTimeSuggestion latestNetworkTimeSuggestion =
+                mTimeDetectorInternal.getLatestNetworkTimeSuggestion();
+        if (latestNetworkTimeSuggestion != null) {
+            injectLatestNetworkTime(latestNetworkTimeSuggestion);
+        }
+    }
+
+    // TODO Listener method to invoke injectLatestNetworkTime().
+
+    private void injectLatestNetworkTime(NetworkTimeSuggestion networkTimeSuggestion) {
+        mGnssNative.injectTime(
+                latestNetworkTimeSuggestion.getUnixEpochTime().getValue(),
+                latestNetworkTimeSuggestion.getUnixEpochTime().getReferenceTimeMillis(),
+                latestNetworkTimeSuggestion.getUncertaintyMillis());
     }
 
     @Override

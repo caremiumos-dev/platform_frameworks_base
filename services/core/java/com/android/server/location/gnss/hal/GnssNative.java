@@ -670,9 +670,10 @@ public class GnssNative {
     /**
      * Injects time information into the GNSS HAL.
      */
-    public void injectTime(long time, long timeReference, int uncertainty) {
+    public void injectTime(
+            long unixEpochTimeMillis, long elapsedRealtimeMillis, int uncertaintyMillis) {
         Preconditions.checkState(mRegistered);
-        mGnssHal.injectTime(time, timeReference, uncertainty);
+        mGnssHal.injectTime(unixEpochTimeMillis, elapsedRealtimeMillis, uncertaintyMillis);
     }
 
     /**
@@ -1277,8 +1278,9 @@ public class GnssNative {
                     elapsedRealtimeUncertaintyNanos);
         }
 
-        protected void injectTime(long time, long timeReference, int uncertainty) {
-            native_inject_time(time, timeReference, uncertainty);
+        protected void injectTime(
+                long unixEpochTimeMillis, long elapsedRealtimeMillis, int uncertaintyMillis) {
+            native_inject_time(unixEpochTimeMillis, elapsedRealtimeMillis, uncertaintyMillis);
         }
 
         protected boolean isNavigationMessageCollectionSupported() {
