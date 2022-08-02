@@ -30,6 +30,7 @@ import android.content.IntentFilter;
 import android.media.AudioAttributes;
 import android.os.FileUtils;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.os.RecoverySystem;
 import android.os.RemoteException;
@@ -156,6 +157,9 @@ public final class ShutdownThread extends Thread {
         // in is themed.
         context.assertRuntimeOverlayThemable();
 
+        if(Looper.myLooper() == null) {
+            Looper.prepare();
+        }
         // ensure that only one thread is trying to power down.
         // any additional calls are just returned
         synchronized (sIsStartedGuard) {
