@@ -6604,4 +6604,15 @@
     <!-- Enables or disables the "Share" action item shown in the context menu that appears upon
         long-pressing on selected text. Enabled by default. -->
     <bool name="config_textShareSupported">true</bool>
+
+    <!-- Enables or disables the 'keep screen on' feature.  Disabled by default. -->
+    <bool name="config_defaultKeepScreenOnEnabled">false</bool>
+    <!-- Default value (in milliseconds) to keep the screen awake after user undims it manually
+         between screen dims, a sign the user wants to keep screen on and dimming is not wanted. -->
+    <integer name="config_defaultKeepScreenOnForMillis">300000</integer> <!-- 5 minutes. -->
+    <!-- Default max duration (in milliseconds) of the time between undims to still consider them
+         consecutive. -->
+    <integer name="config_defaultMaxDurationBetweenUndimsMillis">600000</integer> <!-- 10 min.  -->
+    <!-- Default number of user undims required to trigger keeping the screen on. -->
+    <integer name="config_defaultUndimsRequired">2</integer>
 </resources>
