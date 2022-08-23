@@ -56,6 +56,7 @@ import android.system.StructStat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
+import android.util.StorageUnit;
 import android.webkit.MimeTypeMap;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -1307,6 +1308,47 @@ public final class FileUtils {
             }
         }
         return val * pow;
+    }
+
+    /**
+     * @param formatSize The string that contains the size to be parsed. The
+     *   expected format is:
+     *
+     *   <p>"^(([0-9]+)(K|KB|M|MB|G|GB|Ki|KiB|Mi|MiB|Gi|GiB))$"
+     *
+     *   <p>For example: 10Kb, 500GiB, 100mb. The unit is not case sensitive.
+     *
+     * @return the size in bytes. If {@code formatSize} has invalid format, it
+     *   returns 0.
+     */
+    public static long parseSize(@Nullable String formatSize) {
+        if (formatSize == null || formatSize.isBlank()) {
+            return 0;
+        }
+
+        int index;
+        formatSize = formatSize.trim();
+        // Find the last index of the value in formatSize.
+        for (index = 0; index < formatSize.length(); index++) {
+            if (!Character.isDigit(formatSize.charAt(index))) {
+                break;
+            }
+        }
+
+        // Check if number and units are present.
+        if (index == 0 || index == formatSize.length()) {
+            return 0;
+        }
+
+        long value = Long.valueOf(formatSize.substring(0, index));
+        String unit = formatSize.substring(index).trim().toUpperCase();
+
+        StorageUnit su = StorageUnit.fromName(unit);
+        if (su == null) {
+            return 0;
+        }
+
+        return su.getDataUnit().toBytes(value);
     }
 
     /**

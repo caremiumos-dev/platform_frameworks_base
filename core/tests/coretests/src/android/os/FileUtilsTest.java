@@ -58,9 +58,9 @@ import android.provider.DocumentsContract.Document;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
-import libcore.io.Streams;
-
 import com.google.android.collect.Sets;
+
+import libcore.io.Streams;
 
 import org.junit.After;
 import org.junit.Before;
@@ -521,6 +521,44 @@ public class FileUtilsTest {
         assertEquals(G32, roundStorageSize(G32 - 1));
         assertEquals(G32, roundStorageSize(G32));
         assertEquals(G64, roundStorageSize(G32 + 1));
+    }
+
+    @Test
+    public void testParseSize() {
+        assertEquals(1_000L, FileUtils.parseSize("1K"));
+        assertEquals(1_000L, FileUtils.parseSize("1KB"));
+        assertEquals(10_000L, FileUtils.parseSize("10KB"));
+        assertEquals(100_000L, FileUtils.parseSize("100KB"));
+        assertEquals(1_000_000L, FileUtils.parseSize("1000KB"));
+        assertEquals(1_024_000L, FileUtils.parseSize("1000KiB"));
+        assertEquals(70_000_000L, FileUtils.parseSize("070M"));
+        assertEquals(70_000_000L, FileUtils.parseSize("070MB"));
+        assertEquals(73_400_320L, FileUtils.parseSize("70MiB"));
+        assertEquals(700_000_000L, FileUtils.parseSize("700000KB"));
+        assertEquals(200_000_000L, FileUtils.parseSize("200MB"));
+        assertEquals(1_000_000_000L, FileUtils.parseSize("1000MB"));
+        assertEquals(1_000_000_000L, FileUtils.parseSize("1000 mb"));
+        assertEquals(644_245_094_400L, FileUtils.parseSize("600GiB"));
+        assertEquals(999_000_000_000L, FileUtils.parseSize("999GB"));
+        assertEquals(999_000_000_000L, FileUtils.parseSize("999 gB"));
+        assertEquals(9_999_000_000_000L, FileUtils.parseSize("9999GB"));
+        assertEquals(9_000_000_000_000L, FileUtils.parseSize(" 9000 GB   "));
+        assertEquals(1_234_000_000_000L, FileUtils.parseSize(" 1234 GB  "));
+        assertEquals(1_234_567_890_000L, FileUtils.parseSize(" 1234567890 KB  "));
+    }
+
+    @Test
+    public void testParseSize_invalidArguments() {
+        assertEquals(0L, FileUtils.parseSize(null));
+        assertEquals(0L, FileUtils.parseSize("null"));
+        assertEquals(0L, FileUtils.parseSize(""));
+        assertEquals(0L, FileUtils.parseSize("KB"));
+        assertEquals(0L, FileUtils.parseSize("0MB"));
+        assertEquals(0L, FileUtils.parseSize("123 dd"));
+        assertEquals(0L, FileUtils.parseSize("Invalid"));
+        assertEquals(0L, FileUtils.parseSize(" ABC890 KB  "));
+        assertEquals(0L, FileUtils.parseSize("-=+90 KB  "));
+        assertEquals(0L, FileUtils.parseSize("123"));
     }
 
     @Test
