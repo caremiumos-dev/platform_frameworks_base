@@ -631,6 +631,9 @@ public class ResolverListAdapter extends BaseAdapter {
 
     protected void onBindView(View view, TargetInfo info, int position) {
         final ViewHolder holder = (ViewHolder) view.getTag();
+        if (hold == null) {
+            return;
+        }
         if (info == null) {
             holder.icon.setImageDrawable(
                     mContext.getDrawable(R.drawable.resolver_icon_placeholder));
