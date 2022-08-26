@@ -1702,7 +1702,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
 
     /**
      * <p>Compute the horizontal offset of the horizontal scrollbar's thumb within the horizontal
-     * range. This value is used to compute the length of the thumb within the scrollbar's track.
+     * range. This value is used to compute the position of the thumb within the scrollbar's track.
      * </p>
      *
      * <p>The range is expressed in arbitrary units that must be the same as the units used by
@@ -1763,7 +1763,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
      * {@link RecyclerView.LayoutManager#computeHorizontalScrollRange(RecyclerView.State)} in your
      * LayoutManager.</p>
      *
-     * @return The total horizontal range represented by the vertical scrollbar
+     * @return The total horizontal range represented by the horizontal scrollbar
      * @see RecyclerView.LayoutManager#computeHorizontalScrollRange(RecyclerView.State)
      */
     @Override
@@ -1776,7 +1776,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
 
     /**
      * <p>Compute the vertical offset of the vertical scrollbar's thumb within the vertical range.
-     * This value is used to compute the length of the thumb within the scrollbar's track. </p>
+     * This value is used to compute the position of the thumb within the scrollbar's track. </p>
      *
      * <p>The range is expressed in arbitrary units that must be the same as the units used by
      * {@link #computeVerticalScrollRange()} and {@link #computeVerticalScrollExtent()}.</p>
@@ -9281,7 +9281,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
          * <p>Default implementation returns 0.</p>
          *
          * @param state Current State of RecyclerView where you can find total item count
-         * @return The total horizontal range represented by the vertical scrollbar
+         * @return The total horizontal range represented by the horizontal scrollbar
          * @see RecyclerView#computeHorizontalScrollRange()
          */
         public int computeHorizontalScrollRange(State state) {
