@@ -17,6 +17,7 @@
 package android.app.time;
 
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@SystemApi
 public final class TimeCapabilitiesAndConfig implements Parcelable {
 
     public static final @NonNull Creator<TimeCapabilitiesAndConfig> CREATOR =
@@ -49,6 +51,8 @@ public final class TimeCapabilitiesAndConfig implements Parcelable {
     private final TimeConfiguration mTimeConfiguration;
 
     /**
+     * Creates a new instance.
+     *
      * @hide
      */
     public TimeCapabilitiesAndConfig(@NonNull TimeCapabilities timeCapabilities,
@@ -66,8 +70,6 @@ public final class TimeCapabilitiesAndConfig implements Parcelable {
 
     /**
      * Returns the user's time behaviour capabilities.
-     *
-     * @hide
      */
     @NonNull
     public TimeCapabilities getTimeCapabilities() {
@@ -76,8 +78,6 @@ public final class TimeCapabilitiesAndConfig implements Parcelable {
 
     /**
      * Returns the user's time behaviour configuration.
-     *
-     * @hide
      */
     @NonNull
     public TimeConfiguration getTimeConfiguration() {

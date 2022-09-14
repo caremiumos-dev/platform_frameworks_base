@@ -19,7 +19,9 @@ package com.android.server.timedetector;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
+import android.app.time.ClockState;
 import android.app.time.ExternalTimeSuggestion;
+import android.app.time.UnixEpochTime;
 import android.app.timedetector.GnssTimeSuggestion;
 import android.app.timedetector.ManualTimeSuggestion;
 import android.app.timedetector.NetworkTimeSuggestion;
@@ -67,6 +69,19 @@ public interface TimeDetectorStrategy extends Dumpable {
     /** Used when a time value originated from an externally specified signal. */
     @Origin int ORIGIN_EXTERNAL = 5;
 
+    /** Returns a snapshot of the system clock's state. See {@link ClockState} for details. */
+    @NonNull
+    ClockState getClockState();
+
+    /**
+     * Signals that a user has confirmed the supplied time. If the {@code confirmationTime},
+     * adjusted for elapsed time since it was created (expected to be with {@link
+     * #getClockState()}), is very close to the clock's current state, then this can be used to
+     * raise the system's confidence in that time. Returns {@code true} if confirmation was
+     * successful (i.e. the time matched), {@code false} otherwise.
+     */
+    boolean confirmTime(@NonNull UnixEpochTime confirmationTime);
+
     /** Processes the suggested time from telephony sources. */
     void suggestTelephonyTime(@NonNull TelephonyTimeSuggestion timeSuggestion);
 
@@ -88,6 +103,7 @@ public interface TimeDetectorStrategy extends Dumpable {
     void suggestExternalTime(@NonNull ExternalTimeSuggestion timeSuggestion);
 
     /** Returns the configuration that controls time detector behaviour for specified user. */
+    @NonNull
     ConfigurationInternal getConfigurationInternal(@UserIdInt int userId);
 
     // Utility methods below are to be moved to a better home when one becomes more obvious.
@@ -105,6 +121,7 @@ public interface TimeDetectorStrategy extends Dumpable {
      * Converts one of the {@code ORIGIN_} constants to a human readable string suitable for config
      * and debug usage. Throws an {@link IllegalArgumentException} if the value is unrecognized.
      */
+    @NonNull
     static String originToString(@Origin int origin) {
         switch (origin) {
             case ORIGIN_MANUAL:

@@ -19,9 +19,11 @@ package com.android.server.timedetector;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.time.ClockState;
 import android.app.time.ExternalTimeSuggestion;
 import android.app.time.TimeCapabilitiesAndConfig;
 import android.app.time.TimeConfiguration;
+import android.app.time.UnixEpochTime;
 import android.app.timedetector.GnssTimeSuggestion;
 import android.app.timedetector.ITimeDetectorService;
 import android.app.timedetector.ManualTimeSuggestion;
@@ -126,6 +128,46 @@ public final class TimeDetectorService extends ITimeDetectorService.Stub {
         enforceManageTimeDetectorPermission();
         // TODO(b/172891783) Add actual logic
         return false;
+    }
+
+    @Override
+    public ClockState getClockState() {
+        enforceManageTimeDetectorPermission();
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            return mTimeDetectorStrategy.getClockState();
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    @Override
+    public boolean confirmTime(@NonNull UnixEpochTime time) {
+        enforceManageTimeDetectorPermission();
+        Objects.requireNonNull(time);
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            return mTimeDetectorStrategy.confirmTime(time);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    @Override
+    public boolean setTime(@NonNull ManualTimeSuggestion timeSignal) {
+        enforceManageTimeDetectorPermission();
+        Objects.requireNonNull(timeSignal);
+
+        // This calls suggestManualTime() as the logic is identical, it only differs in the
+        // permission required, which is handled above.
+        final long token = Binder.clearCallingIdentity();
+        try {
+            return mTimeDetectorStrategy.suggestManualTime(timeSignal);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
     }
 
     @Override

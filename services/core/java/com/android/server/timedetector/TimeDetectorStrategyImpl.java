@@ -26,7 +26,9 @@ import android.annotation.ElapsedRealtimeLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.time.ClockState;
 import android.app.time.ExternalTimeSuggestion;
+import android.app.time.UnixEpochTime;
 import android.app.timedetector.GnssTimeSuggestion;
 import android.app.timedetector.ManualTimeSuggestion;
 import android.app.timedetector.NetworkTimeSuggestion;
@@ -286,6 +288,27 @@ public final class TimeDetectorStrategyImpl implements TimeDetectorStrategy {
         // clock.
         String reason = "New network time suggested. timeSuggestion=" + timeSuggestion;
         doAutoTimeDetection(reason);
+    }
+
+    @Override
+    public synchronized ClockState getClockState() {
+        // TODO Implement storage for confidence.
+        boolean userShouldConfirm = false;
+        UnixEpochTime unixEpochTime = new UnixEpochTime(
+                mEnvironment.elapsedRealtimeMillis(), mEnvironment.systemClockMillis());
+        return new ClockState(unixEpochTime, userShouldConfirm);
+    }
+
+    @Override
+    public synchronized boolean confirmTime(@NonNull UnixEpochTime confirmationTime) {
+        Objects.requireNonNull(confirmationTime);
+
+        // TODO(b/246256335): Replace usages of TimestampedValue<Long> with UnixEpochTime.
+        TimestampedValue<Long> confirmationTime2 = new TimestampedValue<>(
+                confirmationTime.getElapsedRealtimeMillis(),
+                confirmationTime.getUnixEpochTimeMillis());
+        return upgradeSystemClockConfidenceIfRequired(
+                confirmationTime2, "confirmTime(): " + confirmationTime);
     }
 
     @Override

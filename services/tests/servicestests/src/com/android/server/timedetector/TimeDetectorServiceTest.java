@@ -28,7 +28,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.time.ClockState;
 import android.app.time.ExternalTimeSuggestion;
+import android.app.time.UnixEpochTime;
 import android.app.timedetector.GnssTimeSuggestion;
 import android.app.timedetector.ManualTimeSuggestion;
 import android.app.timedetector.NetworkTimeSuggestion;
@@ -284,6 +286,16 @@ public class TimeDetectorServiceTest {
         private GnssTimeSuggestion mLastGnssSuggestion;
         private ExternalTimeSuggestion mLastExternalSuggestion;
         private boolean mDumpCalled;
+
+        @Override
+        public ClockState getClockState() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean confirmTime(UnixEpochTime confirmationTime) {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public void suggestTelephonyTime(TelephonyTimeSuggestion timeSuggestion) {

@@ -73,7 +73,7 @@ public final class TimeZoneCapabilities implements Parcelable {
     }
 
     @NonNull
-    private static TimeZoneCapabilities createFromParcel(Parcel in) {
+    private static TimeZoneCapabilities createFromParcel(@NonNull Parcel in) {
         UserHandle userHandle = UserHandle.readFromParcel(in);
         return new TimeZoneCapabilities.Builder(userHandle)
                 .setConfigureAutoDetectionEnabledCapability(in.readInt())
@@ -117,8 +117,6 @@ public final class TimeZoneCapabilities implements Parcelable {
      * <p>The suggestion will be ignored in all cases unless the value is {@link
      * Capabilities#CAPABILITY_POSSESSED}. See also
      * {@link TimeZoneConfiguration#isAutoDetectionEnabled()}.
-     *
-     * @hide
      */
     @CapabilityState
     public int getSuggestManualTimeZoneCapability() {
@@ -195,7 +193,11 @@ public final class TimeZoneCapabilities implements Parcelable {
                 + '}';
     }
 
-    /** @hide */
+    /**
+     * A builder of {@link TimeZoneCapabilities} objects.
+     *
+     * @hide
+     */
     public static class Builder {
 
         @NonNull private UserHandle mUserHandle;

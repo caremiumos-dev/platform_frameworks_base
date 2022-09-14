@@ -30,6 +30,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.time.TimeZoneCapabilities;
 import android.app.time.TimeZoneCapabilitiesAndConfig;
+import android.app.time.TimeZoneState;
 import android.app.timezonedetector.ManualTimeZoneSuggestion;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.content.Context;
@@ -76,9 +77,9 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
         @NonNull ConfigurationInternal getCurrentUserConfigurationInternal();
 
         /**
-         * Returns the device's currently configured time zone.
+         * Returns the device's currently configured time zone. May return an empty string.
          */
-        String getDeviceTimeZone();
+        @NonNull String getDeviceTimeZone();
 
         /**
          * Returns the confidence of the device's current time zone, if known.
@@ -243,6 +244,29 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
                     this::handleConfigurationInternalChanged);
             mCurrentConfigurationInternal = mEnvironment.getCurrentUserConfigurationInternal();
         }
+    }
+
+    @Override
+    public synchronized boolean confirmTimeZone(@NonNull String timeZoneId) {
+        Objects.requireNonNull(timeZoneId);
+
+        String currentTimeZoneId = mEnvironment.getDeviceTimeZone();
+        if (!currentTimeZoneId.equals(timeZoneId)) {
+            return false;
+        }
+
+        if (mEnvironment.getDeviceTimeZoneConfidence() < TIME_ZONE_CONFIDENCE_HIGH) {
+            mEnvironment.setDeviceTimeZoneAndConfidence(currentTimeZoneId,
+                    TIME_ZONE_CONFIDENCE_HIGH);
+        }
+        return true;
+    }
+
+    @Override
+    public synchronized TimeZoneState getTimeZoneState() {
+        boolean userShouldConfirm =
+                mEnvironment.getDeviceTimeZoneConfidence() < TIME_ZONE_CONFIDENCE_HIGH;
+        return new TimeZoneState(mEnvironment.getDeviceTimeZone(), userShouldConfirm);
     }
 
     @Override

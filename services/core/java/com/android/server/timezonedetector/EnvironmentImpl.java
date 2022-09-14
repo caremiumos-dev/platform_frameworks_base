@@ -18,7 +18,6 @@ package com.android.server.timezonedetector;
 
 import android.annotation.ElapsedRealtimeLong;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -63,7 +62,7 @@ final class EnvironmentImpl implements TimeZoneDetectorStrategyImpl.Environment 
     }
 
     @Override
-    @Nullable
+    @NonNull
     public String getDeviceTimeZone() {
         return SystemProperties.get(TIMEZONE_PROPERTY);
     }

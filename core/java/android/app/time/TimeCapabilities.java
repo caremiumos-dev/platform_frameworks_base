@@ -17,6 +17,7 @@
 package android.app.time;
 
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.app.time.Capabilities.CapabilityState;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -34,6 +35,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@SystemApi
 public final class TimeCapabilities implements Parcelable {
 
     public static final @NonNull Creator<TimeCapabilities> CREATOR =
@@ -66,7 +68,7 @@ public final class TimeCapabilities implements Parcelable {
     }
 
     @NonNull
-    private static TimeCapabilities createFromParcel(Parcel in) {
+    private static TimeCapabilities createFromParcel(@NonNull Parcel in) {
         UserHandle userHandle = UserHandle.readFromParcel(in);
         return new TimeCapabilities.Builder(userHandle)
                 .setConfigureAutoTimeDetectionEnabledCapability(in.readInt())
@@ -92,7 +94,8 @@ public final class TimeCapabilities implements Parcelable {
 
     /**
      * Returns the capability state associated with the user's ability to manually set time on a
-     * device.
+     * device. The setting can be updated via {@link
+     * TimeManager#updateTimeConfiguration(TimeConfiguration)}.
      */
     @CapabilityState
     public int getSuggestTimeManuallyCapability() {

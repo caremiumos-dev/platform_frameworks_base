@@ -18,6 +18,7 @@ package android.app.time;
 
 import android.annotation.NonNull;
 import android.annotation.StringDef;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -32,6 +33,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@SystemApi
 public final class TimeConfiguration implements Parcelable {
 
     public static final @NonNull Creator<TimeConfiguration> CREATOR =
@@ -47,10 +49,16 @@ public final class TimeConfiguration implements Parcelable {
                 }
             };
 
+    /**
+     * All configuration properties
+     *
+     * @hide
+     */
     @StringDef(SETTING_AUTO_DETECTION_ENABLED)
     @Retention(RetentionPolicy.SOURCE)
     @interface Setting {}
 
+    /** See {@link TimeConfiguration#isAutoDetectionEnabled()} for details. */
     @Setting
     private static final String SETTING_AUTO_DETECTION_ENABLED = "autoDetectionEnabled";
 
@@ -111,28 +119,43 @@ public final class TimeConfiguration implements Parcelable {
      *
      * @hide
      */
+    @SystemApi
     public static final class Builder {
         private final Bundle mBundle = new Bundle();
 
+        /**
+         * Creates a new Builder with no settings held.
+         */
         public Builder() {}
 
+        /**
+         * Creates a new Builder by copying the settings from an existing instance.
+         */
         public Builder(@NonNull TimeConfiguration configuration) {
             mBundle.putAll(configuration.mBundle);
         }
 
-        /** Sets whether auto detection is enabled or not. */
+        /**
+         * Sets the state of the {@link #SETTING_AUTO_DETECTION_ENABLED} setting.
+         */
         @NonNull
         public Builder setAutoDetectionEnabled(boolean enabled) {
             mBundle.putBoolean(SETTING_AUTO_DETECTION_ENABLED, enabled);
             return this;
         }
 
+        /**
+         * Merges {@code other} settings into this instances, replacing existing values in this
+         * where the settings appear in both.
+         *
+         * @hide
+         */
         Builder merge(@NonNull Bundle bundle) {
             mBundle.putAll(bundle);
             return this;
         }
 
-        /** Returns {@link TimeConfiguration} object. */
+        /** Returns the {@link TimeConfiguration}. */
         @NonNull
         public TimeConfiguration build() {
             return new TimeConfiguration(this);

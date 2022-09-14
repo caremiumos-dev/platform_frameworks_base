@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
+import android.app.time.TimeZoneState;
 import android.app.timezonedetector.ManualTimeZoneSuggestion;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.util.IndentingPrintWriter;
@@ -31,6 +32,16 @@ class FakeTimeZoneDetectorStrategy implements TimeZoneDetectorStrategy {
     private ManualTimeZoneSuggestion mLastManualSuggestion;
     private TelephonyTimeZoneSuggestion mLastTelephonySuggestion;
     private boolean mDumpCalled;
+
+    @Override
+    public boolean confirmTimeZone(String timeZoneId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TimeZoneState getTimeZoneState() {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public void suggestGeolocationTimeZone(GeolocationTimeZoneSuggestion timeZoneSuggestion) {
