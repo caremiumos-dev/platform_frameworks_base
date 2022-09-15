@@ -18,6 +18,7 @@ package android.net.vcn.persistablebundleutils;
 
 import static android.net.vcn.persistablebundleutils.IkeSessionParamsUtils.IKE_OPTION_AUTOMATIC_ADDRESS_FAMILY_SELECTION;
 import static android.net.vcn.persistablebundleutils.IkeSessionParamsUtils.IKE_OPTION_AUTOMATIC_NATT_KEEPALIVES;
+import static android.net.vcn.persistablebundleutils.IkeSessionParamsUtils.IKE_OPTION_MIGRATE_TO_PREFERRED_ADDRESS_FAMILY;
 import static android.net.vcn.persistablebundleutils.IkeSessionParamsUtils.isIkeOptionValid;
 import static android.system.OsConstants.AF_INET;
 import static android.system.OsConstants.AF_INET6;
@@ -30,6 +31,7 @@ import android.net.eap.EapSessionConfig;
 import android.net.ipsec.ike.IkeFqdnIdentification;
 import android.net.ipsec.ike.IkeSessionParams;
 import android.os.PersistableBundle;
+import android.util.ArraySet;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
@@ -50,11 +52,20 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public class IkeSessionParamsUtilsTest {
+    private static final Set<Integer> UNEXPOSED_OPTIONS = new ArraySet<>();
+
+    static {
+        UNEXPOSED_OPTIONS.add(IKE_OPTION_AUTOMATIC_ADDRESS_FAMILY_SELECTION);
+        UNEXPOSED_OPTIONS.add(IKE_OPTION_AUTOMATIC_NATT_KEEPALIVES);
+        UNEXPOSED_OPTIONS.add(IKE_OPTION_MIGRATE_TO_PREFERRED_ADDRESS_FAMILY);
+    }
+
     // Public for use in VcnGatewayConnectionConfigTest, EncryptedTunnelParamsUtilsTest
     public static IkeSessionParams.Builder createBuilderMinimum() {
         final InetAddress serverAddress = InetAddresses.parseNumericAddress("192.0.2.100");
@@ -161,11 +172,10 @@ public class IkeSessionParamsUtilsTest {
                         .addIkeOption(IkeSessionParams.IKE_OPTION_FORCE_PORT_4500)
                         .addIkeOption(IkeSessionParams.IKE_OPTION_INITIAL_CONTACT)
                         .addIkeOption(IkeSessionParams.IKE_OPTION_REKEY_MOBILITY);
-        if (isIkeOptionValid(IKE_OPTION_AUTOMATIC_ADDRESS_FAMILY_SELECTION)) {
-            builder.addIkeOption(IKE_OPTION_AUTOMATIC_ADDRESS_FAMILY_SELECTION);
-        }
-        if (isIkeOptionValid(IKE_OPTION_AUTOMATIC_NATT_KEEPALIVES)) {
-            builder.addIkeOption(IKE_OPTION_AUTOMATIC_NATT_KEEPALIVES);
+        for (int option : UNEXPOSED_OPTIONS) {
+            if (isIkeOptionValid(option)) {
+                builder.addIkeOption(option);
+            }
         }
         verifyPersistableBundleEncodeDecodeIsLossless(builder.build());
     }

@@ -82,6 +82,9 @@ public final class IkeSessionParamsUtils {
     @VisibleForTesting(visibility = Visibility.PRIVATE)
     public static final int IKE_OPTION_AUTOMATIC_NATT_KEEPALIVES = 7;
 
+    @VisibleForTesting(visibility = Visibility.PRIVATE)
+    public static final int IKE_OPTION_MIGRATE_TO_PREFERRED_ADDRESS_FAMILY = 8;
+
     private static final Set<Integer> IKE_OPTIONS = new ArraySet<>();
 
     static {
@@ -93,6 +96,7 @@ public final class IkeSessionParamsUtils {
         IKE_OPTIONS.add(IkeSessionParams.IKE_OPTION_REKEY_MOBILITY);
         IKE_OPTIONS.add(IKE_OPTION_AUTOMATIC_ADDRESS_FAMILY_SELECTION);
         IKE_OPTIONS.add(IKE_OPTION_AUTOMATIC_NATT_KEEPALIVES);
+        IKE_OPTIONS.add(IKE_OPTION_MIGRATE_TO_PREFERRED_ADDRESS_FAMILY);
     }
 
     /**
