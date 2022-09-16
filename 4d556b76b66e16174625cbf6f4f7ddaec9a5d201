@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "058f1f2e_8ee9b074",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2022-09-16T12:06:35Z",
+      "side": 1,
+      "message": "Thanks Ricky, it\u0027s much better to have the potential policy issues here than in libcore.\n\nlgtm modulo Dianne\u0027s comments about wtf() in the email thread.",
+      "revId": "4d556b76b66e16174625cbf6f4f7ddaec9a5d201",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "50cdfa10_c8c94b32",
+        "filename": "core/java/android/os/StrictMode.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1929,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2022-09-16T12:06:35Z",
+      "side": 1,
+      "message": "Great, lots of policy options available here: compatibility guard targetSdk \u003e\u003d U, system app / privileged app.",
+      "range": {
+        "startLine": 1927,
+        "startChar": 0,
+        "endLine": 1929,
+        "endChar": 17
+      },
+      "revId": "4d556b76b66e16174625cbf6f4f7ddaec9a5d201",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b01c450c_ed4a696c",
+        "filename": "core/java/android/os/StrictMode.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1930,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2022-09-16T12:06:35Z",
+      "side": 1,
+      "message": "It\u0027d be good to allocate the exception only in the case it\u0027s needed.",
+      "range": {
+        "startLine": 1930,
+        "startChar": 39,
+        "endLine": 1930,
+        "endChar": 90
+      },
+      "revId": "4d556b76b66e16174625cbf6f4f7ddaec9a5d201",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
