@@ -18,6 +18,23 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7e191824_2cad93be",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1068291
+      },
+      "writtenOn": "2022-09-19T15:30:10Z",
+      "side": 1,
+      "message": "There are issues with mocking AudioDeviceInfo (final class). Marking this as WIP until the issue is resolved.",
+      "revId": "6381bda60aa2d79fdd03cfad35a9232913e4f403",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b4a23314_3039ffa9",
