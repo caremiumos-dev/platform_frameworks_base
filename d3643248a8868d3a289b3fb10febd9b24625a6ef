@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8d5c5217_583efc89",
+        "filename": "core/java/android/os/StrictMode.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 1934,
+      "author": {
+        "id": 1133744
+      },
+      "writtenOn": "2022-09-22T16:29:34Z",
+      "side": 1,
+      "message": "Remove",
+      "range": {
+        "startLine": 1934,
+        "startChar": 20,
+        "endLine": 1934,
+        "endChar": 45
+      },
+      "revId": "d3643248a8868d3a289b3fb10febd9b24625a6ef",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
