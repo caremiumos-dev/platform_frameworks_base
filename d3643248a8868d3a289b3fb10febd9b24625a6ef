@@ -22,6 +22,30 @@
       },
       "revId": "d3643248a8868d3a289b3fb10febd9b24625a6ef",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6c264cae_cca39c8c",
+        "filename": "core/java/android/os/StrictMode.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 1934,
+      "author": {
+        "id": 1061218
+      },
+      "writtenOn": "2022-09-22T16:40:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8d5c5217_583efc89",
+      "range": {
+        "startLine": 1934,
+        "startChar": 20,
+        "endLine": 1934,
+        "endChar": 45
+      },
+      "revId": "d3643248a8868d3a289b3fb10febd9b24625a6ef",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
