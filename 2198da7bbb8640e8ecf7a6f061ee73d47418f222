@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e97b941b_7a62e8b2",
+        "filename": "core/java/android/os/StrictMode.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 1927,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2022-09-25T16:27:38Z",
+      "side": 1,
+      "message": "Looks like this needs splitting to satisfy aye-aye\u0027s AndroidFrameworkCompatChange check.",
+      "revId": "2198da7bbb8640e8ecf7a6f061ee73d47418f222",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
