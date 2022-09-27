@@ -69,6 +69,24 @@
       "parentUuid": "e0b84d33_7a3461bb",
       "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a9066fe9_2183c5e1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1133744
+      },
+      "writtenOn": "2022-09-27T11:15:37Z",
+      "side": 1,
+      "message": "From Dianne\u0027s recommendation we\u0027ll also want to log this to WW (as opposed to initially Log.wtf) regardless of `targetSdk`, but that will come later. Code in `onPathAccess()` (http://cs/android/frameworks/base/core/java/android/os/StrictMode.java;l\u003d1911-1929;rcl\u003db82b6808e11412efa48034f5296acc55703fc492) seems to be similar to what we\u0027re doing. Would you still prefer this in libcore, Narayan?",
+      "parentUuid": "8ddb7555_047eed3d",
+      "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
