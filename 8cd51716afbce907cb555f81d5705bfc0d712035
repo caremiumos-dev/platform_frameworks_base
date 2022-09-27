@@ -51,6 +51,24 @@
       "parentUuid": "032562ea_50f51fb8",
       "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8ddb7555_047eed3d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1014443
+      },
+      "writtenOn": "2022-09-27T11:10:22Z",
+      "side": 1,
+      "message": "ChangeIds are available on libcore, as is VMRuntime...getTargetSdkVersion() so i don\u0027t see why not ? StrictMode is an odd place to add this, IMO.",
+      "parentUuid": "e0b84d33_7a3461bb",
+      "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
