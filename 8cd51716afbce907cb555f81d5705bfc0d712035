@@ -16,6 +16,23 @@
       "message": "Friendly ping for owner approval",
       "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "032562ea_50f51fb8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1014443
+      },
+      "writtenOn": "2022-09-27T10:35:13Z",
+      "side": 1,
+      "message": "Why is this implemented as a StrictMode check instead of being done directly in libcore/ as part of the ZipFile implementation ?",
+      "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
