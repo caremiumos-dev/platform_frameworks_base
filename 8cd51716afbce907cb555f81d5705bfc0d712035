@@ -87,6 +87,24 @@
       "parentUuid": "8ddb7555_047eed3d",
       "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "17258fe3_089949d3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1133744
+      },
+      "writtenOn": "2022-09-27T11:21:19Z",
+      "side": 1,
+      "message": "Ah, if we moved to libcore we\u0027d also need to gate on the OS version. My understanding is that we get that for free by implementing `onZipEntryAccess()` here in `frameworks/base`.",
+      "parentUuid": "a9066fe9_2183c5e1",
+      "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
