@@ -105,6 +105,24 @@
       "parentUuid": "a9066fe9_2183c5e1",
       "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0f11c67b_234e44f1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1071150
+      },
+      "writtenOn": "2022-09-28T11:02:25Z",
+      "side": 1,
+      "message": "The preferred method for API behaviour changes in libcore is to gate on both the targetSDK and the platform version (*). libcore is pushed via mainline so a U change in libcore will end up on an S device and we can\u0027t do (adequate) retrospective compat testing on S. We generally try not to change existing API behaviour in libcore. \n\nThere\u0027s no such double checking needed if this change is in frameworks. If you push a little harder to expose this in StrictMode you could allow people to opt-out of this behaviour change if they\u0027ve implemented their own ZIP path checks (go/aakb/zip-path-traversal) and path fix-ups.\n\nSimilarly if you end up with any policy that requires frameworks knowledge then having a frameworks part is useful as libcore knows little about the code above it.",
+      "parentUuid": "17258fe3_089949d3",
+      "revId": "8cd51716afbce907cb555f81d5705bfc0d712035",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
