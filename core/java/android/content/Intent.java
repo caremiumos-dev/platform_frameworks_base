@@ -4771,6 +4771,12 @@ public class Intent implements Parcelable, Cloneable {
     @SdkConstant(SdkConstantType.INTENT_CATEGORY)
     public static final String CATEGORY_HOME = "android.intent.category.HOME";
     /**
+     * Indicates a Live TV app activity that can be auto started as an alternative to
+     * the {@link #CATEGORY_HOME} app
+     */
+    @SdkConstant(SdkConstantType.INTENT_CATEGORY)
+    public static final String CATEGORY_AUTO_LIVE_TV = "android.intent.category.AUTO_LIVE_TV";
+    /**
      * This is the home activity that is displayed when the device is finished setting up and ready
      * for use.
      * @hide
