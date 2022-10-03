@@ -3169,25 +3169,29 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
 
         if (template.getSubscriberIds().isEmpty()) return template;
 
-        for (final String[] merged : mergedList) {
-            // In some rare cases (e.g. b/243015487), merged subscriberId list might contain
-            // duplicated items. Deduplication for better error handling.
-            final ArraySet mergedSet = new ArraySet(merged);
-            if (mergedSet.size() != merged.length) {
-                Log.wtf(TAG, "Duplicated merged list detected: " + Arrays.toString(merged));
-            }
-            // TODO: Handle incompatible subscriberIds if that happens in practice.
-            for (final String subscriberId : template.getSubscriberIds()) {
-                if (com.android.net.module.util.CollectionUtils.contains(merged, subscriberId)) {
-                    // Requested template subscriber is part of the merged group; return
-                    // a template that matches all merged subscribers.
-                    return new NetworkTemplate.Builder(template.getMatchRule())
-                            .setWifiNetworkKeys(template.getWifiNetworkKeys())
-                            .setSubscriberIds(mergedSet)
-                            .setMeteredness(template.getMeteredness())
-                            .build();
+        try {
+            for (final String[] merged : mergedList) {
+                // In some rare cases (e.g. b/243015487), merged subscriberId list might contain
+                // duplicated items. Deduplication for better error handling.
+                final ArraySet mergedSet = new ArraySet(merged);
+                if (mergedSet.size() != merged.length) {
+                    Log.wtf(TAG, "Duplicated merged list detected: " + Arrays.toString(merged));
+                }
+                // TODO: Handle incompatible subscriberIds if that happens in practice.
+                for (final String subscriberId : template.getSubscriberIds()) {
+                    if (com.android.net.module.util.CollectionUtils.contains(merged, subscriberId)) {
+                        // Requested template subscriber is part of the merged group; return
+                        // a template that matches all merged subscribers.
+                        return new NetworkTemplate.Builder(template.getMatchRule())
+                                .setWifiNetworkKeys(template.getWifiNetworkKeys())
+                                .setSubscriberIds(mergedSet)
+                                .setMeteredness(template.getMeteredness())
+                                .build();
+                    }
                 }
             }
+        } catch (IllegalArgumentException e) { //add for issue 246909209
+            slog.e(TAG, "Wrong Argument" + e);
         }
 
         return template;
