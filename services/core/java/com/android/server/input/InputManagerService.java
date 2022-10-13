@@ -3696,6 +3696,11 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         @Override
+        public void setDimState(boolean dimState) {
+            mNative.setDimState(dimState);
+        }
+
+        @Override
         public void toggleCapsLock(int deviceId) {
             mNative.toggleCapsLock(deviceId);
         }

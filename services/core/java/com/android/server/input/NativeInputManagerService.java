@@ -115,6 +115,8 @@ public interface NativeInputManagerService {
 
     void setInteractive(boolean interactive);
 
+    void setDimState(boolean dimState);
+
     void reloadCalibration();
 
     void vibrate(int deviceId, long[] pattern, int[] amplitudes, int repeat, int token);
@@ -294,6 +296,9 @@ public interface NativeInputManagerService {
 
         @Override
         public native void setInteractive(boolean interactive);
+
+        @Override
+        public native void setDimState(boolean dimState);
 
         @Override
         public native void reloadCalibration();

@@ -306,6 +306,7 @@ public final class PowerManagerService extends SystemService
     private LightsManager mLightsManager;
     private BatteryManagerInternal mBatteryManagerInternal;
     private DisplayManagerInternal mDisplayManagerInternal;
+    private InputManagerInternal mInputManagerInternal;
     private IBatteryStats mBatteryStats;
     private WindowManagerPolicy mPolicy;
     private Notifier mNotifier;
@@ -668,6 +669,9 @@ public final class PowerManagerService extends SystemService
     // Transition to Doze is in progress.  We have transitioned to WAKEFULNESS_DOZING,
     // but the DreamService has not yet been told to start (it's an async process).
     private boolean mDozeStartInProgress;
+
+    // only brighten for touch event in dim state
+    private boolean mTouchInteractiveUnavailable;
 
     private final class PowerGroupWakefulnessChangeListener implements
             PowerGroup.PowerGroupListener {
@@ -1236,6 +1240,7 @@ public final class PowerManagerService extends SystemService
             mDisplayManagerInternal = getLocalService(DisplayManagerInternal.class);
             mPolicy = getLocalService(WindowManagerPolicy.class);
             mBatteryManagerInternal = getLocalService(BatteryManagerInternal.class);
+            mInputManagerInternal = getLocalService(InputManagerInternal.class);
             mAttentionDetector.systemReady(mContext);
 
             SensorManager sensorManager = new SystemSensorManager(mContext, mHandler.getLooper());
@@ -2833,6 +2838,18 @@ public final class PowerManagerService extends SystemService
             }
 
             powerGroup.setUserActivitySummaryLocked(groupUserActivitySummary);
+
+            if (powerGroup.getGroupId() == Display.DEFAULT_DISPLAY) {
+                boolean isDimming =
+                        (powerGroup.getUserActivitySummaryLocked() & USER_ACTIVITY_SCREEN_DIM) != 0;
+                if (isDimming && !mTouchInteractiveUnavailable) {
+                    mTouchInteractiveUnavailable = true;
+                    mInputManagerInternal.setDimState(true);
+                } else if (!isDimming && mTouchInteractiveUnavailable) {
+                    mTouchInteractiveUnavailable = false;
+                    mInputManagerInternal.setDimState(false);
+                }
+            }
 
             if (DEBUG_SPEW) {
                 Slog.d(TAG, "updateUserActivitySummaryLocked: groupId=" + powerGroup.getGroupId()

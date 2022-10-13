@@ -140,4 +140,6 @@ public abstract class InputManagerInternal {
      * canceled for all other channels.
      */
     public abstract void pilferPointers(IBinder token);
+
+    public abstract void setDimState(boolean dimState);
 }

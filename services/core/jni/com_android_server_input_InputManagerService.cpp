@@ -282,6 +282,7 @@ public:
     void setInputDeviceEnabled(uint32_t deviceId, bool enabled);
     void setShowTouches(bool enabled);
     void setInteractive(bool interactive);
+    void setDimState(bool dimState);
     void reloadCalibration();
     void setPointerIconType(int32_t iconId);
     void reloadPointerIcons();
@@ -389,6 +390,7 @@ private:
     } mLocked GUARDED_BY(mLock);
 
     std::atomic<bool> mInteractive;
+    std::atomic<bool> mDimState;
 
     void updateInactivityTimeoutLocked();
     void handleInterceptActions(jint wmActions, nsecs_t when, uint32_t& policyFlags);
@@ -420,6 +422,7 @@ NativeInputManager::NativeInputManager(jobject contextObj,
         mLocked.pointerDisplayId = ADISPLAY_ID_DEFAULT;
     }
     mInteractive = true;
+    mDimState = false;
 
     InputManager* im = new InputManager(this, this);
     mInputManager = im;
@@ -436,6 +439,7 @@ void NativeInputManager::dump(std::string& dump) {
     dump += "Input Manager State:\n";
     {
         dump += StringPrintf(INDENT "Interactive: %s\n", toString(mInteractive.load()));
+        dump += StringPrintf(INDENT "DimState: %s\n", toString(mDimState.load()));
     }
     {
         AutoMutex _l(mLock);
@@ -1113,6 +1117,10 @@ void NativeInputManager::setInteractive(bool interactive) {
     mInteractive = interactive;
 }
 
+void NativeInputManager::setDimState(bool dimState) {
+    mDimState = dimState;
+}
+
 void NativeInputManager::reloadCalibration() {
     mInputManager->getReader().requestRefreshConfiguration(
             InputReaderConfiguration::CHANGE_TOUCH_AFFINE_TRANSFORMATION);
@@ -1260,9 +1268,16 @@ void NativeInputManager::interceptMotionBeforeQueueing(const int32_t displayId, 
     // - Filter normal events based on screen state.
     // - For normal events brighten (but do not wake) the screen if currently dim.
     bool interactive = mInteractive.load();
+    bool dimState = mDimState.load();
+
     if (interactive) {
-        policyFlags |= POLICY_FLAG_INTERACTIVE;
+        if (dimState) {
+          policyFlags |= POLICY_FLAG_POKE_USER_ACTIVIITY;
+        } else {
+          policyFlags |= POLICY_FLAG_INTERACTIVE;
+        }
     }
+
     if ((policyFlags & POLICY_FLAG_TRUSTED) && !(policyFlags & POLICY_FLAG_INJECTED)) {
         if (policyFlags & POLICY_FLAG_INTERACTIVE) {
             policyFlags |= POLICY_FLAG_PASS_TO_USER;
@@ -1275,8 +1290,10 @@ void NativeInputManager::interceptMotionBeforeQueueing(const int32_t displayId, 
                     "interceptMotionBeforeQueueingNonInteractive")) {
                 wmActions = 0;
             }
+            if (!dimState) {
+                handleInterceptActions(wmActions, when, /*byref*/ policyFlags);
+            }
 
-            handleInterceptActions(wmActions, when, /*byref*/ policyFlags);
         }
     } else {
         if (interactive) {
@@ -1880,6 +1897,12 @@ static void nativeSetInteractive(JNIEnv* env, jobject nativeImplObj, jboolean in
     im->setInteractive(interactive);
 }
 
+static void nativeSetDimState(JNIEnv* env, jobject nativeImplObj, jboolean interactive) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+
+    im->setDimState(dimState);
+}
+
 static void nativeReloadCalibration(JNIEnv* env, jobject nativeImplObj) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
 
@@ -2348,6 +2371,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"setPointerAcceleration", "(F)V", (void*)nativeSetPointerAcceleration},
         {"setShowTouches", "(Z)V", (void*)nativeSetShowTouches},
         {"setInteractive", "(Z)V", (void*)nativeSetInteractive},
+        {"setDimState", "(Z)V", (void*)nativeSetDimState},
         {"reloadCalibration", "()V", (void*)nativeReloadCalibration},
         {"vibrate", "(I[J[III)V", (void*)nativeVibrate},
         {"vibrateCombined", "(I[JLandroid/util/SparseArray;II)V", (void*)nativeVibrateCombined},
