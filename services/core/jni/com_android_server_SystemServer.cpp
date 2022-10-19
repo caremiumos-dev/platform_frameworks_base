@@ -44,20 +44,6 @@ using namespace std::chrono_literals;
 
 namespace {
 
-static void startStatsAidlService() {
-    using aidl::android::frameworks::stats::IStats;
-    using aidl::android::frameworks::stats::StatsHal;
-
-    std::shared_ptr<StatsHal> statsService = ndk::SharedRefBase::make<StatsHal>();
-
-    const std::string instance = std::string() + IStats::descriptor + "/default";
-    const binder_exception_t err =
-            AServiceManager_addService(statsService->asBinder().get(), instance.c_str());
-    if (err != EX_NONE) {
-        ALOGW("Cannot register AIDL %s: %d", instance.c_str(), err);
-    }
-}
-
 static void startStatsHidlService() {
     using android::frameworks::stats::V1_0::IStats;
     using android::frameworks::stats::V1_0::implementation::StatsHal;
@@ -109,7 +95,7 @@ namespace android {
 
 static void android_server_SystemServer_startIStatsService(JNIEnv* /* env */, jobject /* clazz */) {
     startStatsHidlService();
-    startStatsAidlService();
+//    startStatsAidlService();
 }
 
 static void android_server_SystemServer_startISensorManagerService(JNIEnv* env,
