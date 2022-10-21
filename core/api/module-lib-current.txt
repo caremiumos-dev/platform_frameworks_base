@@ -294,6 +294,14 @@ package android.net.netstats {
 
 }
 
+package android.nfc {
+
+  public class NfcFrameworkInitializer {
+    method public static void registerServiceWrappers();
+  }
+
+}
+
 package android.os {
 
   public final class BatteryStatsManager {

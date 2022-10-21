@@ -47,7 +47,7 @@ public final class NfcManager {
      * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public NfcManager(Context context) {
+    public NfcManager(Context context, INfcAdapter service) {
         NfcAdapter adapter;
         context = context.getApplicationContext();
         if (context == null) {
@@ -55,7 +55,7 @@ public final class NfcManager {
                     "context not associated with any application (using a mock context?)");
         }
         try {
-            adapter = NfcAdapter.getNfcAdapter(context);
+            adapter = NfcAdapter.getNfcAdapter(context, service);
         } catch (UnsupportedOperationException e) {
             adapter = null;
         }
