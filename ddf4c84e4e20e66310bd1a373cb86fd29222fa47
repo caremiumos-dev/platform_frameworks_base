@@ -24,6 +24,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a1d66ee_aa65b5ca",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-10-25T11:15:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b907d793_010826b7",
+      "range": {
+        "startLine": 116,
+        "startChar": 40,
+        "endLine": 116,
+        "endChar": 56
+      },
+      "revId": "ddf4c84e4e20e66310bd1a373cb86fd29222fa47",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "09bee003_05945916",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-10-25T08:07:41Z",
       "side": 1,
       "message": "`task !\u003d focusedTask \u0026\u0026 focusedTask !\u003d null`",
+      "range": {
+        "startLine": 145,
+        "startChar": 16,
+        "endLine": 145,
+        "endChar": 33
+      },
+      "revId": "ddf4c84e4e20e66310bd1a373cb86fd29222fa47",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2566e6bc_4f2b7239",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-10-25T11:15:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "09bee003_05945916",
       "range": {
         "startLine": 145,
         "startChar": 16,
