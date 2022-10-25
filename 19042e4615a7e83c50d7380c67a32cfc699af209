@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "42a9a541_7fc768d2",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1650177
+      },
+      "writtenOn": "2022-10-25T09:29:20Z",
+      "side": 1,
+      "message": "One more nit: \n```\ntask !\u003d focusedTask \u0026\u0026 focusedTask !\u003d null\n```\n\nAnd you don\u0027t need the `focusedTask !\u003d null` check below",
+      "range": {
+        "startLine": 145,
+        "startChar": 16,
+        "endLine": 145,
+        "endChar": 35
+      },
+      "revId": "19042e4615a7e83c50d7380c67a32cfc699af209",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
