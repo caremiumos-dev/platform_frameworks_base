@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "57d9b6ef_13046634",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1650177
+      },
+      "writtenOn": "2022-10-26T03:03:05Z",
+      "side": 1,
+      "message": "`WindowContainer.hasChild` function signature requires the input to be the child\u0027s type.\n\nCan you please replace it with the following? It should also be more efficient\n\n```\nfocusedTask !\u003d null \u0026\u0026 focusedTask.isDescendantOf(root)\n```",
+      "range": {
+        "startLine": 94,
+        "startChar": 46,
+        "endLine": 94,
+        "endChar": 73
+      },
+      "revId": "0bfe15f5118e5cc594b89e4ca32bfd88180b2bb5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
