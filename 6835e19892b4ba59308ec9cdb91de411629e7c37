@@ -16,6 +16,24 @@
       "message": "Could you simple delete this block (i.e. do not call any touchActiveTime) without other changes to see if the result is correct?",
       "revId": "6835e19892b4ba59308ec9cdb91de411629e7c37",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "034c8995_d51511c7",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-10-27T13:14:18Z",
+      "side": 1,
+      "message": "There are two issues with delete this block:\n1.The focusedTask cannot be guaranteed to be at the top, which is inconsistent with the previous version.\n2.Invisible tasks may be in front of visible one. \ni.e. In the case of Multi-resume, there may be one Fullscreen and some Freeform tasks. \nIf you start the FullScreen first, next open freeform task and then close it. \nFirst launched Fullscreen task can\u0027t update active time, so Fullscreen task will be  visible but below.",
+      "parentUuid": "3903d98d_56ba6b55",
+      "revId": "6835e19892b4ba59308ec9cdb91de411629e7c37",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
