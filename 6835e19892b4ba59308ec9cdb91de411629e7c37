@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3903d98d_56ba6b55",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1320563
+      },
+      "writtenOn": "2022-10-27T09:29:19Z",
+      "side": 1,
+      "message": "Could you simple delete this block (i.e. do not call any touchActiveTime) without other changes to see if the result is correct?",
+      "revId": "6835e19892b4ba59308ec9cdb91de411629e7c37",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
