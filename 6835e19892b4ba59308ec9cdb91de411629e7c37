@@ -34,6 +34,24 @@
       "parentUuid": "3903d98d_56ba6b55",
       "revId": "6835e19892b4ba59308ec9cdb91de411629e7c37",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2c68b36b_b57658cb",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1320563
+      },
+      "writtenOn": "2022-10-27T13:37:58Z",
+      "side": 1,
+      "message": "Because it is weird to modify lastActiveTime of Task by a getter-like method. It is better to correct the old code.\n\nIt looks like lastActiveTime is not a good choice to sort the task since multi-window support.\n\nHow about changing mTmpSortedSet so a simple ArrayList and use traverseTopToBottom\u003dtrue for forAllLeafTasks.\nAnd then\n```\nloop {\n  if (task \u003d\u003d focusedTask) continue;\n  if (task.isVisible()) {\n    mTmpVisibleTasks.add(task);\n  } else {\n    mTmpInvisibleTasks.add(task);\n  }\n}\nmTmpSortedList.add(focusedTask);\nmTmpSortedList.addAll(mTmpVisibleTasks);\nmTmpSortedList.addAll(mTmpInvisibleTasks);\n```",
+      "parentUuid": "034c8995_d51511c7",
+      "revId": "6835e19892b4ba59308ec9cdb91de411629e7c37",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
