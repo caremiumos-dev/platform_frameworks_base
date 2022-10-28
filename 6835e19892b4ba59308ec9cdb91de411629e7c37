@@ -70,6 +70,24 @@
       "parentUuid": "2c68b36b_b57658cb",
       "revId": "6835e19892b4ba59308ec9cdb91de411629e7c37",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4519d14_d329bea0",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-10-28T11:28:56Z",
+      "side": 1,
+      "message": "Agree with you about active time is not a good choice to sort the task, And modified CL based on your comments.\nThere are two things that are different from your idea:\n1.mTmpInvisibleTasks also used ArrayList, because sorting by activie time doesn\u0027t look as good as by Task\u0027s hierarchy.\nIt may lead to questions: why visible and invisible are sorted differently.\n2.Use processTaskInWindowContainer instead of directly using forAllLeafTasks.\nThere are several reasons for this：\n   * When there are multiple DisplayContent there will be multiple focusedTask, I think it is better to return like this:\n   Top DisplayContent:{FocusTask, VisbleTask0...n, InvisbleTask0...n}\n   Bottom DisplayContent:{FocusTask, VisbleTask0...n, InvisbleTask0...n}\nin the same result List.\n   * If root is DisplayContent or other WindowContainer, use forAllLeafTasks directly",
+      "parentUuid": "b2c1179a_2ee4bf3f",
+      "revId": "6835e19892b4ba59308ec9cdb91de411629e7c37",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
