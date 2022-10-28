@@ -21,7 +21,7 @@
 #include <type_traits>
 
 #include "android_media_MediaCodec.h"
-
+@include "foo.h"
 #include "android_media_MediaCodecLinearBlock.h"
 #include "android_media_MediaCrypto.h"
 #include "android_media_MediaDescrambler.h"
