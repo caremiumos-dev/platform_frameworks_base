@@ -24,6 +24,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c163f710_bbb0c37e",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-10-31T16:10:55Z",
+      "side": 1,
+      "message": "fix this issue.\n\nIn addition, the return order has been changed when there are multiple DisplayContents. There are two reasons:\n* When getTasks(n), the top Display has n+1 Tasks, and the focus Task of the bottom Display cannot be obtained. The parameter n of the application calling getTasks is difficult to determine.\n* Consistent with the overall return order before modification",
+      "parentUuid": "45d0af33_c569cdd6",
+      "range": {
+        "startLine": 110,
+        "startChar": 8,
+        "endLine": 112,
+        "endChar": 9
+      },
+      "revId": "22a9763257166fa677d7ee83fd438939e61990ce",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "46bfa17b_663173d3",
@@ -37,6 +61,24 @@
       "writtenOn": "2022-10-28T14:09:24Z",
       "side": 1,
       "message": "My example only overrides the time for visible tasks because they can be considered as always active now. But it might be fine to keep the real value for the invisible tasks. As `TaskInfo#lastActiveTime` is documented with\n`The last time this task was active since boot (including time spent in sleep).`\n\nIf it seems to be inconsistent, the visible task can use `now` + `order of its lastActiveTime`.",
+      "revId": "22a9763257166fa677d7ee83fd438939e61990ce",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7491e342_40f9290d",
+        "filename": "services/core/java/com/android/server/wm/RunningTasks.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-10-31T16:10:55Z",
+      "side": 1,
+      "message": "fix the issue as in example",
+      "parentUuid": "46bfa17b_663173d3",
       "revId": "22a9763257166fa677d7ee83fd438939e61990ce",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
