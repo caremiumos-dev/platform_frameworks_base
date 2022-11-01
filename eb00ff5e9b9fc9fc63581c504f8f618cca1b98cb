@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a17328a4_5c17459c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-11-01T11:23:28Z",
+      "side": 1,
+      "message": "Please help me to see the reason for Presubmit-Verified-2, thanks.\nI don\u0027t have permission to see it.",
+      "revId": "eb00ff5e9b9fc9fc63581c504f8f618cca1b98cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
