@@ -9149,6 +9149,13 @@ public final class Settings {
         public static final String NFC_PAYMENT_DEFAULT_COMPONENT = "nfc_payment_default_component";
 
         /**
+         * The default Wallet Manager component
+         * @hide
+         */
+        public static final String DEFAULT_WALLET_MANAGER_COMPONENT =
+                "nfc_wallet_manager_default_component";
+
+        /**
          * Whether NFC payment is handled by the foreground application or a default.
          * @hide
          */
