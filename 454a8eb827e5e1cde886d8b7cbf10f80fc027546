@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "80c92974_bf50ad91",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1006497
+      },
+      "writtenOn": "2022-11-02T12:04:47Z",
+      "side": 1,
+      "message": "If an app gets frozen and then unfrozen this potentially leaves them in a bad state as they won\u0027t receive a display changed event.",
+      "revId": "454a8eb827e5e1cde886d8b7cbf10f80fc027546",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
