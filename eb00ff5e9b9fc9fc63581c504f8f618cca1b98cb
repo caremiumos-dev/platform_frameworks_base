@@ -16,6 +16,47 @@
       "message": "Please help me to see the reason for Presubmit-Verified-2, thanks.\nI don\u0027t have permission to see it.",
       "revId": "eb00ff5e9b9fc9fc63581c504f8f618cca1b98cb",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ae27ad74_5d3549ab",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1650177
+      },
+      "writtenOn": "2022-11-02T11:23:01Z",
+      "side": 1,
+      "message": "There is merge conflict in internal branch. I will merge there first.\n\nPlease keep the merged-in in the commit message.\n```\nMerged-In: I7f7d5e72fbf73988b58c23f8a11dff05dbc1b3f1\n```",
+      "parentUuid": "a17328a4_5c17459c",
+      "revId": "eb00ff5e9b9fc9fc63581c504f8f618cca1b98cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "97ff5279_941e3ec6",
+        "filename": "services/tests/wmtests/src/com/android/server/wm/RunningTasksTest.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1650177
+      },
+      "writtenOn": "2022-11-02T11:23:01Z",
+      "side": 1,
+      "message": "Remove the extra line",
+      "range": {
+        "startLine": 64,
+        "startChar": 0,
+        "endLine": 65,
+        "endChar": 4
+      },
+      "revId": "eb00ff5e9b9fc9fc63581c504f8f618cca1b98cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
