@@ -36,6 +36,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e361765b_bdac3b07",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1935976
+      },
+      "writtenOn": "2022-11-02T12:10:11Z",
+      "side": 1,
+      "message": "Thank you and Riddle for your help and review.",
+      "parentUuid": "ae27ad74_5d3549ab",
+      "revId": "eb00ff5e9b9fc9fc63581c504f8f618cca1b98cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "97ff5279_941e3ec6",
