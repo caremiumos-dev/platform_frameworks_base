@@ -16,6 +16,24 @@
       "message": "If an app gets frozen and then unfrozen this potentially leaves them in a bad state as they won\u0027t receive a display changed event.",
       "revId": "454a8eb827e5e1cde886d8b7cbf10f80fc027546",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "44f45a61_42cc18d9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1305555
+      },
+      "writtenOn": "2022-11-03T01:52:00Z",
+      "side": 1,
+      "message": "If an app gets frozen, DMS shouldn\u0027t keep sending display change to it because such notify can\u0027t be handled and app\u0027s binder buffer will be exhausted. The bad thing is it will discard important notify when binder buffer exhausted like lifecycle transaction requests and lead to ANR.",
+      "parentUuid": "80c92974_bf50ad91",
+      "revId": "454a8eb827e5e1cde886d8b7cbf10f80fc027546",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
