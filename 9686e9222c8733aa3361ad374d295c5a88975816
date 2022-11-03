@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "66fa3c71_c3afa73e",
+        "filename": "services/tests/wmtests/src/com/android/server/wm/RunningTasksTest.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1650177
+      },
+      "writtenOn": "2022-11-03T03:48:09Z",
+      "side": 1,
+      "message": "The signature in AOSP is\n```\ngetTasks(int maxNum, List\u003cRunningTaskInfo\u003e list, int flags, RootWindowContainer root, int callingUid, ArraySet\u003cInteger\u003e profileIds)\n```\n\nPlease remove the `mAtm.getRecentTasks()` here",
+      "range": {
+        "startLine": 155,
+        "startChar": 8,
+        "endLine": 157,
+        "endChar": 95
+      },
+      "revId": "9686e9222c8733aa3361ad374d295c5a88975816",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
