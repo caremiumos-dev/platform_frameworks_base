@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5353ba1c_6ce9292b",
+        "filename": "packages/SystemUI/src/com/android/systemui/media/NotificationPlayer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2022-11-15T13:23:35Z",
+      "side": 1,
+      "message": "this should only be done if (mWakeLock !\u003d null)",
+      "range": {
+        "startLine": 107,
+        "startChar": 0,
+        "endLine": 107,
+        "endChar": 85
+      },
+      "revId": "0f334d8cd3120af14a30e93652c5fd7fef88e0c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
