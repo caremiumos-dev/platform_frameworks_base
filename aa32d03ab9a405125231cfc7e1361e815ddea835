@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "93d4cbfc_d962f97a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1561936
+      },
+      "writtenOn": "2022-11-15T11:21:52Z",
+      "side": 1,
+      "message": "Hello,\nI applied MP wakelock in NotificationPlayer.java\nPlease review",
+      "revId": "aa32d03ab9a405125231cfc7e1361e815ddea835",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
