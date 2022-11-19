@@ -346,7 +346,8 @@ public final class ViewRootImpl implements ViewParent,
      * to view root for apps using legacy back behavior.
      */
     private CompatOnBackInvokedCallback mCompatOnBackInvokedCallback;
-
+    
+    private BackFocusKeeper mBackFocusKeeper;
     /**
      * Callback for notifying about global configuration changes.
      */
@@ -959,6 +960,7 @@ public final class ViewRootImpl implements ViewParent,
         mFastScrollSoundEffectsEnabled = audioManager.areNavigationRepeatSoundEffectsEnabled();
 
         mScrollCaptureRequestTimeout = SCROLL_CAPTURE_REQUEST_TIMEOUT_MILLIS;
+        mBackFocusKeeper=new BackFocusKeeper();
         mOnBackInvokedDispatcher = new WindowOnBackInvokedDispatcher(
                 context.getApplicationInfo().isOnBackInvokedCallbackEnabled());
     }
@@ -3727,6 +3729,10 @@ public final class ViewRootImpl implements ViewParent,
         // text changes, but these should be flushed independently.
         if (hasWindowFocus) {
             handleContentCaptureFlush();
+            if (Handler.getMain().hasCallbacks(mBackFocusKeeper.getBackFocusTimeOutCallbck())) {
+                Handler.getMain().removeCallbacks(mBackFocusKeeper.getBackFocusTimeOutCallbck());
+                mBackFocusKeeper.performOnBackInvokedCallback();
+            }
         }
     }
 
@@ -5365,7 +5371,6 @@ public final class ViewRootImpl implements ViewParent,
     private static final int MSG_WINDOW_TOUCH_MODE_CHANGED = 34;
     private static final int MSG_KEEP_CLEAR_RECTS_CHANGED = 35;
     private static final int MSG_REPORT_KEEP_CLEAR_RECTS = 36;
-
 
     final class ViewRootHandler extends Handler {
         @Override
@@ -10826,7 +10831,7 @@ public final class ViewRootImpl implements ViewParent,
                             + "IWindow:%s Session:%s",
                     mOnBackInvokedDispatcher, mBasePackageName, mWindow, mWindowSession));
         }
-        mOnBackInvokedDispatcher.attachToWindow(mWindowSession, mWindow);
+        mOnBackInvokedDispatcher.attachToWindow(mWindowSession, mWindow, mBackFocusKeeper);
     }
 
     private void sendBackKeyEvent(int action) {
@@ -10981,5 +10986,48 @@ public final class ViewRootImpl implements ViewParent,
             return;
         }
         mSurfaceSyncer.merge(mSyncId, syncId, otherSyncer);
+    }
+
+    void handleBackFocusTimeout(){
+        Log.e(TAG, "back focus timeout: ");
+        //TODO: report ANR
+    }
+
+    // Wait mechanism when no focus window
+    public class BackFocusKeeper {
+        static final int BACK_FOCUS_TIMEOUT = 5000;
+        private Runnable mOnBackInvokedCallback;
+
+        private Runnable mBackFocusTimeOutCallback = ()->{
+            Log.e(TAG, "back focus timeout");
+            handleBackFocusTimeout();
+        };
+        public void setOnBackInvokedCallback(Runnable onBackInvokedCallback) {
+            mOnBackInvokedCallback = onBackInvokedCallback;
+        }
+
+        public void performOnBackInvokedCallback() {
+            Log.d(TAG, "focus entering. performOnBackInvokedCallback");
+            if (mOnBackInvokedCallback != null) {
+                mOnBackInvokedCallback.run();
+                mOnBackInvokedCallback = null;
+            }
+        }
+
+        public void handleBackFocusTimeout() {
+            mOnBackInvokedCallback = null;
+        }
+
+        public int getBackFocusTimeOut(){
+            return BACK_FOCUS_TIMEOUT;
+        }
+
+        public Runnable getBackFocusTimeOutCallbck(){
+            return mBackFocusTimeOutCallback;
+        }
+
+        public boolean hasWindowFocus() {
+            return mAttachInfo.mHasWindowFocus;
+        }
     }
 }
