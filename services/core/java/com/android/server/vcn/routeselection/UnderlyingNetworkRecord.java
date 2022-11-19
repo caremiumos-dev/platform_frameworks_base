@@ -34,6 +34,7 @@ import com.android.server.vcn.VcnContext;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -63,7 +64,8 @@ public class UnderlyingNetworkRecord {
         this.isBlocked = isBlocked;
     }
 
-    private int getOrCalculatePriorityClass(
+    // Used in UnderlyingNetworkController
+    int getOrCalculatePriorityClass(
             VcnContext vcnContext,
             List<VcnUnderlyingNetworkTemplate> underlyingNetworkTemplates,
             ParcelUuid subscriptionGroup,
@@ -109,29 +111,11 @@ public class UnderlyingNetworkRecord {
     }
 
     static Comparator<UnderlyingNetworkRecord> getComparator(
-            VcnContext vcnContext,
-            List<VcnUnderlyingNetworkTemplate> underlyingNetworkTemplates,
-            ParcelUuid subscriptionGroup,
-            TelephonySubscriptionSnapshot snapshot,
-            UnderlyingNetworkRecord currentlySelected,
-            PersistableBundleWrapper carrierConfig) {
+            Map<UnderlyingNetworkRecord, Integer> networkToPriorityClassMap,
+            UnderlyingNetworkRecord currentlySelected) {
         return (left, right) -> {
-            final int leftIndex =
-                    left.getOrCalculatePriorityClass(
-                            vcnContext,
-                            underlyingNetworkTemplates,
-                            subscriptionGroup,
-                            snapshot,
-                            currentlySelected,
-                            carrierConfig);
-            final int rightIndex =
-                    right.getOrCalculatePriorityClass(
-                            vcnContext,
-                            underlyingNetworkTemplates,
-                            subscriptionGroup,
-                            snapshot,
-                            currentlySelected,
-                            carrierConfig);
+            final int leftIndex = networkToPriorityClassMap.get(left);
+            final int rightIndex = networkToPriorityClassMap.get(right);
 
             // In the case of networks in the same priority class, prioritize based on other
             // criteria (eg. actively selected network, link metrics, etc)

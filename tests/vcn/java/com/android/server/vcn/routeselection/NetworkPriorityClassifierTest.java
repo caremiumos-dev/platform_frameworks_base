@@ -16,6 +16,7 @@
 
 package com.android.server.vcn.routeselection;
 
+import static android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET;
 import static android.net.vcn.VcnUnderlyingNetworkTemplate.MATCH_FORBIDDEN;
 import static android.net.vcn.VcnUnderlyingNetworkTemplate.MATCH_REQUIRED;
 import static android.net.vcn.VcnUnderlyingNetworkTemplateTestBase.TEST_MIN_ENTRY_DOWNSTREAM_BANDWIDTH_KBPS;
@@ -24,7 +25,8 @@ import static android.net.vcn.VcnUnderlyingNetworkTemplateTestBase.TEST_MIN_EXIT
 import static android.net.vcn.VcnUnderlyingNetworkTemplateTestBase.TEST_MIN_EXIT_UPSTREAM_BANDWIDTH_KBPS;
 
 import static com.android.server.vcn.VcnTestUtils.setupSystemService;
-import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.PRIORITY_ANY;
+import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.PRIORITY_FALLBACK;
+import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.PRIORITY_INVALID;
 import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.calculatePriorityClass;
 import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.checkMatchesCellPriorityRule;
 import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.checkMatchesPriorityRule;
@@ -64,6 +66,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
@@ -490,6 +493,37 @@ public class NetworkPriorityClassifierTest {
                         mSubscriptionSnapshot));
     }
 
+    private void verifyMatchCellWithRequiredCapabilities(
+            boolean useMatchedCaps, boolean expectMatch) {
+        final Set<Integer> requiredCaps =
+                useMatchedCaps
+                        ? Collections.singleton(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                        : Collections.singleton(NetworkCapabilities.NET_CAPABILITY_CBS);
+
+        final VcnCellUnderlyingNetworkTemplate template =
+                getCellNetworkPriorityBuilder().setCapabilities(requiredCaps).build();
+
+        assertEquals(
+                expectMatch,
+                checkMatchesCellPriorityRule(
+                        mVcnContext,
+                        template,
+                        mCellNetworkRecord,
+                        SUB_GROUP,
+                        mSubscriptionSnapshot));
+    }
+
+    @Test
+    public void testMatchCellWithRequiredCapabilities() {
+        verifyMatchCellWithRequiredCapabilities(true /* useMatchedCaps */, true /* expectMatch */);
+    }
+
+    @Test
+    public void testMatchCellWithoutRequiredCapabilities() {
+        verifyMatchCellWithRequiredCapabilities(
+                false /* useMatchedCaps */, false /* expectMatch */);
+    }
+
     private void verifyCalculatePriorityClass(
             UnderlyingNetworkRecord networkRecord, int expectedIndex) {
         final int priorityIndex =
@@ -510,17 +544,32 @@ public class NetworkPriorityClassifierTest {
         verifyCalculatePriorityClass(mCellNetworkRecord, 2);
     }
 
-    @Test
-    public void testCalculatePriorityClassFailToMatchAny() throws Exception {
-        final NetworkCapabilities nc =
+    private void checkCalculatePriorityClassFailToMatchAny(
+            boolean hasInternet, int expectedPriorityClass) throws Exception {
+        final NetworkCapabilities.Builder ncBuilder =
                 new NetworkCapabilities.Builder()
-                        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                         .setSignalStrength(WIFI_RSSI_LOW)
-                        .setSsid(SSID)
-                        .build();
+                        .setSsid(SSID);
+        if (hasInternet) {
+            ncBuilder.addCapability(NET_CAPABILITY_INTERNET);
+        }
+
+        final NetworkCapabilities nc = ncBuilder.build();
+
         final UnderlyingNetworkRecord wifiNetworkRecord =
                 new UnderlyingNetworkRecord(mNetwork, nc, LINK_PROPERTIES, false /* isBlocked */);
 
-        verifyCalculatePriorityClass(wifiNetworkRecord, PRIORITY_ANY);
+        verifyCalculatePriorityClass(wifiNetworkRecord, expectedPriorityClass);
+    }
+
+    @Test
+    public void testCalculatePriorityClassFailToMatchAny_InternetNetwork() throws Exception {
+        checkCalculatePriorityClassFailToMatchAny(true /* hasInternet */, PRIORITY_FALLBACK);
+    }
+
+    @Test
+    public void testCalculatePriorityClassFailToMatchAny_NonInternetNetwork() throws Exception {
+        checkCalculatePriorityClassFailToMatchAny(false /* hasInternet */, PRIORITY_INVALID);
     }
 }

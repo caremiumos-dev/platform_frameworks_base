@@ -16,6 +16,7 @@
 
 package com.android.server.vcn.routeselection;
 
+import static android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET;
 import static android.telephony.TelephonyCallback.ActiveDataSubscriptionIdListener;
 
 import static com.android.server.VcnManagementService.LOCAL_LOG;
@@ -32,6 +33,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.TelephonyNetworkSpecifier;
+import android.net.vcn.VcnCellUnderlyingNetworkTemplate;
 import android.net.vcn.VcnGatewayConnectionConfig;
 import android.net.vcn.VcnUnderlyingNetworkTemplate;
 import android.os.Handler;
@@ -40,6 +42,7 @@ import android.os.ParcelUuid;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -49,6 +52,7 @@ import com.android.server.vcn.VcnContext;
 import com.android.server.vcn.util.LogUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -126,6 +130,21 @@ public class UnderlyingNetworkController {
         registerOrUpdateNetworkRequests();
     }
 
+    private static Set<Set<Integer>> dedupAndGetCapRequirementsForCell(
+            VcnGatewayConnectionConfig connectionConfig) {
+        final Set<Set<Integer>> capSets = new ArraySet<>();
+        for (VcnUnderlyingNetworkTemplate template :
+                connectionConfig.getVcnUnderlyingNetworkPriorities()) {
+            if (template instanceof VcnCellUnderlyingNetworkTemplate) {
+                Set<Integer> capSet =
+                        ((VcnCellUnderlyingNetworkTemplate) template).getCapabilities();
+                capSets.add(capSet);
+            }
+        }
+        capSets.add(Collections.singleton(NET_CAPABILITY_INTERNET));
+        return capSets;
+    }
+
     private void registerOrUpdateNetworkRequests() {
         NetworkCallback oldRouteSelectionCallback = mRouteSelectionCallback;
         NetworkCallback oldWifiCallback = mWifiBringupCallback;
@@ -158,11 +177,14 @@ public class UnderlyingNetworkController {
                     getWifiNetworkRequest(), mWifiBringupCallback, mHandler);
 
             for (final int subId : mLastSnapshot.getAllSubIdsInGroup(mSubscriptionGroup)) {
-                final NetworkBringupCallback cb = new NetworkBringupCallback();
-                mCellBringupCallbacks.add(cb);
+                for (Set<Integer> requiredCaps :
+                        dedupAndGetCapRequirementsForCell(mConnectionConfig)) {
+                    final NetworkBringupCallback cb = new NetworkBringupCallback();
+                    mCellBringupCallbacks.add(cb);
 
-                mConnectivityManager.requestBackgroundNetwork(
-                        getCellNetworkRequestForSubId(subId), cb, mHandler);
+                    mConnectivityManager.requestBackgroundNetwork(
+                            getCellNetworkRequestForSubId(subId, requiredCaps), cb, mHandler);
+                }
             }
         } else {
             mRouteSelectionCallback = null;
@@ -226,6 +248,7 @@ public class UnderlyingNetworkController {
     private NetworkRequest getWifiNetworkRequest() {
         return getBaseNetworkRequestBuilder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .setSubscriptionIds(mLastSnapshot.getAllSubIdsInGroup(mSubscriptionGroup))
                 .build();
     }
@@ -240,6 +263,7 @@ public class UnderlyingNetworkController {
     private NetworkRequest getWifiEntryRssiThresholdNetworkRequest() {
         return getBaseNetworkRequestBuilder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .setSubscriptionIds(mLastSnapshot.getAllSubIdsInGroup(mSubscriptionGroup))
                 // Ensure wifi updates signal strengths when crossing this threshold.
                 .setSignalStrength(getWifiEntryRssiThreshold(mCarrierConfig))
@@ -256,6 +280,7 @@ public class UnderlyingNetworkController {
     private NetworkRequest getWifiExitRssiThresholdNetworkRequest() {
         return getBaseNetworkRequestBuilder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .setSubscriptionIds(mLastSnapshot.getAllSubIdsInGroup(mSubscriptionGroup))
                 // Ensure wifi updates signal strengths when crossing this threshold.
                 .setSignalStrength(getWifiExitRssiThreshold(mCarrierConfig))
@@ -273,11 +298,16 @@ public class UnderlyingNetworkController {
      * <p>Since this request MUST make it to the TelephonyNetworkFactory, subIds are not specified
      * in the NetworkCapabilities, but rather in the TelephonyNetworkSpecifier.
      */
-    private NetworkRequest getCellNetworkRequestForSubId(int subId) {
-        return getBaseNetworkRequestBuilder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-                .setNetworkSpecifier(new TelephonyNetworkSpecifier(subId))
-                .build();
+    private NetworkRequest getCellNetworkRequestForSubId(
+            int subId, Set<Integer> networkCapabilities) {
+        final NetworkRequest.Builder nrBuilder =
+                getBaseNetworkRequestBuilder()
+                        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                        .setNetworkSpecifier(new TelephonyNetworkSpecifier(subId));
+        for (int cap : networkCapabilities) {
+            nrBuilder.addCapability(cap);
+        }
+        return nrBuilder.build();
     }
 
     /**
@@ -285,7 +315,6 @@ public class UnderlyingNetworkController {
      */
     private NetworkRequest.Builder getBaseNetworkRequestBuilder() {
         return new NetworkRequest.Builder()
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .removeCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
                 .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
                 .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VCN_MANAGED);
@@ -392,21 +421,33 @@ public class UnderlyingNetworkController {
         }
 
         private TreeSet<UnderlyingNetworkRecord> getSortedUnderlyingNetworks() {
-            TreeSet<UnderlyingNetworkRecord> sorted =
-                    new TreeSet<>(
-                            UnderlyingNetworkRecord.getComparator(
+            final Map<UnderlyingNetworkRecord, Integer> networkToPriorityClassMap =
+                    new ArrayMap<>();
+            for (UnderlyingNetworkRecord.Builder builder :
+                    mUnderlyingNetworkRecordBuilders.values()) {
+                if (builder.isValid()) {
+                    final UnderlyingNetworkRecord record = builder.build();
+                    final int priorityClass =
+                            record.getOrCalculatePriorityClass(
                                     mVcnContext,
                                     mConnectionConfig.getVcnUnderlyingNetworkPriorities(),
                                     mSubscriptionGroup,
                                     mLastSnapshot,
                                     mCurrentRecord,
-                                    mCarrierConfig));
-
-            for (UnderlyingNetworkRecord.Builder builder :
-                    mUnderlyingNetworkRecordBuilders.values()) {
-                if (builder.isValid()) {
-                    sorted.add(builder.build());
+                                    mCarrierConfig);
+                    if (priorityClass != NetworkPriorityClassifier.PRIORITY_INVALID) {
+                        networkToPriorityClassMap.put(record, priorityClass);
+                    }
                 }
+            }
+
+            TreeSet<UnderlyingNetworkRecord> sorted =
+                    new TreeSet<>(
+                            UnderlyingNetworkRecord.getComparator(
+                                    networkToPriorityClassMap, mCurrentRecord));
+
+            for (UnderlyingNetworkRecord record : networkToPriorityClassMap.keySet()) {
+                sorted.add(record);
             }
 
             return sorted;

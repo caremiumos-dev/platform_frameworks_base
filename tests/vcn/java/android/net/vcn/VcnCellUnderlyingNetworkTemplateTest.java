@@ -45,7 +45,8 @@ public class VcnCellUnderlyingNetworkTemplateTest extends VcnUnderlyingNetworkTe
         REQUIRED_CAPS.add(NET_CAPABILITY_DUN);
     }
 
-    private static VcnCellUnderlyingNetworkTemplate getTestNetworkTemplate(
+    // Public for use in UnderlyingNetworkControllerTest
+    public static VcnCellUnderlyingNetworkTemplate getTestNetworkTemplate(
             Set<Integer> requiredCaps) {
         return new VcnCellUnderlyingNetworkTemplate.Builder()
                 .setMetered(MATCH_FORBIDDEN)

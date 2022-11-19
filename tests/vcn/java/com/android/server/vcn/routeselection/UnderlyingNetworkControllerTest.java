@@ -16,6 +16,11 @@
 
 package com.android.server.vcn.routeselection;
 
+import static android.net.NetworkCapabilities.NET_CAPABILITY_CBS;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_DUN;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_MMS;
+
 import static com.android.server.vcn.VcnTestUtils.setupSystemService;
 import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.WIFI_ENTRY_RSSI_THRESHOLD_DEFAULT;
 import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.WIFI_EXIT_RSSI_THRESHOLD_DEFAULT;
@@ -28,6 +33,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -42,7 +48,10 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.TelephonyNetworkSpecifier;
+import android.net.vcn.VcnCellUnderlyingNetworkTemplate;
+import android.net.vcn.VcnCellUnderlyingNetworkTemplateTest;
 import android.net.vcn.VcnGatewayConnectionConfigTest;
+import android.net.vcn.VcnUnderlyingNetworkTemplate;
 import android.os.ParcelUuid;
 import android.os.test.TestLooper;
 import android.telephony.CarrierConfigManager;
@@ -64,7 +73,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -95,10 +107,36 @@ public class UnderlyingNetworkControllerTest {
                     .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                     .build();
 
+    private static final NetworkCapabilities DUN_NETWORK_CAPABILITIES =
+            new NetworkCapabilities.Builder()
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_DUN)
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+                    .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                    .removeCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
+                    .build();
+
+    private static final NetworkCapabilities CBS_NETWORK_CAPABILITIES =
+            new NetworkCapabilities.Builder()
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_CBS)
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+                    .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                    .removeCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
+                    .build();
+
     private static final LinkProperties INITIAL_LINK_PROPERTIES =
             getLinkPropertiesWithName("initial_iface");
     private static final LinkProperties UPDATED_LINK_PROPERTIES =
             getLinkPropertiesWithName("updated_iface");
+
+    private static final VcnCellUnderlyingNetworkTemplate CELL_TEMPLATE_DUN =
+            new VcnCellUnderlyingNetworkTemplate.Builder()
+                    .setCapabilities(Collections.singleton(NET_CAPABILITY_DUN))
+                    .build();
+
+    private static final VcnCellUnderlyingNetworkTemplate CELL_TEMPLATE_CBS =
+            new VcnCellUnderlyingNetworkTemplate.Builder()
+                    .setCapabilities(Collections.singleton(NET_CAPABILITY_CBS))
+                    .build();
 
     @Mock private Context mContext;
     @Mock private VcnNetworkProvider mVcnNetworkProvider;
@@ -201,6 +239,81 @@ public class UnderlyingNetworkControllerTest {
                         any());
     }
 
+    private void verifyRequestBackgroundNetwork(
+            ConnectivityManager cm, int expectedSubId, Set<Integer> expectedCaps) {
+        verify(cm)
+                .requestBackgroundNetwork(
+                        eq(getCellRequestForSubId(expectedSubId, expectedCaps)),
+                        any(NetworkBringupCallback.class),
+                        any());
+    }
+
+    @Test
+    public void testNetworkCallbacksRegisteredOnStartupForNonInternetCapabilities() {
+        final ConnectivityManager cm = mock(ConnectivityManager.class);
+        setupSystemService(mContext, cm, Context.CONNECTIVITY_SERVICE, ConnectivityManager.class);
+
+        // Build network templates
+        final List<VcnUnderlyingNetworkTemplate> networkTemplates = new ArrayList();
+
+        networkTemplates.add(
+                VcnCellUnderlyingNetworkTemplateTest.getTestNetworkTemplate(
+                        Collections.singleton(NET_CAPABILITY_DUN)));
+
+        final Set<Integer> capSets = new ArraySet<>();
+        capSets.add(NET_CAPABILITY_MMS);
+        capSets.add(NET_CAPABILITY_CBS);
+        networkTemplates.add(VcnCellUnderlyingNetworkTemplateTest.getTestNetworkTemplate(capSets));
+
+        // Start UnderlyingNetworkController
+        new UnderlyingNetworkController(
+                mVcnContext,
+                VcnGatewayConnectionConfigTest.buildTestConfig(networkTemplates),
+                SUB_GROUP,
+                mSubscriptionSnapshot,
+                mNetworkControllerCb);
+
+        // Verifications
+        for (final int subId : INITIAL_SUB_IDS) {
+            verifyRequestBackgroundNetwork(
+                    cm, subId, Collections.singleton(NET_CAPABILITY_INTERNET));
+            verifyRequestBackgroundNetwork(cm, subId, Collections.singleton(NET_CAPABILITY_DUN));
+            verifyRequestBackgroundNetwork(cm, subId, capSets);
+        }
+    }
+
+    @Test
+    public void testNetworkCallbacksRegisteredOnStartupWithDedupedtCapabilities() {
+        final ConnectivityManager cm = mock(ConnectivityManager.class);
+        setupSystemService(mContext, cm, Context.CONNECTIVITY_SERVICE, ConnectivityManager.class);
+
+        // Build network templates
+        final List<VcnUnderlyingNetworkTemplate> networkTemplates = new ArrayList();
+
+        networkTemplates.add(
+                VcnCellUnderlyingNetworkTemplateTest.getTestNetworkTemplate(
+                        Collections.singleton(NET_CAPABILITY_DUN)));
+        networkTemplates.add(
+                new VcnCellUnderlyingNetworkTemplate.Builder()
+                        .setCapabilities(Collections.singleton(NET_CAPABILITY_DUN))
+                        .build());
+
+        // Start UnderlyingNetworkController
+        new UnderlyingNetworkController(
+                mVcnContext,
+                VcnGatewayConnectionConfigTest.buildTestConfig(networkTemplates),
+                SUB_GROUP,
+                mSubscriptionSnapshot,
+                mNetworkControllerCb);
+
+        // Verifications
+        for (final int subId : INITIAL_SUB_IDS) {
+            verifyRequestBackgroundNetwork(
+                    cm, subId, Collections.singleton(NET_CAPABILITY_INTERNET));
+            verifyRequestBackgroundNetwork(cm, subId, Collections.singleton(NET_CAPABILITY_DUN));
+        }
+    }
+
     private void verifyNetworkRequestsRegistered(Set<Integer> expectedSubIds) {
         verify(mConnectivityManager)
                 .requestBackgroundNetwork(
@@ -210,8 +323,11 @@ public class UnderlyingNetworkControllerTest {
         for (final int subId : expectedSubIds) {
             verify(mConnectivityManager)
                     .requestBackgroundNetwork(
-                            eq(getCellRequestForSubId(subId)),
-                            any(NetworkBringupCallback.class), any());
+                            eq(
+                                    getCellRequestForSubId(
+                                            subId, Collections.singleton(NET_CAPABILITY_INTERNET))),
+                            any(NetworkBringupCallback.class),
+                            any());
         }
 
         verify(mConnectivityManager)
@@ -253,6 +369,7 @@ public class UnderlyingNetworkControllerTest {
     private NetworkRequest getWifiRequest(Set<Integer> netCapsSubIds) {
         return getExpectedRequestBase()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .setSubscriptionIds(netCapsSubIds)
                 .build();
     }
@@ -261,6 +378,7 @@ public class UnderlyingNetworkControllerTest {
         // TODO (b/187991063): Add tests for carrier-config based thresholds
         return getExpectedRequestBase()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .setSubscriptionIds(netCapsSubIds)
                 .setSignalStrength(WIFI_ENTRY_RSSI_THRESHOLD_DEFAULT)
                 .build();
@@ -270,16 +388,23 @@ public class UnderlyingNetworkControllerTest {
         // TODO (b/187991063): Add tests for carrier-config based thresholds
         return getExpectedRequestBase()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .setSubscriptionIds(netCapsSubIds)
                 .setSignalStrength(WIFI_EXIT_RSSI_THRESHOLD_DEFAULT)
                 .build();
     }
 
-    private NetworkRequest getCellRequestForSubId(int subId) {
-        return getExpectedRequestBase()
-                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-                .setNetworkSpecifier(new TelephonyNetworkSpecifier(subId))
-                .build();
+    private NetworkRequest getCellRequestForSubId(int subId, Set<Integer> expectedCaps) {
+        final NetworkRequest.Builder nqBuilder =
+                getExpectedRequestBase()
+                        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                        .setNetworkSpecifier(new TelephonyNetworkSpecifier(subId));
+
+        for (int cap : expectedCaps) {
+            nqBuilder.addCapability(cap);
+        }
+
+        return nqBuilder.build();
     }
 
     private NetworkRequest getRouteSelectionRequest(Set<Integer> netCapsSubIds) {
@@ -301,7 +426,6 @@ public class UnderlyingNetworkControllerTest {
     private NetworkRequest.Builder getExpectedRequestBase() {
         final NetworkRequest.Builder builder =
                 new NetworkRequest.Builder()
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                         .removeCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
                         .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
                         .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VCN_MANAGED);
@@ -484,7 +608,7 @@ public class UnderlyingNetworkControllerTest {
                         buildResponseNwCaps(INITIAL_NETWORK_CAPABILITIES, INITIAL_SUB_IDS),
                         INITIAL_LINK_PROPERTIES,
                         true /* isBlocked */);
-        verify(mNetworkControllerCb).onSelectedUnderlyingNetworkChanged(eq(expectedRecord));
+        verify(mNetworkControllerCb).onSelectedUnderlyingNetworkChanged(null);
     }
 
     @Test
@@ -520,5 +644,115 @@ public class UnderlyingNetworkControllerTest {
         verify(mNetworkControllerCb, times(1)).onSelectedUnderlyingNetworkChanged(any());
     }
 
-    // TODO (b/187991063): Add tests for network prioritization
+    private UnderlyingNetworkListener setupControllerAndGetNetworkListener(
+            List<VcnUnderlyingNetworkTemplate> networkTemplates) {
+        final ConnectivityManager cm = mock(ConnectivityManager.class);
+        setupSystemService(mContext, cm, Context.CONNECTIVITY_SERVICE, ConnectivityManager.class);
+
+        new UnderlyingNetworkController(
+                mVcnContext,
+                VcnGatewayConnectionConfigTest.buildTestConfig(networkTemplates),
+                SUB_GROUP,
+                mSubscriptionSnapshot,
+                mNetworkControllerCb);
+
+        verify(cm)
+                .registerNetworkCallback(
+                        eq(getRouteSelectionRequest(INITIAL_SUB_IDS)),
+                        mUnderlyingNetworkListenerCaptor.capture(),
+                        any());
+
+        return mUnderlyingNetworkListenerCaptor.getValue();
+    }
+
+    private UnderlyingNetworkRecord bringupNetworkAndGetRecord(
+            UnderlyingNetworkListener cb, NetworkCapabilities requestNetworkCaps) {
+        final Network network = mock(Network.class);
+        final NetworkCapabilities responseNetworkCaps =
+                buildResponseNwCaps(requestNetworkCaps, INITIAL_SUB_IDS);
+
+        cb.onAvailable(network);
+        cb.onCapabilitiesChanged(network, responseNetworkCaps);
+        cb.onLinkPropertiesChanged(network, INITIAL_LINK_PROPERTIES);
+        cb.onBlockedStatusChanged(network, false /* isFalse */);
+
+        return buildNetworkRecord(network, responseNetworkCaps);
+    }
+
+    private UnderlyingNetworkRecord buildNetworkRecord(
+            Network network, NetworkCapabilities requestNetworkCaps) {
+        return new UnderlyingNetworkRecord(
+                network, requestNetworkCaps, INITIAL_LINK_PROPERTIES, false /* isBlocked */);
+    }
+
+    @Test
+    public void testSelectMorePreferredNetwork() {
+        final List<VcnUnderlyingNetworkTemplate> networkTemplates = new ArrayList();
+        networkTemplates.add(CELL_TEMPLATE_DUN);
+        networkTemplates.add(CELL_TEMPLATE_CBS);
+
+        UnderlyingNetworkListener cb = setupControllerAndGetNetworkListener(networkTemplates);
+
+        // Bring up CBS network
+        final UnderlyingNetworkRecord cbsNetworkRecord =
+                bringupNetworkAndGetRecord(cb, CBS_NETWORK_CAPABILITIES);
+        verify(mNetworkControllerCb).onSelectedUnderlyingNetworkChanged(eq(cbsNetworkRecord));
+
+        // Bring up DUN network
+        final UnderlyingNetworkRecord dunNetworkRecord =
+                bringupNetworkAndGetRecord(cb, DUN_NETWORK_CAPABILITIES);
+        verify(mNetworkControllerCb).onSelectedUnderlyingNetworkChanged(eq(dunNetworkRecord));
+    }
+
+    @Test
+    public void testNeverSelectLessPreferredNetwork() {
+        final List<VcnUnderlyingNetworkTemplate> networkTemplates = new ArrayList();
+        networkTemplates.add(CELL_TEMPLATE_DUN);
+        networkTemplates.add(CELL_TEMPLATE_CBS);
+
+        UnderlyingNetworkListener cb = setupControllerAndGetNetworkListener(networkTemplates);
+
+        // Bring up DUN network
+        final UnderlyingNetworkRecord dunNetworkRecord =
+                bringupNetworkAndGetRecord(cb, DUN_NETWORK_CAPABILITIES);
+        verify(mNetworkControllerCb).onSelectedUnderlyingNetworkChanged(eq(dunNetworkRecord));
+
+        // Bring up CBS network
+        final UnderlyingNetworkRecord cbsNetworkRecord =
+                bringupNetworkAndGetRecord(cb, CBS_NETWORK_CAPABILITIES);
+        verify(mNetworkControllerCb, never())
+                .onSelectedUnderlyingNetworkChanged(eq(cbsNetworkRecord));
+    }
+
+    @Test
+    public void testFailtoMatchTemplateAndFallBackToInternetNetwork() {
+        final List<VcnUnderlyingNetworkTemplate> networkTemplates = new ArrayList();
+
+        networkTemplates.add(
+                new VcnCellUnderlyingNetworkTemplate.Builder()
+                        .setCapabilities(Collections.singleton(NET_CAPABILITY_DUN))
+                        .build());
+        UnderlyingNetworkListener cb = setupControllerAndGetNetworkListener(networkTemplates);
+
+        // Bring up an Internet network without DUN capability
+        final UnderlyingNetworkRecord networkRecord =
+                bringupNetworkAndGetRecord(cb, INITIAL_NETWORK_CAPABILITIES);
+        verify(mNetworkControllerCb).onSelectedUnderlyingNetworkChanged(eq(networkRecord));
+    }
+
+    @Test
+    public void testFailtoMatchTemplateAndNeverFallBackToNonInternetNetwork() {
+        final List<VcnUnderlyingNetworkTemplate> networkTemplates = new ArrayList();
+
+        networkTemplates.add(
+                new VcnCellUnderlyingNetworkTemplate.Builder()
+                        .setCapabilities(Collections.singleton(NET_CAPABILITY_DUN))
+                        .build());
+        UnderlyingNetworkListener cb = setupControllerAndGetNetworkListener(networkTemplates);
+
+        bringupNetworkAndGetRecord(cb, CBS_NETWORK_CAPABILITIES);
+
+        verify(mNetworkControllerCb, never())
+                .onSelectedUnderlyingNetworkChanged(any(UnderlyingNetworkRecord.class));
+    }
 }
