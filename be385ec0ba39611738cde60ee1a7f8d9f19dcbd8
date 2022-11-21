@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a781ce1a_11a90f49",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1951823
+      },
+      "writtenOn": "2022-11-21T13:04:15Z",
+      "side": 1,
+      "message": "Is there a bug tracking this issue? If so, please link to it with a `Bug:` tag.",
+      "revId": "be385ec0ba39611738cde60ee1a7f8d9f19dcbd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2cf5c32e_46a39fc6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1951823
+      },
+      "writtenOn": "2022-11-21T13:04:15Z",
+      "side": 1,
+      "message": "Please describe how you tested this change using a `Test:` tag.",
+      "revId": "be385ec0ba39611738cde60ee1a7f8d9f19dcbd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c1b2c816_62ee8502",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1951823
+      },
+      "writtenOn": "2022-11-21T13:04:15Z",
+      "side": 1,
+      "message": "You have added far too many reviewers to this CL ­— 13 when you just need 2. Please don\u0027t just add all the owners for the each file as reviewers. Add one from each group, and they will add others as necessary. Adding many reviewers just discourages each one from reviewing your change, as it\u0027s unclear who really needs to comment. It also means each person added has to spend time working out if the CL is relevant to them. \n\nI don\u0027t know anything about the code you\u0027re changing. That said, your use of `public` constants and the shared state in `BackFocusKeeper` that isn\u0027t protected by any accessor methods suggest to me that this isn\u0027t the best approach.",
+      "revId": "be385ec0ba39611738cde60ee1a7f8d9f19dcbd8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
