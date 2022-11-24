@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "798ef6b3_b704b731",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1367175
+      },
+      "writtenOn": "2022-11-24T06:43:34Z",
+      "side": 1,
+      "message": "It\u0027s probably caused by `CompatOnBackInvokedCallback` that directly enqueue the `back key` into the `ViewRootImpl` and the target view will check the focus state in a short stage.\n\nOne simple solution is to re-inject the `back key` to `InputManager` if no focus set, so the focus and key dispatching could be handled by input framework (included ANR handling).",
+      "revId": "4456d8d48184a0f9404078b946314122b12221a0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
