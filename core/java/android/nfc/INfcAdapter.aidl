@@ -80,4 +80,7 @@ interface INfcAdapter
     boolean isControllerAlwaysOnSupported();
     void registerControllerAlwaysOnListener(in INfcControllerAlwaysOnListener listener);
     void unregisterControllerAlwaysOnListener(in INfcControllerAlwaysOnListener listener);
+    boolean isTagIntentsAllowlistSupported();
+    Map getTagIntentsAllowlistForUser(int userId);
+    boolean setPackageTagIntentsAllowedForUser(int userId, String pkg, boolean allow);
 }

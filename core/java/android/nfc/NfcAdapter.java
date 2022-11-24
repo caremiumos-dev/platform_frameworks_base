@@ -23,6 +23,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemApi;
+import android.annotation.UserIdInt;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.OnActivityPausedListener;
@@ -48,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -2360,5 +2362,114 @@ public final class NfcAdapter {
     public void unregisterControllerAlwaysOnListener(
             @NonNull ControllerAlwaysOnListener listener) {
         mControllerAlwaysOnListener.unregister(listener);
+    }
+
+
+    /**
+     * Set a package name to the allowlist of the UserId.
+     *
+     * <p>Store a packagename to an allowlist for filtering packagename before sending Tag intnets.
+     * Activities respond to these intent filters {@link #ACTION_NDEF_DISCOVERED},
+     * {@link #ACTION_TECH_DISCOVERED} or {@link #ACTION_TAG_DISCOVERED} will not be started if the
+     * package name of these activities are set to false to the allowlist.
+     *
+     * @return True if the package name is available for the userId and allowlist is updated, false
+     * otherwise.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
+    public boolean setPackageTagIntentsAllowedForUser(@UserIdInt int userId, @NonNull String pkg,
+            boolean allow) {
+        if (!isTagIntentsAllowlistSupported()) {
+            Log.e(TAG, "TagIntentsAllowlist does not supported");
+            return false;
+        }
+        try {
+            return sService.setPackageTagIntentsAllowedForUser(userId, pkg, allow);
+        } catch (RemoteException e) {
+            attemptDeadServiceRecovery(e);
+            // Try one more time
+            if (sService == null) {
+                Log.e(TAG, "Failed to recover NFC Service.");
+                return false;
+            }
+            try {
+                return sService.setPackageTagIntentsAllowedForUser(userId, pkg, allow);
+            } catch (RemoteException ee) {
+                Log.e(TAG, "Failed to recover NFC Service.");
+            }
+            return false;
+        }
+    }
+
+
+    /**
+     * Get the Tag intents allowlist of the UserId
+     *
+     * @return a map of the UserId which indicates the mapping from package name to
+     * boolean(allow status), otherwise return an empty map.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
+    @NonNull
+    public Map<String, Boolean> getTagIntentsAllowlistForUser(@UserIdInt int userId) {
+        Log.e(TAG, "userId = " + userId);
+        if (!isTagIntentsAllowlistSupported()) {
+            Log.e(TAG, "TagIntentsAllowlist does not supported");
+            return new HashMap<>();
+        }
+        try {
+            Map<String, Boolean> result = (Map<String, Boolean>) sService
+                     .getTagIntentsAllowlistForUser(userId);
+            return result;
+        } catch (RemoteException e) {
+            attemptDeadServiceRecovery(e);
+            // Try one more time
+            if (sService == null) {
+                Log.e(TAG, "Failed to recover NFC Service.");
+                return null;
+            }
+            try {
+                Map<String, Boolean> result = (Map<String, Boolean>) sService
+                        .getTagIntentsAllowlistForUser(userId);
+                return result;
+            } catch (RemoteException ee) {
+                Log.e(TAG, "Failed to recover NFC Service.");
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Checks if the device supports Tag intents allowlist
+     *
+     * @return True if device supports Tag intents allowlist, false otherwise
+     * @throws UnsupportedOperationException if FEATURE_NFC is unavailable.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
+    public boolean isTagIntentsAllowlistSupported() {
+        if (!sHasNfcFeature) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return sService.isTagIntentsAllowlistSupported();
+        } catch (RemoteException e) {
+            attemptDeadServiceRecovery(e);
+            // Try one more time
+            if (sService == null) {
+                Log.e(TAG, "Failed to recover NFC Service.");
+                return false;
+            }
+            try {
+                return sService.isTagIntentsAllowlistSupported();
+            } catch (RemoteException ee) {
+                Log.e(TAG, "Failed to recover NFC Service.");
+            }
+            return false;
+        }
     }
 }
