@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "11b543dc_228727d7",
+        "filename": "packages/SystemUI/src/com/android/systemui/media/NotificationPlayer.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2022-11-29T10:45:51Z",
+      "side": 1,
+      "message": "We can add an argument (boolean useWakeLock) to CreationAndCompletionThread() constructor, store it in a class member and check it here.\nstartSound() will also have the same argument and be called as startSound(cmd, useWakeLock) with useWakeLock \u003d  mWakeLock !\u003d null set at line 233",
+      "range": {
+        "startLine": 107,
+        "startChar": 0,
+        "endLine": 107,
+        "endChar": 44
+      },
+      "revId": "a2b1415d1fea3a88992ea7600b538ef010025148",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
