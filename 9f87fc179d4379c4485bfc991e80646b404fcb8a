@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1043109e_6849c420",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1246512
+      },
+      "writtenOn": "2022-12-02T13:45:28Z",
+      "side": 1,
+      "message": "Is it possible to say what error lint finds?\nIt passes without problems with pylint3 with default configuration on Ubuntu 18.04.",
+      "revId": "9f87fc179d4379c4485bfc991e80646b404fcb8a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
