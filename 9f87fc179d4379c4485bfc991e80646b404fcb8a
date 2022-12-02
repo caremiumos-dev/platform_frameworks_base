@@ -16,6 +16,24 @@
       "message": "Is it possible to say what error lint finds?\nIt passes without problems with pylint3 with default configuration on Ubuntu 18.04.",
       "revId": "9f87fc179d4379c4485bfc991e80646b404fcb8a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "695bca2c_ac0b7443",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1937565
+      },
+      "writtenOn": "2022-12-02T13:49:41Z",
+      "side": 1,
+      "message": "Lint complains about a typo on line 33 (\"exclued\" should be \"excluded\").",
+      "parentUuid": "1043109e_6849c420",
+      "revId": "9f87fc179d4379c4485bfc991e80646b404fcb8a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
