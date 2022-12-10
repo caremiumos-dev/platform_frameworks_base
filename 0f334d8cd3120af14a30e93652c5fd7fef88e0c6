@@ -46,6 +46,30 @@
       },
       "revId": "0f334d8cd3120af14a30e93652c5fd7fef88e0c6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1ff5a1c9_cfe7f745",
+        "filename": "packages/SystemUI/src/com/android/systemui/media/NotificationPlayer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1561936
+      },
+      "writtenOn": "2022-12-10T03:58:04Z",
+      "side": 1,
+      "message": "I added null check.\nThank you for checking.",
+      "parentUuid": "5353ba1c_6ce9292b",
+      "range": {
+        "startLine": 107,
+        "startChar": 0,
+        "endLine": 107,
+        "endChar": 85
+      },
+      "revId": "0f334d8cd3120af14a30e93652c5fd7fef88e0c6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
