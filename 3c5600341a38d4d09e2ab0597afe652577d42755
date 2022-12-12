@@ -16,6 +16,24 @@
       "message": "RROs that are placed outside of \u003cpartition\u003e/overlay folder should probably be ignored with a warning/info message printed to log.\n\nAn apk with that overlays resources that is placed in \u003cpartition\u003e/app would cause the device to not boot properly, as the OMS only scans for overlays in \u003cpartition\u003e/overlay folder if overlay configs are being used.",
       "revId": "3c5600341a38d4d09e2ab0597afe652577d42755",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f44603e5_f5f2b3bd",
+        "filename": "tools/rro-configfiles/generate_configs_from_overlay_dump.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1246512
+      },
+      "writtenOn": "2022-12-12T12:39:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6516d42f_c9538ea1",
+      "revId": "3c5600341a38d4d09e2ab0597afe652577d42755",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
