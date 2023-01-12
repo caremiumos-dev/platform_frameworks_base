@@ -114,6 +114,61 @@ public class UserManagerServiceTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    @ApiTest(apis = {"android.os.UserManager#createProfile"})
+    public void testUserSystemPackageAllowlistProblems_ForCloneProfile_HasNoLauncherApps()
+            throws Exception {
+        UserManager um = UserManager.get(mContext);
+        assumeTrue(um.supportsMultipleUsers());
+        try {
+            UserHandle userHandle = um.createProfile("Clone Profile", USER_TYPE_PROFILE_CLONE,
+                    new HashSet<>());
+            assumeNotNull(userHandle);
+            tempUserId = userHandle.getIdentifier();
+            assumeNotNull(tempUserId);
+        } catch (UserManager.UserOperationException e) {
+            assumeNoException("Couldn't create clone profile", e);
+        }
+
+        // run command to get critical package whitelist configuration issues. These
+        // are packages that are installed but not present in the pre-installation configs
+        String cmd = "cmd user report-system-user-package-whitelist-problems --critical-only "
+                + "--mode 1";
+        final String result = runShellCommand(cmd);
+        String[] results = result.split("\\R");
+
+        final ArraySet<String> launcherPackages = getPackagesWithLauncherComponentForUser(
+                tempUserId);
+        List<String> errors = new ArrayList<>();
+        Pattern p = Pattern.compile("(([a-z]+\\.)+[a-z]+)");
+        // Select only errors from launcher packages
+        for (String res: results) {
+            Matcher m = p.matcher(res);
+            if (m.find()) {
+                String packageName = m.group(0);
+                if (launcherPackages.contains(packageName)) {
+                    errors.add(res);
+                }
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            fail("Command '" + cmd + "' reported errors:\n" + String.join("\n", errors));
+        }
+    }
+
+    private ArraySet<String> getPackagesWithLauncherComponentForUser(int userId) {
+        LauncherApps mLauncherApps = mContext.getSystemService(LauncherApps.class);
+        List<LauncherActivityInfo> launcherActivities =  mLauncherApps.getActivityList(
+                null, UserHandle.of(ActivityManager.getCurrentUser()));
+        ArraySet<String> launcherPackages = new ArraySet<>();
+
+        for (LauncherActivityInfo launcherActivity: launcherActivities) {
+            launcherPackages.add(launcherActivity.getActivityInfo().packageName);
+        }
+        return launcherPackages;
+    }
+
     private Bundle createBundle() {
         Bundle result = new Bundle();
         // Tests for 6 allowed types: Integer, Boolean, String, String[], Bundle and Parcelable[]
