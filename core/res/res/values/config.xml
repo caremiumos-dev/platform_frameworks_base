@@ -5885,4 +5885,7 @@
     <!-- List of certificate to be used for font fs-verity integrity verification -->
     <string-array translatable="false" name="config_fontManagerServiceCerts">
     </string-array>
+
+    <!-- Whether the swap navbar feature is available -->
+    <bool name="config_navBarButtonSwapAvailable">false</bool>
 </resources>
