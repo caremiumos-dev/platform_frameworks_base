@@ -93,6 +93,7 @@ cc_defaults {
     shared_libs: [
         "libadb_pairing_server",
         "libadb_pairing_connection",
+        "libaltitudeaidl",
         "libandroid",
         "libandroid_runtime",
         "libandroidfw",
