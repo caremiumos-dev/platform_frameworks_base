@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a7d00cfe_1eed78f1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1039338
+      },
+      "writtenOn": "2023-02-10T10:26:32Z",
+      "side": 1,
+      "message": "This library should not be being used by updatable APEXes for two reasons:\n1. Use of this library is deprecated.\n2. This is test code and we should not shipping updatable APEXes that depend on test code.",
+      "revId": "34a45c2396d29ebfdf8bf227a275b0d86928d91e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
