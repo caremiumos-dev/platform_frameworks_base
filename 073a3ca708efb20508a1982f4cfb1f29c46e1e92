@@ -16,6 +16,24 @@
       "message": "you needed to leave CHARGING_POLICY in, too.",
       "revId": "073a3ca708efb20508a1982f4cfb1f29c46e1e92",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2d2bae32_1963443e",
+        "filename": "services/core/java/com/android/server/BatteryService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1262,
+      "author": {
+        "id": 1319951
+      },
+      "writtenOn": "2023-02-17T02:08:07Z",
+      "side": 1,
+      "message": "thanks!",
+      "parentUuid": "0f9cc640_8f1873f6",
+      "revId": "073a3ca708efb20508a1982f4cfb1f29c46e1e92",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
