@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d42fc73b_b09391af",
+        "filename": "core/java/android/os/BatteryManager.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 1003473
+      },
+      "writtenOn": "2023-02-17T18:27:38Z",
+      "side": 1,
+      "message": "estimated",
+      "range": {
+        "startLine": 357,
+        "startChar": 7,
+        "endLine": 357,
+        "endChar": 15
+      },
+      "revId": "4caac746270d5ee840d854a820c303deb33ce872",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
