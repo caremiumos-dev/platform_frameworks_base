@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "21b9f144_5e36e8d8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010050
+      },
+      "writtenOn": "2023-02-21T18:38:40Z",
+      "side": 1,
+      "message": "The presubmit test seems to be a known failure (https://android-build.googleplex.com/builds/tests/view?invocationId\u003dI97900010133859567 , https://buganizer.corp.google.com/issues/267587346), so bypassing seems reasonable.",
+      "revId": "e605f83674974bc77b4997e21e5612b024d74db9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
