@@ -16,6 +16,23 @@
       "message": "The presubmit test seems to be a known failure (https://android-build.googleplex.com/builds/tests/view?invocationId\u003dI97900010133859567 , https://buganizer.corp.google.com/issues/267587346), so bypassing seems reasonable.",
       "revId": "e605f83674974bc77b4997e21e5612b024d74db9",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3a2a14fe_ef2703d4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1653796
+      },
+      "writtenOn": "2023-02-22T01:52:47Z",
+      "side": 1,
+      "message": "presubmit error is unrelated, it is the known issue for car test\n\njava.lang.IllegalArgumentException: Unknown display\u003d5 or feature\u003d1\n\tat android.os.Parcel.createExceptionOrNull(Parcel.java:3061)\n\tat android.os.Parcel.createException(Parcel.java:3041)\n\tat android.os.Parcel.readException(Parcel.java:3024)\n\tat android.os.Parcel.readException(Parcel.java:2966)\n\tat android.car.app.ICarActivityService$Stub$Proxy.setPersistentActivity(ICarActivityService.java:407)\n\tat android.car.app.CarActivityManager.setPersistentActivity(CarActivityManager.java:139)\n\tat android.car.app.cts.CarActivityManagerTest.testSetPersistentActivity(CarActivityManagerTest.java:110)",
+      "revId": "e605f83674974bc77b4997e21e5612b024d74db9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
