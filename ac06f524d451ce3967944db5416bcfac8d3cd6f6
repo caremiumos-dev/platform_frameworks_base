@@ -1,6 +1,52 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "e48055e8_a1f09c43",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1108919
+      },
+      "writtenOn": "2023-02-23T22:44:17Z",
+      "side": 1,
+      "message": "\"differentiate isFormatSupported() for decoder vs encoder\"",
+      "range": {
+        "startLine": 7,
+        "startChar": 16,
+        "endLine": 7,
+        "endChar": 49
+      },
+      "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c8222c2b_8225bf75",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1108919
+      },
+      "writtenOn": "2023-02-23T22:44:17Z",
+      "side": 1,
+      "message": "than instead of then",
+      "range": {
+        "startLine": 13,
+        "startChar": 21,
+        "endLine": 13,
+        "endChar": 25
+      },
+      "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "d02008ed_96b18514",
@@ -14,6 +60,75 @@
       "writtenOn": "2023-02-23T18:01:02Z",
       "side": 1,
       "message": "Brief list of changes in patchset 2:\n* the package private function is used instead of new API to MediaCodecInfo (so cherry-pick from master to any other branch should be possible)\n* commit message is updated to more clearly describe its actual intention.",
+      "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4fcc9016_2496715a",
+        "filename": "media/java/android/media/MediaCodecInfo.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 937,
+      "author": {
+        "id": 1108919
+      },
+      "writtenOn": "2023-02-23T22:44:17Z",
+      "side": 1,
+      "message": "let\u0027s use the existing internal function isEncoder()",
+      "range": {
+        "startLine": 937,
+        "startChar": 19,
+        "endLine": 937,
+        "endChar": 73
+      },
+      "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b4225126_07164d35",
+        "filename": "media/java/android/media/MediaCodecInfo.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1034,
+      "author": {
+        "id": 1108919
+      },
+      "writtenOn": "2023-02-23T22:44:17Z",
+      "side": 1,
+      "message": "use mIsEncoder() instead of groping around with mEncoderCaps",
+      "range": {
+        "startLine": 1034,
+        "startChar": 24,
+        "endLine": 1034,
+        "endChar": 54
+      },
+      "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ed409aa4_ef2a7225",
+        "filename": "media/java/android/media/MediaCodecInfo.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1168,
+      "author": {
+        "id": 1108919
+      },
+      "writtenOn": "2023-02-23T22:44:17Z",
+      "side": 1,
+      "message": "should this point out that it fills in encoding capabilities?",
+      "range": {
+        "startLine": 1168,
+        "startChar": 9,
+        "endLine": 1168,
+        "endChar": 57
+      },
       "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
