@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d02008ed_96b18514",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1981835
+      },
+      "writtenOn": "2023-02-23T18:01:02Z",
+      "side": 1,
+      "message": "Brief list of changes in patchset 2:\n* the package private function is used instead of new API to MediaCodecInfo (so cherry-pick from master to any other branch should be possible)\n* commit message is updated to more clearly describe its actual intention.",
+      "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
