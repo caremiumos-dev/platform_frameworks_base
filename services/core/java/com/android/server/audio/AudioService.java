@@ -411,6 +411,8 @@ public class AudioService extends IAudioService.Stub
     // protects mRingerMode
     private final Object mSettingsLock = new Object();
 
+    private boolean mModeForce = false;
+
    /** Maximum volume index values for audio streams */
     protected static int[] MAX_STREAM_VOLUME = new int[] {
         5,  // STREAM_VOICE_CALL
@@ -5105,6 +5107,7 @@ public class AudioService extends IAudioService.Stub
                 if (index < 0) {
                     Log.w(TAG, "unregistered SetModeDeathHandler client died");
                 } else {
+                    mModeForce = true;
                     SetModeDeathHandler h = mSetModeDeathHandlers.get(index);
                     mSetModeDeathHandlers.remove(index);
                     sendMsg(mAudioHandler,
@@ -8484,7 +8487,12 @@ public class AudioService extends IAudioService.Stub
 
                 case MSG_UPDATE_AUDIO_MODE:
                     synchronized (mDeviceBroker.mSetModeLock) {
-                        onUpdateAudioMode(msg.arg1, msg.arg2, (String) msg.obj, false /*force*/);
+                        if (mModeForce) {
+                            mModeForce = false;
+                            onUpdateAudioMode(msg.arg1, msg.arg2, (String) msg.obj, true /*force*/);
+                        } else {
+                            onUpdateAudioMode(msg.arg1, msg.arg2, (String) msg.obj, false /*force*/);
+                        }
                     }
                     break;
 
