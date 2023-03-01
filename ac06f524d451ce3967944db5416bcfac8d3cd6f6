@@ -251,6 +251,30 @@
       },
       "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2974b25c_e6ebe2ac",
+        "filename": "media/java/android/media/MediaCodecInfo.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1168,
+      "author": {
+        "id": 1108919
+      },
+      "writtenOn": "2023-03-01T19:54:52Z",
+      "side": 1,
+      "message": "if the old semantis were a problem for your use case, then they could be similarly problematic for a 3rd party developer.  to me that says:\n\n(1) we want to highlight that this form of the function returns encoding parameters, and\n(2) make the new one public.\n\nthat does change the API, but we\u0027re correcting what appears to be a deficiency in the API. So the change is a good thing. please rework the CL that way and then we\u0027ll have this reviewed from an API standpoint to see whether others agree.",
+      "parentUuid": "4e216bba_6d4961bb",
+      "range": {
+        "startLine": 1168,
+        "startChar": 9,
+        "endLine": 1168,
+        "endChar": 57
+      },
+      "revId": "ac06f524d451ce3967944db5416bcfac8d3cd6f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
