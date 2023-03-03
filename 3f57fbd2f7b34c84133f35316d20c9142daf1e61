@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f820fcb9_c5d50feb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1047003
+      },
+      "writtenOn": "2023-03-03T15:48:40Z",
+      "side": 1,
+      "message": "Ray,\nThanks for pointing to this CL in b/271481061#comment2.\nThis approach only works for decoders. With this change isFormatSupported() works as expected for decoders, but it still fails for encoders.\n\nFor an encoder that advertises support for CBR, isFormatSupported() still returns fail when bitrate-mode is set to CBR in the format.\nSome details in b/270272952#comment14 and beyond.",
+      "range": {
+        "startLine": 13,
+        "startChar": 35,
+        "endLine": 14,
+        "endChar": 42
+      },
+      "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
