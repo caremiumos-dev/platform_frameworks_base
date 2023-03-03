@@ -70,6 +70,30 @@
       },
       "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7efb156e_8ed7b2ea",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1981835
+      },
+      "writtenOn": "2023-03-03T19:22:01Z",
+      "side": 1,
+      "message": "Thanks for clarification. If this issue is already known to your team and someone is working on the fix then it\u0027s ok for me to abandon this CL and wait for the final solution. From my perspective, it\u0027s even better not to have to deal with the API release, since I am not familiar with required process. Your confirmation that such approach is correct for decoder is enough for me to handle this internally until final patch is ready. Please let me know the way you prefer.",
+      "parentUuid": "67c5fad7_8c7a6922",
+      "range": {
+        "startLine": 13,
+        "startChar": 35,
+        "endLine": 14,
+        "endChar": 42
+      },
+      "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
