@@ -46,6 +46,30 @@
       },
       "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "67c5fad7_8c7a6922",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1047003
+      },
+      "writtenOn": "2023-03-03T18:24:10Z",
+      "side": 1,
+      "message": "Yes. That is what I saw in my tests (Though I did not use this CL, but a similar approach).\nReason is createFromProfileLevel() seems to creating default capabilties and not based on what is in the xml. Thus even when the encoder advertises CBR, it wasn\u0027t getting reflected in the capabilities created.",
+      "parentUuid": "19b1a5ca_9477c290",
+      "range": {
+        "startLine": 13,
+        "startChar": 35,
+        "endLine": 14,
+        "endChar": 42
+      },
+      "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
