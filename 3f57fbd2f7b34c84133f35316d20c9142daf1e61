@@ -22,6 +22,30 @@
       },
       "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "19b1a5ca_9477c290",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1981835
+      },
+      "writtenOn": "2023-03-03T16:21:16Z",
+      "side": 1,
+      "message": "From what you said seems like this patch, regardless of whether the API is modified or not, fixes isFormatSupported() only for decoders but there is still unresolved issue with encoders in CBR mode?",
+      "parentUuid": "f820fcb9_c5d50feb",
+      "range": {
+        "startLine": 13,
+        "startChar": 35,
+        "endLine": 14,
+        "endChar": 42
+      },
+      "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
