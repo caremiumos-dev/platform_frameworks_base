@@ -472,6 +472,29 @@ package android.provider {
 
 }
 
+package android.se.omapi {
+
+  public class SeFrameworkInitializer {
+    method public static void setSeServiceManager(@NonNull android.se.omapi.SeServiceManager);
+  }
+
+  public class SeServiceManager {
+    method @NonNull public android.se.omapi.SeServiceManager.ServiceRegisterer getSeManagerServiceRegisterer();
+  }
+
+  public static class SeServiceManager.ServiceNotFoundException extends java.lang.Exception {
+    ctor public SeServiceManager.ServiceNotFoundException(@NonNull String);
+  }
+
+  public static final class SeServiceManager.ServiceRegisterer {
+    method @Nullable public android.os.IBinder get();
+    method @NonNull public android.os.IBinder getOrThrow() throws android.se.omapi.SeServiceManager.ServiceNotFoundException;
+    method public void register(@NonNull android.os.IBinder);
+    method @Nullable public android.os.IBinder tryGet();
+  }
+
+}
+
 package android.telecom {
 
   public abstract class ConnectionService extends android.app.Service {

@@ -154,6 +154,8 @@ import android.provider.Downloads;
 import android.provider.FontsContract;
 import android.provider.Settings;
 import android.renderscript.RenderScriptCacheDir;
+import android.se.omapi.SeFrameworkInitializer;
+import android.se.omapi.SeServiceManager;
 import android.security.NetworkSecurityPolicy;
 import android.security.net.config.NetworkSecurityConfigProvider;
 import android.system.ErrnoException;
@@ -7930,6 +7932,8 @@ public final class ActivityThread extends ClientTransactionHandler
         BluetoothFrameworkInitializer.setBinderCallsStatsInitializer(context -> {
             BinderCallsStats.startForBluetooth(context); });
         NfcFrameworkInitializer.setNfcServiceManager(new NfcServiceManager());
+        DeviceConfigInitializer.setDeviceConfigServiceManager(new DeviceConfigServiceManager());
+        SeFrameworkInitializer.setSeServiceManager(new SeServiceManager());
     }
 
     private void purgePendingResources() {
