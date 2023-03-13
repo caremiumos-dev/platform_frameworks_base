@@ -683,6 +683,10 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         updateActivityConfigurationListener();
     }
 
+    void hasImeSeervice() {
+        return mHasImeService;
+    }
+
     @HotPath(caller = HotPath.OOM_ADJUSTMENT)
     public boolean hasActivities() {
         return mHasActivities;
