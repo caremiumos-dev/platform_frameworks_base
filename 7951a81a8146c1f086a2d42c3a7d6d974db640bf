@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "417f634f_6b6a5625",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1725686
+      },
+      "writtenOn": "2023-03-29T14:57:10Z",
+      "side": 1,
+      "message": "We\u0027re sending \u003cSet Stream Path\u003e twice intentionally, so that 1.4 devices that do wake up on \u003cSet Stream Path\u003e already wake up at the start of the action. If we\u0027d merge this code, some 1.4 devices would wake up later than they do today.\n\nAre you seeing any issues with sending \u003cSet Stream Path\u003e twice?",
+      "revId": "7951a81a8146c1f086a2d42c3a7d6d974db640bf",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
