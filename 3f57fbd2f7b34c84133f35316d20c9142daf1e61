@@ -94,6 +94,30 @@
       },
       "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f0e0cb38_61671131",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1089769
+      },
+      "writtenOn": "2023-04-06T13:19:39Z",
+      "side": 1,
+      "message": "I found the current approach regresses decoders as well (b/276697204#comment2): \"secure-playback\" decoder feature is not reflected in the caps created by createFromProfileLevel(), and hence the logic starts failing to find secure decoders.\n\n\nMy feeling is that isFormatSupported() should not use createFromProfileLevel() at all... and instead create a full copy of the caps (with only profile/level modified).",
+      "parentUuid": "7efb156e_8ed7b2ea",
+      "range": {
+        "startLine": 13,
+        "startChar": 35,
+        "endLine": 14,
+        "endChar": 42
+      },
+      "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
