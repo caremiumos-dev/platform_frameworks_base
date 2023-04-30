@@ -317,6 +317,7 @@ public abstract class GestureMatcher {
         MotionEvent mEvent;
         MotionEvent mRawEvent;
         int mPolicyFlags;
+        boolean mEventRecycled = true;
 
         public void cancel() {
             // Avoid meaningless debug messages.
@@ -328,14 +329,16 @@ public abstract class GestureMatcher {
                                 + getStateSymbolicName(mTargetState));
             }
             mHandler.removeCallbacks(this);
+            recycleEvent();
         }
 
         public void post(
                 int state, long delay, MotionEvent event, MotionEvent rawEvent, int policyFlags) {
             mTargetState = state;
-            mEvent = event;
-            mRawEvent = rawEvent;
+            mEvent = event.copy();
+            mRawEvent = rawEvent.copy();
             mPolicyFlags = policyFlags;
+            mEventRecycled = false;
             mHandler.postDelayed(this, delay);
             if (DEBUG) {
                 Slog.d(
@@ -367,6 +370,16 @@ public abstract class GestureMatcher {
                                 + getStateSymbolicName(mTargetState));
             }
             setState(mTargetState, mEvent, mRawEvent, mPolicyFlags);
+            recycleEvent();
+        }
+
+        private void recycleEvent() {
+            if (mEventRecycled) {
+                return;
+            }
+            mEvent.recycle();
+            mRawEvent.recycle();
+            mEventRecycled = true;
         }
     }
 
