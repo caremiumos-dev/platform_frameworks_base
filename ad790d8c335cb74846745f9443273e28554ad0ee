@@ -1,5 +1,29 @@
 {
-  "comments": [],
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "aa82856f_aa6e8bc0",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1092,
+      "author": {
+        "id": 1870610
+      },
+      "writtenOn": "2023-05-02T15:43:24Z",
+      "side": 1,
+      "message": "(drive-by comment)\n\ntypo \u003d\u003e performed, same below",
+      "range": {
+        "startLine": 1092,
+        "startChar": 33,
+        "endLine": 1092,
+        "endChar": 41
+      },
+      "revId": "ad790d8c335cb74846745f9443273e28554ad0ee",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ],
   "submitRequirementResults": [
     {
       "submitRequirement": {
