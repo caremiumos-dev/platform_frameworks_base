@@ -232,8 +232,8 @@ public class LocalBluetoothProfileManager {
                 Log.d(TAG, "Adding local Volume Control profile");
             }
             mVolumeControlProfile = new VolumeControlProfile(mContext, mDeviceManager, this);
-            // Note: no event handler for VCP, only for being connectable.
-            mProfileNameMap.put(VolumeControlProfile.NAME, mVolumeControlProfile);
+            addProfile(mVolumeControlProfile, VolumeControlProfile.NAME,
+                    BluetoothVolumeControl.ACTION_CONNECTION_STATE_CHANGED);
         }
         if (mLeAudioProfile == null && supportedList.contains(BluetoothProfile.LE_AUDIO)) {
             if (DEBUG) {
