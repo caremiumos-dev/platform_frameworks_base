@@ -619,6 +619,12 @@ public class AudioManager {
      */
     public static final int FLAG_ABSOLUTE_VOLUME = 1 << 13;
 
+    /**
+     * Adjusting the volume due to a hardware repeated key.
+     * @hide
+     */
+    public static final int FLAG_FROM_REPEATED_KEY = 1 << 14;
+
     /** @hide */
     @IntDef(prefix = {"ENCODED_SURROUND_OUTPUT_"}, value = {
             ENCODED_SURROUND_OUTPUT_UNKNOWN,
@@ -680,6 +686,7 @@ public class AudioManager {
             FLAG_SHOW_VIBRATE_HINT,
             FLAG_FROM_KEY,
             FLAG_ABSOLUTE_VOLUME,
+            FLAG_FROM_REPEATED_KEY,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Flags {}
@@ -764,6 +771,7 @@ public class AudioManager {
         FLAG_NAMES.put(FLAG_SHOW_VIBRATE_HINT, "FLAG_SHOW_VIBRATE_HINT");
         FLAG_NAMES.put(FLAG_FROM_KEY, "FLAG_FROM_KEY");
         FLAG_NAMES.put(FLAG_ABSOLUTE_VOLUME, "FLAG_ABSOLUTE_VOLUME");
+        FLAG_NAMES.put(FLAG_FROM_REPEATED_KEY, "FLAG_FROM_REPEATED_KEY");
     }
 
     /** @hide */

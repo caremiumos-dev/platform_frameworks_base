@@ -3190,8 +3190,16 @@ public class AudioService extends IAudioService.Stub
             return;
         }
 
+        int delay = SystemProperties.getInt("sys.volume_key_repeat_delay", 0);
         int flags = AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_PLAY_SOUND
                 | AudioManager.FLAG_FROM_KEY;
+
+        if (event.getRepeatCount() > 0) {
+            SystemProperties.set("sys.dynamic_key_repeat_delay", delay > 0 ? Integer.toString(delay) : "");
+            flags |= AudioManager.FLAG_FROM_REPEATED_KEY;
+        } else {
+            SystemProperties.set("sys.dynamic_key_repeat_delay", "");
+        }
 
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_VOLUME_UP:
@@ -3455,7 +3463,11 @@ public class AudioService extends IAudioService.Stub
             }
         } else {
             // convert one UI step (+/-1) into a number of internal units on the stream alias
-            step = rescaleStep(10, streamType, streamTypeAlias);
+            int volSteps = 10;
+            if ((flags & AudioManager.FLAG_FROM_REPEATED_KEY) != 0) {
+                volSteps = SystemProperties.getInt("sys.repeated_key_vol_steps", 10);
+            }
+            step = rescaleStep(volSteps, streamType, streamTypeAlias);
         }
 
         // If either the client forces allowing ringer modes for this adjustment,
