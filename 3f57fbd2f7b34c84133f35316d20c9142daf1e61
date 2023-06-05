@@ -118,6 +118,23 @@
       },
       "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ded568e4_bb13e95f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1021605
+      },
+      "writtenOn": "2023-06-05T16:29:23Z",
+      "side": 1,
+      "message": "This is merged into internal master as https://android-review.git.corp.google.com/c/platform/frameworks/base/+/2559912",
+      "revId": "3f57fbd2f7b34c84133f35316d20c9142daf1e61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
