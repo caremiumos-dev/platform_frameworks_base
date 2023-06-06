@@ -1859,6 +1859,7 @@
     <dimen name="broadcast_dialog_btn_text_size">16sp</dimen>
     <dimen name="broadcast_dialog_btn_minHeight">44dp</dimen>
     <dimen name="broadcast_dialog_margin">16dp</dimen>
+    <dimen name="broadcast_dialog_side_padding">10dp</dimen>
 
     <!-- Contrast dialog -->
     <dimen name="contrast_dialog_button_total_size">90dp</dimen>
