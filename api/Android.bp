@@ -93,6 +93,7 @@ combined_apis {
         "framework-statsd",
         "framework-sdksandbox",
         "framework-tethering",
+        "framework-threadnetwork",
         "framework-uwb",
         "framework-virtualization",
         "framework-wifi",

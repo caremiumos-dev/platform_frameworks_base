@@ -120,6 +120,10 @@ custom_platform_bootclasspath {
             module: "com.android.tethering-bootclasspath-fragment",
         },
         {
+            apex: "com.android.threadnetwork",
+            module: "com.android.threadnetwork-bootclasspath-fragment",
+        },
+        {
             apex: "com.android.uwb",
             module: "com.android.uwb-bootclasspath-fragment",
         },
