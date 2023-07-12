@@ -19,6 +19,7 @@ package android.os;
 import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 
 import android.annotation.ElapsedRealtimeLong;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
@@ -1036,7 +1037,8 @@ public class Process {
      * not have permission to modify the given thread, or to use the given
      * priority.
      */
-    public static final native void setThreadPriority(int tid, int priority)
+    public static final native void setThreadPriority(int tid,
+            @IntRange(from = THREAD_PRIORITY_LOWEST, to = -20) int priority)
             throws IllegalArgumentException, SecurityException;
 
     /**
@@ -1189,7 +1191,8 @@ public class Process {
      *
      * @see #setThreadPriority(int, int)
      */
-    public static final native void setThreadPriority(int priority)
+    public static final native void setThreadPriority(
+            @IntRange(from = THREAD_PRIORITY_LOWEST, to = -20) int priority)
             throws IllegalArgumentException, SecurityException;
 
     /**
@@ -1205,6 +1208,7 @@ public class Process {
      * @throws IllegalArgumentException Throws IllegalArgumentException if
      * <var>tid</var> does not exist.
      */
+    @IntRange(from = THREAD_PRIORITY_LOWEST, to = -20)
     public static final native int getThreadPriority(int tid)
             throws IllegalArgumentException;
 
