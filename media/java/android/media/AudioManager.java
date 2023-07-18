@@ -22,6 +22,7 @@ import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.automaticBtDeviceType;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
+import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -1505,6 +1506,28 @@ public class AudioManager {
     public int getVolumeGroupIdForAttributes(@NonNull AudioAttributes attributes) {
         Preconditions.checkNotNull(attributes, "Audio Attributes must not be null");
         return AudioProductStrategy.getVolumeGroupIdForAudioAttributes(attributes,
+                /* fallbackOnDefault= */ true);
+    }
+
+    /**
+     * Returns the volume group id associated to the given {@link AudioAttributes} and zoneId.
+     *
+     * @param attributes The {@link AudioAttributes} to consider.
+     * @param zoneId to consider.
+     * @return audio volume group id supporting the given {@link AudioAttributes} if found,
+     * {@code android.media.audiopolicy.AudioVolumeGroup.DEFAULT_VOLUME_GROUP} otherwise.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    public int getVolumeGroupIdForAttributes(@NonNull AudioAttributes attributes, int zoneId) {
+        Preconditions.checkNotNull(attributes, "Audio Attributes must not be null");
+        return AudioProductStrategy.getVolumeGroupIdForAudioAttributes(attributes, zoneId,
                 /* fallbackOnDefault= */ true);
     }
 
