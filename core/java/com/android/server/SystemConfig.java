@@ -342,6 +342,9 @@ public class SystemConfig {
     // A set of package names that are allowed to use <install-constraints> manifest tag.
     private final Set<String> mInstallConstraintsAllowlist = new ArraySet<>();
 
+    // A set of paths that can be disabled on factory mode.
+    private final Set<String> mDisableOnFactoryModePaths = new ArraySet<>();
+
     private String mModulesInstallerPackageName;
 
     /**
@@ -539,6 +542,10 @@ public class SystemConfig {
 
     public Set<String> getInstallConstraintsAllowlist() {
         return mInstallConstraintsAllowlist;
+   }
+
+    public Set<String> getDisableOnFactoryModePaths() {
+        return mDisableOnFactoryModePaths;
     }
 
     public String getModulesInstallerPackageName() {
@@ -1474,6 +1481,15 @@ public class SystemConfig {
                             logNotAllowedInPartition(name, permFile, parser);
                         }
                         XmlUtils.skipCurrentTag(parser);
+                    } break;
+                    case "disable-on-factorymode": {
+                        String path = parser.getAttributeValue(null, "path");
+                        if (TextUtils.isEmpty(path)) {
+                            Slog.w(TAG, "<" + name + "> without valid path in " + permFile
+                                    + " at " + parser.getPositionDescription());
+                        } else {
+                            mDisableOnFactoryModePaths.add(path);
+                        }
                     } break;
                     default: {
                         Slog.w(TAG, "Tag " + name + " is unknown in "

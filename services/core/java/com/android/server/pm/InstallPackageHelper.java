@@ -45,6 +45,7 @@ import static android.os.storage.StorageManager.FLAG_STORAGE_CE;
 import static android.os.storage.StorageManager.FLAG_STORAGE_DE;
 import static android.os.storage.StorageManager.FLAG_STORAGE_EXTERNAL;
 
+import static com.android.internal.os.RoSystemProperties.FACTORYMODE;
 import static com.android.server.pm.InstructionSets.getAppDexInstructionSets;
 import static com.android.server.pm.InstructionSets.getDexCodeInstructionSet;
 import static com.android.server.pm.InstructionSets.getPreferredInstructionSet;
@@ -3458,11 +3459,16 @@ final class InstallPackageHelper {
 
         // Submit files for parsing in parallel
         int fileCount = 0;
+        Set<String> disableOnFactoryModePaths = mInjector.getSystemConfig().getDisableOnFactoryModePaths();
         for (File file : files) {
             final boolean isPackage = (isApkFile(file) || file.isDirectory())
                     && !PackageInstallerService.isStageName(file.getName());
             if (!isPackage) {
                 // Ignore entries which are not packages
+                continue;
+            }
+            if (FACTORYMODE && disableOnFactoryModePaths.contains(file.getPath())) {
+                Log.d(TAG, "Skip file : " + file.getPath());
                 continue;
             }
             if ((scanFlags & SCAN_DROP_CACHE) != 0) {
