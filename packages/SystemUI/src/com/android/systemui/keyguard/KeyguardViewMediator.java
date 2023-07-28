@@ -1260,7 +1260,7 @@ public class KeyguardViewMediator implements CoreStartable, Dumpable,
                 R.dimen.physical_power_button_center_screen_location_y);
         mWindowCornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context);
 
-        mDreamOpenAnimationDuration = (int) DREAMING_ANIMATION_DURATION_MS;
+        mDreamOpenAnimationDuration = 100;
         mDreamCloseAnimationDuration = (int) LOCKSCREEN_ANIMATION_DURATION_MS;
     }
 
