@@ -55,6 +55,7 @@ import android.hardware.display.DisplayManagerInternal;
 import android.net.ConnectivityManager;
 import android.net.ConnectivityModuleConnector;
 import android.net.NetworkStackClient;
+import android.net.thread.ThreadNetworkFrameworkInitializer;
 import android.os.BaseBundle;
 import android.os.Binder;
 import android.os.Build;
@@ -73,6 +74,7 @@ import android.os.ServiceManager;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.os.ThreadNetworkModuleServiceManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.IStorageManager;
@@ -406,6 +408,10 @@ public final class SystemServer implements Dumpable {
     private static final String ROLE_SERVICE_CLASS = "com.android.role.RoleService";
     private static final String GAME_MANAGER_SERVICE_CLASS =
             "com.android.server.app.GameManagerService$Lifecycle";
+    private static final String THREADNETWORK_APEX_SERVICE_JAR_PATH =
+            "/apex/com.android.threadnetwork/javalib/service-threadnetwork.jar";
+    private static final String THREAD_NETWORK_SERVICE_CLASS =
+            "com.android.server.threadnetwork.ThreadNetworkService";
     private static final String UWB_APEX_SERVICE_JAR_PATH =
             "/apex/com.android.uwb/javalib/service-uwb.jar";
     private static final String UWB_SERVICE_CLASS = "com.android.server.uwb.UwbService";
@@ -2752,6 +2758,17 @@ public final class SystemServer implements Dumpable {
         t.traceBegin("ArtManagerLocal");
         LocalManagerRegistry.addManager(ArtManagerLocal.class, new ArtManagerLocal());
         t.traceEnd();
+
+        try {
+            t.traceBegin("ThreadNetworkService");
+            ThreadNetworkFrameworkInitializer.setThreadNetworkModuleServiceManager(
+                    new ThreadNetworkModuleServiceManager());
+            mSystemServiceManager.startServiceFromJar(
+                    THREAD_NETWORK_SERVICE_CLASS, THREADNETWORK_APEX_SERVICE_JAR_PATH);
+            t.traceEnd();
+        } catch (Throwable e) {
+            reportWtf("Starting ThreadNetworkService failed", e);
+        }
 
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_UWB)) {
             t.traceBegin("UwbService");

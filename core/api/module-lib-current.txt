@@ -413,6 +413,14 @@ package android.os {
     method @NonNull public java.util.List<android.content.ComponentName> getEnabledComponentOverrides(@NonNull String);
   }
 
+  public class ThreadNetworkModuleServiceManager {
+    method @NonNull public android.os.ThreadNetworkModuleServiceManager.ServiceRegisterer getThreadDaemonServiceRegisterer();
+  }
+
+  public static final class ThreadNetworkModuleServiceManager.ServiceRegisterer {
+    method @Nullable public android.os.IBinder waitForService();
+  }
+
   public final class Trace {
     method public static void asyncTraceBegin(long, @NonNull String, int);
     method public static void asyncTraceEnd(long, @NonNull String, int);

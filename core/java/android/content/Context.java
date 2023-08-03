@@ -3929,6 +3929,7 @@ public abstract class Context {
             //@hide: DEVICE_STATE_SERVICE,
             //@hide: SPEECH_RECOGNITION_SERVICE,
             UWB_SERVICE,
+            THREAD_NETWORK_SERVICE,
             MEDIA_METRICS_SERVICE,
             //@hide: ATTESTATION_VERIFICATION_SERVICE,
             //@hide: SAFETY_CENTER_SERVICE,
@@ -5945,6 +5946,16 @@ public abstract class Context {
      */
     @SystemApi
     public static final String UWB_SERVICE = "uwb";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.net.threadnetwork.ThreadNetworkManager}.
+     *
+     * @see #getSystemService(String)
+     * @hide
+     */
+    @SystemApi
+    public static final String THREAD_NETWORK_SERVICE = "thread_network";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a

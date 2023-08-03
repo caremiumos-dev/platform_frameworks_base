@@ -145,6 +145,7 @@ import android.net.NetworkWatchlistManager;
 import android.net.PacProxyManager;
 import android.net.TetheringManager;
 import android.net.VpnManager;
+import android.net.thread.ThreadNetworkFrameworkInitializer;
 import android.net.vcn.IVcnManagementService;
 import android.net.vcn.VcnManager;
 import android.net.wifi.WifiFrameworkInitializer;
@@ -1533,6 +1534,7 @@ public final class SystemServiceRegistry {
             NearbyFrameworkInitializer.registerServiceWrappers();
             OnDevicePersonalizationFrameworkInitializer.registerServiceWrappers();
             VirtualizationFrameworkInitializer.registerServiceWrappers();
+            ThreadNetworkFrameworkInitializer.registerServiceWrappers();
         } finally {
             // If any of the above code throws, we're in a pretty bad shape and the process
             // will likely crash, but we'll reset it just in case there's an exception handler...

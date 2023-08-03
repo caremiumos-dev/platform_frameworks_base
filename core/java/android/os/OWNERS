@@ -76,3 +76,6 @@ per-file PatternMatcher* = file:/PACKAGE_MANAGER_OWNERS
 
 # PermissionEnforcer
 per-file PermissionEnforcer.java = tweek@google.com, brufino@google.com
+
+# ThreadNetwork module
+per-file ThreadNetworkModuleServiceManager.java = file:platform/packages/modules/ThreadNetwork:/OWNERS
