@@ -700,6 +700,11 @@
     <!-- Permission required for CTS test - CtsDevicePolicyManagerTestCases -->
     <uses-permission android:name="android.permission.READ_NEARBY_STREAMING_POLICY" />
 
+    <!-- Permission required for CTS test - CtsThreadNetworkTests -->
+    <uses-permission android:name="android.permission.ACCESS_THREADNETWORK_CREDENTIALS"/>
+    <uses-permission android:name="android.permission.ACCESS_THREADNETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_THREADNETWORK_STATE"/>
+
     <application android:label="@string/app_label"
                 android:theme="@android:style/Theme.DeviceDefault.DayNight"
                 android:defaultToDeviceProtectedStorage="true"

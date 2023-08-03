@@ -6361,4 +6361,20 @@ ul.</string>
 
     <!-- Display content to tell the user the sim card name and number-->
     <string name="default_card_name">CARD <xliff:g id="cardNumber" example="1">%d</xliff:g></string>
+
+    <!-- Title of the permission which allows an app to access Thread network state. [CHAR LIMIT=NONE] -->
+    <string name="permlab_accessThreadNetworkState">Access Thread network state</string>
+    <!-- Description the permission which allows an app to access Thread network state. [CHAR LIMIT=NONE] -->
+    <string name="permdesc_accessThreadNetworkState">Allows an app to access Thread network state
+      of this device, such as the connection status or the name of the connected network </string>
+    <!-- Title of the permission which allows an app to change Thread network state. [CHAR LIMIT=NONE] -->
+    <string name="permlab_changeThreadNetworkState">Change Thread network state</string>
+    <!-- Description the permission which allows an app to chnage Thread network state. [CHAR LIMIT=NONE] -->
+    <string name="permdesc_changeThreadNetworkState">Allows an app to change Thread network state
+      of this device, such as attach to an existing Thread network, form a new network or update
+      parameters of the connected network </string>
+    <!-- Title of Thread network credentials permission, which allows an app to access the credentials. [CHAR LIMIT=NONE] -->
+    <string name="permlab_accessThreadNetworkCredentials">Access Thread network credentials</string>
+    <!-- Description of Thread network credentials permission, which allows an app to access the credentials. [CHAR LIMIT=NONE] -->
+    <string name="permdesc_accessThreadNetworkCredentials">Allows an app to access Thread network credentials such as Network Key or PSKc</string>
 </resources>
