@@ -203,7 +203,7 @@ void AssetManager2::BuildDynamicRefTable() {
 
       // Add the package name -> build time ID mappings.
       for (const DynamicPackageEntry& entry : package->GetDynamicPackageMap()) {
-        String16 package_name(entry.package_name.c_str(), entry.package_name.size());
+        auto package_name = String16(entry.package_name.c_str(), entry.package_name.size());
         package_group->dynamic_ref_table->mEntries.replaceValueFor(
             package_name, static_cast<uint8_t>(entry.package_id));
       }
@@ -890,13 +890,13 @@ std::string AssetManager2::GetLastResourceResolution() const {
     }
 
     log_stream << "\n\t" << prefix->second << ": " << apk_assets_[step.cookie]->GetDebugName();
-    if (!step.config_name.isEmpty()) {
+    if (!step.config_name.empty()) {
       log_stream << " - " << step.config_name;
     }
   }
 
   log_stream << "\nBest matching is from "
-             << (last_resolution_.best_config_name.isEmpty() ? "default"
+             << (last_resolution_.best_config_name.empty() ? "default"
                                                    : last_resolution_.best_config_name)
              << " configuration of " << last_resolution_.best_package_name;
   return log_stream.str();

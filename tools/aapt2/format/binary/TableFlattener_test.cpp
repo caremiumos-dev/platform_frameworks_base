@@ -492,11 +492,11 @@ TEST_F(TableFlattenerTest, FlattenTableReferencingSharedLibraries) {
 
   const KeyedVector<String16, uint8_t>& entries = dynamic_ref_table->entries();
 
-  ssize_t idx = entries.indexOfKey(android::String16("lib_one"));
+  ssize_t idx = entries.indexOfKey(u"lib_one");
   ASSERT_GE(idx, 0);
   EXPECT_EQ(0x02u, entries.valueAt(idx));
 
-  idx = entries.indexOfKey(android::String16("lib_two"));
+  idx = entries.indexOfKey(u"lib_two");
   ASSERT_GE(idx, 0);
   EXPECT_EQ(0x03u, entries.valueAt(idx));
 }
@@ -515,7 +515,7 @@ TEST_F(TableFlattenerTest, PackageWithNonStandardIdHasDynamicRefTable) {
   ASSERT_THAT(dynamic_ref_table, NotNull());
 
   const KeyedVector<String16, uint8_t>& entries = dynamic_ref_table->entries();
-  ssize_t idx = entries.indexOfKey(android::String16("app"));
+  ssize_t idx = entries.indexOfKey(u"app");
   ASSERT_GE(idx, 0);
   EXPECT_EQ(0x80u, entries.valueAt(idx));
 }

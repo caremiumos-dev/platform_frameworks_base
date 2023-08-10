@@ -88,8 +88,8 @@ TEST(ResTableTest, ResourceNameIsResolved) {
   ResTable table;
   ASSERT_EQ(NO_ERROR, table.add(contents.data(), contents.size()));
 
-  String16 defPackage("com.android.basic");
-  String16 testName("@string/test1");
+  String16 defPackage(u"com.android.basic");
+  String16 testName(u"@string/test1");
   uint32_t resID =
       table.identifierForName(testName.c_str(), testName.size(), 0, 0,
                               defPackage.c_str(), defPackage.size());

@@ -1078,7 +1078,7 @@ base::expected<size_t, NullOrIOError> ResStringPool::indexOfString(const char16_
             // most often this happens because we want to get IDs for style
             // span tags; since those always appear at the end of the string
             // block, start searching at the back.
-            String8 str8(str, strLen);
+            auto str8 = String8(str, strLen);
             const size_t str8Len = str8.size();
             for (int i=mHeader->stringCount-1; i>=0; i--) {
                 const base::expected<StringPiece, NullOrIOError> s = string8At(i);
@@ -1510,8 +1510,8 @@ ssize_t ResXMLParser::getAttributeValue(size_t idx, Res_value* outValue) const
 
 ssize_t ResXMLParser::indexOfAttribute(const char* ns, const char* attr) const
 {
-    String16 nsStr(ns != NULL ? ns : "");
-    String16 attrStr(attr);
+    auto nsStr = android::toString16(ns != NULL ? ns : "");
+    auto attrStr = android::toString16(attr);
     return indexOfAttribute(ns ? nsStr.c_str() : NULL, ns ? nsStr.size() : 0,
                             attrStr.c_str(), attrStr.size());
 }
@@ -3245,11 +3245,11 @@ String8 ResTable_config::toString() const {
 
     if (mcc != 0) {
         if (res.size() > 0) res.append("-");
-        res.appendFormat("mcc%d", dtohs(mcc));
+        appendFormat(res, "mcc%d", dtohs(mcc));
     }
     if (mnc != 0) {
         if (res.size() > 0) res.append("-");
-        res.appendFormat("mnc%d", dtohs(mnc));
+        appendFormat(res, "mnc%d", dtohs(mnc));
     }
 
     appendDirLocale(res);
@@ -3264,22 +3264,22 @@ String8 ResTable_config::toString() const {
                 res.append("ldrtl");
                 break;
             default:
-                res.appendFormat("layoutDir=%d",
+                appendFormat(res, "layoutDir=%d",
                         dtohs(screenLayout&ResTable_config::MASK_LAYOUTDIR));
                 break;
         }
     }
     if (smallestScreenWidthDp != 0) {
         if (res.size() > 0) res.append("-");
-        res.appendFormat("sw%ddp", dtohs(smallestScreenWidthDp));
+        appendFormat(res, "sw%ddp", dtohs(smallestScreenWidthDp));
     }
     if (screenWidthDp != 0) {
         if (res.size() > 0) res.append("-");
-        res.appendFormat("w%ddp", dtohs(screenWidthDp));
+        appendFormat(res, "w%ddp", dtohs(screenWidthDp));
     }
     if (screenHeightDp != 0) {
         if (res.size() > 0) res.append("-");
-        res.appendFormat("h%ddp", dtohs(screenHeightDp));
+        appendFormat(res, "h%ddp", dtohs(screenHeightDp));
     }
     if ((screenLayout&MASK_SCREENSIZE) != SCREENSIZE_ANY) {
         if (res.size() > 0) res.append("-");
@@ -3297,7 +3297,7 @@ String8 ResTable_config::toString() const {
                 res.append("xlarge");
                 break;
             default:
-                res.appendFormat("screenLayoutSize=%d",
+                appendFormat(res, "screenLayoutSize=%d",
                         dtohs(screenLayout&ResTable_config::MASK_SCREENSIZE));
                 break;
         }
@@ -3312,7 +3312,7 @@ String8 ResTable_config::toString() const {
                 res.append("long");
                 break;
             default:
-                res.appendFormat("screenLayoutLong=%d",
+                appendFormat(res, "screenLayoutLong=%d",
                         dtohs(screenLayout&ResTable_config::MASK_SCREENLONG));
                 break;
         }
@@ -3327,7 +3327,7 @@ String8 ResTable_config::toString() const {
                 res.append("round");
                 break;
             default:
-                res.appendFormat("screenRound=%d", dtohs(screenLayout2&MASK_SCREENROUND));
+                appendFormat(res, "screenRound=%d", dtohs(screenLayout2&MASK_SCREENROUND));
                 break;
         }
     }
@@ -3341,7 +3341,7 @@ String8 ResTable_config::toString() const {
                 res.append("widecg");
                 break;
             default:
-                res.appendFormat("wideColorGamut=%d", dtohs(colorMode&MASK_WIDE_COLOR_GAMUT));
+                appendFormat(res, "wideColorGamut=%d", dtohs(colorMode&MASK_WIDE_COLOR_GAMUT));
                 break;
         }
     }
@@ -3355,7 +3355,7 @@ String8 ResTable_config::toString() const {
                 res.append("highdr");
                 break;
             default:
-                res.appendFormat("hdr=%d", dtohs(colorMode&MASK_HDR));
+                appendFormat(res, "hdr=%d", dtohs(colorMode&MASK_HDR));
                 break;
         }
     }
@@ -3372,7 +3372,7 @@ String8 ResTable_config::toString() const {
                 res.append("square");
                 break;
             default:
-                res.appendFormat("orientation=%d", dtohs(orientation));
+                appendFormat(res, "orientation=%d", dtohs(orientation));
                 break;
         }
     }
@@ -3398,7 +3398,7 @@ String8 ResTable_config::toString() const {
                 res.append("vrheadset");
                 break;
             default:
-                res.appendFormat("uiModeType=%d",
+                appendFormat(res, "uiModeType=%d",
                         dtohs(screenLayout&ResTable_config::MASK_UI_MODE_TYPE));
                 break;
         }
@@ -3413,7 +3413,7 @@ String8 ResTable_config::toString() const {
                 res.append("night");
                 break;
             default:
-                res.appendFormat("uiModeNight=%d",
+                appendFormat(res, "uiModeNight=%d",
                         dtohs(uiMode&MASK_UI_MODE_NIGHT));
                 break;
         }
@@ -3449,7 +3449,7 @@ String8 ResTable_config::toString() const {
                 res.append("anydpi");
                 break;
             default:
-                res.appendFormat("%ddpi", dtohs(density));
+                appendFormat(res, "%ddpi", dtohs(density));
                 break;
         }
     }
@@ -3466,7 +3466,7 @@ String8 ResTable_config::toString() const {
                 res.append("stylus");
                 break;
             default:
-                res.appendFormat("touchscreen=%d", dtohs(touchscreen));
+                appendFormat(res, "touchscreen=%d", dtohs(touchscreen));
                 break;
         }
     }
@@ -3497,7 +3497,7 @@ String8 ResTable_config::toString() const {
                 res.append("12key");
                 break;
             default:
-                res.appendFormat("keyboard=%d", dtohs(keyboard));
+                appendFormat(res, "keyboard=%d", dtohs(keyboard));
                 break;
         }
     }
@@ -3511,7 +3511,7 @@ String8 ResTable_config::toString() const {
                 res.append("navhidden");
                 break;
             default:
-                res.appendFormat("inputFlagsNavHidden=%d",
+                appendFormat(res, "inputFlagsNavHidden=%d",
                         dtohs(inputFlags&MASK_NAVHIDDEN));
                 break;
         }
@@ -3532,19 +3532,19 @@ String8 ResTable_config::toString() const {
                 res.append("wheel");
                 break;
             default:
-                res.appendFormat("navigation=%d", dtohs(navigation));
+                appendFormat(res, "navigation=%d", dtohs(navigation));
                 break;
         }
     }
     if (screenSize != 0) {
         if (res.size() > 0) res.append("-");
-        res.appendFormat("%dx%d", dtohs(screenWidth), dtohs(screenHeight));
+        appendFormat(res, "%dx%d", dtohs(screenWidth), dtohs(screenHeight));
     }
     if (version != 0) {
         if (res.size() > 0) res.append("-");
-        res.appendFormat("v%d", dtohs(sdkVersion));
+        appendFormat(res, "v%d", dtohs(sdkVersion));
         if (minorVersion != 0) {
-            res.appendFormat(".%d", dtohs(minorVersion));
+            appendFormat(res, ".%d", dtohs(minorVersion));
         }
     }
 
@@ -5070,8 +5070,8 @@ nope:
                 String8(package, packageLen).c_str());
     }
 
-    const String16 attr("attr");
-    const String16 attrPrivate("^attr-private");
+    const String16 attr(u"attr");
+    const String16 attrPrivate(u"^attr-private");
 
     const size_t NG = mPackageGroups.size();
     for (size_t ig=0; ig<NG; ig++) {
@@ -5214,19 +5214,19 @@ bool ResTable::expandResourceRef(const char16_t* refStr, size_t refLen,
         *outType = *defType;
     }
     *outName = String16(p, end-p);
-    if(**outPackage == 0) {
+    if(outPackage->empty()) {
         if(outErrorMsg) {
             *outErrorMsg = "Resource package cannot be an empty string";
         }
         return false;
     }
-    if(**outType == 0) {
+    if(outType->empty()) {
         if(outErrorMsg) {
             *outErrorMsg = "Resource type cannot be an empty string";
         }
         return false;
     }
-    if(**outName == 0) {
+    if(outName->empty()) {
         if(outErrorMsg) {
             *outErrorMsg = "Resource id cannot be an empty string";
         }
@@ -5778,7 +5778,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
 
         //printf("Looking up attr: %s\n", String8(s, len).c_str());
 
-        static const String16 attr16("attr");
+        static const String16 attr16(u"attr");
         String16 package, type, name;
         if (!expandResourceRef(s+1, len-1, &package, &type, &name,
                                &attr16, defPackage, &errorMsg)) {
@@ -6190,13 +6190,13 @@ bool ResTable::collectString(String16* outString,
         if (append) {
             outString->append(tmp);
         } else {
-            outString->setTo(tmp);
+            *outString = tmp;
         }
     } else {
         if (append) {
             outString->append(String16(s, len));
         } else {
-            outString->setTo(s, len);
+            *outString = String16(s, len);
         }
     }
 
@@ -6283,7 +6283,7 @@ template <typename Func>
 void ResTable::forEachConfiguration(bool ignoreMipmap, bool ignoreAndroidPackage,
                                     bool includeSystemConfigs, const Func& f) const {
     const size_t packageCount = mPackageGroups.size();
-    const String16 android("android");
+    const String16 android(u"android");
     for (size_t i = 0; i < packageCount; i++) {
         const PackageGroup* packageGroup = mPackageGroups[i];
         if (ignoreAndroidPackage && android == packageGroup->name) {
@@ -7398,10 +7398,10 @@ bool ResTable::getIdmapInfo(const void* idmap, size_t sizeBytes,
         *pOverlayCrc = dtohl(map[3]);
     }
     if (pTargetPath) {
-        pTargetPath->setTo(reinterpret_cast<const char*>(map + 4));
+        *pTargetPath = String8(reinterpret_cast<const char*>(map + 4));
     }
     if (pOverlayPath) {
-        pOverlayPath->setTo(reinterpret_cast<const char*>(map + 4 + 256 / sizeof(uint32_t)));
+        *pOverlayPath = String8(reinterpret_cast<const char*>(map + 4 + 256 / sizeof(uint32_t)));
     }
     return true;
 }

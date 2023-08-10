@@ -256,9 +256,9 @@ TEST_F(SplitTest, TestNewResourceIsAccessibleByName) {
   ASSERT_EQ(NO_ERROR,
             table.add(feature_contents_.data(), feature_contents_.size()));
 
-  const String16 name("test3");
-  const String16 type("string");
-  const String16 package("com.android.basic");
+  const String16 name(u"test3");
+  const String16 type(u"string");
+  const String16 package(u"com.android.basic");
   ASSERT_EQ(
       R::string::test3,
       table.identifierForName(name.c_str(), name.size(), type.c_str(),

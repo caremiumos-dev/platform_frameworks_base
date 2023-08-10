@@ -265,14 +265,14 @@ BackupDataReader::ReadNextHeader(bool* done, int* type)
 
             // read the rest of the header (filename)
             size_t size = m_header.entity.keyLen;
-            char* buf = m_key.lockBuffer(size);
+            char* buf = lockBuffer(m_key, size);
             if (buf == NULL) {
                 m_status = ENOMEM;
                 return m_status;
             }
             int amt = read(m_fd, buf, size+1);
             CHECK_SIZE(amt, (int)size+1);
-            m_key.unlockBuffer(size);
+            unlockBuffer(m_key, buf, size);
             m_pos += size+1;
             SKIP_PADDING();
             m_dataEndPos = m_pos + m_header.entity.dataSize;

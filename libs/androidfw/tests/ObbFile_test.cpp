@@ -79,8 +79,7 @@ TEST_F(ObbFileTest, WriteThenRead) {
 
     EXPECT_EQ(versionNum, mObbFile->getVersion())
             << "version didn't come out the same as it went in";
-    const char* currentPackageName = mObbFile->getPackageName().c_str();
-    EXPECT_STREQ(packageName, currentPackageName)
+    EXPECT_EQ(packageName, mObbFile->getPackageName())
             << "package name didn't come out the same as it went in";
 
     size_t saltLen;
