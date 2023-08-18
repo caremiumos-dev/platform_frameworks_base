@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4a5c6d48_f89000c1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1395785
+      },
+      "writtenOn": "2023-08-18T16:33:11Z",
+      "side": 1,
+      "message": "Thank you for finding and fixing this leak.",
+      "revId": "b4a97ad1e59f064c436db399a50a7c86e4cfa0da",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
