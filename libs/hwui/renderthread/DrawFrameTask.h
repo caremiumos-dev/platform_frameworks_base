@@ -106,7 +106,7 @@ private:
     bool syncFrameState(TreeInfo& info);
     void unblockUiThread();
 
-#ifdef __ANDROID__  // Layoutlib is singlethreaded
+#ifdef __ANDROID__ // Layoutlib is singlethreaded
     Mutex mLock;
     Condition mSignal;
 #endif
@@ -121,7 +121,7 @@ private:
     /*********************************************
      *  Single frame data
      *********************************************/
-#ifdef __ANDROID__  // Layoutlib does not support Layers
+#ifdef __ANDROID__ // Layoutlib does not support Layers
     std::vector<sp<DeferredLayerUpdater> > mLayers;
 #endif
 

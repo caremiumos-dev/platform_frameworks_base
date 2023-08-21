@@ -849,13 +849,23 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
             p.get(),
             // In place callback
             [&](std::unique_ptr<int8_t[]> buffer, int32_t size) {
+                if (allocationSize > size) {
+                    android_errorWriteLog(0x534e4554, "213169612");
+                    return STATUS_BAD_VALUE;
+                }
                 nativeBitmap = Bitmap::allocateHeapBitmap(allocationSize, imageInfo, rowBytes);
                 if (nativeBitmap) {
-                    memcpy(nativeBitmap->pixels(), buffer.get(), size);
+                    memcpy(nativeBitmap->pixels(), buffer.get(), allocationSize);
+                    return STATUS_OK;
                 }
+                return STATUS_NO_MEMORY;
             },
             // Ashmem callback
             [&](android::base::unique_fd fd, int32_t size) {
+                if (allocationSize > size) {
+                    android_errorWriteLog(0x534e4554, "213169612");
+                    return STATUS_BAD_VALUE;
+                }
                 int flags = PROT_READ;
                 if (isMutable) {
                     flags |= PROT_WRITE;
@@ -864,18 +874,20 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
                 if (addr == MAP_FAILED) {
                     const int err = errno;
                     ALOGW("mmap failed, error %d (%s)", err, strerror(err));
-                    return;
+                    return STATUS_NO_MEMORY;
                 }
                 nativeBitmap =
                         Bitmap::createFrom(imageInfo, rowBytes, fd.release(), addr, size, !isMutable);
+                return STATUS_OK;
             });
-    if (error != STATUS_OK) {
+
+    if (error != STATUS_OK && error != STATUS_NO_MEMORY) {
         // TODO: Stringify the error, see signalExceptionForError in android_util_Binder.cpp
         jniThrowExceptionFmt(env, RuntimeException, "Failed to read from Parcel, error=%d", error);
         return nullptr;
     }
-    if (!nativeBitmap) {
-        jniThrowRuntimeException(env, "Could not allocate java pixel ref.");
+    if (error == STATUS_NO_MEMORY || !nativeBitmap) {
+        jniThrowRuntimeException(env, "Could not allocate bitmap data.");
         return nullptr;
     }
 

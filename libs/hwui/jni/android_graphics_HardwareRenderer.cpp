@@ -30,12 +30,12 @@
 #endif
 #include <gui/TraceUtils.h>
 #include <inttypes.h>
-#ifdef __ANDROID__  // Layoutlib does not support hardware
+#ifdef __ANDROID__ // Layoutlib does not support hardware
 #include <media/NdkImage.h>
 #include <media/NdkImageReader.h>
 #endif
 #include <nativehelper/JNIPlatformHelp.h>
-#ifdef __ANDROID__  // Layoutlib does not support shader cache
+#ifdef __ANDROID__ // Layoutlib does not support shader cache
 #include <pipeline/skia/ShaderCache.h>
 #include <private/EGL/cache.h>
 #endif
@@ -54,7 +54,7 @@
 #include <atomic>
 #include <vector>
 
-#ifdef __ANDROID__  // Layoutlib does not support Frame Metrics and shaders
+#ifdef __ANDROID__ // Layoutlib does not support Frame Metrics and shaders
 #include "android_graphics_HardwareRendererObserver.h"
 #endif
 
@@ -190,13 +190,9 @@ static jlong android_view_ThreadedRenderer_createRootRenderNode(JNIEnv* env, job
 static jlong android_view_ThreadedRenderer_createProxy(JNIEnv* env, jobject clazz,
         jboolean translucent, jlong rootRenderNodePtr) {
     RootRenderNode* rootRenderNode = reinterpret_cast<RootRenderNode*>(rootRenderNodePtr);
-#ifdef __ANDROID__  // Layoutlib does not support Animation
     ContextFactoryImpl factory(rootRenderNode);
     RenderProxy* proxy = new RenderProxy(translucent, rootRenderNode, &factory);
     return (jlong) proxy;
-#else
-    return (jlong) new RenderProxy(translucent, rootRenderNode, nullptr);
-#endif
 }
 
 static void android_view_ThreadedRenderer_deleteProxy(JNIEnv* env, jobject clazz,
@@ -697,18 +693,16 @@ static jint android_view_ThreadedRenderer_copySurfaceInto(JNIEnv* env,
     return result;
 }
 
-#ifdef __ANDROID__  // Layoutlib does not support Animation
 class ContextFactory : public IContextFactory {
 public:
     virtual AnimationContext* createAnimationContext(renderthread::TimeLord& clock) {
         return new AnimationContext(clock);
     }
 };
-#endif
 
 static jobject android_view_ThreadedRenderer_createHardwareBitmapFromRenderNode(JNIEnv* env,
         jobject clazz, jlong renderNodePtr, jint jwidth, jint jheight) {
-#ifdef __ANDROID__  // Layoutlib does not support hardware
+#ifdef __ANDROID__ // Layoutlib does not support hardware
     RenderNode* renderNode = reinterpret_cast<RenderNode*>(renderNodePtr);
     if (jwidth <= 0 || jheight <= 0) {
         ALOGW("Invalid width %d or height %d", jwidth, jheight);
@@ -841,7 +835,7 @@ static void android_view_ThreadedRenderer_preload(JNIEnv*, jclass) {
 
 // Plumbs the display density down to DeviceInfo.
 static void android_view_ThreadedRenderer_setDisplayDensityDpi(JNIEnv*, jclass, jint densityDpi) {
-#ifdef __ANDROID__  // host does not support native display
+#ifdef __ANDROID__ // Layoutlib does not support native display
     // Convert from dpi to density-independent pixels.
     const float density = densityDpi / 160.0;
     DeviceInfo::setDensity(density);
@@ -853,7 +847,7 @@ static void android_view_ThreadedRenderer_initDisplayInfo(JNIEnv*, jclass, jint 
                                                           jint wideColorDataspace,
                                                           jlong appVsyncOffsetNanos,
                                                           jlong presentationDeadlineNanos) {
-#ifdef __ANDROID__  // host does not support native display
+#ifdef __ANDROID__ // host does not support native display
     DeviceInfo::setWidth(physicalWidth);
     DeviceInfo::setHeight(physicalHeight);
     DeviceInfo::setRefreshRate(refreshRate);
@@ -869,7 +863,7 @@ static void android_view_ThreadedRenderer_initDisplayInfo(JNIEnv*, jclass, jint 
 
 static void android_view_ThreadedRenderer_addObserver(JNIEnv* env, jclass clazz,
         jlong proxyPtr, jlong observerPtr) {
-#ifdef __ANDROID__  // Layoutlib does not support frame metrics
+#ifdef __ANDROID__ // Layoutlib does not support frame metrics
     HardwareRendererObserver* observer = reinterpret_cast<HardwareRendererObserver*>(observerPtr);
     renderthread::RenderProxy* renderProxy =
             reinterpret_cast<renderthread::RenderProxy*>(proxyPtr);
@@ -880,7 +874,7 @@ static void android_view_ThreadedRenderer_addObserver(JNIEnv* env, jclass clazz,
 
 static void android_view_ThreadedRenderer_removeObserver(JNIEnv* env, jclass clazz,
         jlong proxyPtr, jlong observerPtr) {
-#ifdef __ANDROID__  // Layoutlib does not support frame metrics
+#ifdef __ANDROID__ // Layoutlib does not support frame metrics
     HardwareRendererObserver* observer = reinterpret_cast<HardwareRendererObserver*>(observerPtr);
     renderthread::RenderProxy* renderProxy =
             reinterpret_cast<renderthread::RenderProxy*>(proxyPtr);
@@ -895,7 +889,7 @@ static void android_view_ThreadedRenderer_removeObserver(JNIEnv* env, jclass cla
 
 static void android_view_ThreadedRenderer_setupShadersDiskCache(JNIEnv* env, jobject clazz,
         jstring diskCachePath, jstring skiaDiskCachePath) {
-#ifdef __ANDROID__  // Layoutlib does not support EGL
+#ifdef __ANDROID__ // Layoutlib does not support EGL
     const char* cacheArray = env->GetStringUTFChars(diskCachePath, NULL);
     android::egl_set_cache_filename(cacheArray);
     env->ReleaseStringUTFChars(diskCachePath, cacheArray);
@@ -1022,7 +1016,7 @@ static void attachRenderThreadToJvm(const char* name) {
 
 int register_android_view_ThreadedRenderer(JNIEnv* env) {
     env->GetJavaVM(&mJvm);
-#ifdef __ANDROID__  // Layoutlib does not use a separate renderthread
+#ifdef __ANDROID__ // Layoutlib does not use a separate renderthread
     RenderThread::setOnStartHook(&attachRenderThreadToJvm);
 #endif
 

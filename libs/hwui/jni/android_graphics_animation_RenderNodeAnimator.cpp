@@ -186,6 +186,8 @@ static void end(JNIEnv* env, jobject clazz, jlong animatorPtr) {
 // JNI Glue
 // ----------------------------------------------------------------------------
 
+const char* const kClassPathName = "android/graphics/animation/RenderNodeAnimator";
+
 static const JNINativeMethod gMethods[] = {
         {"nCreateAnimator", "(IF)J", (void*)createAnimator},
         {"nCreateCanvasPropertyFloatAnimator", "(JF)J", (void*)createCanvasPropertyFloatAnimator},
@@ -197,7 +199,7 @@ static const JNINativeMethod gMethods[] = {
         {"nSetStartDelay", "(JJ)V", (void*)setStartDelay},
         {"nSetInterpolator", "(JJ)V", (void*)setInterpolator},
         {"nSetAllowRunningAsync", "(JZ)V", (void*)setAllowRunningAsync},
-        {"nSetListener", "(JLjava/lang/Object;)V", (void*)setListener},
+        { "nSetListener", "(JLandroid/graphics/animation/RenderNodeAnimator;)V", (void*) setListener},
         {"nStart", "(J)V", (void*)start},
         {"nEnd", "(J)V", (void*)end},
 };

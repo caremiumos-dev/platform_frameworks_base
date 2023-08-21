@@ -26,23 +26,30 @@
 
 #include <android-base/chrono_utils.h>
 #include <android/graphics/region.h>
+#ifdef __ANDROID__
 #include <android/gui/BnScreenCaptureListener.h>
 #include <android/hardware/display/IDeviceProductInfoConstants.h>
+#endif
 #include <android/os/IInputConstants.h>
 #include <android_runtime/AndroidRuntime.h>
 #include <android_runtime/android_graphics_GraphicBuffer.h>
 #include <android_runtime/android_hardware_HardwareBuffer.h>
 #include <android_runtime/android_view_Surface.h>
 #include <android_runtime/android_view_SurfaceSession.h>
+#ifdef __ANDROID__
 #include <gui/ISurfaceComposer.h>
+#endif
 #include <gui/Surface.h>
 #include <gui/SurfaceComposerClient.h>
+#include <gui/SurfaceControl.h>
 #include <jni.h>
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
 #include <private/gui/ComposerService.h>
 #include <stdio.h>
 #include <system/graphics.h>
+
+#ifdef __ANDROID__
 #include <ui/BlurRegion.h>
 #include <ui/ConfigStoreTypes.h>
 #include <ui/DeviceProductInfo.h>
@@ -52,6 +59,7 @@
 #include <ui/FrameStats.h>
 #include <ui/GraphicTypes.h>
 #include <ui/HdrCapabilities.h>
+#endif
 #include <ui/Rect.h>
 #include <ui/Region.h>
 #include <ui/StaticDisplayInfo.h>
@@ -148,10 +156,12 @@ static struct {
     jfieldID childrenOnly;
 } gLayerCaptureArgsClassInfo;
 
+#ifdef __ANDROID__
 // Implements SkMallocPixelRef::ReleaseProc, to delete the screenshot on unref.
 void DeleteScreenshot(void* addr, void* context) {
     delete ((ScreenshotClient*) context);
 }
+#endif
 
 static struct {
     nsecs_t UNDEFINED_TIME_NANO;
@@ -236,6 +246,7 @@ static struct {
     jmethodID ctor;
 } gJankDataClassInfo;
 
+#ifdef __ANDROID__
 class JNamedColorSpace {
 public:
     // ColorSpace.Named.SRGB.ordinal() = 0;
@@ -326,6 +337,7 @@ private:
         return env;
     }
 };
+#endif
 
 // ----------------------------------------------------------------------------
 
@@ -394,6 +406,7 @@ static void nativeDisconnect(JNIEnv* env, jclass clazz, jlong nativeObject) {
     }
 }
 
+#ifdef __ANDROID__
 static void nativeSetDefaultBufferSize(JNIEnv* env, jclass clazz, jlong nativeObject,
                                        jint width, jint height) {
     SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
@@ -498,6 +511,8 @@ static jint nativeCaptureLayers(JNIEnv* env, jclass clazz, jobject layerCaptureA
     return ScreenshotClient::captureLayers(captureArgs, captureListener);
 }
 
+#endif
+
 static void nativeApplyTransaction(JNIEnv* env, jclass clazz, jlong transactionObj, jboolean sync) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
     transaction->apply(sync);
@@ -511,6 +526,7 @@ static void nativeMergeTransaction(JNIEnv* env, jclass clazz,
     transaction->merge(std::move(*otherTransaction));
 }
 
+#ifdef __ANDROID__
 static void nativeSetAnimationTransaction(JNIEnv* env, jclass clazz, jlong transactionObj) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
     transaction->setAnimationTransaction();
@@ -702,7 +718,7 @@ static void nativeSetAlpha(JNIEnv* env, jclass clazz, jlong transactionObj,
     SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
     transaction->setAlpha(ctrl, alpha);
 }
-
+#endif
 static void nativeSetInputWindowInfo(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jobject inputWindow) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
@@ -715,6 +731,7 @@ static void nativeSetInputWindowInfo(JNIEnv* env, jclass clazz, jlong transactio
     transaction->setInputWindowInfo(ctrl, *handle->getInfo());
 }
 
+#ifdef __ANDROID__
 static void nativeSyncInputWindows(JNIEnv* env, jclass clazz, jlong transactionObj) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
     transaction->syncInputWindows();
@@ -866,6 +883,18 @@ static void nativeSetFixedTransformHint(JNIEnv* env, jclass clazz, jlong transac
 
     SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
     transaction->setFixedTransformHint(ctrl, transformHint);
+}
+
+static void nativeSetDropInputMode(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                   jlong nativeObject, jint mode) {
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    transaction->setDropInputMode(ctrl, static_cast<gui::DropInputMode>(mode));
+}
+
+static void nativeSanitize(JNIEnv* env, jclass clazz, jlong transactionObj) {
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+    transaction->sanitize();
 }
 
 static jlongArray nativeGetPhysicalDisplayIds(JNIEnv* env, jclass clazz) {
@@ -1541,6 +1570,7 @@ static void nativeSetGameContentType(JNIEnv* env, jclass clazz, jobject tokenObj
 
     SurfaceComposerClient::setGameContentType(token, on);
 }
+#endif
 
 static jlong nativeReadFromParcel(JNIEnv* env, jclass clazz, jobject parcelObj) {
     Parcel* parcel = parcelForJavaObject(env, parcelObj);
@@ -1581,6 +1611,7 @@ static void nativeWriteToParcel(JNIEnv* env, jclass clazz,
     }
 }
 
+#ifdef __ANDROID__
 static jboolean nativeGetDisplayBrightnessSupport(JNIEnv* env, jclass clazz,
         jobject displayTokenObject) {
     sp<IBinder> displayToken(ibinderForJavaObject(env, displayTokenObject));
@@ -1606,6 +1637,8 @@ static jboolean nativeSetDisplayBrightness(JNIEnv* env, jclass clazz, jobject di
     return error == OK ? JNI_TRUE : JNI_FALSE;
 }
 
+#endif
+
 static void nativeWriteTransactionToParcel(JNIEnv* env, jclass clazz, jlong nativeObject,
         jobject parcelObj) {
     Parcel* parcel = parcelForJavaObject(env, parcelObj);
@@ -1620,6 +1653,7 @@ static void nativeWriteTransactionToParcel(JNIEnv* env, jclass clazz, jlong nati
     }
 }
 
+#ifdef __ANDROID__
 static void nativeClearTransaction(JNIEnv* env, jclass clazz, jlong nativeObject) {
     SurfaceComposerClient::Transaction* const self =
             reinterpret_cast<SurfaceComposerClient::Transaction*>(nativeObject);
@@ -1627,6 +1661,7 @@ static void nativeClearTransaction(JNIEnv* env, jclass clazz, jlong nativeObject
         self->clear();
     }
 }
+#endif
 
 static jlong nativeReadTransactionFromParcel(JNIEnv* env, jclass clazz, jobject parcelObj) {
     Parcel* parcel = parcelForJavaObject(env, parcelObj);
@@ -1639,6 +1674,8 @@ static jlong nativeReadTransactionFromParcel(JNIEnv* env, jclass clazz, jobject 
 
     return reinterpret_cast<jlong>(transaction.release());
 }
+
+#ifdef __ANDROID__
 
 static jlong nativeMirrorSurface(JNIEnv* env, jclass clazz, jlong mirrorOfObj) {
     sp<SurfaceComposerClient> client = SurfaceComposerClient::getDefault();
@@ -1800,6 +1837,7 @@ static jint nativeGetTransformHint(JNIEnv* env, jclass clazz, jlong nativeSurfac
 
     return toRotationInt(ui::Transform::toRotation((transformHintRotationFlags)));
 }
+#endif
 
 // ----------------------------------------------------------------------------
 
@@ -1817,8 +1855,10 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeRelease },
     {"nativeDisconnect", "(J)V",
             (void*)nativeDisconnect },
+#ifdef __ANDROID__
     {"nativeUpdateDefaultBufferSize", "(JII)V",
             (void*)nativeSetDefaultBufferSize},
+#endif
     {"nativeCreateTransaction", "()J",
             (void*)nativeCreateTransaction },
     {"nativeApplyTransaction", "(JZ)V",
@@ -1827,6 +1867,7 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeGetNativeTransactionFinalizer },
     {"nativeMergeTransaction", "(JJ)V",
             (void*)nativeMergeTransaction },
+#ifdef __ANDROID__
     {"nativeSetAnimationTransaction", "(J)V",
             (void*)nativeSetAnimationTransaction },
     {"nativeSetEarlyWakeupStart", "(J)V",
@@ -1938,8 +1979,10 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
     {"nativeCaptureLayers",
             "(Landroid/view/SurfaceControl$LayerCaptureArgs;Landroid/view/SurfaceControl$ScreenCaptureListener;)I",
             (void*)nativeCaptureLayers },
+#endif
     {"nativeSetInputWindowInfo", "(JJLandroid/view/InputWindowHandle;)V",
             (void*)nativeSetInputWindowInfo },
+#ifdef __ANDROID__
     {"nativeSetMetadata", "(JJILandroid/os/Parcel;)V",
             (void*)nativeSetMetadata },
     {"nativeGetDisplayedContentSamplingAttributes",
@@ -1962,10 +2005,12 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeGetDisplayBrightnessSupport },
     {"nativeSetDisplayBrightness", "(Landroid/os/IBinder;FFFF)Z",
             (void*)nativeSetDisplayBrightness },
+#endif
     {"nativeReadTransactionFromParcel", "(Landroid/os/Parcel;)J",
             (void*)nativeReadTransactionFromParcel },
     {"nativeWriteTransactionToParcel", "(JLandroid/os/Parcel;)V",
             (void*)nativeWriteTransactionToParcel },
+#ifdef __ANDROID__
     {"nativeClearTransaction", "(J)V",
             (void*)nativeClearTransaction },
     {"nativeMirrorSurface", "(J)J",
@@ -1994,6 +2039,11 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeGetTransformHint },
     {"nativeSetTrustedOverlay", "(JJZ)V",
             (void*)nativeSetTrustedOverlay },
+    {"nativeSetDropInputMode", "(JJI)V",
+            (void*)nativeSetDropInputMode},
+    {"nativeSanitize", "(J)V",
+            (void*) nativeSanitize }
+#endif
         // clang-format on
 };
 

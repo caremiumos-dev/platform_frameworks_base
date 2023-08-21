@@ -27,21 +27,21 @@
 #include <android_runtime/android_graphics_SurfaceTexture.h>
 #include <android_runtime/android_view_Surface.h>
 #include <android_runtime/Log.h>
-#ifdef __ANDROID__ // host does not support hardware buffer
+#ifdef __ANDROID__ // Layoutlib does not support hardware buffer
 #include <private/android/AHardwareBufferHelpers.h>
 #endif
 
-#include "android_os_Parcel.h"
-#ifdef __ANDROID__ // host does not support Parcel
 #include <binder/Parcel.h>
-#endif
+#include "android_os_Parcel.h"
 
 #ifdef __ANDROID__ // host does not support BufferQueue
 #include <gui/BLASTBufferQueue.h>
 #endif
 #include <gui/Surface.h>
-#ifdef __ANDROID__ // host does not support SurfaceControl
+#ifdef __linux__
 #include <gui/SurfaceControl.h>
+#endif
+#ifdef __ANDROID__ // Layoutlib does not support Parcel
 #include <gui/view/Surface.h>
 #endif
 
@@ -78,7 +78,7 @@ static struct {
     jfieldID bottom;
 } gRectClassInfo;
 
-#ifdef __ANDROID__ // host does not support Dataspace HAL
+#ifdef __ANDROID__ // Layoutlib does not support GraphicBuffer
 class JNamedColorSpace {
 public:
     // ColorSpace.Named.SRGB.ordinal() = 0;
@@ -157,9 +157,9 @@ static inline bool isSurfaceValid(const sp<Surface>& sur) {
 
 // ----------------------------------------------------------------------------
 
+#ifdef __ANDROID__ // Layoutlib does not need this now
 static jlong nativeCreateFromSurfaceTexture(JNIEnv* env, jclass clazz,
         jobject surfaceTextureObj) {
-#ifdef __ANDROID__ // host does not support SurfaceTexture
     sp<IGraphicBufferProducer> producer(SurfaceTexture_getProducer(env, surfaceTextureObj));
     if (producer == NULL) {
         jniThrowException(env, IllegalArgumentException,
@@ -175,10 +175,8 @@ static jlong nativeCreateFromSurfaceTexture(JNIEnv* env, jclass clazz,
 
     surface->incStrong(&sRefBaseOwner);
     return jlong(surface.get());
-#else
-    return 0;
-#endif
 }
+#endif
 
 static void nativeRelease(JNIEnv* env, jclass clazz, jlong nativeObject) {
     sp<Surface> sur(reinterpret_cast<Surface *>(nativeObject));
@@ -204,14 +202,13 @@ static jboolean nativeIsConsumerRunningBehind(JNIEnv* env, jclass clazz, jlong n
 
 static jlong nativeLockCanvas(JNIEnv* env, jclass clazz,
         jlong nativeObject, jobject canvasObj, jobject dirtyRectObj) {
-#ifdef __ANDROID__ // host does not support locking Canvas
+#ifdef __ANDROID__ // Layoutlib does not support locking canvas
     sp<Surface> surface(reinterpret_cast<Surface *>(nativeObject));
 
     if (!isSurfaceValid(surface)) {
         jniThrowException(env, IllegalArgumentException, NULL);
         return 0;
     }
-
     if (!ACanvas_isSupportedPixelFormat(ANativeWindow_getFormat(surface.get()))) {
         native_window_set_buffers_format(surface.get(), PIXEL_FORMAT_RGBA_8888);
     }
@@ -263,7 +260,7 @@ static jlong nativeLockCanvas(JNIEnv* env, jclass clazz,
 
 static void nativeUnlockCanvasAndPost(JNIEnv* env, jclass clazz,
         jlong nativeObject, jobject canvasObj) {
-#ifdef __ANDROID__ // host does not support locking Canvas
+#ifdef __ANDROID__ // Layoutlib does not support locking canvas
     sp<Surface> surface(reinterpret_cast<Surface *>(nativeObject));
     if (!isSurfaceValid(surface)) {
         return;
@@ -292,34 +289,33 @@ static void nativeAllocateBuffers(JNIEnv* /* env */ , jclass /* clazz */,
 }
 
 // ----------------------------------------------------------------------------
-
+#ifdef __ANDROID__ // Layoutlib does not support Parcel
 static jlong nativeCreateFromSurfaceControl(JNIEnv* env, jclass clazz,
         jlong surfaceControlNativeObj) {
-#ifdef __ANDROID__ // hoost does not support Parcel
     sp<SurfaceControl> ctrl(reinterpret_cast<SurfaceControl *>(surfaceControlNativeObj));
     sp<Surface> surface(ctrl->createSurface());
     if (surface != NULL) {
         surface->incStrong(&sRefBaseOwner);
     }
     return reinterpret_cast<jlong>(surface.get());
-#else
-    return 0;
-#endif
 }
+#endif
 
+#ifdef __linux__
 static jlong nativeGetFromSurfaceControl(JNIEnv* env, jclass clazz,
         jlong nativeObject,
         jlong surfaceControlNativeObj) {
-#ifdef __ANDROID__ // host does not support Parcel
-    Surface* self(reinterpret_cast<Surface *>(nativeObject));
     sp<SurfaceControl> ctrl(reinterpret_cast<SurfaceControl *>(surfaceControlNativeObj));
 
+#ifdef __ANDROID__ // Layoutlib does not support Parcel
+    Surface* self(reinterpret_cast<Surface*>(nativeObject));
     // If the underlying IGBP's are the same, we don't need to do anything.
     if (self != nullptr &&
             IInterface::asBinder(self->getIGraphicBufferProducer()) ==
             IInterface::asBinder(ctrl->getIGraphicBufferProducer())) {
         return nativeObject;
     }
+#endif
 
     sp<Surface> surface(ctrl->getSurface());
     if (surface != NULL) {
@@ -327,14 +323,12 @@ static jlong nativeGetFromSurfaceControl(JNIEnv* env, jclass clazz,
     }
 
     return reinterpret_cast<jlong>(surface.get());
-#else
-    return 0;
-#endif
 }
+#endif
 
+#ifdef __ANDROID__ // Layoutlib does not support Parcel
 static jlong nativeGetFromBlastBufferQueue(JNIEnv* env, jclass clazz, jlong nativeObject,
                                            jlong blastBufferQueueNativeObj) {
-#ifdef __ANDROID__ // host does not support BufferQueue
     Surface* self(reinterpret_cast<Surface*>(nativeObject));
     sp<BLASTBufferQueue> queue = reinterpret_cast<BLASTBufferQueue*>(blastBufferQueueNativeObj);
     const sp<IGraphicBufferProducer>& bufferProducer = queue->getIGraphicBufferProducer();
@@ -351,14 +345,10 @@ static jlong nativeGetFromBlastBufferQueue(JNIEnv* env, jclass clazz, jlong nati
     }
 
     return reinterpret_cast<jlong>(surface.get());
-#else
-    return 0;
-#endif
 }
 
 static jlong nativeReadFromParcel(JNIEnv* env, jclass clazz,
         jlong nativeObject, jobject parcelObj) {
-#ifdef __ANDROID__ // host does not support Parcel
     Parcel* parcel = parcelForJavaObject(env, parcelObj);
     if (parcel == NULL) {
         jniThrowNullPointerException(env, NULL);
@@ -397,14 +387,10 @@ static jlong nativeReadFromParcel(JNIEnv* env, jclass clazz,
     }
 
     return jlong(sur.get());
-#else
-    return 0;
-#endif
 }
 
 static void nativeWriteToParcel(JNIEnv* env, jclass clazz,
         jlong nativeObject, jobject parcelObj) {
-#ifdef __ANDROID__ // host does not support Parcel
     Parcel* parcel = parcelForJavaObject(env, parcelObj);
     if (parcel == NULL) {
         jniThrowNullPointerException(env, NULL);
@@ -419,8 +405,8 @@ static void nativeWriteToParcel(JNIEnv* env, jclass clazz,
     // Calling code in Surface.java has already written the name of the Surface
     // to the Parcel
     surfaceShim.writeToParcel(parcel, /*nameAlreadyWritten*/true);
-#endif
 }
+#endif
 
 static jint nativeGetWidth(JNIEnv* env, jclass clazz, jlong nativeObject) {
     Surface* surface = reinterpret_cast<Surface*>(nativeObject);
@@ -453,9 +439,9 @@ static jint nativeForceScopedDisconnect(JNIEnv *env, jclass clazz, jlong nativeO
     return surface->disconnect(-1, IGraphicBufferProducer::DisconnectMode::AllLocal);
 }
 
+#ifdef __ANDROID__ // Layoutlib does not need this (no shadows)
 static jint nativeAttachAndQueueBufferWithColorSpace(JNIEnv* env, jclass clazz, jlong nativeObject,
                                                      jobject hardwareBuffer, jint colorSpaceId) {
-#ifdef __ANDROID__ // host does not need this (no shadows)
     Surface* surface = reinterpret_cast<Surface*>(nativeObject);
     AHardwareBuffer* ahb =
             android_hardware_HardwareBuffer_getNativeHardwareBuffer(env, hardwareBuffer);
@@ -463,10 +449,8 @@ static jint nativeAttachAndQueueBufferWithColorSpace(JNIEnv* env, jclass clazz, 
     int err = Surface::attachAndQueueBufferWithDataspace(surface, gb,
             fromNamedColorSpaceValueToDataspace(colorSpaceId));
     return err;
-#else
-    return -1;
-#endif
 }
+#endif
 
 static jint nativeSetSharedBufferModeEnabled(JNIEnv* env, jclass clazz, jlong nativeObject,
         jboolean enabled) {
@@ -494,11 +478,20 @@ static jint nativeSetFrameRate(JNIEnv* env, jclass clazz, jlong nativeObject, jf
                         int(changeFrameRateStrategy));
 }
 
+#ifdef _RM_TEMP_MERGED_FROM_LL_
+static void nativeDestroy(JNIEnv* env, jclass clazz, jlong nativeObject) {
+    sp<Surface> surface(reinterpret_cast<Surface*>(nativeObject));
+    surface->destroy();
+}
+#endif
+
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod gSurfaceMethods[] = {
+#ifdef __ANDROID__ // Layoutlib does not need this now
         {"nativeCreateFromSurfaceTexture", "(Landroid/graphics/SurfaceTexture;)J",
          (void*)nativeCreateFromSurfaceTexture},
+#endif
         {"nativeRelease", "(J)V", (void*)nativeRelease},
         {"nativeIsValid", "(J)Z", (void*)nativeIsValid},
         {"nativeIsConsumerRunningBehind", "(J)Z", (void*)nativeIsConsumerRunningBehind},
@@ -507,21 +500,33 @@ static const JNINativeMethod gSurfaceMethods[] = {
         {"nativeUnlockCanvasAndPost", "(JLandroid/graphics/Canvas;)V",
          (void*)nativeUnlockCanvasAndPost},
         {"nativeAllocateBuffers", "(J)V", (void*)nativeAllocateBuffers},
+#ifdef __linux__
+        {"nativeGetFromSurfaceControl", "(JJ)J", (void*)nativeGetFromSurfaceControl},
+#endif
+#ifdef __ANDROID__ // Layoutlib does not support Parcel
         {"nativeCreateFromSurfaceControl", "(J)J", (void*)nativeCreateFromSurfaceControl},
         {"nativeGetFromSurfaceControl", "(JJ)J", (void*)nativeGetFromSurfaceControl},
         {"nativeReadFromParcel", "(JLandroid/os/Parcel;)J", (void*)nativeReadFromParcel},
         {"nativeWriteToParcel", "(JLandroid/os/Parcel;)V", (void*)nativeWriteToParcel},
+#endif
         {"nativeGetWidth", "(J)I", (void*)nativeGetWidth},
         {"nativeGetHeight", "(J)I", (void*)nativeGetHeight},
         {"nativeGetNextFrameNumber", "(J)J", (void*)nativeGetNextFrameNumber},
         {"nativeSetScalingMode", "(JI)I", (void*)nativeSetScalingMode},
         {"nativeForceScopedDisconnect", "(J)I", (void*)nativeForceScopedDisconnect},
+#ifdef __ANDROID__ // Layoutlib does not support HardwareBuffer
         {"nativeAttachAndQueueBufferWithColorSpace", "(JLandroid/hardware/HardwareBuffer;I)I",
          (void*)nativeAttachAndQueueBufferWithColorSpace},
+#endif
         {"nativeSetSharedBufferModeEnabled", "(JZ)I", (void*)nativeSetSharedBufferModeEnabled},
         {"nativeSetAutoRefreshEnabled", "(JZ)I", (void*)nativeSetAutoRefreshEnabled},
         {"nativeSetFrameRate", "(JFII)I", (void*)nativeSetFrameRate},
+#ifdef __ANDROID__ // Layoutlib does not support Parcel
         {"nativeGetFromBlastBufferQueue", "(JJ)J", (void*)nativeGetFromBlastBufferQueue},
+#endif
+#ifdef _RM_TEMP_MERGED_FROM_LL_
+        {"nativeDestroy", "(J)V", (void*)nativeDestroy},
+#endif
 };
 
 int register_android_view_Surface(JNIEnv* env)

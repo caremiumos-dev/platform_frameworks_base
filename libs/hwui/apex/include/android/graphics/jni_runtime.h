@@ -18,6 +18,7 @@
 
 #include <cutils/compiler.h>
 #include <jni.h>
+#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 

@@ -23,7 +23,7 @@
 #include <utils/Log.h>
 #include <algorithm>
 
-#ifdef __ANDROID__  // Layoutlib not Layers
+#ifdef __ANDROID__ // Layoutlib not Layers
 #include "../DeferredLayerUpdater.h"
 #endif
 #include "../DisplayList.h"
@@ -108,7 +108,7 @@ void DrawFrameTask::setContext(RenderThread* thread, CanvasContext* context, Ren
 }
 
 void DrawFrameTask::pushLayerUpdate(DeferredLayerUpdater* layer) {
-#ifdef __ANDROID__  // Layoutlib not Layers
+#ifdef __ANDROID__ // Layoutlib not Layers
     LOG_ALWAYS_FATAL_IF(!mContext,
                         "Lifecycle violation, there's no context to pushLayerUpdate with!");
 
@@ -122,7 +122,7 @@ void DrawFrameTask::pushLayerUpdate(DeferredLayerUpdater* layer) {
 }
 
 void DrawFrameTask::removeLayerUpdate(DeferredLayerUpdater* layer) {
-#ifdef __ANDROID__  // Layoutlib not Layers
+#ifdef __ANDROID__ // Layoutlib not Layers
     for (size_t i = 0; i < mLayers.size(); i++) {
         if (mLayers[i].get() == layer) {
             mLayers.erase(mLayers.begin() + i);
@@ -143,11 +143,11 @@ int DrawFrameTask::drawFrame() {
 }
 
 void DrawFrameTask::postAndWait() {
-#ifdef __ANDROID__  // Layoutlib is singlethreaded, this produces a deadlock
+#ifdef __ANDROID__ // Layoutlib is singlethreaded, this produces a deadlock
     AutoMutex _lock(mLock);
 #endif
     mRenderThread->queue().post([this]() { run(); });
-#ifdef __ANDROID__  // Layoutlib is singlethreaded, this produces a deadlock
+#ifdef __ANDROID__ // Layoutlib is singlethreaded, this produces a deadlock
     mSignal.wait(mLock);
 #endif
 }
@@ -243,7 +243,7 @@ bool DrawFrameTask::syncFrameState(TreeInfo& info) {
     bool canDraw = mContext->makeCurrent();
     mContext->unpinImages();
 
-#ifdef __ANDROID__  // Layoutlib does not support Layers
+#ifdef __ANDROID__ // Layoutlib does not support Layers
     for (size_t i = 0; i < mLayers.size(); i++) {
         mLayers[i]->apply();
     }
@@ -277,7 +277,7 @@ bool DrawFrameTask::syncFrameState(TreeInfo& info) {
 }
 
 void DrawFrameTask::unblockUiThread() {
-#ifdef __ANDROID__  // Layoutlib is singlethreaded, this produces a deadlock
+#ifdef __ANDROID__ // Layoutlib is singlethreaded, this produces a deadlock
     AutoMutex _lock(mLock);
     mSignal.signal();
 #endif

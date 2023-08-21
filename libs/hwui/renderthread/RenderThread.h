@@ -17,7 +17,7 @@
 #ifndef RENDERTHREAD_H_
 #define RENDERTHREAD_H_
 
-#ifdef __ANDROID__  // Layoutlib does not have a separate RenderThread
+#ifdef __ANDROID__ // Layoutlib does not have a separate RenderThread
 
 #include <surface_control_private.h>
 #include <GrDirectContext.h>
@@ -283,15 +283,14 @@ enum class CopyResult {
 
 class RenderThread {
     PREVENT_COPY_AND_ASSIGN(RenderThread);
-
 public:
-    static void setOnStartHook(JVMAttachHook onStartHook) {}
+    static void setOnStartHook(JVMAttachHook onStartHook) { }
 
-    void postFrameCallback(IFrameCallback* callback) {}
+    void postFrameCallback(IFrameCallback* callback) { }
     bool removeFrameCallback(IFrameCallback* callback) { return false; }
     // If the callback is currently registered, it will be pushed back until
     // the next vsync. If it is not currently registered this does nothing.
-    void pushBackFrameCallback(IFrameCallback* callback) {}
+    void pushBackFrameCallback(IFrameCallback* callback) { }
 
     TimeLord& timeLord() { return mTimeLord; }
 
@@ -312,6 +311,11 @@ public:
     }
 
     template <class F>
+    void postDelayed(nsecs_t delay, F&& func) {
+        // We cannot do a delayed function call, let it be a noop as for now
+    }
+
+    template <class F>
     auto runSync(F&& func) -> decltype(func()) {
         return func();
     };
@@ -320,7 +324,7 @@ public:
         return CopyResult::Success;
     }
 
-    void trimStaleResources() {}
+    void trimStaleResources() { }
 
     int getTid() { return 0; }
 
@@ -329,8 +333,8 @@ public:
     void getMemoryUsage(size_t* cpuUsage, size_t* gpuUsage) {}
 
 private:
-    RenderThread() {}
-    virtual ~RenderThread() {}
+    RenderThread() { }
+    virtual ~RenderThread() { }
 
     static bool hasInstance() { return true; }
 

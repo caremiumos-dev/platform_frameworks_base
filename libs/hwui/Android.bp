@@ -89,6 +89,8 @@ cc_defaults {
             ],
             cflags: [
                 "-Wno-unused-variable",
+                "-DLOG_ALWAYS_FATAL_IF(cond, ...)=if(cond) LOG_ALWAYS_FATAL(...)",
+                "-DLOG_ALWAYS_FATAL(...)=__android_log_call_aborter(\"Fatal Error\")",
                 // Use all declarations in native_window.h in Layoutlib
                 "-D__INTRODUCED_IN(n)=",
                 "-D__ANDROID_API__=10000",
@@ -265,9 +267,11 @@ cc_defaults {
     cppflags: ["-Wno-conversion-null"],
 
     srcs: [
+        "apex/android_bitmap.cpp",
         "apex/android_matrix.cpp",
         "apex/android_paint.cpp",
         "apex/android_region.cpp",
+        "apex/android_canvas.cpp",
     ],
 
     header_libs: ["android_graphics_apex_headers"],
@@ -275,8 +279,6 @@ cc_defaults {
     target: {
         android: {
             srcs: [ // sources that depend on android only libraries
-                "apex/android_bitmap.cpp",
-                "apex/android_canvas.cpp",
                 "apex/jni_runtime.cpp",
                 "apex/renderthread.cpp",
             ],
@@ -366,8 +368,8 @@ cc_defaults {
         "jni/PathEffect.cpp",
         "jni/PathMeasure.cpp",
         "jni/Picture.cpp",
-        "jni/Shader.cpp",
         "jni/Region.cpp",
+        "jni/Shader.cpp",
         "jni/RenderEffect.cpp",
         "jni/Typeface.cpp",
         "jni/Utils.cpp",

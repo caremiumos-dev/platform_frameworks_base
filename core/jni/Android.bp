@@ -377,6 +377,14 @@ cc_library_shared {
                 "libbinder",
                 "libhidlbase", // libhwbinder is in here
             ],
+            include_dirs: [
+                // bionic kernel headers are required to access ashmem constants
+                // in android_os_MemoryFile.cpp
+                "bionic/libc/kernel/uapi/",
+                "bionic/libc/kernel/android/uapi/",
+        // RM add
+        "frameworks/native/libs/binder/include/",
+            ],
         },
     },
 
@@ -454,6 +462,8 @@ cc_library_shared {
             include_dirs: [
                 "frameworks/native/libs/nativebase/include",
                 "frameworks/native/libs/nativewindow/include",
+        // RM add 2
+        "frameworks/native/libs/binder/include/",
             ],
             stl: "libc++_static",
         },
