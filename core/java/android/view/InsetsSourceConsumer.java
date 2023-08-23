@@ -401,7 +401,8 @@ public class InsetsSourceConsumer {
     }
 
     private void applyRequestedVisibilityToControl() {
-        if (mSourceControl == null || mSourceControl.getLeash() == null) {
+        if (mSourceControl == null || mSourceControl.getLeash() == null
+            || !mSourceControl.getLeash().isValid()) {
             return;
         }
 
