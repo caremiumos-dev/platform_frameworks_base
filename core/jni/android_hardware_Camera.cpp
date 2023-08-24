@@ -123,7 +123,7 @@ private:
 
 bool JNICameraContext::isRawImageCallbackBufferAvailable() const
 {
-    return !mRawImageCallbackBuffers.isEmpty();
+    return !mRawImageCallbackBuffers.empty();
 }
 
 sp<Camera> get_native_camera(JNIEnv *env, jobject thiz, JNICameraContext** pContext)
@@ -224,7 +224,7 @@ jbyteArray JNICameraContext::getCallbackBuffer(
     jbyteArray obj = NULL;
 
     // Vector access should be protected by lock in postData()
-    if (!buffers->isEmpty()) {
+    if (!buffers->empty()) {
         ALOGV("Using callback buffer from queue of length %zu", buffers->size());
         jbyteArray globalBuffer = buffers->itemAt(0);
         buffers->removeAt(0);
@@ -270,7 +270,7 @@ void JNICameraContext::copyAndPost(JNIEnv* env, const sp<IMemory>& dataPtr, int 
             } else if (msgType == CAMERA_MSG_PREVIEW_FRAME && mManualBufferMode) {
                 obj = getCallbackBuffer(env, &mCallbackBuffers, size);
 
-                if (mCallbackBuffers.isEmpty()) {
+                if (mCallbackBuffers.empty()) {
                     ALOGV("Out of buffers, clearing callback!");
                     mCamera->setPreviewCallbackFlags(CAMERA_FRAME_CALLBACK_FLAG_NOOP);
                     mManualCameraCallbackSet = false;
@@ -326,7 +326,7 @@ void JNICameraContext::postData(int32_t msgType, const sp<IMemory>& dataPtr,
         // buffer for raw image, the callback returns null.
         case CAMERA_MSG_RAW_IMAGE:
             ALOGV("rawCallback");
-            if (mRawImageCallbackBuffers.isEmpty()) {
+            if (mRawImageCallbackBuffers.empty()) {
                 env->CallStaticVoidMethod(mCameraJClass, fields.post_event,
                         mCameraJObjectWeak, dataMsgType, 0, 0, NULL);
             } else {
@@ -459,7 +459,7 @@ void JNICameraContext::setCallbackMode(JNIEnv *env, bool installed, bool manualM
         mCamera->setPreviewCallbackFlags(CAMERA_FRAME_CALLBACK_FLAG_NOOP);
         clearCallbackBuffers_l(env, &mCallbackBuffers);
     } else if (mManualBufferMode) {
-        if (!mCallbackBuffers.isEmpty()) {
+        if (!mCallbackBuffers.empty()) {
             mCamera->setPreviewCallbackFlags(CAMERA_FRAME_CALLBACK_FLAG_CAMERA);
             mManualCameraCallbackSet = true;
         }
@@ -517,7 +517,7 @@ void JNICameraContext::clearCallbackBuffers_l(JNIEnv *env)
 
 void JNICameraContext::clearCallbackBuffers_l(JNIEnv *env, Vector<jbyteArray> *buffers) {
     ALOGV("Clearing callback buffers, %zu remained", buffers->size());
-    while (!buffers->isEmpty()) {
+    while (!buffers->empty()) {
         env->DeleteGlobalRef(buffers->top());
         buffers->pop();
     }
@@ -874,7 +874,7 @@ static jstring android_hardware_Camera_getParameters(JNIEnv *env, jobject thiz)
     if (camera == 0) return 0;
 
     String8 params8 = camera->getParameters();
-    if (params8.isEmpty()) {
+    if (params8.empty()) {
         jniThrowRuntimeException(env, "getParameters failed (empty parameters)");
         return 0;
     }
