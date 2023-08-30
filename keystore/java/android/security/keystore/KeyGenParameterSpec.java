@@ -300,6 +300,7 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
     private final Date mKeyValidityForConsumptionEnd;
     private final @KeyProperties.PurposeEnum int mPurposes;
     private final @KeyProperties.DigestEnum String[] mDigests;
+    private final @KeyProperties.DigestEnum String[] mMgf1Digests;
     private final @KeyProperties.EncryptionPaddingEnum String[] mEncryptionPaddings;
     private final @KeyProperties.SignaturePaddingEnum String[] mSignaturePaddings;
     private final @KeyProperties.BlockModeEnum String[] mBlockModes;
@@ -343,6 +344,7 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
             Date keyValidityForConsumptionEnd,
             @KeyProperties.PurposeEnum int purposes,
             @KeyProperties.DigestEnum String[] digests,
+            @KeyProperties.DigestEnum String[] mgf1Digests,
             @KeyProperties.EncryptionPaddingEnum String[] encryptionPaddings,
             @KeyProperties.SignaturePaddingEnum String[] signaturePaddings,
             @KeyProperties.BlockModeEnum String[] blockModes,
@@ -401,6 +403,7 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
         mKeyValidityForConsumptionEnd = Utils.cloneIfNotNull(keyValidityForConsumptionEnd);
         mPurposes = purposes;
         mDigests = ArrayUtils.cloneIfNotEmpty(digests);
+        mMgf1Digests = ArrayUtils.cloneIfNotEmpty(mgf1Digests);
         mEncryptionPaddings =
                 ArrayUtils.cloneIfNotEmpty(ArrayUtils.nullToEmpty(encryptionPaddings));
         mSignaturePaddings = ArrayUtils.cloneIfNotEmpty(ArrayUtils.nullToEmpty(signaturePaddings));
@@ -562,7 +565,7 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
 
     /**
      * Returns the set of digest algorithms (e.g., {@code SHA-256}, {@code SHA-384} with which the
-     * key can be used or {@code null} if not specified.
+     * key can be used.
      *
      * <p>See {@link KeyProperties}.{@code DIGEST} constants.
      *
@@ -587,6 +590,38 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
     @NonNull
     public boolean isDigestsSpecified() {
         return mDigests != null;
+    }
+
+    /**
+     * Returns the set of digests that can be used by the MGF1 mask generation function
+     * (e.g., {@code SHA-256}, {@code SHA-384}) with the key. Useful with the {@code RSA-OAEP}
+     * scheme.
+     * If not explicitly specified  during key generation, the default {@code SHA-1} digest is
+     * used and may be specified.
+     *
+     * <p>See {@link KeyProperties}.{@code DIGEST} constants.
+     *
+     * @throws IllegalStateException if this set has not been specified.
+     *
+     * @see #isMgf1DigestsSpecified()
+     */
+    @NonNull
+    public @KeyProperties.DigestEnum String[] getMgf1Digests() {
+        if (mMgf1Digests == null) {
+            throw new IllegalStateException("Mask generation function (MGF) not specified");
+        }
+        return ArrayUtils.cloneIfNotEmpty(mMgf1Digests);
+    }
+
+    /**
+     * Returns {@code true} if the set of digests for the MGF1 mask generation function,
+     * with which the key can be used, has been specified. Useful with the {@code RSA-OAEP} scheme.
+     *
+     * @see #getMgf1Digests()
+     */
+    @NonNull
+    public boolean isMgf1DigestsSpecified() {
+        return mMgf1Digests != null;
     }
 
     /**
@@ -899,6 +934,7 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
         private Date mKeyValidityForOriginationEnd;
         private Date mKeyValidityForConsumptionEnd;
         private @KeyProperties.DigestEnum String[] mDigests;
+        private @KeyProperties.DigestEnum String[] mMgf1Digests;
         private @KeyProperties.EncryptionPaddingEnum String[] mEncryptionPaddings;
         private @KeyProperties.SignaturePaddingEnum String[] mSignaturePaddings;
         private @KeyProperties.BlockModeEnum String[] mBlockModes;
@@ -967,6 +1003,9 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
             mPurposes = sourceSpec.getPurposes();
             if (sourceSpec.isDigestsSpecified()) {
                 mDigests = sourceSpec.getDigests();
+            }
+            if (sourceSpec.isMgf1DigestsSpecified()) {
+                mMgf1Digests = sourceSpec.getMgf1Digests();
             }
             mEncryptionPaddings = sourceSpec.getEncryptionPaddings();
             mSignaturePaddings = sourceSpec.getSignaturePaddings();
@@ -1212,6 +1251,30 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
             mDigests = ArrayUtils.cloneIfNotEmpty(digests);
             return this;
         }
+
+        /**
+         * Sets the set of hash functions (e.g., {@code SHA-256}, {@code SHA-384}) which could be
+         * used by the mask generation function MGF1 (which is used for certain operations with
+         * the key). Attempts to use the key with any other digest for the mask generation
+         * function will be rejected.
+         *
+         * <p>This can only be specified for signing/verification keys and RSA encryption/decryption
+         * keys used with RSA OAEP padding scheme because these operations involve a mask generation
+         * function (MGF1) with a digest.
+         * The default digest for MGF1 is {@code SHA-1}, which will be specified during key creation
+         * time if no digests have been explicitly provided.
+         * When using the key, the caller may not specify any digests that were not provided during
+         * key creation time. The caller may specify the default digest, {@code SHA-1}, if no
+         * digests were explicitly provided during key creation (but it is not necessary to do so).
+         *
+         * <p>See {@link KeyProperties}.{@code DIGEST} constants.
+         */
+        @NonNull
+        public Builder setMgf1Digests(@Nullable @KeyProperties.DigestEnum String... mgf1Digests) {
+            mMgf1Digests = ArrayUtils.cloneIfNotEmpty(mgf1Digests);
+            return this;
+        }
+
 
         /**
          * Sets the set of padding schemes (e.g., {@code PKCS7Padding}, {@code OAEPPadding},
@@ -1745,6 +1808,7 @@ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAu
                     mKeyValidityForConsumptionEnd,
                     mPurposes,
                     mDigests,
+                    mMgf1Digests,
                     mEncryptionPaddings,
                     mSignaturePaddings,
                     mBlockModes,

@@ -17,8 +17,10 @@
 package android.security.keystore;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.security.ParcelableKeyGenParameterSpecTest;
 
@@ -60,5 +62,29 @@ public final class KeyGenParameterSpecTest {
                 .build();
 
         assertEquals(copiedSpec.getAttestationChallenge(), null);
+    }
+
+    @Test
+    public void testMgf1DigestsNotSpecifiedByDefault() {
+        KeyGenParameterSpec spec = ParcelableKeyGenParameterSpecTest.configureDefaultSpec();
+        assertThat(spec.isMgf1DigestsSpecified(), is(false));
+        assertThrows(IllegalStateException.class, () -> {
+            spec.getMgf1Digests();
+        });
+    }
+
+    @Test
+    public void testMgf1DigestsCanBeSpecified() {
+        String[] mgf1Digests =
+                new String[] {KeyProperties.DIGEST_SHA1, KeyProperties.DIGEST_SHA256};
+        KeyGenParameterSpec spec =  new KeyGenParameterSpec.Builder(ALIAS, KEY_PURPOSES)
+                .setMgf1Digests(mgf1Digests)
+                .build();
+        assertThat(spec.isMgf1DigestsSpecified(), is(true));
+        assertArrayEquals(mgf1Digests, spec.getMgf1Digests());
+
+        KeyGenParameterSpec copiedSpec = new KeyGenParameterSpec.Builder(spec).build();
+        assertThat(copiedSpec.isMgf1DigestsSpecified(), is(true));
+        assertArrayEquals(mgf1Digests, copiedSpec.getMgf1Digests());
     }
 }

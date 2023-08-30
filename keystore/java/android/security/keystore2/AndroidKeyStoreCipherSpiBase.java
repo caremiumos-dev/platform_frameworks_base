@@ -23,6 +23,7 @@ import android.hardware.security.keymint.KeyParameter;
 import android.security.KeyStoreException;
 import android.security.KeyStoreOperation;
 import android.security.keymaster.KeymasterDefs;
+import android.security.keystore.KeyProperties;
 import android.security.keystore.KeyStoreCryptoOperation;
 import android.system.keystore2.Authorization;
 
@@ -70,7 +71,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 abstract class AndroidKeyStoreCipherSpiBase extends CipherSpi implements KeyStoreCryptoOperation {
     private static final String TAG = "AndroidKeyStoreCipherSpiBase";
-    public static final String DEFAULT_MGF1_DIGEST = "SHA-1";
+    public static final String DEFAULT_MGF1_DIGEST = KeyProperties.DIGEST_SHA1;
 
     // Fields below are populated by Cipher.init and KeyStore.begin and should be preserved after
     // doFinal finishes.

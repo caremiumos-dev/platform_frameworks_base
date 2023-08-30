@@ -223,6 +223,7 @@ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
     private final @KeyProperties.EncryptionPaddingEnum String[] mEncryptionPaddings;
     private final @KeyProperties.SignaturePaddingEnum String[] mSignaturePaddings;
     private final @KeyProperties.DigestEnum String[] mDigests;
+    private final @KeyProperties.DigestEnum String[] mMgf1Digests;
     private final @KeyProperties.BlockModeEnum String[] mBlockModes;
     private final boolean mRandomizedEncryptionRequired;
     private final boolean mUserAuthenticationRequired;
@@ -246,6 +247,7 @@ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
             @KeyProperties.EncryptionPaddingEnum String[] encryptionPaddings,
             @KeyProperties.SignaturePaddingEnum String[] signaturePaddings,
             @KeyProperties.DigestEnum String[] digests,
+            @KeyProperties.DigestEnum String[] mgf1Digests,
             @KeyProperties.BlockModeEnum String[] blockModes,
             boolean randomizedEncryptionRequired,
             boolean userAuthenticationRequired,
@@ -269,6 +271,7 @@ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
         mSignaturePaddings =
                 ArrayUtils.cloneIfNotEmpty(ArrayUtils.nullToEmpty(signaturePaddings));
         mDigests = ArrayUtils.cloneIfNotEmpty(digests);
+        mMgf1Digests = ArrayUtils.cloneIfNotEmpty(mgf1Digests);
         mBlockModes = ArrayUtils.cloneIfNotEmpty(ArrayUtils.nullToEmpty(blockModes));
         mRandomizedEncryptionRequired = randomizedEncryptionRequired;
         mUserAuthenticationRequired = userAuthenticationRequired;
@@ -375,6 +378,38 @@ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
      */
     public boolean isDigestsSpecified() {
         return mDigests != null;
+    }
+
+    /**
+     * Returns the set of digests that can be used by the MGF1 mask generation function
+     * (e.g., {@code SHA-256}, {@code SHA-384}) with the key. Useful with the {@code RSA-OAEP}
+     * scheme.
+     * If not explicitly specified  during key generation, the default {@code SHA-1} digest is
+     * used and may be specified.
+     *
+     * <p>See {@link KeyProperties}.{@code DIGEST} constants.
+     *
+     * @throws IllegalStateException if this set has not been specified.
+     *
+     * @see #isMgf1DigestsSpecified()
+     */
+    @NonNull
+    public @KeyProperties.DigestEnum String[] getMgf1Digests() {
+        if (mMgf1Digests == null) {
+            throw new IllegalStateException("Mask generation function (MGF) not specified");
+        }
+        return ArrayUtils.cloneIfNotEmpty(mMgf1Digests);
+    }
+
+    /**
+     * Returns {@code true} if the set of digests for the MGF1 mask generation function,
+     * with which the key can be used, has been specified. Useful with the {@code RSA-OAEP} scheme.
+     *
+     * @see #getMgf1Digests()
+     */
+    @NonNull
+    public boolean isMgf1DigestsSpecified() {
+        return mMgf1Digests != null;
     }
 
     /**
@@ -574,6 +609,7 @@ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
         private @KeyProperties.EncryptionPaddingEnum String[] mEncryptionPaddings;
         private @KeyProperties.SignaturePaddingEnum String[] mSignaturePaddings;
         private @KeyProperties.DigestEnum String[] mDigests;
+        private @KeyProperties.DigestEnum String[] mMgf1Digests;
         private @KeyProperties.BlockModeEnum String[] mBlockModes;
         private boolean mRandomizedEncryptionRequired = true;
         private boolean mUserAuthenticationRequired;
@@ -720,6 +756,29 @@ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
         @NonNull
         public Builder setDigests(@KeyProperties.DigestEnum String... digests) {
             mDigests = ArrayUtils.cloneIfNotEmpty(digests);
+            return this;
+        }
+
+        /**
+         * Sets the set of hash functions (e.g., {@code SHA-256}, {@code SHA-384}) which could be
+         * used by the mask generation function MGF1 (which is used for certain operations with
+         * the key). Attempts to use the key with any other digest for the mask generation
+         * function will be rejected.
+         *
+         * <p>This can only be specified for signing/verification keys and RSA encryption/decryption
+         * keys used with RSA OAEP padding scheme because these operations involve a mask generation
+         * function (MGF1) with a digest.
+         * The default digest for MGF1 is {@code SHA-1}, which will be specified during key import
+         * time if no digests have been explicitly provided.
+         * When using the key, the caller may not specify any digests that were not provided during
+         * key import time. The caller may specify the default digest, {@code SHA-1}, if no
+         * digests were explicitly provided during key import (but it is not necessary to do so).
+         *
+         * <p>See {@link KeyProperties}.{@code DIGEST} constants.
+         */
+        @NonNull
+        public Builder setMgf1Digests(@Nullable @KeyProperties.DigestEnum String... mgf1Digests) {
+            mMgf1Digests = ArrayUtils.cloneIfNotEmpty(mgf1Digests);
             return this;
         }
 
@@ -1111,6 +1170,7 @@ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
                     mEncryptionPaddings,
                     mSignaturePaddings,
                     mDigests,
+                    mMgf1Digests,
                     mBlockModes,
                     mRandomizedEncryptionRequired,
                     mUserAuthenticationRequired,

@@ -91,6 +91,11 @@ public final class ParcelableKeyGenParameterSpec implements Parcelable {
         } else {
             out.writeStringArray(null);
         }
+        if (mSpec.isMgf1DigestsSpecified()) {
+            out.writeStringArray(mSpec.getMgf1Digests());
+        } else {
+            out.writeStringArray(null);
+        }
         out.writeStringArray(mSpec.getEncryptionPaddings());
         out.writeStringArray(mSpec.getSignaturePaddings());
         out.writeStringArray(mSpec.getBlockModes());
@@ -152,6 +157,7 @@ public final class ParcelableKeyGenParameterSpec implements Parcelable {
         final Date keyValidityForOriginationEnd = readDateOrNull(in);
         final Date keyValidityForConsumptionEnd = readDateOrNull(in);
         final String[] digests = in.createStringArray();
+        final String[] mgf1Digests = in.createStringArray();
         final String[] encryptionPaddings = in.createStringArray();
         final String[] signaturePaddings = in.createStringArray();
         final String[] blockModes = in.createStringArray();
@@ -189,6 +195,7 @@ public final class ParcelableKeyGenParameterSpec implements Parcelable {
                 keyValidityForConsumptionEnd,
                 purposes,
                 digests,
+                mgf1Digests,
                 encryptionPaddings,
                 signaturePaddings,
                 blockModes,
