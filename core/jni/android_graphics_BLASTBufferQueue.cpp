@@ -206,6 +206,11 @@ static jobject nativeGatherPendingTransactions(JNIEnv* env, jclass clazz, jlong 
                           reinterpret_cast<jlong>(transaction));
 }
 
+static void nativeSetDequeueTimeout(JNIEnv* env, jclass clazz, jlong ptr, jlong timeout) {
+    sp<BLASTBufferQueue> queue = reinterpret_cast<BLASTBufferQueue*>(ptr);
+    queue->setDequeueTimeout(timeout);
+}
+
 static const JNINativeMethod gMethods[] = {
         /* name, signature, funcPtr */
         // clang-format off
@@ -224,6 +229,7 @@ static const JNINativeMethod gMethods[] = {
         {"nativeSetTransactionHangCallback",
          "(JLandroid/graphics/BLASTBufferQueue$TransactionHangCallback;)V",
          (void*)nativeSetTransactionHangCallback},
+        {"nativeSetDequeueTimeout", "(J)V", (void*)nativeSetDequeueTimeout},
         // clang-format on
 };
 

@@ -1188,6 +1188,8 @@ final class AccessibilityController {
                     mBlastBufferQueue = new BLASTBufferQueue(SURFACE_TITLE, mSurfaceControl,
                             mScreenSize.x, mScreenSize.y, PixelFormat.RGBA_8888);
 
+                    mBlastBufferQueue.setDequeueTimeout(1000000000);
+
                     final SurfaceControl.Transaction t = mService.mTransactionFactory.get();
                     final int layer =
                             mService.mPolicy.getWindowLayerFromTypeLw(TYPE_MAGNIFICATION_OVERLAY) *
