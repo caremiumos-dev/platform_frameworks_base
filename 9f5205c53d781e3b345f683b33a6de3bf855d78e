@@ -16,6 +16,23 @@
       "message": "Hey, hope you can review this for API.",
       "revId": "9f5205c53d781e3b345f683b33a6de3bf855d78e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d0687f1f_88781591",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 18
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1047684
+      },
+      "writtenOn": "2023-10-05T12:54:00Z",
+      "side": 1,
+      "message": "API-review +2, as this change adds a simple constructor and getter.\n\nNote: the CTS is in the next CL.",
+      "revId": "9f5205c53d781e3b345f683b33a6de3bf855d78e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
