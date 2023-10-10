@@ -3,6 +3,52 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "122a65c6_4d666728",
+        "filename": "media/jni/android_media_MediaDrm.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 225,
+      "author": {
+        "id": 1043093
+      },
+      "writtenOn": "2023-10-10T06:10:28Z",
+      "side": 1,
+      "message": "exceptionCtors",
+      "range": {
+        "startLine": 225,
+        "startChar": 46,
+        "endLine": 225,
+        "endChar": 62
+      },
+      "revId": "b3f5cd2f21d4a60c6f19fb93d0f02abbff44b06a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "da0c040b_ded87339",
+        "filename": "media/jni/android_media_MediaDrm.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1043093
+      },
+      "writtenOn": "2023-10-10T06:10:28Z",
+      "side": 1,
+      "message": "resolveDrmExceptionCtor",
+      "range": {
+        "startLine": 256,
+        "startChar": 5,
+        "endLine": 256,
+        "endChar": 21
+      },
+      "revId": "b3f5cd2f21d4a60c6f19fb93d0f02abbff44b06a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "3ed992b9_1228e28c",
         "filename": "media/jni/android_media_MediaDrm.cpp",
         "patchSetId": 11
