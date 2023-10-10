@@ -140,6 +140,30 @@
       },
       "revId": "b3f5cd2f21d4a60c6f19fb93d0f02abbff44b06a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6584cdea_2b8b7dfc",
+        "filename": "media/jni/android_media_MediaDrm.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 1043093
+      },
+      "writtenOn": "2023-10-10T23:20:57Z",
+      "side": 1,
+      "message": "Acknowledged, I thought `CreateExceptionMsg` would add the cdm logs and error codes to the exception message, but I was wrong. Looks like the cdm logs and error codes were already added prior to `drmThrowException`.",
+      "parentUuid": "85726ef9_8b5965c6",
+      "range": {
+        "startLine": 271,
+        "startChar": 42,
+        "endLine": 271,
+        "endChar": 45
+      },
+      "revId": "b3f5cd2f21d4a60c6f19fb93d0f02abbff44b06a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
