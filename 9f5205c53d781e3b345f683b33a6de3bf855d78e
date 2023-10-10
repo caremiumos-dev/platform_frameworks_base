@@ -33,6 +33,46 @@
       "message": "API-review +2, as this change adds a simple constructor and getter.\n\nNote: the CTS is in the next CL.",
       "revId": "9f5205c53d781e3b345f683b33a6de3bf855d78e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5af07b4c_81fa5d1d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 18
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1157913
+      },
+      "writtenOn": "2023-10-10T01:16:53Z",
+      "side": 1,
+      "message": "Stumbled upon this CL while working on a separate Biometric CTS project with Wenhui",
+      "revId": "9f5205c53d781e3b345f683b33a6de3bf855d78e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f7508c82_3f3116c6",
+        "filename": "core/java/android/hardware/biometrics/CryptoObject.java",
+        "patchSetId": 18
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1157913
+      },
+      "writtenOn": "2023-10-10T01:16:53Z",
+      "side": 1,
+      "message": "nit: this should be linking to `KeyAgreement` instead of `PresentationSession`\n\n(Stumbled upon this CL while working on a separate Biometric CTS project with Wenhui)",
+      "range": {
+        "startLine": 117,
+        "startChar": 18,
+        "endLine": 118,
+        "endChar": 42
+      },
+      "revId": "9f5205c53d781e3b345f683b33a6de3bf855d78e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
