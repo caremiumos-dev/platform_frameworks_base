@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0b561b05_852b018f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1043093
+      },
+      "writtenOn": "2023-10-10T23:37:08Z",
+      "side": 1,
+      "message": "`com.android.server.pm.ShortcutManagerTest2` looks like test flake: b/288342281",
+      "revId": "b61d8021fa1cce0b1bbcc5b621ca9cb8ddb18535",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
