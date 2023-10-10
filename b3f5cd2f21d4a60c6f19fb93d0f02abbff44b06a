@@ -24,6 +24,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9915b4b9_00684f02",
+        "filename": "media/jni/android_media_MediaDrm.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 225,
+      "author": {
+        "id": 1902075
+      },
+      "writtenOn": "2023-10-10T22:46:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "122a65c6_4d666728",
+      "range": {
+        "startLine": 225,
+        "startChar": 46,
+        "endLine": 225,
+        "endChar": 62
+      },
+      "revId": "b3f5cd2f21d4a60c6f19fb93d0f02abbff44b06a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "da0c040b_ded87339",
@@ -47,6 +71,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a648b4e_da138e95",
+        "filename": "media/jni/android_media_MediaDrm.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1902075
+      },
+      "writtenOn": "2023-10-10T22:46:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da0c040b_ded87339",
+      "range": {
+        "startLine": 256,
+        "startChar": 5,
+        "endLine": 256,
+        "endChar": 21
+      },
+      "revId": "b3f5cd2f21d4a60c6f19fb93d0f02abbff44b06a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3ed992b9_1228e28c",
@@ -60,6 +108,30 @@
       "writtenOn": "2023-10-10T03:00:53Z",
       "side": 1,
       "message": "nit, can we use `_detailMessage` here? thanks.",
+      "range": {
+        "startLine": 271,
+        "startChar": 42,
+        "endLine": 271,
+        "endChar": 45
+      },
+      "revId": "b3f5cd2f21d4a60c6f19fb93d0f02abbff44b06a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "85726ef9_8b5965c6",
+        "filename": "media/jni/android_media_MediaDrm.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 1902075
+      },
+      "writtenOn": "2023-10-10T22:46:19Z",
+      "side": 1,
+      "message": "`_detailMessage` from `CreateExceptionMsg` just converts `msg` to `jstring`.\n\nDo you mean append the `DrmStatus \u0026err` to the `msg`?\n\nI think the only case this path will be reached is from a careless invoke with an exception that doesn\u0027t have the ctor signature, right? We control all the path to call this function should so it shouldn\u0027t happen.",
+      "parentUuid": "3ed992b9_1228e28c",
       "range": {
         "startLine": 271,
         "startChar": 42,
