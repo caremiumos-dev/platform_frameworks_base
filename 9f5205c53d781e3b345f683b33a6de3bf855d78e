@@ -73,6 +73,30 @@
       },
       "revId": "9f5205c53d781e3b345f683b33a6de3bf855d78e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "13fae116_b43861ba",
+        "filename": "core/java/android/hardware/biometrics/CryptoObject.java",
+        "patchSetId": 18
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1857230
+      },
+      "writtenOn": "2023-10-11T11:55:35Z",
+      "side": 1,
+      "message": "Thank you. Going to make a cl to fix this.",
+      "parentUuid": "f7508c82_3f3116c6",
+      "range": {
+        "startLine": 117,
+        "startChar": 18,
+        "endLine": 118,
+        "endChar": 42
+      },
+      "revId": "9f5205c53d781e3b345f683b33a6de3bf855d78e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
