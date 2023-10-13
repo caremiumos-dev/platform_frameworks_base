@@ -545,6 +545,9 @@ public class ImsCallSession {
             try {
                 iSession.setListener(mIImsCallSessionListenerProxy);
             } catch (RemoteException e) {
+                // Registering listener failed, so other operations are not allowed.
+                Log.e(TAG, "ImsCallSession" + e);
+                mClosed = true;
             }
         } else {
             mClosed = true;
