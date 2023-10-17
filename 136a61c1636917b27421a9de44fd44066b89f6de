@@ -18,6 +18,23 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8a614a10_4e33fc47",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 2058500
+      },
+      "writtenOn": "2023-10-17T15:19:06Z",
+      "side": 1,
+      "message": "Hi,the ticket review 2792897 of Mrs Alison Cichowlas showed us the limits of this implementation and that we are now trying to backport the Android 14 version.",
+      "revId": "136a61c1636917b27421a9de44fd44066b89f6de",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0ed69a99_4f917eb4",
