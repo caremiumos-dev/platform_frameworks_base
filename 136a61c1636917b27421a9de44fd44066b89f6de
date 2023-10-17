@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "02a5afb8_f9ecca2e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1059880
+      },
+      "writtenOn": "2023-10-17T14:40:27Z",
+      "side": 1,
+      "message": "Note that this has changed a bit, but the same code is still valid in the Android 14 version. I don\u0027t think we can take changes on older Android builds like these and only in the latest main branch.",
+      "revId": "136a61c1636917b27421a9de44fd44066b89f6de",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0ed69a99_4f917eb4",
+        "filename": "packages/SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1319,
+      "author": {
+        "id": 1059880
+      },
+      "writtenOn": "2023-10-17T14:40:27Z",
+      "side": 1,
+      "message": "Seems like the code here is the same for cancel vs end (except that we post it by 50ms in the end case?)\nYou can just override onAnimationEnd instead which is also called when cancelled to simplify the code.",
+      "revId": "136a61c1636917b27421a9de44fd44066b89f6de",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
