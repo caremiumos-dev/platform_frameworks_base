@@ -33,6 +33,23 @@
       "message": "Ping. Can you help resolve the conflicts and move forward with the patch?",
       "revId": "1856b67784bbd119e292a73bbfdc2ff86ebc5467",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ad3d5a77_75cfeeab",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1677158
+      },
+      "writtenOn": "2023-10-24T18:51:53Z",
+      "side": 1,
+      "message": "@omakoto@google.com, @jji@google.com, Can you help take a look at the status of the build. It says to be presubimited-verified but with failures. Can you help move forward with the patch. Thanks.",
+      "revId": "1856b67784bbd119e292a73bbfdc2ff86ebc5467",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
