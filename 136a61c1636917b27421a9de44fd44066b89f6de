@@ -35,6 +35,23 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "150fef67_eb89e735",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 2058500
+      },
+      "writtenOn": "2023-11-02T17:04:27Z",
+      "side": 1,
+      "message": "Hello, the backport of this commit 06a390a1de73324048a54215e2c79c885b5317c4 on Android12 has improved the behavior but the bug is still reproduced.\nThe volume bar is displayed persistently and disappears when the home button is pressed.\nIf we don\u0027t press home, the widget doesn\u0027t disappear.\nAlso we tested an updated Pixel 7 (with official android 14 release) and we found the same behavior in our port to 12.",
+      "revId": "136a61c1636917b27421a9de44fd44066b89f6de",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0ed69a99_4f917eb4",
