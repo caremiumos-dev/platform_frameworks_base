@@ -102,6 +102,24 @@
       "parentUuid": "0ed69a99_4f917eb4",
       "revId": "136a61c1636917b27421a9de44fd44066b89f6de",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "02427609_0a5c0dc8",
+        "filename": "packages/SystemUI/src/com/android/systemui/volume/VolumeDialogImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1319,
+      "author": {
+        "id": 1059880
+      },
+      "writtenOn": "2023-11-20T12:27:49Z",
+      "side": 1,
+      "message": "Unfortunately we can\u0027t consider CLs on Android 12 anymore.\nThe team (potapov@ is happy to have a look at a CL on Android 14 CL if you can verify that you can fix an issue.",
+      "parentUuid": "a3723f99_ba438128",
+      "revId": "136a61c1636917b27421a9de44fd44066b89f6de",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
