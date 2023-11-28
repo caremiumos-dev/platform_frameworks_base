@@ -16,6 +16,23 @@
       "message": "Ping",
       "revId": "98f96b7dab0454eb99d8560497f34948033d3ef3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "36d76160_2197464a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1972180
+      },
+      "writtenOn": "2023-11-28T09:45:45Z",
+      "side": 1,
+      "message": "Looks fine to me, but I don\u0027t know enough about this, so will defer @alukin@google.com",
+      "revId": "98f96b7dab0454eb99d8560497f34948033d3ef3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
