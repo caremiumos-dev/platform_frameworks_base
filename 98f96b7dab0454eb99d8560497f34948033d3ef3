@@ -33,6 +33,24 @@
       "message": "Looks fine to me, but I don\u0027t know enough about this, so will defer @alukin@google.com",
       "revId": "98f96b7dab0454eb99d8560497f34948033d3ef3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4a768837_08d31df5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1137063
+      },
+      "writtenOn": "2023-11-28T23:24:14Z",
+      "side": 1,
+      "message": "Relying on paulcrowley@\u0027s +2, since he followed the original removal of FBE emulation support last year (b/232458753).  This CL cleans up something that was missed / deferred to later as part of that.  But let me know if there are any concerns.  Thanks!",
+      "parentUuid": "36d76160_2197464a",
+      "revId": "98f96b7dab0454eb99d8560497f34948033d3ef3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
