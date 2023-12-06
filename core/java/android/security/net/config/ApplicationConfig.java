@@ -16,10 +16,14 @@
 
 package android.security.net.config;
 
+import static android.security.Flags.certificateTransparencyConfiguration;
+
 import android.util.Pair;
+
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -145,6 +149,16 @@ public final class ApplicationConfig {
      */
     public boolean isCleartextTrafficPermitted(String hostname) {
         return getConfigForHostname(hostname).isCleartextTrafficPermitted();
+    }
+
+    /**
+     * Returns {@code true} if Certificate Transparency is enforced when connecting to {@code
+     * hostname}.
+     */
+    public boolean isCertificateTransparencyVerificationRequired(String hostname) {
+        return certificateTransparencyConfiguration()
+                ? getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired()
+                : false;
     }
 
     public void handleTrustStorageUpdate() {

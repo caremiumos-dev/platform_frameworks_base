@@ -14,3 +14,10 @@ flag {
     bug: "296464083"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "certificate_transparency_configuration"
+    namespace: "network_security"
+    description: "Enable certificate transparency setting in the network security config"
+    bug: "28746284"
+}
