@@ -29,9 +29,7 @@ import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.WI
 import static com.android.server.vcn.routeselection.NetworkPriorityClassifier.WIFI_EXIT_RSSI_THRESHOLD_DEFAULT;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
@@ -489,13 +487,7 @@ public class UnderlyingNetworkControllerTest {
             NetworkCapabilities networkCapabilities,
             LinkProperties linkProperties,
             boolean isBlocked) {
-        return new UnderlyingNetworkRecord(
-                network,
-                networkCapabilities,
-                linkProperties,
-                isBlocked,
-                false /* isSelected */,
-                0 /* priorityClass */);
+        return new UnderlyingNetworkRecord(network, networkCapabilities, linkProperties, isBlocked);
     }
 
     @Test
@@ -515,24 +507,12 @@ public class UnderlyingNetworkControllerTest {
         UnderlyingNetworkRecord recordC =
                 new UnderlyingNetworkRecord(
                         mNetwork,
-                        INITIAL_NETWORK_CAPABILITIES,
-                        INITIAL_LINK_PROPERTIES,
-                        false /* isBlocked */,
-                        true /* isSelected */,
-                        -1 /* priorityClass */);
-        UnderlyingNetworkRecord recordD =
-                getTestNetworkRecord(
-                        mNetwork,
                         UPDATED_NETWORK_CAPABILITIES,
                         UPDATED_LINK_PROPERTIES,
                         false /* isBlocked */);
 
         assertEquals(recordA, recordB);
-        assertEquals(recordA, recordC);
-        assertNotEquals(recordA, recordD);
-
-        assertTrue(UnderlyingNetworkRecord.isEqualIncludingPriorities(recordA, recordB));
-        assertFalse(UnderlyingNetworkRecord.isEqualIncludingPriorities(recordA, recordC));
+        assertNotEquals(recordA, recordC);
     }
 
     @Test
@@ -738,16 +718,7 @@ public class UnderlyingNetworkControllerTest {
         cb.onLinkPropertiesChanged(network, INITIAL_LINK_PROPERTIES);
         cb.onBlockedStatusChanged(network, false /* isFalse */);
         return new UnderlyingNetworkRecord(
-                network,
-                responseNetworkCaps,
-                INITIAL_LINK_PROPERTIES,
-                false /* isBlocked */,
-                mVcnContext,
-                underlyingNetworkTemplates,
-                SUB_GROUP,
-                mSubscriptionSnapshot,
-                currentlySelected,
-                null /* carrierConfig */);
+                network, responseNetworkCaps, INITIAL_LINK_PROPERTIES, false /* isBlocked */);
     }
 
     @Test

@@ -86,7 +86,6 @@ class NetworkPriorityClassifier {
      * <p>VCN MUST never select a non-INTERNET network that are unvalidated or fail to match any
      * template as the underlying network.
      */
-    @VisibleForTesting(visibility = Visibility.PRIVATE)
     static final int PRIORITY_INVALID = -1;
 
     /** Gives networks a priority class, based on configured VcnGatewayConnectionConfig */
