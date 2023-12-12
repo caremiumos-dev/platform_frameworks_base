@@ -343,6 +343,20 @@ public class AnimatorSetCallsTest {
     }
 
     @Test
+    public void childAnimatorCancelsDuringUpdate_animatorSetIsEnded() throws Throwable {
+        mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                animation.cancel();
+            }
+        });
+        mActivity.runOnUiThread(() -> {
+            mSet1.start();
+            assertFalse(mSet1.isRunning());
+        });
+    }
+
+    @Test
     public void reentrantStart() throws Throwable {
         CountDownLatch latch = new CountDownLatch(3);
         AnimatorListenerAdapter listener = new AnimatorListenerAdapter() {
