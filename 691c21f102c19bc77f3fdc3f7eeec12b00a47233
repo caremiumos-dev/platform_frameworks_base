@@ -16,6 +16,41 @@
       "message": "ping for a review after rebase. Thanks",
       "revId": "691c21f102c19bc77f3fdc3f7eeec12b00a47233",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4aba9aa9_6eb036a9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 2002580
+      },
+      "writtenOn": "2023-12-18T08:17:22Z",
+      "side": 1,
+      "message": "Hi @Jjii@google.com, may you, please, review?",
+      "parentUuid": "94ff4c95_0336b245",
+      "revId": "691c21f102c19bc77f3fdc3f7eeec12b00a47233",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "31a42cf5_1fa94625",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 2002580
+      },
+      "writtenOn": "2023-12-18T08:17:22Z",
+      "side": 1,
+      "message": "Hi @jji@google.com, may you, please, review?",
+      "revId": "691c21f102c19bc77f3fdc3f7eeec12b00a47233",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
