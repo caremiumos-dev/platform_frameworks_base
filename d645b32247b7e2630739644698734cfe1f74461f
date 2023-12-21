@@ -41,6 +41,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f20c6ab2_47fdb40c",
+        "filename": "core/api/current.txt",
+        "patchSetId": 3
+      },
+      "lineNbr": 23611,
+      "author": {
+        "id": 1951601
+      },
+      "writtenOn": "2023-12-21T18:28:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4c4722f2_23231b13",
+      "range": {
+        "startLine": 23611,
+        "startChar": 10,
+        "endLine": 23611,
+        "endChar": 11
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "466fa693_0fa18a7e",
@@ -54,6 +78,30 @@
       "writtenOn": "2023-12-21T17:41:24Z",
       "side": 1,
       "message": "can we add \"for the application\"?",
+      "range": {
+        "startLine": 1642,
+        "startChar": 42,
+        "endLine": 1642,
+        "endChar": 52
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3880e617_b92fc336",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1642,
+      "author": {
+        "id": 1951601
+      },
+      "writtenOn": "2023-12-21T18:28:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "466fa693_0fa18a7e",
       "range": {
         "startLine": 1642,
         "startChar": 42,
@@ -110,6 +158,54 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ce21a23f_aee6489e",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1647,
+      "author": {
+        "id": 1951601
+      },
+      "writtenOn": "2023-12-21T18:28:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "16eafa4e_8d09fc60",
+      "range": {
+        "startLine": 1647,
+        "startChar": 35,
+        "endLine": 1647,
+        "endChar": 39
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "69078ab0_a6829a69",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1647,
+      "author": {
+        "id": 1951601
+      },
+      "writtenOn": "2023-12-21T18:28:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a3b8ba3_7da134b2",
+      "range": {
+        "startLine": 1647,
+        "startChar": 57,
+        "endLine": 1647,
+        "endChar": 64
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "60e66ee1_7d1a4a04",
@@ -123,6 +219,30 @@
       "writtenOn": "2023-12-21T17:41:24Z",
       "side": 1,
       "message": "I think we are describing implementation details here that we may not be able to promise.\n\nWe could say something like: \n\nThe codec importance is used by the resource manager during the codec reclamation process along with other factors. The exact reclaim policy is device dependent, but specifying the codec importance will allow the resource manager to prefer to reclaim lower importance codecs (with a higher value) from the application if possible.",
+      "range": {
+        "startLine": 1649,
+        "startChar": 7,
+        "endLine": 1652,
+        "endChar": 36
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "26fea4b2_570147dd",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1652,
+      "author": {
+        "id": 1951601
+      },
+      "writtenOn": "2023-12-21T18:28:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "60e66ee1_7d1a4a04",
       "range": {
         "startLine": 1649,
         "startChar": 7,
