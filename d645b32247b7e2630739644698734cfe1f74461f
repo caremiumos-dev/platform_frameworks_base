@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "13ae8305_48bb0d82",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1021605
+      },
+      "writtenOn": "2023-12-21T17:41:24Z",
+      "side": 1,
+      "message": "Sorry for just now thinking about the _CODEC_ part.",
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4c4722f2_23231b13",
+        "filename": "core/api/current.txt",
+        "patchSetId": 3
+      },
+      "lineNbr": 23611,
+      "author": {
+        "id": 1021605
+      },
+      "writtenOn": "2023-12-21T17:41:24Z",
+      "side": 1,
+      "message": "could we call this just KEY_IMPORTANCE \u003d \"importance\" (akin to priority). Given that these are used to configure MediaCodec, CODEC_ could be implied.",
+      "range": {
+        "startLine": 23611,
+        "startChar": 10,
+        "endLine": 23611,
+        "endChar": 11
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "466fa693_0fa18a7e",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1642,
+      "author": {
+        "id": 1021605
+      },
+      "writtenOn": "2023-12-21T17:41:24Z",
+      "side": 1,
+      "message": "can we add \"for the application\"?",
+      "range": {
+        "startLine": 1642,
+        "startChar": 42,
+        "endLine": 1642,
+        "endChar": 52
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5a3b8ba3_7da134b2",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1647,
+      "author": {
+        "id": 1021605
+      },
+      "writtenOn": "2023-12-21T17:41:24Z",
+      "side": 1,
+      "message": "reclamation process?",
+      "range": {
+        "startLine": 1647,
+        "startChar": 57,
+        "endLine": 1647,
+        "endChar": 64
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "16eafa4e_8d09fc60",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1647,
+      "author": {
+        "id": 1021605
+      },
+      "writtenOn": "2023-12-21T17:41:24Z",
+      "side": 1,
+      "message": "can we add \"used by the resource manager\"",
+      "range": {
+        "startLine": 1647,
+        "startChar": 35,
+        "endLine": 1647,
+        "endChar": 39
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "60e66ee1_7d1a4a04",
+        "filename": "media/java/android/media/MediaFormat.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1652,
+      "author": {
+        "id": 1021605
+      },
+      "writtenOn": "2023-12-21T17:41:24Z",
+      "side": 1,
+      "message": "I think we are describing implementation details here that we may not be able to promise.\n\nWe could say something like: \n\nThe codec importance is used by the resource manager during the codec reclamation process along with other factors. The exact reclaim policy is device dependent, but specifying the codec importance will allow the resource manager to prefer to reclaim lower importance codecs (with a higher value) from the application if possible.",
+      "range": {
+        "startLine": 1649,
+        "startChar": 7,
+        "endLine": 1652,
+        "endChar": 36
+      },
+      "revId": "d645b32247b7e2630739644698734cfe1f74461f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
