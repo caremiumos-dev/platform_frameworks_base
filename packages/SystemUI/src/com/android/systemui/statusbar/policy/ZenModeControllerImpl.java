@@ -96,6 +96,7 @@ public class ZenModeControllerImpl implements ZenModeController, Dumpable {
                             UserHandle.of(mUserId));
                     mRegistered = true;
                     mSetupObserver.register();
+                    mModeSetting.setUserId(mUserId);
                 }
             };
 
