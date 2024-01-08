@@ -4738,6 +4738,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
     @Override
     public void cancelPendingCollapse() {
         mView.removeCallbacks(mMaybeHideExpandedRunnable);
+        mView.removeCallbacks(mHideExpandedRunnable);
     }
 
     private void onPanelStateChanged(@PanelState int state) {
