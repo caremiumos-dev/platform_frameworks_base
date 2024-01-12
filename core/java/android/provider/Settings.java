@@ -11698,6 +11698,15 @@ public final class Settings {
         public static final String LOCK_SCREEN_WEATHER_ENABLED = "lockscreen_weather_enabled";
 
         /**
+         * Whether to wake up the device on any "internal" (e.g. on the side of the device) key
+         * event.
+         *
+         * @hide
+         */
+        public static final String WAKE_UP_ON_ANY_INTERNAL_KEY_EVENT_ENABLED =
+                "wake_up_on_any_internal_key_event_enabled";
+
+        /**
          * These entries are considered common between the personal and the managed profile,
          * since the managed profile doesn't get to change them.
          */

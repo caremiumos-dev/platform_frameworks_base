@@ -29,6 +29,7 @@ import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.provider.Settings.Secure.WAKE_UP_ON_ANY_INTERNAL_KEY_EVENT_ENABLED;
 import static android.provider.Settings.Secure.VOLUME_HUSH_OFF;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
@@ -666,6 +667,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // Timeout for showing the keyguard after the screen is on, in case no "ready" is received.
     private int mKeyguardDrawnTimeout = 1000;
 
+    private boolean mWakeUpOnAnyInternalKeyEvent;
+
     private static final int MSG_DISPATCH_MEDIA_KEY_WITH_WAKE_LOCK = 3;
     private static final int MSG_DISPATCH_MEDIA_KEY_REPEAT_WITH_WAKE_LOCK = 4;
     private static final int MSG_KEYGUARD_DRAWN_COMPLETE = 5;
@@ -826,6 +829,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.Secure.getUriFor(
                     Settings.Secure.STYLUS_BUTTONS_ENABLED), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.WAKE_UP_ON_ANY_INTERNAL_KEY_EVENT_ENABLED), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
         }
@@ -2685,6 +2691,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mStylusButtonsEnabled = Settings.Secure.getIntForUser(resolver,
                     Secure.STYLUS_BUTTONS_ENABLED, 1, UserHandle.USER_CURRENT) == 1;
             mInputManagerInternal.setStylusButtonMotionEventsEnabled(mStylusButtonsEnabled);
+
+            mWakeUpOnAnyInternalKeyEvent = Settings.Secure.getIntForUser(
+                    resolver,
+                    WAKE_UP_ON_ANY_INTERNAL_KEY_EVENT_ENABLED,
+                    0 /* def */,
+                    UserHandle.USER_CURRENT) == 1;
         }
         if (updateRotation) {
             updateRotation(true);
@@ -4118,7 +4130,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final int keyCode = event.getKeyCode();
         final boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         boolean isWakeKey = (policyFlags & WindowManagerPolicy.FLAG_WAKE) != 0
-                || event.isWakeKey();
+                || event.isWakeKey()
+                || (mWakeUpOnAnyInternalKeyEvent
+                && event.getDevice() != null & !event.getDevice().isExternal());
 
         if (!mSystemBooted) {
             // If we have not yet booted, don't let key events do anything.
