@@ -27,3 +27,11 @@ flag {
     description: "Enables the content URI permission APIs"
     bug: "293467489"
 }
+
+flag {
+    name: "content_uri_permission_manifest"
+    namespace: "responsible_apis"
+    description: "Enables the content URI permission Activity Manifest attribute"
+    bug: "293467489"
+    is_fixed_read_only: true
+}
