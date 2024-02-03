@@ -1,4 +1,5 @@
 package: "com.android.net.flags"
+container: "system"
 
 flag {
   name: "track_multiple_network_activities"
