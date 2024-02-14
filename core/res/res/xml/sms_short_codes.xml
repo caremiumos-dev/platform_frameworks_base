@@ -241,7 +241,7 @@
     <shortcode country="ph" pattern="\\d{1,5}" free="2147|5495|5496" />
 
     <!-- Pakistan -->
-    <shortcode country="pk" pattern="\\d{1,5}" free="2057" />
+    <shortcode country="pk" pattern="\\d{1,5}" free="2057|9092" />
 
     <!-- Palestine: 5 digits, known premium codes listed -->
     <shortcode country="ps" pattern="\\d{1,5}" free="37477" />
