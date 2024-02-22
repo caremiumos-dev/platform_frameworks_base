@@ -50,7 +50,7 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -205,7 +205,7 @@ public class Toast {
         INotificationManager service = getService();
         String pkg = mContext.getOpPackageName();
         TN tn = mTN;
-        tn.mNextView = new WeakReference<>(mNextView);
+        tn.mNextView = new SoftReference<>(mNextView);
         final boolean isUiContext = mContext.isUiContext();
         final int displayId = mContext.getDisplayId();
 
@@ -620,7 +620,7 @@ public class Toast {
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
         View mView;
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
-        WeakReference<View> mNextView;
+        SoftReference<View> mNextView;
         int mDuration;
 
         WindowManager mWM;
@@ -630,7 +630,7 @@ public class Toast {
         private final ToastPresenter mPresenter;
 
         @GuardedBy("mCallbacks")
-        private final WeakReference<List<Callback>> mCallbacks;
+        private final SoftReference<List<Callback>> mCallbacks;
 
         /**
          * Creates a {@link ITransientNotification} object.
@@ -647,7 +647,7 @@ public class Toast {
             mParams = mPresenter.getLayoutParams();
             mPackageName = packageName;
             mToken = token;
-            mCallbacks = new WeakReference<>(callbacks);
+            mCallbacks = new SoftReference<>(callbacks);
 
             mHandler = new Handler(looper, null) {
                 @Override
