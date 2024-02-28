@@ -6859,4 +6859,10 @@
 
     <!-- Whether the media player is shown on the quick settings -->
     <bool name="config_quickSettingsShowMediaPlayer">true</bool>
+
+    <!-- Whether to overlay wallpaper default frame rate -->
+    <bool name="config_overlayWallpaperFrameRate">false</bool>
+
+    <!-- FRAME_RATE_COMPATIBILITY value for overlay of wallpaper default frame rate -->
+    <integer name="config_wallpaperFrameRateOverlayValue">0</integer>
 </resources>

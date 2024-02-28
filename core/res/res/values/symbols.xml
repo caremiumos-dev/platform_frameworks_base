@@ -5301,4 +5301,8 @@
   <java-symbol type="bool" name="config_viewBasedRotaryEncoderHapticsEnabled" />
 
   <java-symbol type="bool" name="config_quickSettingsShowMediaPlayer" />
+
+  <!-- Overlay of wallpaper default frame rate -->
+  <java-symbol type="bool" name="config_overlayWallpaperFrameRate" />
+  <java-symbol type="integer" name="config_wallpaperFrameRateOverlayValue" />
 </resources>

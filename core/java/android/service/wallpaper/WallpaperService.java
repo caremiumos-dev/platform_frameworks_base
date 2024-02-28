@@ -49,6 +49,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.BLASTBufferQueue;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -102,6 +103,7 @@ import android.view.WindowManagerGlobal;
 import android.window.ClientWindowFrames;
 import android.window.ScreenCapture;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.HandlerCaller;
@@ -1277,8 +1279,22 @@ public abstract class WallpaperService extends Service {
                                     .build();
                             SurfaceControl.Transaction transaction =
                                     new SurfaceControl.Transaction();
+                            int frameRateCompat = Surface.FRAME_RATE_COMPATIBILITY_MIN;
+                            try {
+                                final Resources res = getResources();
+                                if (res.getBoolean(R.bool.config_overlayWallpaperFrameRate)) {
+                                    frameRateCompat = res.getInteger(
+                                            R.integer.config_wallpaperFrameRateOverlayValue);
+                                }
+                            } catch (Resources.NotFoundException e) {
+                                Log.w(TAG, "Invalid overlay for wallpaper default frame rate");
+                            }
+                            if (DEBUG) {
+                                Log.d(TAG, "Set wallpaper default frame rate compatibility: "
+                                        + frameRateCompat);
+                            }
                             transaction.setDefaultFrameRateCompatibility(mBbqSurfaceControl,
-                                Surface.FRAME_RATE_COMPATIBILITY_MIN).apply();
+                                    frameRateCompat).apply();
                         }
                         // Propagate transform hint from WM, so we can use the right hint for the
                         // first frame.
