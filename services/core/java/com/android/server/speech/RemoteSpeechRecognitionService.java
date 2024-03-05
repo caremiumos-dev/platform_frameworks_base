@@ -297,7 +297,9 @@ final class RemoteSpeechRecognitionService extends ServiceConnector.Impl<IRecogn
                     return;
                 }
 
-                for (ClientState clientState : mClients.values()) {
+                HashMap<IBinder, ClientState> clients = new HashMap<>();
+                clients.putAll(mClients);
+                for (ClientState clientState : clients.values()) {
                     tryRespondWithError(
                             clientState.mDelegatingListener.mRemoteListener,
                             SpeechRecognizer.ERROR_SERVER_DISCONNECTED);
