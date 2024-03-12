@@ -506,6 +506,7 @@ java_library {
         "//frameworks/base/apex/jobscheduler/framework",
         "//frameworks/base/packages/Tethering/tests/unit",
         "//packages/modules/Connectivity/Tethering/tests/unit",
+        "//visibility:any_system_partition",
     ],
     errorprone: {
         javacflags: [
