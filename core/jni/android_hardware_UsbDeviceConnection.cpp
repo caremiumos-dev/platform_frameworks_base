@@ -190,16 +190,26 @@ android_hardware_UsbDeviceConnection_bulk_request(JNIEnv *env, jobject thiz,
         return -1;
     }
 
-    jbyte* bufferBytes = NULL;
-    if (buffer) {
-        bufferBytes = (jbyte*)env->GetPrimitiveArrayCritical(buffer, NULL);
+    bool is_dir_in = (endpoint & USB_ENDPOINT_DIR_MASK) == USB_DIR_IN;
+    jbyte *bufferBytes = (jbyte *)malloc(length);
+
+    if (!is_dir_in && buffer) {
+        env->GetByteArrayRegion(buffer, start, length, bufferBytes);
     }
 
-    jint result = usb_device_bulk_transfer(device, endpoint, bufferBytes + start, length, timeout);
+    jint result = usb_device_bulk_transfer(device, endpoint, bufferBytes, length, timeout);
 
-    if (bufferBytes) {
-        env->ReleasePrimitiveArrayCritical(buffer, bufferBytes, 0);
+    if (is_dir_in && buffer) {
+        if (result < length) {
+            length = result;
+        }
+        if (length < 0) {
+            length = 0;
+        }
+        env->SetByteArrayRegion(buffer, start, length, bufferBytes);
     }
+
+    free(bufferBytes);
 
     return result;
 }
