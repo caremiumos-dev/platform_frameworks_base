@@ -16,6 +16,9 @@
 
 package android.media;
 
+import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
+
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -2662,4 +2665,23 @@ public class AudioSystem
     @Nullable
     public static native int unregisterAudioVolumeGroupCallback(
             INativeAudioVolumeGroupCallback callback);
+
+    /** 
+     * Maps a given zone id to a given user id, this will be use for routing and volume management
+     * when audio policy engine with audio zone id's are used.
+     * @param zoneId to consider
+     * @param userId to consider
+     * @return {@link #SUCCESS} if successfully mapped.
+     */
+    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
+    public static native int setProductStrategiesZoneIdForUserId(int zoneId, int userId);
+
+    /**
+     * Resets the zone id to given user id mapping previously set via
+     * {@link #setProductStrategiesZoneIdForUserId(int, int)}
+     * @param userId
+     * @return {@link #SUCCESS} if successfully reset.
+     */
+    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
+    public static native int resetProductStrategiesZoneIdForUserId(int userId);
 }

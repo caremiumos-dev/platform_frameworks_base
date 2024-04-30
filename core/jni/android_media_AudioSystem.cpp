@@ -3124,6 +3124,36 @@ static int android_media_AudioSystem_unregisterAudioVolumeGroupCallback(JNIEnv *
     return AudioSystem::removeAudioVolumeGroupCallback(nIAudioVolumeGroupCallback);
 }
 
+static jint android_media_AudioSystem_setProductStrategiesZoneIdForUserId(
+        JNIEnv *env, jobject clazz, jint userId, jint zoneId)
+{
+    if (env == NULL) {
+        return AUDIO_JAVA_DEAD_OBJECT;
+    }
+    jint jStatus = (jint)AUDIO_JAVA_SUCCESS;
+    status_t status = AudioSystem::setProductStrategiesZoneIdForUserId(userId, zoneId);
+    if (status != NO_ERROR) {
+        ALOGE("AudioSystem::setProductStrategiesZoneIdForUserId error %d", status);
+        return nativeToJavaStatus(status);
+    }
+    return jStatus;
+}
+
+static jint android_media_AudioSystem_resetProductStrategiesZoneIdForUserId(
+        JNIEnv *env, jobject clazz, jint userId)
+{
+    if (env == NULL) {
+        return AUDIO_JAVA_DEAD_OBJECT;
+    }
+    jint jStatus = (jint)AUDIO_JAVA_SUCCESS;
+    status_t status = AudioSystem::resetProductStrategiesZoneIdForUserId(userId);
+    if (status != NO_ERROR) {
+        ALOGE("AudioSystem::resetProductStrategiesZoneIdForUserId error %d", status);
+        return nativeToJavaStatus(status);
+    }
+    return jStatus;
+}
+
 // ----------------------------------------------------------------------------
 
 #define MAKE_AUDIO_SYSTEM_METHOD(x) \
@@ -3235,6 +3265,10 @@ static const JNINativeMethod gMethods[] =
          MAKE_AUDIO_SYSTEM_METHOD(setRttEnabled),
          MAKE_AUDIO_SYSTEM_METHOD(setAudioHalPids),
          MAKE_AUDIO_SYSTEM_METHOD(isCallScreeningModeSupported),
+         MAKE_JNI_NATIVE_METHOD("setProductStrategiesZoneIdForUserId", "(II)I",
+                                android_media_AudioSystem_setProductStrategiesZoneIdForUserId),
+         MAKE_JNI_NATIVE_METHOD("resetProductStrategiesZoneIdForUserId", "(I)I",
+                                android_media_AudioSystem_resetProductStrategiesZoneIdForUserId),
          MAKE_JNI_NATIVE_METHOD("setDevicesRoleForStrategy", "(II[I[Ljava/lang/String;)I",
                                 android_media_AudioSystem_setDevicesRoleForStrategy),
          MAKE_JNI_NATIVE_METHOD("removeDevicesRoleForStrategy", "(II[I[Ljava/lang/String;)I",

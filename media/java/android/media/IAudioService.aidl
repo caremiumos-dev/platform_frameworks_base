@@ -761,4 +761,13 @@ interface IAudioService {
     oneway void removeLoudnessCodecInfo(int piid, in LoudnessCodecInfo codecInfo);
 
     PersistableBundle getLoudnessParams(int piid, in LoudnessCodecInfo codecInfo);
+
+    @EnforcePermission(anyOf = {"MODIFY_AUDIO_ROUTING", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
+    int setProductStrategiesZoneIdForUserId(int zoneId, int UserId);
+
+    @EnforcePermission(anyOf = {"MODIFY_AUDIO_ROUTING", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
+    int resetProductStrategiesZoneIdForUserId(int UserId);
+
+    @EnforcePermission(anyOf = {"MODIFY_AUDIO_ROUTING", "QUERY_AUDIO_STATE", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
+    int getUserIdForZoneId(int zoneId);
 }
