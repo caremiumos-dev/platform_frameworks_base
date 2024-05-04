@@ -1,0 +1,661 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5d3edd2b_1a4fba94",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Nit, empty line before @hide",
+      "range": {
+        "startLine": 105,
+        "startChar": 5,
+        "endLine": 105,
+        "endChar": 12
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "af993832_1b084363",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 105,
+                "startChar": 0,
+                "endLine": 105,
+                "endChar": 0
+              },
+              "replacement": "     *\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "925c468f_1f94a48e",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Is this a hidden API or did you mean to expose it as system API?",
+      "range": {
+        "startLine": 108,
+        "startChar": 4,
+        "endLine": 108,
+        "endChar": 80
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "dc355fd2_8a884217",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 108,
+                "startChar": 0,
+                "endLine": 108,
+                "endChar": 0
+              },
+              "replacement": "    @SystemApi\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "26ba98e1_5cd65837",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Nit move this after @return with an empty line before.",
+      "range": {
+        "startLine": 193,
+        "startChar": 5,
+        "endLine": 193,
+        "endChar": 12
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "ddaf43ca_1953e9f7",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 193,
+                "startChar": 0,
+                "endLine": 194,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 197,
+                "startChar": 0,
+                "endLine": 197,
+                "endChar": 0
+              },
+              "replacement": "     *\n     * @hide\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3bcde0f9_80c54031",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Anyway we can make this a test API so that we can more easily add tests?",
+      "range": {
+        "startLine": 267,
+        "startChar": 12,
+        "endLine": 267,
+        "endChar": 32
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "96cebcfe_3da4c515",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Nit move this after @return with an empty line in between",
+      "range": {
+        "startLine": 311,
+        "startChar": 5,
+        "endLine": 311,
+        "endChar": 12
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "ac7aefb6_5212ba2a",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 311,
+                "startChar": 0,
+                "endLine": 312,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 315,
+                "startChar": 0,
+                "endLine": 315,
+                "endChar": 0
+              },
+              "replacement": "     * @hide\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "076a9dfc_584ba334",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Same here, move after @return",
+      "range": {
+        "startLine": 323,
+        "startChar": 5,
+        "endLine": 323,
+        "endChar": 12
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "9154c487_87705f81",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 323,
+                "startChar": 0,
+                "endLine": 324,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 327,
+                "startChar": 0,
+                "endLine": 327,
+                "endChar": 0
+              },
+              "replacement": "     * @hide\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "60a14dc9_1edd0831",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "MATCH_ON_DEFAULT_SCORE ?",
+      "range": {
+        "startLine": 346,
+        "startChar": 52,
+        "endLine": 346,
+        "endChar": 54
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "9d1e7b26_60df1e78",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 346,
+                "startChar": 0,
+                "endLine": 347,
+                "endChar": 0
+              },
+              "replacement": "        return getAudioAttributesSupportScore(aa) \u003e MATCH_ON_DEFAULT_SCORE;\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c98ad88b_5b907651",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Can we create a simple private class that has score and AudioAttributeGroup?\n\n    private static final class ScoredAudioAttributesGroup {\n        private final int mScore;\n        private final AudioAttributesGroup mAudioAttributesGroup;\n\n        ScoredAudioAttributesGroup(int score, AudioAttributesGroup aag) {\n            mScore \u003d score;\n            mAudioAttributesGroup \u003d aag;\n        }\n\n        public int getScore() {\n            return mScore;\n        }\n\n        public AudioAttributesGroup getAudioAttributesGroup() {\n            return mAudioAttributesGroup;\n        }\n    }",
+      "range": {
+        "startLine": 360,
+        "startChar": 12,
+        "endLine": 360,
+        "endChar": 47
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "00c0d649_77645900",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 217,
+                "startChar": 0,
+                "endLine": 218,
+                "endChar": 0
+              },
+              "replacement": "            ScoredAudioAttributesGroup scoredAag \u003d\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 219,
+                "startChar": 0,
+                "endLine": 220,
+                "endChar": 0
+              },
+              "replacement": "            int score \u003d scoredAag.getScore();\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 221,
+                "startChar": 0,
+                "endLine": 222,
+                "endChar": 0
+              },
+              "replacement": "                return scoredAag.getAudioAttributesGroup();\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 225,
+                "startChar": 0,
+                "endLine": 226,
+                "endChar": 0
+              },
+              "replacement": "                bestAudioAttributesGroupOrDefault \u003d scoredAag.getAudioAttributesGroup();\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 330,
+                "startChar": 0,
+                "endLine": 331,
+                "endChar": 0
+              },
+              "replacement": "        ScoredAudioAttributesGroup scoredAag \u003d\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 332,
+                "startChar": 0,
+                "endLine": 334,
+                "endChar": 0
+              },
+              "replacement": "        AudioAttributesGroup aag \u003d scoredAag.getAudioAttributesGroup();\n        int score \u003d scoredAag.getScore();\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 357,
+                "startChar": 0,
+                "endLine": 358,
+                "endChar": 0
+              },
+              "replacement": "        return getScoredAttributeGroupForAttribute(aa).getScore();\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 360,
+                "startChar": 0,
+                "endLine": 361,
+                "endChar": 0
+              },
+              "replacement": "    private ScoredAudioAttributesGroup getScoredAttributeGroupForAttribute(\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 368,
+                "startChar": 0,
+                "endLine": 369,
+                "endChar": 0
+              },
+              "replacement": "                return new ScoredAudioAttributesGroup(MATCH_EQUALS, aag);\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 375,
+                "startChar": 0,
+                "endLine": 376,
+                "endChar": 0
+              },
+              "replacement": "        return new ScoredAudioAttributesGroup(bestScore, bestAttributGroupOrDefault);\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 400,
+                "startChar": 0,
+                "endLine": 401,
+                "endChar": 0
+              },
+              "replacement": "        ScoredAudioAttributesGroup scoredAag\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 402,
+                "startChar": 0,
+                "endLine": 404,
+                "endChar": 0
+              },
+              "replacement": "        AudioAttributesGroup aag \u003d scoredAag.getAudioAttributesGroup();\n        int score \u003d scoredAag.getScore();\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 681,
+                "startChar": 0,
+                "endLine": 681,
+                "endChar": 0
+              },
+              "replacement": "\n    private static final class ScoredAudioAttributesGroup {\n        private final int mScore;\n        private final AudioAttributesGroup mAudioAttributesGroup;\n\n        ScoredAudioAttributesGroup(int score, AudioAttributesGroup aag) {\n            mScore \u003d score;\n            mAudioAttributesGroup \u003d aag;\n        }\n\n        public int getScore() {\n            return mScore;\n        }\n\n        public AudioAttributesGroup getAudioAttributesGroup() {\n            return mAudioAttributesGroup;\n        }\n    }\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "80ea454a_c7f4454e",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 379,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "nit move after @return",
+      "range": {
+        "startLine": 379,
+        "startChar": 5,
+        "endLine": 379,
+        "endChar": 12
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "e3f9d10d_985ed1bd",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 379,
+                "startChar": 0,
+                "endLine": 380,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 383,
+                "startChar": 0,
+                "endLine": 383,
+                "endChar": 0
+              },
+              "replacement": "     * @hide\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "53bf78a2_6b988831",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 486,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Feels like the previous was slightly better, how about we spelled it out instead?\n\n`Reference audio attributes must not be null",
+      "range": {
+        "startLine": 486,
+        "startChar": 41,
+        "endLine": 486,
+        "endChar": 65
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "7282698e_2b71600d",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 486,
+                "startChar": 0,
+                "endLine": 488,
+                "endChar": 0
+              },
+              "replacement": "        Objects.requireNonNull(refAttr, \"Reference audio attributes must not be null\");\n        Objects.requireNonNull(attr, \"Audio attributes must not be null\");\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fbbb08e0_1a48fe0d",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 513,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Does order matters here?",
+      "range": {
+        "startLine": 513,
+        "startChar": 19,
+        "endLine": 513,
+        "endChar": 60
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "e13a2c29_66eb89a4",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 513,
+                "startChar": 0,
+                "endLine": 514,
+                "endChar": 0
+              },
+              "replacement": "        } else if (Arrays.equals(refAttr.getTags(), attr.getTags())) {\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1f49f4d5_b2e2faca",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "If the attributes has no flags and there is another reference attribute with a better flags match would that have a higher score?\n\nIf so should we just return score here and allow the search to continue matching a better score?\n\nSimilar comment for the return statements with NO_MATCH above.",
+      "range": {
+        "startLine": 524,
+        "startChar": 12,
+        "endLine": 524,
+        "endChar": 28
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "e576fe50_3f07e8da",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 523,
+                "startChar": 0,
+                "endLine": 525,
+                "endChar": 0
+              },
+              "replacement": ""
+            }
+          ]
+        }
+      ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8feb4330_a4650bb1",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 556,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-04T04:08:31Z",
+      "side": 1,
+      "message": "Similar question here, can we expose ad test API to improve our testing?",
+      "range": {
+        "startLine": 556,
+        "startChar": 8,
+        "endLine": 556,
+        "endChar": 28
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
