@@ -1,3 +1,5 @@
+<<<<<<< PATCH SET (036733 [Audiosharing] Fix address type usage in  QR code format if )
+=======
 /*
  * Copyright (C) 2023 The Android Open Source Project
  *
@@ -385,3 +387,4 @@ object BluetoothLeBroadcastMetadataExt {
         return channels
     }
 }
+>>>>>>> BASE      (8cc1ff [Audiosharing] Update QR code format to follow BT SIG standa)
