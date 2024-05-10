@@ -618,6 +618,7 @@ public class DeviceIdleController extends SystemService
      * List of end times for app-IDs that are temporarily marked as being allowed to access
      * the network and acquire wakelocks. Times are in milliseconds.
      */
+    @GuardedBy("this")
     private final SparseArray<Pair<MutableLong, String>> mTempWhitelistAppIdEndTimes
             = new SparseArray<>();
 
@@ -4957,49 +4958,51 @@ public class DeviceIdleController extends SystemService
                 }
             }
         } else if ("tempwhitelist".equals(cmd)) {
-            long duration = 10000;
-            boolean removePkg = false;
-            String opt;
-            while ((opt=shell.getNextOption()) != null) {
-                if ("-u".equals(opt)) {
-                    opt = shell.getNextArg();
-                    if (opt == null) {
-                        pw.println("-u requires a user number");
+            synchronized (this) {
+                long duration = 10000;
+                boolean removePkg = false;
+                String opt;
+                while ((opt = shell.getNextOption()) != null) {
+                    if ("-u".equals(opt)) {
+                        opt = shell.getNextArg();
+                        if (opt == null) {
+                            pw.println("-u requires a user number");
+                            return -1;
+                        }
+                        shell.userId = Integer.parseInt(opt);
+                    } else if ("-d".equals(opt)) {
+                        opt = shell.getNextArg();
+                        if (opt == null) {
+                            pw.println("-d requires a duration");
+                            return -1;
+                        }
+                        duration = Long.parseLong(opt);
+                    } else if ("-r".equals(opt)) {
+                        removePkg = true;
+                    }
+                }
+                String arg = shell.getNextArg();
+                if (arg != null) {
+                    try {
+                        if (removePkg) {
+                            removePowerSaveTempAllowlistAppChecked(arg, shell.userId);
+                        } else {
+                            addPowerSaveTempAllowlistAppChecked(arg, duration, shell.userId,
+                                    REASON_SHELL, "shell");
+                        }
+                    } catch (Exception e) {
+                        pw.println("Failed: " + e);
                         return -1;
                     }
-                    shell.userId = Integer.parseInt(opt);
-                } else if ("-d".equals(opt)) {
-                    opt = shell.getNextArg();
-                    if (opt == null) {
-                        pw.println("-d requires a duration");
+                } else if (removePkg) {
+                    pw.println("[-r] requires a package name");
+                    return -1;
+                } else {
+                    if (!DumpUtils.checkDumpPermission(getContext(), TAG, pw)) {
                         return -1;
                     }
-                    duration = Long.parseLong(opt);
-                } else if ("-r".equals(opt)) {
-                    removePkg = true;
+                    dumpTempWhitelistSchedule(pw, false);
                 }
-            }
-            String arg = shell.getNextArg();
-            if (arg != null) {
-                try {
-                    if (removePkg) {
-                        removePowerSaveTempAllowlistAppChecked(arg, shell.userId);
-                    } else {
-                        addPowerSaveTempAllowlistAppChecked(arg, duration, shell.userId,
-                                REASON_SHELL, "shell");
-                    }
-                } catch (Exception e) {
-                    pw.println("Failed: " + e);
-                    return -1;
-                }
-            } else if (removePkg) {
-                pw.println("[-r] requires a package name");
-                return -1;
-            } else {
-                if (!DumpUtils.checkDumpPermission(getContext(), TAG, pw)) {
-                    return -1;
-                }
-                dumpTempWhitelistSchedule(pw, false);
             }
         } else if ("except-idle-whitelist".equals(cmd)) {
             getContext().enforceCallingOrSelfPermission(
@@ -5411,6 +5414,7 @@ public class DeviceIdleController extends SystemService
         }
     }
 
+    @GuardedBy("this")
     void dumpTempWhitelistSchedule(PrintWriter pw, boolean printTitle) {
         final int size = mTempWhitelistAppIdEndTimes.size();
         if (size > 0) {
