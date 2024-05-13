@@ -503,7 +503,10 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 buildSurfaceAnimation(animations, a, change.getLeash(), onAnimFinish,
                         mTransactionPool, mMainExecutor, change.getEndRelOffset(), cornerRadius,
                         clipRect);
-
+                // putting the changes in the first frame of the animation into startTransaction
+                updateTransactionByTransformation(0, startTransaction, change.getLeash(), a,
+                        new Transformation(), new float[9], change.getEndRelOffset(),
+                        cornerRadius, clipRect);
                 if (info.getAnimationOptions() != null) {
                     attachThumbnail(animations, onAnimFinish, change, info.getAnimationOptions(),
                             cornerRadius);
@@ -920,6 +923,14 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     private static void applyTransformation(long time, SurfaceControl.Transaction t,
             SurfaceControl leash, Animation anim, Transformation tmpTransformation, float[] matrix,
             Point position, float cornerRadius, @Nullable Rect immutableClipRect) {
+        updateTransactionByTransformation(time, t, leash, anim, tmpTransformation, matrix,
+                position, cornerRadius, immutableClipRect)
+        t.apply();
+    }
+
+    private static void updateTransactionByTransformation(long time, SurfaceControl.Transaction t,
+            SurfaceControl leash, Animation anim, Transformation tmpTransformation, float[] matrix,
+            Point position, float cornerRadius, @Nullable Rect immutableClipRect) {
         tmpTransformation.clear();
         anim.getTransformation(time, tmpTransformation);
         if (position != null) {
@@ -943,6 +954,5 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         }
 
         t.setFrameTimelineVsync(Choreographer.getInstance().getVsyncId());
-        t.apply();
     }
 }
