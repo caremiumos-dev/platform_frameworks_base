@@ -42,6 +42,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "736db7bb_45d9a2ba",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5d3edd2b_1a4fba94",
+      "range": {
+        "startLine": 105,
+        "startChar": 5,
+        "endLine": 105,
+        "endChar": 12
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "925c468f_1f94a48e",
@@ -79,6 +103,30 @@
           ]
         }
       ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4c865300_67a42cec",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "SystemApi",
+      "parentUuid": "925c468f_1f94a48e",
+      "range": {
+        "startLine": 108,
+        "startChar": 4,
+        "endLine": 108,
+        "endChar": 80
+      },
       "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -134,6 +182,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ed5d4bda_7abef429",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "26ba98e1_5cd65837",
+      "range": {
+        "startLine": 193,
+        "startChar": 5,
+        "endLine": 193,
+        "endChar": 12
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3bcde0f9_80c54031",
@@ -147,6 +219,30 @@
       "writtenOn": "2024-05-04T04:08:31Z",
       "side": 1,
       "message": "Anyway we can make this a test API so that we can more easily add tests?",
+      "range": {
+        "startLine": 267,
+        "startChar": 12,
+        "endLine": 267,
+        "endChar": 32
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8b6c2712_3007bc93",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3bcde0f9_80c54031",
       "range": {
         "startLine": 267,
         "startChar": 12,
@@ -208,6 +304,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c96b39ba_94fa75bc",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "96cebcfe_3da4c515",
+      "range": {
+        "startLine": 311,
+        "startChar": 5,
+        "endLine": 311,
+        "endChar": 12
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "076a9dfc_584ba334",
@@ -259,6 +379,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c00e0abc_9f863482",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "076a9dfc_584ba334",
+      "range": {
+        "startLine": 323,
+        "startChar": 5,
+        "endLine": 323,
+        "endChar": 12
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "60a14dc9_1edd0831",
@@ -296,6 +440,30 @@
           ]
         }
       ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "81bb6ded_79886066",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "60a14dc9_1edd0831",
+      "range": {
+        "startLine": 346,
+        "startChar": 52,
+        "endLine": 346,
+        "endChar": 54
+      },
       "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -461,6 +629,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bd67a385_7b79c114",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c98ad88b_5b907651",
+      "range": {
+        "startLine": 360,
+        "startChar": 12,
+        "endLine": 360,
+        "endChar": 47
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "80ea454a_c7f4454e",
@@ -512,6 +704,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e98a55e5_76e9d18f",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 379,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "80ea454a_c7f4454e",
+      "range": {
+        "startLine": 379,
+        "startChar": 5,
+        "endLine": 379,
+        "endChar": 12
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "53bf78a2_6b988831",
@@ -549,6 +765,30 @@
           ]
         }
       ],
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4fad641_bf1d9d93",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 486,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "53bf78a2_6b988831",
+      "range": {
+        "startLine": 486,
+        "startChar": 41,
+        "endLine": 486,
+        "endChar": 65
+      },
       "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -596,6 +836,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "22ead4dc_8dd3a47b",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 513,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "good point, order does not matter from one hand, but we never expect/considered to have more than one...",
+      "parentUuid": "fbbb08e0_1a48fe0d",
+      "range": {
+        "startLine": 513,
+        "startChar": 19,
+        "endLine": 513,
+        "endChar": 60
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "1f49f4d5_b2e2faca",
         "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
         "patchSetId": 1
@@ -637,6 +901,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "c7482a97_8dbd083c",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "This is exactly the purpose of the score matching. We will not stop, we will process the whole strategies and take the highest score matching strategy.",
+      "parentUuid": "1f49f4d5_b2e2faca",
+      "range": {
+        "startLine": 524,
+        "startChar": 12,
+        "endLine": 524,
+        "endChar": 28
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "8feb4330_a4650bb1",
         "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
         "patchSetId": 1
@@ -648,6 +936,30 @@
       "writtenOn": "2024-05-04T04:08:31Z",
       "side": 1,
       "message": "Similar question here, can we expose ad test API to improve our testing?",
+      "range": {
+        "startLine": 556,
+        "startChar": 8,
+        "endLine": 556,
+        "endChar": 28
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "eba87f6f_1b11bbd4",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 556,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:11:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8feb4330_a4650bb1",
       "range": {
         "startLine": 556,
         "startChar": 8,
