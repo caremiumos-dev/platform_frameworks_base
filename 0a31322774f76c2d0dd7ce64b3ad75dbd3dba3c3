@@ -882,6 +882,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5436b09c_1de7d7f6",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 513,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-14T17:47:41Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "22ead4dc_8dd3a47b",
+      "range": {
+        "startLine": 513,
+        "startChar": 19,
+        "endLine": 513,
+        "endChar": 60
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1f49f4d5_b2e2faca",
@@ -937,6 +961,30 @@
       "side": 1,
       "message": "This is exactly the purpose of the score matching. We will not stop, we will process the whole strategies and take the highest score matching strategy.",
       "parentUuid": "1f49f4d5_b2e2faca",
+      "range": {
+        "startLine": 524,
+        "startChar": 12,
+        "endLine": 524,
+        "endChar": 28
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a17d9ea1_e5167b71",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-14T17:47:41Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "c7482a97_8dbd083c",
       "range": {
         "startLine": 524,
         "startChar": 12,
@@ -1008,6 +1056,30 @@
       "side": 1,
       "message": "in the end, not possible to make it TestApi without flaging it. build system is claiming...",
       "parentUuid": "eba87f6f_1b11bbd4",
+      "range": {
+        "startLine": 556,
+        "startChar": 8,
+        "endLine": 556,
+        "endChar": 28
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ce51fb2d_76d94f38",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 556,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2024-05-14T17:47:41Z",
+      "side": 1,
+      "message": "Yes, we would need to mark the API with flag annotation.",
+      "parentUuid": "cc8ae17d_c16f1dd4",
       "range": {
         "startLine": 556,
         "startChar": 8,
