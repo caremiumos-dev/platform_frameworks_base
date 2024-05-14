@@ -133,6 +133,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "de7cb315_8419a181",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:24:36Z",
+      "side": 1,
+      "message": "cannot set to System without Flag also",
+      "parentUuid": "4c865300_67a42cec",
+      "range": {
+        "startLine": 108,
+        "startChar": 4,
+        "endLine": 108,
+        "endChar": 80
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "26ba98e1_5cd65837",
         "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
         "patchSetId": 1
@@ -960,6 +984,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "8feb4330_a4650bb1",
+      "range": {
+        "startLine": 556,
+        "startChar": 8,
+        "endLine": 556,
+        "endChar": 28
+      },
+      "revId": "0a31322774f76c2d0dd7ce64b3ad75dbd3dba3c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc8ae17d_c16f1dd4",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 556,
+      "author": {
+        "id": 1491204
+      },
+      "writtenOn": "2024-05-14T12:24:36Z",
+      "side": 1,
+      "message": "in the end, not possible to make it TestApi without flaging it. build system is claiming...",
+      "parentUuid": "eba87f6f_1b11bbd4",
       "range": {
         "startLine": 556,
         "startChar": 8,
