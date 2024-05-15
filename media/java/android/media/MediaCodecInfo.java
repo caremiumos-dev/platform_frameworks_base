@@ -804,8 +804,14 @@ public final class MediaCodecInfo {
          * features that are always on.
          */
         public final boolean isFeatureSupported(String name) {
-            return checkFeature(name, mFlagsSupported);
+            if (FLAG) {
+                return native_isFeatureSupported(name);
+            } else {
+                return checkFeature(name, mFlagsSupported);
+            }
         }
+
+        static native boolean native_isFeatureSupported(String name);
 
         /**
          * Query codec feature requirements.
@@ -814,8 +820,14 @@ public final class MediaCodecInfo {
          * they are always turned on.
          */
         public final boolean isFeatureRequired(String name) {
-            return checkFeature(name, mFlagsRequired);
+            if (FLAG) {
+                return native_isFeatureRequired(name);
+            } else {
+                return checkFeature(name, mFlagsRequired);
+            }
         }
+
+        static native boolean native_isFeatureRequired(String name);
 
         // Flags are used for feature list creation so separate this into a private
         // static class to delay reading the flags only when constructing the list.
@@ -1020,91 +1032,113 @@ public final class MediaCodecInfo {
          *         and feature requests.
          */
         public final boolean isFormatSupported(MediaFormat format) {
-            final Map<String, Object> map = format.getMap();
-            final String mime = (String)map.get(MediaFormat.KEY_MIME);
-
-            // mime must match if present
-            if (mime != null && !mMime.equalsIgnoreCase(mime)) {
-                return false;
-            }
-
-            // check feature support
-            for (Feature feat: getValidFeatures()) {
-                if (feat.mInternal) {
-                    continue;
-                }
-
-                Integer yesNo = (Integer)map.get(MediaFormat.KEY_FEATURE_ + feat.mName);
-                if (yesNo == null) {
-                    continue;
-                }
-                if ((yesNo == 1 && !isFeatureSupported(feat.mName)) ||
-                        (yesNo == 0 && isFeatureRequired(feat.mName))) {
-                    return false;
-                }
-            }
-
-            Integer profile = (Integer)map.get(MediaFormat.KEY_PROFILE);
-            Integer level = (Integer)map.get(MediaFormat.KEY_LEVEL);
-
-            if (profile != null) {
-                if (!supportsProfileLevel(profile, level)) {
+            if (FLAG) {
+                if (format == null) {
                     return false;
                 }
 
-                // If we recognize this profile, check that this format is supported by the
-                // highest level supported by the codec for that profile. (Ignore specified
-                // level beyond the above profile/level check as level is only used as a
-                // guidance. E.g. AVC Level 1 CIF format is supported if codec supports level 1.1
-                // even though max size for Level 1 is QCIF. However, MPEG2 Simple Profile
-                // 1080p format is not supported even if codec supports Main Profile Level High,
-                // as Simple Profile does not support 1080p.
-                CodecCapabilities levelCaps = null;
-                int maxLevel = 0;
-                for (CodecProfileLevel pl : profileLevels) {
-                    if (pl.profile == profile && pl.level > maxLevel) {
-                        // H.263 levels are not completely ordered:
-                        // Level45 support only implies Level10 support
-                        if (!mMime.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_H263)
-                                || pl.level != CodecProfileLevel.H263Level45
-                                || maxLevel == CodecProfileLevel.H263Level10) {
-                            maxLevel = pl.level;
-                        }
+                Map<String, Object> formatMap = format.getMap();
+                String[] keys = new String[formatMap.size()];
+                Object[] values = new Object[formatMap.size()];
+
+                int i = 0;
+                for (Map.Entry<String, Object> entry: formatMap.entrySet()) {
+                    keys[i] = entry.getKey();
+                    values[i] = entry.getValue();
+                    ++i;
+                }
+
+                return native_isFormatSupported(keys, values);
+            } else {
+                final Map<String, Object> map = format.getMap();
+                final String mime = (String) map.get(MediaFormat.KEY_MIME);
+
+                // mime must match if present
+                if (mime != null && !mMime.equalsIgnoreCase(mime)) {
+                    return false;
+                }
+
+                // check feature support
+                for (Feature feat: getValidFeatures()) {
+                    if (feat.mInternal) {
+                        continue;
                     }
-                }
-                levelCaps = createFromProfileLevel(mMime, profile, maxLevel);
-                // We must remove the profile from this format otherwise levelCaps.isFormatSupported
-                // will get into this same condition and loop forever. Furthermore, since levelCaps
-                // does not contain features and bitrate specific keys, keep only keys relevant for
-                // a level check.
-                Map<String, Object> levelCriticalFormatMap = new HashMap<>(map);
-                final Set<String> criticalKeys =
-                    isVideo() ? VideoCapabilities.VIDEO_LEVEL_CRITICAL_FORMAT_KEYS :
-                    isAudio() ? AudioCapabilities.AUDIO_LEVEL_CRITICAL_FORMAT_KEYS :
-                    null;
 
-                // critical keys will always contain KEY_MIME, but should also contain others to be
-                // meaningful
-                if (criticalKeys != null && criticalKeys.size() > 1 && levelCaps != null) {
-                    levelCriticalFormatMap.keySet().retainAll(criticalKeys);
-
-                    MediaFormat levelCriticalFormat = new MediaFormat(levelCriticalFormatMap);
-                    if (!levelCaps.isFormatSupported(levelCriticalFormat)) {
+                    Integer yesNo = (Integer) map.get(MediaFormat.KEY_FEATURE_ + feat.mName);
+                    if (yesNo == null) {
+                        continue;
+                    }
+                    if ((yesNo == 1 && !isFeatureSupported(feat.mName))
+                            || (yesNo == 0 && isFeatureRequired(feat.mName))) {
                         return false;
                     }
                 }
+
+                Integer profile = (Integer) map.get(MediaFormat.KEY_PROFILE);
+                Integer level = (Integer) map.get(MediaFormat.KEY_LEVEL);
+
+                if (profile != null) {
+                    if (!supportsProfileLevel(profile, level)) {
+                        return false;
+                    }
+
+                    // If we recognize this profile, check that this format is supported by the
+                    // highest level supported by the codec for that profile. (Ignore specified
+                    // level beyond the above profile/level check as level is only used as a
+                    // guidance. E.g. AVC Level 1 CIF format is supported if codec supports
+                    // level 1.1 even though max size for Level 1 is QCIF. However, MPEG2 Simple
+                    // Profile 1080p format is not supported even if codec supports Main Profile
+                    // Level High, as Simple Profile does not support 1080p.
+                    CodecCapabilities levelCaps = null;
+                    int maxLevel = 0;
+                    for (CodecProfileLevel pl : profileLevels) {
+                        if (pl.profile == profile && pl.level > maxLevel) {
+                            // H.263 levels are not completely ordered:
+                            // Level45 support only implies Level10 support
+                            if (!mMime.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_H263)
+                                    || pl.level != CodecProfileLevel.H263Level45
+                                    || maxLevel == CodecProfileLevel.H263Level10) {
+                                maxLevel = pl.level;
+                            }
+                        }
+                    }
+                    levelCaps = createFromProfileLevel(mMime, profile, maxLevel);
+                    // We must remove the profile from this format otherwise
+                    // levelCaps.isFormatSupported will get into this same condition and loop
+                    // forever. Furthermore, since levelCaps does not contain features and bitrate
+                    // specific keys, keep only keys relevant for a level check.
+                    Map<String, Object> levelCriticalFormatMap = new HashMap<>(map);
+                    final Set<String> criticalKeys =
+                            isVideo() ? VideoCapabilities.VIDEO_LEVEL_CRITICAL_FORMAT_KEYS :
+                            isAudio() ? AudioCapabilities.AUDIO_LEVEL_CRITICAL_FORMAT_KEYS :
+                            null;
+
+                    // critical keys will always contain KEY_MIME, but should also contain others
+                    // to be meaningful
+                    if (criticalKeys != null && criticalKeys.size() > 1 && levelCaps != null) {
+                        levelCriticalFormatMap.keySet().retainAll(criticalKeys);
+
+                        MediaFormat levelCriticalFormat = new MediaFormat(levelCriticalFormatMap);
+                        if (!levelCaps.isFormatSupported(levelCriticalFormat)) {
+                            return false;
+                        }
+                    }
+                }
+                if (mAudioCaps != null && !mAudioCaps.supportsFormat(format)) {
+                    return false;
+                }
+                if (mVideoCaps != null && !mVideoCaps.supportsFormat(format)) {
+                    return false;
+                }
+                if (mEncoderCaps != null && !mEncoderCaps.supportsFormat(format)) {
+                    return false;
+                }
+                return true;
             }
-            if (mAudioCaps != null && !mAudioCaps.supportsFormat(format)) {
-                return false;
-            }
-            if (mVideoCaps != null && !mVideoCaps.supportsFormat(format)) {
-                return false;
-            }
-            if (mEncoderCaps != null && !mEncoderCaps.supportsFormat(format)) {
-                return false;
-            }
-            return true;
         }
+
+        static native boolean native_isFormatSupported(@Nullable String[] keys,
+                @Nullable Object[] values);
 
         private static boolean supportsBitrate(
                 Range<Integer> bitrateRange, MediaFormat format) {
@@ -1213,8 +1247,14 @@ public final class MediaCodecInfo {
          * Returns the mime type for which this codec-capability object was created.
          */
         public String getMimeType() {
-            return mMime;
+            if (FLAG) {
+                return native_getMimeType();
+            } else {
+                return mMime;
+            }
         }
+
+        static native String native_getMimeType();
 
         /**
          * Returns the max number of the supported concurrent codec instances.
@@ -1225,8 +1265,14 @@ public final class MediaCodecInfo {
          * resources at time of use.
          */
         public int getMaxSupportedInstances() {
-            return mMaxSupportedInstances;
+            if (FLAG) {
+                return native_getMaxSupportedInstances();
+            } else {
+                return mMaxSupportedInstances;
+            }
         }
+
+        static native int native_getMaxSupportedInstances();
 
         private boolean isAudio() {
             return mAudioCaps != null;
@@ -1293,20 +1339,27 @@ public final class MediaCodecInfo {
          */
         public static CodecCapabilities createFromProfileLevel(
                 String mime, int profile, int level) {
-            CodecProfileLevel pl = new CodecProfileLevel();
-            pl.profile = profile;
-            pl.level = level;
-            MediaFormat defaultFormat = new MediaFormat();
-            defaultFormat.setString(MediaFormat.KEY_MIME, mime);
+            if (FLAG) {
+                return native_CreateFromProfileLevel(mime, profile, level);
+            } else {
+                CodecProfileLevel pl = new CodecProfileLevel();
+                pl.profile = profile;
+                pl.level = level;
+                MediaFormat defaultFormat = new MediaFormat();
+                defaultFormat.setString(MediaFormat.KEY_MIME, mime);
 
-            CodecCapabilities ret = new CodecCapabilities(
-                new CodecProfileLevel[] { pl }, new int[0], true /* encoder */,
-                defaultFormat, new MediaFormat() /* info */);
-            if (ret.mError != 0) {
-                return null;
+                CodecCapabilities ret = new CodecCapabilities(
+                        new CodecProfileLevel[] { pl }, new int[0], true /* encoder */,
+                        defaultFormat, new MediaFormat() /* info */);
+                if (ret.mError != 0) {
+                    return null;
+                }
+                return ret;
             }
-            return ret;
         }
+
+        static native CodecCapabilities native_CreateFromProfileLevel(
+                String mime, int profile, int level);
 
         /* package private */ CodecCapabilities(
                 CodecProfileLevel[] profLevs, int[] colFmts,
@@ -1376,6 +1429,22 @@ public final class MediaCodecInfo {
                 }
                 // TODO restrict features by mFlagsVerified once all codecs reliably verify them
             }
+        }
+
+        /**
+         * Constructor used by JNI.
+         *
+         * The Java CodecCapabilities object keeps these subobjects to avoid recontructing.
+         */
+        private CodecCapabilities(CodecProfileLevel[] profLevs, int[] colFmts,
+                MediaFormat defaultFormat, AudioCapabilities audioCaps,
+                VideoCapabilities videoCaps, EncoderCapabilities encoderCaps) {
+            profileLevels = profLevs;
+            colorFormats = colFmts;
+            mDefaultFormat = defaultFormat;
+            mAudioCaps = audioCaps;
+            mVideoCaps = videoCaps;
+            mEncoderCaps = encoderCaps;
         }
     }
 

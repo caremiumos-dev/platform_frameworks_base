@@ -16,6 +16,9 @@
 
 //#define LOG_NDEBUG 0
 #define LOG_TAG "MediaCodec-JNI"
+
+// #include <com_android_media_codec_flags.h>
+
 #include <utils/Log.h>
 
 #include <media/stagefright/foundation/ADebug.h>
@@ -32,9 +35,18 @@
 #include "android_runtime/AndroidRuntime.h"
 #include "jni.h"
 #include <nativehelper/JNIHelp.h>
+// #include "android_media_CodecCapabilities.h"
 #include "android_media_Streams.h"
 
 using namespace android;
+
+struct fields_t {
+    jfieldID context;
+};
+static fields_t fields;
+
+jobject constructJavaCodecCapabilitiesFromNative(
+        JNIEnv *env, std::shared_ptr<CodecCapabilities> codecCaps);
 
 /**
  * This object unwraps codec aliases into individual codec infos as the Java interface handles
@@ -127,6 +139,8 @@ static JavaMediaCodecListWrapper::Info getCodecInfo(JNIEnv *env, jint index) {
 
     return info;
 }
+
+// ---------------------------------------------------------------------------------------
 
 static jint android_media_MediaCodecList_getCodecCount(
         JNIEnv *env, jobject /* thiz */) {
@@ -245,95 +259,102 @@ static jobject android_media_MediaCodecList_getCodecCapabilities(
         return NULL;
     }
 
-    Vector<MediaCodecInfo::ProfileLevel> profileLevels;
-    Vector<uint32_t> colorFormats;
+    bool flag = true;
+    jobject caps;
+    if (/* com::android::media::codec::flags::native_capabilities() */ flag) {
+        std::shared_ptr<CodecCapabilities> codecCaps = info.info->getCodecCapsFor(typeStr);
+        caps = constructJavaCodecCapabilitiesFromNative(env, codecCaps);
+    } else {
+        Vector<MediaCodecInfo::ProfileLevel> profileLevels;
+        Vector<uint32_t> colorFormats;
 
-    sp<AMessage> defaultFormat = new AMessage();
-    defaultFormat->setString("mime", typeStr);
+        sp<AMessage> defaultFormat = new AMessage();
+        defaultFormat->setString("mime", typeStr);
 
-    // TODO query default-format also from codec/codec list
-    const sp<MediaCodecInfo::Capabilities> &capabilities =
-        info.info->getCapabilitiesFor(typeStr);
-    env->ReleaseStringUTFChars(type, typeStr);
-    typeStr = NULL;
-    if (capabilities == NULL) {
-        jniThrowException(env, "java/lang/IllegalArgumentException", NULL);
-        return NULL;
-    }
+        // TODO query default-format also from codec/codec list
+        const sp<MediaCodecInfo::Capabilities> &capabilities =
+            info.info->getCapabilitiesFor(typeStr);
+        env->ReleaseStringUTFChars(type, typeStr);
+        typeStr = NULL;
+        if (capabilities == NULL) {
+            jniThrowException(env, "java/lang/IllegalArgumentException", NULL);
+            return NULL;
+        }
 
-    capabilities->getSupportedColorFormats(&colorFormats);
-    capabilities->getSupportedProfileLevels(&profileLevels);
-    sp<AMessage> details = capabilities->getDetails();
-    bool isEncoder = info.info->isEncoder();
+        capabilities->getSupportedColorFormats(&colorFormats);
+        capabilities->getSupportedProfileLevels(&profileLevels);
+        sp<AMessage> details = capabilities->getDetails();
+        bool isEncoder = info.info->isEncoder();
 
-    jobject defaultFormatObj = NULL;
-    if (ConvertMessageToMap(env, defaultFormat, &defaultFormatObj)) {
-        return NULL;
-    }
+        jobject defaultFormatObj = NULL;
+        if (ConvertMessageToMap(env, defaultFormat, &defaultFormatObj)) {
+            return NULL;
+        }
 
-    jobject infoObj = NULL;
-    if (ConvertMessageToMap(env, details, &infoObj)) {
+        jobject infoObj = NULL;
+        if (ConvertMessageToMap(env, details, &infoObj)) {
+            env->DeleteLocalRef(defaultFormatObj);
+            return NULL;
+        }
+
+        jclass capsClazz =
+            env->FindClass("android/media/MediaCodecInfo$CodecCapabilities");
+        CHECK(capsClazz != NULL);
+
+        jclass profileLevelClazz =
+            env->FindClass("android/media/MediaCodecInfo$CodecProfileLevel");
+        CHECK(profileLevelClazz != NULL);
+
+        jobjectArray profileLevelArray =
+            env->NewObjectArray(profileLevels.size(), profileLevelClazz, NULL);
+
+        jfieldID profileField =
+            env->GetFieldID(profileLevelClazz, "profile", "I");
+
+        jfieldID levelField =
+            env->GetFieldID(profileLevelClazz, "level", "I");
+
+        for (size_t i = 0; i < profileLevels.size(); ++i) {
+            const MediaCodecInfo::ProfileLevel &src = profileLevels.itemAt(i);
+
+            jobject profileLevelObj = env->AllocObject(profileLevelClazz);
+
+            env->SetIntField(profileLevelObj, profileField, src.mProfile);
+            env->SetIntField(profileLevelObj, levelField, src.mLevel);
+
+            env->SetObjectArrayElement(profileLevelArray, i, profileLevelObj);
+
+            env->DeleteLocalRef(profileLevelObj);
+            profileLevelObj = NULL;
+        }
+
+        jintArray colorFormatsArray = env->NewIntArray(colorFormats.size());
+
+        for (size_t i = 0; i < colorFormats.size(); ++i) {
+            jint val = colorFormats.itemAt(i);
+            env->SetIntArrayRegion(colorFormatsArray, i, 1, &val);
+        }
+
+        jmethodID capsConstructID = env->GetMethodID(capsClazz, "<init>",
+                "([Landroid/media/MediaCodecInfo$CodecProfileLevel;[IZ"
+                "Ljava/util/Map;Ljava/util/Map;)V");
+
+        caps = env->NewObject(capsClazz, capsConstructID,
+                profileLevelArray, colorFormatsArray, isEncoder,
+                defaultFormatObj, infoObj);
+
+        env->DeleteLocalRef(profileLevelArray);
+        profileLevelArray = NULL;
+
+        env->DeleteLocalRef(colorFormatsArray);
+        colorFormatsArray = NULL;
+
         env->DeleteLocalRef(defaultFormatObj);
-        return NULL;
+        defaultFormatObj = NULL;
+
+        env->DeleteLocalRef(infoObj);
+        infoObj = NULL;
     }
-
-    jclass capsClazz =
-        env->FindClass("android/media/MediaCodecInfo$CodecCapabilities");
-    CHECK(capsClazz != NULL);
-
-    jclass profileLevelClazz =
-        env->FindClass("android/media/MediaCodecInfo$CodecProfileLevel");
-    CHECK(profileLevelClazz != NULL);
-
-    jobjectArray profileLevelArray =
-        env->NewObjectArray(profileLevels.size(), profileLevelClazz, NULL);
-
-    jfieldID profileField =
-        env->GetFieldID(profileLevelClazz, "profile", "I");
-
-    jfieldID levelField =
-        env->GetFieldID(profileLevelClazz, "level", "I");
-
-    for (size_t i = 0; i < profileLevels.size(); ++i) {
-        const MediaCodecInfo::ProfileLevel &src = profileLevels.itemAt(i);
-
-        jobject profileLevelObj = env->AllocObject(profileLevelClazz);
-
-        env->SetIntField(profileLevelObj, profileField, src.mProfile);
-        env->SetIntField(profileLevelObj, levelField, src.mLevel);
-
-        env->SetObjectArrayElement(profileLevelArray, i, profileLevelObj);
-
-        env->DeleteLocalRef(profileLevelObj);
-        profileLevelObj = NULL;
-    }
-
-    jintArray colorFormatsArray = env->NewIntArray(colorFormats.size());
-
-    for (size_t i = 0; i < colorFormats.size(); ++i) {
-        jint val = colorFormats.itemAt(i);
-        env->SetIntArrayRegion(colorFormatsArray, i, 1, &val);
-    }
-
-    jmethodID capsConstructID = env->GetMethodID(capsClazz, "<init>",
-            "([Landroid/media/MediaCodecInfo$CodecProfileLevel;[IZ"
-            "Ljava/util/Map;Ljava/util/Map;)V");
-
-    jobject caps = env->NewObject(capsClazz, capsConstructID,
-            profileLevelArray, colorFormatsArray, isEncoder,
-            defaultFormatObj, infoObj);
-
-    env->DeleteLocalRef(profileLevelArray);
-    profileLevelArray = NULL;
-
-    env->DeleteLocalRef(colorFormatsArray);
-    colorFormatsArray = NULL;
-
-    env->DeleteLocalRef(defaultFormatObj);
-    defaultFormatObj = NULL;
-
-    env->DeleteLocalRef(infoObj);
-    infoObj = NULL;
 
     return caps;
 }
