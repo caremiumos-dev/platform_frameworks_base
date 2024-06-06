@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "23e02bfe_99457529",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1074459
+      },
+      "writtenOn": "2024-06-06T14:06:06Z",
+      "side": 1,
+      "message": "We are past API freeze, we cannot change this constant now.",
+      "revId": "b535a2a69c56535144c70ceae4553b2ecf189d53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
