@@ -573,9 +573,10 @@ abstract class HdmiCecLocalDevice extends HdmiLocalDevice {
             mService.sendCecCommand(
                     HdmiCecMessageBuilder.buildGiveOsdNameCommand(
                             mDeviceInfo.getLogicalAddress(), address));
+            return Constants.HANDLED;
         }
 
-        return Constants.HANDLED;
+        return Constants.NOT_HANDLED;
     }
 
     @Constants.HandleMessageResult

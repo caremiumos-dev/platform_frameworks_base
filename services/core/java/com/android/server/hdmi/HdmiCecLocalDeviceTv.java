@@ -576,7 +576,9 @@ public final class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
     @Override
     @Constants.HandleMessageResult
     protected int handleReportPhysicalAddress(HdmiCecMessage message) {
-        super.handleReportPhysicalAddress(message);
+        if (Constants.HANDLED == super.handleReportPhysicalAddress(message)) {
+            return Constants.HANDLED;
+        }
         int path = HdmiUtils.twoBytesToInt(message.getParams());
         int address = message.getSource();
         int type = message.getParams()[2];
