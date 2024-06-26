@@ -787,6 +787,10 @@ public class AudioDeviceBroker {
         return isDeviceActiveForCommunication(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
     }
 
+    /*package*/ boolean isBluetoothBleActive() {
+        return isDeviceActiveForCommunication(AudioDeviceInfo.TYPE_BLE_HEADSET);
+    }
+
     /*package*/ boolean isDeviceConnected(@NonNull AudioDeviceAttributes device) {
         synchronized (mDeviceStateLock) {
             return mDeviceInventory.isDeviceConnected(device);
