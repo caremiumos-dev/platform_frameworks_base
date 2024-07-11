@@ -8715,6 +8715,7 @@ public class AudioManager {
      * @throws SecurityException if the caller doesn't have the required permission.
      */
     @SystemApi
+    @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
     public void registerVolumeGroupCallback(@NonNull Executor executor,
             @NonNull VolumeGroupCallback callback) {
         mVolumeChangedListenerMgr.addListener(executor, callback, "registerVolumeGroupCallback",
@@ -8727,6 +8728,7 @@ public class AudioManager {
      * @param callback the {@link VolumeGroupCallback} to unregister
      */
     @SystemApi
+    @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
     public void unregisterVolumeGroupCallback(@NonNull VolumeGroupCallback callback) {
         mVolumeChangedListenerMgr.removeListener(callback, "unregisterVolumeGroupCallback");
     }
