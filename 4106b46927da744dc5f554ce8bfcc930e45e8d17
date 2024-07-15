@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c62fb440_a45399f1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1045544
+      },
+      "writtenOn": "2024-07-15T12:42:23Z",
+      "side": 1,
+      "message": "Could you file a bug and preferably attach a bug report of a case where this happened? If this is possible without the patch we should track down why it\u0027s unreliable and probably add a test case to make sure the transition is always properly formed.",
+      "revId": "4106b46927da744dc5f554ce8bfcc930e45e8d17",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
