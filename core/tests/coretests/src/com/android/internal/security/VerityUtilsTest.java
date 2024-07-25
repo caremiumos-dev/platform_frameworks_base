@@ -185,7 +185,8 @@ public class VerityUtilsTest {
 
     @Test
     public void testRejectUnsupportedSignatureAlgorithms() throws Exception {
-        var contentSigner = newFsverityContentSigner(mKeyPair.getPrivate(), "MD5withRSA", null);
+        var contentSigner = newFsverityContentSigner(mKeyPair.getPrivate(), "MD5withRSA",
+            PKCSObjectIdentifiers.md5WithRSAEncryption);
         var certificateHolder =
                 newX509CertificateHolder(contentSigner, mKeyPair.getPublic(), "Someone");
         byte[] pkcs7Signature =
@@ -318,7 +319,7 @@ public class VerityUtilsTest {
         // fs-verity expects the signature to have rsaEncryption as the exact algorithm, so
         // override the default.
         return newFsverityContentSigner(
-                privateKey, "SHA256withRSA", PKCSObjectIdentifiers.rsaEncryption);
+                privateKey, "SHA256withRSA", PKCSObjectIdentifiers.sha256WithRSAEncryption);
     }
 
     private static ContentSigner newFsverityContentSigner(
