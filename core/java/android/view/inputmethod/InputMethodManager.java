@@ -3038,8 +3038,19 @@ public final class InputMethodManager {
      * @param delegatorPackageName package name of the delegator that handled initial stylus stroke.
      * @param flags {@link #HANDWRITING_DELEGATE_FLAG_HOME_DELEGATOR_ALLOWED} or {@code 0}
      * @param executor The executor to run the callback on.
+<<<<<<< PATCH SET (a5a4f8 Update stylus handwriting javadoc indicating usage of WeakRe)
+     * @param callback {@code true>} would be received if delegation was accepted. The caller should
+     *                 hold a reference to the callback. The framework only holds a weak reference.
+     * @return {@code true} if view belongs to allowed delegate package declared in {@link
+     *     #prepareStylusHandwritingDelegation(View, String)} and delegation is accepted
+||||||| BASE
+     * @param callback {@code true>} would be received if delegation was accepted.
+     * @return {@code true} if view belongs to allowed delegate package declared in {@link
+     *     #prepareStylusHandwritingDelegation(View, String)} and delegation is accepted
+=======
      * @param callback {@code true} would be received if delegation was accepted. The caller should
      *                 hold a reference to the callback. The framework only holds a weak reference.
+>>>>>>> BASE      (ae489f Merge "Change file permissions for shutdown files" into main)
      * @see #prepareStylusHandwritingDelegation(View, String)
      * @see #acceptStylusHandwritingDelegation(View)
      * @see #startConnectionlessStylusHandwritingForDelegation(View, CursorAnchorInfo, String,
