@@ -59,6 +59,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
@@ -470,7 +471,15 @@ public class BootReceiver extends BroadcastReceiver {
         }
 
         String fileContents = FileUtils.readTextFile(file, maxSize, TAG_TRUNCATED);
+        Slog.i(TAG, "Lastk debug fileContents size " + (fileContents.length() - TAG_TRUNCATED.length())+ " maxSize "
+              + (-maxSize));
+        // truncate again , should add TAG_TRUNCATED??
+        if (fileContents.length() - TAG_TRUNCATED.length() + maxSize > 0) {
+            fileContents = fileContents.substring(fileContents.length() - TAG_TRUNCATED.length() + maxSize);
+            Slog.i(TAG, "Lastk debug fileContents size 2nd " + fileContents.length());
+        }
         String text = headers + fileContents + footers;
+        Slog.i(TAG, "Lastk debug text size " + text.length());
         // Create an additional report for system server native crashes, with a special tag.
         if (tag.equals(TAG_TOMBSTONE) && fileContents.contains(">>> system_server <<<")) {
             addTextToDropBox(db, "system_server_native_crash", text, filename, maxSize);
@@ -478,6 +487,8 @@ public class BootReceiver extends BroadcastReceiver {
         if (tag.equals(TAG_TOMBSTONE)) {
             FrameworkStatsLog.write(FrameworkStatsLog.TOMB_STONE_OCCURRED);
         }
+        byte[] data = text.getBytes(StandardCharsets.UTF_8);
+        Slog.i(TAG, "Lastk data size " + data.length);
         addTextToDropBox(db, tag, text, filename, maxSize);
     }
 
