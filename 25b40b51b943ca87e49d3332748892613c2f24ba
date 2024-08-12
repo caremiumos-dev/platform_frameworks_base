@@ -16,6 +16,23 @@
       "message": "same as pattern view, the rotation button corrupts the layouts from land to port and vice versa",
       "revId": "25b40b51b943ca87e49d3332748892613c2f24ba",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4b75340_f68f3871",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1221112
+      },
+      "writtenOn": "2024-08-12T13:49:12Z",
+      "side": 1,
+      "message": "same bug exists for \"keyguard_pin_view.xml\"\n\n$ atest frameworks/base/packages/SystemUI/tests/src/com/android/keyguard\n\nSummary (Test executed with 1 devices.)\n-------\narm64-v8a SystemUITests: Passed: 423, Failed: 0, Ignored: 0, Assumption Failed: 0",
+      "revId": "25b40b51b943ca87e49d3332748892613c2f24ba",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
