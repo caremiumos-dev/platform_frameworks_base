@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f254b0d5_9f65dd7a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1221112
+      },
+      "writtenOn": "2024-08-12T13:33:55Z",
+      "side": 1,
+      "message": "same as pattern view, the rotation button corrupts the layouts from land to port and vice versa",
+      "revId": "25b40b51b943ca87e49d3332748892613c2f24ba",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
