@@ -36,3 +36,12 @@ flag {
   description: "Flag for MDNS quality, reliability and performance improvement in 25Q2"
   bug: "373270045"
 }
+
+flag {
+  name: "connectivity_service_destroy_socket"
+  is_exported: true
+  namespace: "android_core_networking"
+  description: "Flag for refactoring socket destroy logic on removed address"
+  bug: "314961091"
+  is_fixed_read_only: true
+}
