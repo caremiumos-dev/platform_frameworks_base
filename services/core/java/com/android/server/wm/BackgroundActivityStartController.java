@@ -1393,7 +1393,7 @@ public class BackgroundActivityStartController {
         ActivityRecord topActivity = task.getTopMostActivity();
         if (topActivity == null) {
             Slog.wtf(TAG, "Activities for task: " + task + " not found.");
-            return bas.optedIn(topActivity);
+            return bas.matchesSource();
         }
 
         bas = checkCrossUidActivitySwitchFromBelow(topActivity, uid, bas);
