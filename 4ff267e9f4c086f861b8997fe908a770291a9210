@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d8465060_b0771845",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1061144
+      },
+      "writtenOn": "2024-08-26T21:55:21Z",
+      "side": 1,
+      "message": "I\u0027m not sure this is an appropriate use of hasSystemFeature. What kind of app would care about whether a device has this feature available and why?",
+      "revId": "4ff267e9f4c086f861b8997fe908a770291a9210",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
