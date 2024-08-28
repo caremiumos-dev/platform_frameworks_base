@@ -71,6 +71,13 @@ flag {
 }
 
 flag {
+    name: "frp_deprecate_sys_prop_oem_unlock_allowed"
+    namespace: "hardware_backed_security"
+    description: "Remove unused system property sys.oem_unlock_allowed"
+    bug: "362349947"
+}
+
+flag {
     name: "report_primary_auth_attempts"
     namespace: "biometrics"
     description: "Report primary auth attempts from LockSettingsService"
