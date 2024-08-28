@@ -34,6 +34,24 @@
       "parentUuid": "d8465060_b0771845",
       "revId": "4ff267e9f4c086f861b8997fe908a770291a9210",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1de2319f_e67bd019",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1061144
+      },
+      "writtenOn": "2024-08-28T23:33:31Z",
+      "side": 1,
+      "message": "`hasSystemFeature` should be used when app distributors need to make sure that features of the device that an app may require are available before installing such an app. It is not a runtime check 3rd party apps should be using.\n\nIf a 3rd party app needs to be able to check whether an NFC capability exists at runtime, it should have a dedicated java API for doing so, not a feature returned by `hasSystemFeature`.\n\nThis does not seem an appropriate use of `hasSystemFeature`, regardless of whether previous misuse was approved. Please find a more appropriate place for this capability to be checked (an API on NfcManager or NfcAdapter?). Since this appears to be targeting V, consider temporarily defining a resource config or system property that can eventually be replaced by proper API.",
+      "parentUuid": "bb44e7e0_c8262216",
+      "revId": "4ff267e9f4c086f861b8997fe908a770291a9210",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
