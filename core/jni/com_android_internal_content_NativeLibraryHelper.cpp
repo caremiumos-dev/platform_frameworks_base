@@ -17,6 +17,7 @@
 #define LOG_TAG "NativeLibraryHelper"
 //#define LOG_NDEBUG 0
 
+#include <android-base/properties.h>
 #include <androidfw/ApkParsing.h>
 #include <androidfw/ZipFileRO.h>
 #include <androidfw/ZipUtils.h>
@@ -124,6 +125,17 @@ sumFiles(JNIEnv*, void* arg, ZipFileRO* zipFile, ZipEntryRO zipEntry, const char
     *total += static_cast<size_t>(uncompLen);
 
     return INSTALL_SUCCEEDED;
+}
+
+static inline bool app_compat_16kb_enabled() {
+    static const size_t kPageSize = getpagesize();
+
+    // App compat is only applicable on 16kb-page-size devices.
+    if (kPageSize != 0x4000) {
+        return false;
+    }
+
+    return android::base::GetBoolProperty("bionic.linker.16kb.app_compat.enabled", false);
 }
 
 static install_status_t extractNativeLibFromApk(ZipFileRO* zipFile, ZipEntryRO zipEntry,
@@ -294,6 +306,14 @@ static install_status_t copyFileIfChanged(JNIEnv* env, void* arg, ZipFileRO* zip
         }
 
         if (offset % kPageSize != 0) {
+            if (app_compat_16kb_enabled()) {
+                ALOGI("16kB AppCompat: Library '%s' is not PAGE(%zu)-aligned - falling back to "
+                      "extraction from apk\n",
+                      fileName, kPageSize);
+                return extractNativeLibFromApk(zipFile, zipEntry, fileName, nativeLibPath.c_str(),
+                                               when, uncompLen, crc);
+            }
+
             ALOGE("Library '%s' is not PAGE(%zu)-aligned - will not be able to open it directly "
                   "from apk.\n",
                   fileName, kPageSize);
