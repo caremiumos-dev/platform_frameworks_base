@@ -16,6 +16,24 @@
       "message": "I\u0027m not sure this is an appropriate use of hasSystemFeature. What kind of app would care about whether a device has this feature available and why?",
       "revId": "4ff267e9f4c086f861b8997fe908a770291a9210",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bb44e7e0_c8262216",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1074459
+      },
+      "writtenOn": "2024-08-28T22:12:49Z",
+      "side": 1,
+      "message": "Please refer to the description here from Samsung on the requirement for this feature: https://b.corp.google.com/issues/321314635#comment17.\n\n```\nThe 3rd party app should also be able to check whether it is supported or not.\n```\n\nWe have existing feature flags for devices that support nfc card emulation using physical sim card - `FEATURE_NFC_OFF_HOST_CARD_EMULATION_UICC`. This is used by 3p apps to figure out if they can use NFC card emulation on a particular offhost type.",
+      "parentUuid": "d8465060_b0771845",
+      "revId": "4ff267e9f4c086f861b8997fe908a770291a9210",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
