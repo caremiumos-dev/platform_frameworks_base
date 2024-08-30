@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c684d2d8_be5c247f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1221112
+      },
+      "writtenOn": "2024-08-30T12:50:47Z",
+      "side": 1,
+      "message": "@mpietal@google.com , checked enabling the com.android.systemui.lockscreen.enable_landscape , this or something else is needed, the pin works in landscape but not sim pin or sim puk",
+      "revId": "cfdebbf0d7309e5675b2ede404c6098ca939fa78",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
