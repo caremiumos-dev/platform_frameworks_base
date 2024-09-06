@@ -3809,6 +3809,8 @@
     <public name="windowIsFrameRatePowerSavingsBalanced"/>
     <!-- Marking this entry as removed since it's not being finalized -->
     <public name="removed_dreamCategory" />
+    <!-- @FlaggedApi("android.nfc.associated_role_services") -->
+    <public name="shareRolePriority"/>
   </staging-public-group-final>
 
     <!-- @FlaggedApi("android.content.res.default_locale") -->
@@ -3862,6 +3864,8 @@
   <public type="attr" name="shiftDrawingOffsetForStartOverhang" id="0x010106a2" />
     <!-- @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") -->
   <public type="attr" name="windowIsFrameRatePowerSavingsBalanced" id="0x010106a3" />
+    <!-- @FlaggedApi("android.nfc.associated_role_services") -->
+  <public type="attr" name="shareRolePriority" id="0x010106a4" />
 
   <staging-public-group-final type="string" first-id="0x01ba0000">
     <!-- @hide @SystemApi @FlaggedApi("android.permission.flags.retail_demo_role_enabled") -->

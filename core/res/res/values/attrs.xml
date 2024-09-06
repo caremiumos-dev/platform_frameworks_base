@@ -4460,6 +4460,7 @@
         <!-- Whether the device should default to observe mode when this service is
              default or in the foreground. -->
         <attr name="shouldDefaultToObserveMode" format="boolean"/>
+        <attr name="shareRolePriority" format="boolean"/>
     </declare-styleable>
 
     <!-- Use <code>offhost-apdu-service</code> as the root tag of the XML resource that
@@ -4487,6 +4488,7 @@
         <!-- Whether the device should default to observe mode when this service is
              default or in the foreground. -->
         <attr name="shouldDefaultToObserveMode"/>
+        <attr name="shareRolePriority"/>
     </declare-styleable>
 
     <!-- Specify one or more <code>aid-group</code> elements inside a
