@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a62ea4a_961f70f3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1815205
+      },
+      "writtenOn": "2024-09-10T12:19:47Z",
+      "side": 1,
+      "message": "Hi, please review this small improvement. This fix is for ensuring good contrast between the background and the caption buttons, I used this as a reference: https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/windowdecor/viewholder/AppHandleViewHolder.kt;l\u003d76?q\u003dshouldUseLightCaptionColors\u0026ss\u003dandroid",
+      "revId": "e63fc5df8cf6f09255ffdbec164fa747d8abcb50",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
