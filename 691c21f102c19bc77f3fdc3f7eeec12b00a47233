@@ -51,6 +51,23 @@
       "message": "Hi @jji@google.com, may you, please, review?",
       "revId": "691c21f102c19bc77f3fdc3f7eeec12b00a47233",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7754f136_fa34e95f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3524514
+      },
+      "writtenOn": "2024-09-23T19:47:54Z",
+      "side": 1,
+      "message": "Merged as part of https://android-review.googlesource.com/c/platform/frameworks/base/+/3246051",
+      "revId": "691c21f102c19bc77f3fdc3f7eeec12b00a47233",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
