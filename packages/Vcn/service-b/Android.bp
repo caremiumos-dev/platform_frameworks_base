@@ -42,8 +42,27 @@ java_library {
         "src/**/*.java",
     ],
 
-    // TODO: b/375213246 Expose this library to Tethering module
+    libs: [
+        "android.net.ipsec.ike.stubs.module_lib",
+        "framework-annotations-lib",
+        "framework-connectivity-pre-jarjar",
+        "framework-connectivity-t-pre-jarjar",
+        "framework-connectivity-b-pre-jarjar",
+        "framework-wifi.stubs.module_lib",
+        "modules-utils-statemachine",
+        "unsupportedappusage",
+    ],
+
+    static_libs: [
+        "net-utils-service-vcn",
+        "modules-utils-handlerexecutor",
+    ],
+
     visibility: [
         "//frameworks/base/services",
+    ],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.tethering",
     ],
 }
