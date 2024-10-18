@@ -57,3 +57,6 @@ class android.text.ClipboardManager keep
 # Just enough to allow ResourcesManager to run
 class android.hardware.display.DisplayManagerGlobal keep
     method getInstance ()Landroid/hardware/display/DisplayManagerGlobal; ignore
+
+class com.android.internal.util.FrameworkStatsLog keepclass
+

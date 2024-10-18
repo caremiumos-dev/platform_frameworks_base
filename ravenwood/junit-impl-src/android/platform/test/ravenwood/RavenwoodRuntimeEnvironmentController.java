@@ -16,6 +16,8 @@
 
 package android.platform.test.ravenwood;
 
+import static android.platform.test.ravenwood.RavenwoodSystemServer.ANDROID_PACKAGE_NAME;
+
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_INST_RESOURCE_APK;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_RESOURCE_APK;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
@@ -271,6 +273,13 @@ public class RavenwoodRuntimeEnvironmentController {
         config.mInstContext = instContext;
         config.mTargetContext = targetContext;
 
+        final Supplier<Resources> systemResourcesLoader = () -> {
+            return config.mState.loadResources(null);
+        };
+
+        config.mState.mSystemServerContext =
+                new RavenwoodContext(ANDROID_PACKAGE_NAME, main, systemResourcesLoader);
+
         // Prepare other fields.
         config.mInstrumentation = new Instrumentation();
         config.mInstrumentation.basicInit(instContext, targetContext, sMockUiAutomation);
@@ -318,6 +327,10 @@ public class RavenwoodRuntimeEnvironmentController {
             ((RavenwoodContext) config.mTargetContext).cleanUp();
             config.mTargetContext = null;
         }
+        if (config.mState.mSystemServerContext != null) {
+            config.mState.mSystemServerContext.cleanUp();
+        }
+
         sMockUiAutomation.dropShellPermissionIdentity();
 
         Looper.getMainLooper().quit();
