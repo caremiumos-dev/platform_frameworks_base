@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "ec0611b1_a27665b2",
+        "filename": "core/java/android/os/Process.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 678,
+      "author": {
+        "id": 1891746
+      },
+      "writtenOn": "2024-10-30T19:15:05Z",
+      "side": 1,
+      "message": "Originally the static initializer wasn\u0027t even kept, so this field was always null. I just don\u0027t want to touch ZygoteProcess to enable its constructor.",
+      "parentUuid": "9be0aa52_00222922",
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "a8860fa6_7982f0ef",
         "filename": "core/java/android/os/Process.java",
         "patchSetId": 1
