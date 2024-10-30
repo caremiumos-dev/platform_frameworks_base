@@ -119,6 +119,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9deead9a_948bca7f",
+        "filename": "core/java/android/os/Process.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 879,
+      "author": {
+        "id": 1891746
+      },
+      "writtenOn": "2024-10-30T23:12:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a8860fa6_7982f0ef",
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fecdcc18_950919e8",
@@ -150,6 +168,24 @@
           ]
         }
       ],
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e38a517c_4acf7ef4",
+        "filename": "core/java/com/android/internal/ravenwood/RavenwoodEnvironment.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1891746
+      },
+      "writtenOn": "2024-10-30T23:12:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fecdcc18_950919e8",
       "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -189,6 +225,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f9895a90_57f5ae3a",
+        "filename": "ravenwood/runtime-helper-src/libcore-fake/android/system/Os.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1891746
+      },
+      "writtenOn": "2024-10-30T23:12:28Z",
+      "side": 1,
+      "message": "Discussed offline, let\u0027s use the read tid for now.",
+      "parentUuid": "f7d740cb_4d11c9f5",
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3c651a54_b5af2f93",
@@ -220,6 +274,24 @@
           ]
         }
       ],
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3157a597_c9a8c7d6",
+        "filename": "ravenwood/runtime-jni/ravenwood_runtime.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1891746
+      },
+      "writtenOn": "2024-10-30T23:12:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3c651a54_b5af2f93",
       "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
