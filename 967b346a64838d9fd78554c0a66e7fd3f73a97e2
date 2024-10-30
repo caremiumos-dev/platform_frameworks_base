@@ -1,0 +1,209 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9be0aa52_00222922",
+        "filename": "core/java/android/os/Process.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 678,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-30T17:52:24Z",
+      "side": 1,
+      "message": "Why should it be null?? What\u0027s wrong with returning an instance whose method would all through?\n\nGenerally, changing @NonNull method/field to @Nullable can cause subtle issues in the callsites.\n\nFor example, in code like `var zp \u003d ZYGOTE_PROCESS; (alot of code)...; zp.foo()`, when you get an NPE in the last line, it\u0027s unclear until you look into the code why you got an NPE and if that\u0027s actually expected (e.g. there may be `zp \u003d\u003d null` somewhere). But if you get a \"this method is not supported on ravenwood\" exception, it\u0027d be clear.\n\n(If there\u0027s a reason we absolutely don\u0027t want to use a real instance, this may be the first case where we want to remove the field on ravenwood.)",
+      "fixSuggestions": [
+        {
+          "fixId": "0437dafd_3141e21a",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 697,
+                "startChar": 0,
+                "endLine": 698,
+                "endChar": 0
+              },
+              "replacement": "        return new ZygoteProcess();\n"
+            }
+          ]
+        }
+      ],
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a8860fa6_7982f0ef",
+        "filename": "core/java/android/os/Process.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 879,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-30T17:52:24Z",
+      "side": 1,
+      "message": "I think we should just make Os.getpid() / getuid() return the injected values -- otherwise you\u0027d see different values depending on which API you use.",
+      "fixSuggestions": [
+        {
+          "fixId": "efb52af9_b8b36bd2",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 877,
+                "startChar": 0,
+                "endLine": 878,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 881,
+                "startChar": 0,
+                "endLine": 885,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 910,
+                "startChar": 0,
+                "endLine": 911,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 914,
+                "startChar": 0,
+                "endLine": 919,
+                "endChar": 0
+              },
+              "replacement": ""
+            }
+          ]
+        }
+      ],
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fecdcc18_950919e8",
+        "filename": "core/java/com/android/internal/ravenwood/RavenwoodEnvironment.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-30T17:52:24Z",
+      "side": 1,
+      "message": "- This is no longer a singleton. (The method name also implies it\u0027s a singleton.)\n- That means the instance is no longer cacheable, and we\u0027d have to run the check every time someone calls it.\n\n- I\u0027d prefer keeping it a singleton, so clients can cache it, so whatever check we have to do in getInstance() would only happen once.\n\n- I\u0027d also prefer keeping it stateless and make it just an entry point to the runtime.\n\n- If you switch to injecting in Os.getuid()/getpid(), you won\u0027t need the pid/uid in this class, but if you still need them, let\u0027s sill keep this class stateless, and get whatever information from the runtime? (with @replace or @redirect)",
+      "fixSuggestions": [
+        {
+          "fixId": "ab5a474b_04b80ccf",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "core/java/com/android/internal/ravenwood/RavenwoodEnvironment.java",
+              "range": {
+                "startLine": 66,
+                "startChar": 0,
+                "endLine": 67,
+                "endChar": 0
+              },
+              "replacement": "     * @return the instance.\n"
+            }
+          ]
+        }
+      ],
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f7d740cb_4d11c9f5",
+        "filename": "ravenwood/runtime-helper-src/libcore-fake/android/system/Os.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-30T17:52:24Z",
+      "side": 1,
+      "message": "Actually, do we / should we use the real tid? Given we inject pid/uid, shouldn\u0027t we also inject tid too? (and return the pid on the main thread?)\n\nIf there\u0027s a reason that the tid needs to be the real one, that sounds like we probably have a deeper issue somewhere...",
+      "fixSuggestions": [
+        {
+          "fixId": "47d9f7a2_90b30be1",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "ravenwood/runtime-helper-src/libcore-fake/android/system/Os.java",
+              "range": {
+                "startLine": 102,
+                "startChar": 0,
+                "endLine": 103,
+                "endChar": 0
+              },
+              "replacement": "        return (int) Thread.currentThread().getId();\n"
+            }
+          ]
+        }
+      ],
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c651a54_b5af2f93",
+        "filename": "ravenwood/runtime-jni/ravenwood_runtime.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-30T17:52:24Z",
+      "side": 1,
+      "message": "Why not just gettid(2) -- if there\u0027s a reason, comment please?",
+      "fixSuggestions": [
+        {
+          "fixId": "87d9f336_b00ca6e7",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "ravenwood/runtime-jni/ravenwood_runtime.cpp",
+              "range": {
+                "startLine": 178,
+                "startChar": 0,
+                "endLine": 178,
+                "endChar": 0
+              },
+              "replacement": "    // gettid(2) is not available on Android.\n"
+            }
+          ]
+        }
+      ],
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
