@@ -281,6 +281,24 @@
       ],
       "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "59ef59d5_0738eed7",
+        "filename": "ravenwood/runtime-jni/ravenwood_runtime.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T00:19:12Z",
+      "side": 1,
+      "message": "Actually, maybe we don\u0027t use glibc 2.30 yet. If so, let\u0027s change it to \"gettid(2) was added in glibc 2.30 but android uses an older version\".",
+      "parentUuid": "ffa64ed5_fddc13cb",
+      "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
