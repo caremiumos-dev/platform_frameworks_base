@@ -1,0 +1,62 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "877d427d_2781d52d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T19:37:19Z",
+      "side": 1,
+      "message": "thanks!",
+      "revId": "10262c18e9254384ebc34646da9c06a359f384f1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c39b12ec_21a4adc4",
+        "filename": "ravenwood/runtime-helper-src/framework/android/os/Process$ravenwood.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T19:37:19Z",
+      "side": 1,
+      "message": "This name would be confusing when someone sees it in a stracktrace, because it kinda looks like an inner class. (although they normally show up with a `.`...)\n\nAlso the use of a $ in the filename can easily confuse scripts.\n\nLet\u0027s just stick with a `_` ? (\"Process_ravenwood)",
+      "range": {
+        "startLine": 20,
+        "startChar": 20,
+        "endLine": 20,
+        "endChar": 21
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "67c139e7_17aebdcc",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "ravenwood/runtime-helper-src/framework/android/os/Process$ravenwood.java",
+              "range": {
+                "startLine": 20,
+                "startChar": 0,
+                "endLine": 21,
+                "endChar": 0
+              },
+              "replacement": "public class Process$ravenwood { // TODO: rename to Process$ravenwood_helper\n"
+            }
+          ]
+        }
+      ],
+      "revId": "10262c18e9254384ebc34646da9c06a359f384f1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
