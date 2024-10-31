@@ -56,6 +56,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "00730e9c_64ac45dc",
+        "filename": "core/java/android/os/Process.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 678,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T00:15:06Z",
+      "side": 1,
+      "message": "Oh and you wanted to add RavenwoodKeepStaticInitializer only for sThreadPriority$ravenwood?\n\nLet\u0027s use @Redirect and move the code and move sThreadPriority$ravenwood to a host-only class then? That\u0027ll reduce the on-device code size and the heap use. Otherwise, you\u0027d create a ThreadLocal even on the device side, even though no one would use it.",
+      "parentUuid": "ec0611b1_a27665b2",
+      "revId": "967b346a64838d9fd78554c0a66e7fd3f73a97e2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "a8860fa6_7982f0ef",
         "filename": "core/java/android/os/Process.java",
         "patchSetId": 1

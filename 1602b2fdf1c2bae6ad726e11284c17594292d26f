@@ -1,0 +1,286 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "efc8f1c4_cac17e21",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T00:15:06Z",
+      "side": 1,
+      "message": "looking good, thanks!",
+      "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "eec034e7_2a54728e",
+        "filename": "core/java/android/os/Process.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 867,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T00:15:06Z",
+      "side": 1,
+      "message": "Let\u0027s enable CTS for them? At least let\u0027s make sure these methods are actually callable. (to prevent accidentally removing @RavenwoodKeep, or prevent someone from adding unsupported dependencies.)",
+      "fixSuggestions": [
+        {
+          "fixId": "7941fa70_8fbaa37a",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 867,
+                "startChar": 0,
+                "endLine": 868,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 876,
+                "startChar": 0,
+                "endLine": 877,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 885,
+                "startChar": 0,
+                "endLine": 886,
+                "endChar": 0
+              },
+              "replacement": "    @UnsupportedAppUsage(trackingBug \u003d 171962076, maxTargetSdk \u003d Build.VERSION_CODES.R)\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 894,
+                "startChar": 0,
+                "endLine": 895,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 905,
+                "startChar": 0,
+                "endLine": 906,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 916,
+                "startChar": 0,
+                "endLine": 917,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 925,
+                "startChar": 0,
+                "endLine": 926,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 936,
+                "startChar": 0,
+                "endLine": 937,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 944,
+                "startChar": 0,
+                "endLine": 945,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 956,
+                "startChar": 0,
+                "endLine": 957,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 964,
+                "startChar": 0,
+                "endLine": 965,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 976,
+                "startChar": 0,
+                "endLine": 977,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 992,
+                "startChar": 0,
+                "endLine": 993,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 1008,
+                "startChar": 0,
+                "endLine": 1009,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 1024,
+                "startChar": 0,
+                "endLine": 1025,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            },
+            {
+              "path": "core/java/android/os/Process.java",
+              "range": {
+                "startLine": 1035,
+                "startChar": 0,
+                "endLine": 1036,
+                "endChar": 0
+              },
+              "replacement": "    @TestApi\n"
+            }
+          ]
+        }
+      ],
+      "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2fb3a834_35fdfd01",
+        "filename": "ravenwood/runtime-helper-src/libcore-fake/com/android/ravenwood/RavenwoodRuntimeState.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T00:15:06Z",
+      "side": 1,
+      "message": "Let\u0027s add a test for this. There\u0027s a chance this value would change as we start doing more API bumps.",
+      "fixSuggestions": [
+        {
+          "fixId": "b0cc69d9_700a5f32",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "ravenwood/runtime-helper-src/libcore-fake/com/android/ravenwood/RavenwoodRuntimeState.java",
+              "range": {
+                "startLine": 19,
+                "startChar": 0,
+                "endLine": 22,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "ravenwood/runtime-helper-src/libcore-fake/com/android/ravenwood/RavenwoodRuntimeState.java",
+              "range": {
+                "startLine": 33,
+                "startChar": 0,
+                "endLine": 34,
+                "endChar": 0
+              },
+              "replacement": "        sTargetSdkLevel \u003d VMRuntime.SDK_VERSION_CUR_DEVELOPMENT;\n"
+            }
+          ]
+        }
+      ],
+      "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ffa64ed5_fddc13cb",
+        "filename": "ravenwood/runtime-jni/ravenwood_runtime.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-10-31T00:15:06Z",
+      "side": 1,
+      "message": "If there\u0027s really no `gettid()`, then this is fine, but let\u0027s elaborate the comment at least, in that case \"There is no glibc wrapper for gettid(2), even though `man 2 gettid` says glibc2.30 supports it\".\n\nOtherwise, a future maintainer might see it and think \"oh, this code must have been written before 2.30, let me change it...\" and discover it\u0027s not actually supported.",
+      "fixSuggestions": [
+        {
+          "fixId": "b98d2a1d_bb4f80b9",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "ravenwood/runtime-jni/ravenwood_runtime.cpp",
+              "range": {
+                "startLine": 178,
+                "startChar": 0,
+                "endLine": 179,
+                "endChar": 0
+              },
+              "replacement": "    // There is no glibc wrapper for gettid(2), even though `man 2 gettid` says\n    // glibc2.30 supports it. Use direct syscall.\n"
+            }
+          ]
+        }
+      ],
+      "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
