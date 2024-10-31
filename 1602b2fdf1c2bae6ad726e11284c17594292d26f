@@ -205,6 +205,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "b1c9bd05_987f8e80",
+        "filename": "core/java/android/os/Process.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 867,
+      "author": {
+        "id": 1891746
+      },
+      "writtenOn": "2024-10-31T19:31:20Z",
+      "side": 1,
+      "message": "The CTS is already enabled: https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:cts/tests/tests/os/src/android/os/cts/ProcessTest.java\n\nHowever, most of the APIs we enabled are not in tests anywhere. I\u0027ll add some tests in RavenwoodTest to make sure things work properly.",
+      "parentUuid": "eec034e7_2a54728e",
+      "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "2fb3a834_35fdfd01",
         "filename": "ravenwood/runtime-helper-src/libcore-fake/com/android/ravenwood/RavenwoodRuntimeState.java",
         "patchSetId": 2
