@@ -1536,12 +1536,13 @@ static jint convertAudioPortFromNative(JNIEnv *env, ScopedLocalRef<jobject> *jAu
                                                            .encapsulation_metadata_types));
         ALOGV("convertAudioPortFromNative is a device %08x", nAudioPort->ext.device.type);
         ScopedLocalRef<jstring> jAddress(env, env->NewStringUTF(nAudioPort->ext.device.address));
-        jAudioPort->reset(env->NewObject(gAudioDevicePortClass, gAudioDevicePortCstor,
-                                         jHandle.get(), jDeviceName.get(), jAudioProfiles.get(),
-                                         jGains.get(), nAudioPort->ext.device.type, jAddress.get(),
-                                         jEncapsulationModes.get(),
-                                         jEncapsulationMetadataTypes.get(),
-                                         jAudioDescriptors.get()));
+        jAudioPort->reset(
+                env->NewObject(gAudioDevicePortClass, gAudioDevicePortCstor, jHandle.get(),
+                               jDeviceName.get(), jAudioProfiles.get(), jGains.get(),
+                               nAudioPort->ext.device.type, jAddress.get(),
+                               nAudioPort->active_config.ext.device.speaker_layout_channel_mask,
+                               jEncapsulationModes.get(), jEncapsulationMetadataTypes.get(),
+                               jAudioDescriptors.get()));
     } else if (nAudioPort->type == AUDIO_PORT_TYPE_MIX) {
         ALOGV("convertAudioPortFromNative is a mix");
         jAudioPort->reset(env->NewObject(gAudioMixPortClass, gAudioMixPortCstor, jHandle.get(),

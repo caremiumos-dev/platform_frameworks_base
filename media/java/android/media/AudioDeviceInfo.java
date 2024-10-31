@@ -519,9 +519,20 @@ public final class AudioDeviceInfo {
         int[] counts = new int[countSet.size()];
         int index = 0;
         for (int count : countSet) {
-            counts[index++] = count; 
+            counts[index++] = count;
         }
         return counts;
+    }
+
+    /**
+     * @return A ChannelMask representing the physical output speaker
+     * layout of the device.
+     *
+     * @see AudioFormat
+     *
+     */
+    public int getSpeakerLayoutChannelMask() {
+        return mPort.speakerLayoutChannelMask();
     }
 
     /**
