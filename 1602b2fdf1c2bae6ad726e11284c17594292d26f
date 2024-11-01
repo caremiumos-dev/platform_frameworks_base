@@ -284,6 +284,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "884655ee_d24141a9",
+        "filename": "ravenwood/runtime-helper-src/libcore-fake/com/android/ravenwood/RavenwoodRuntimeState.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1891746
+      },
+      "writtenOn": "2024-11-01T17:33:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2fb3a834_35fdfd01",
+      "revId": "1602b2fdf1c2bae6ad726e11284c17594292d26f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ffa64ed5_fddc13cb",
