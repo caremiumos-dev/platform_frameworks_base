@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b0c4eed5_aa75ebca",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2024-11-06T16:31:08Z",
+      "side": 1,
+      "message": "I need to take a deeper look but at a very high level, the concept sounds right, and I agree that the current behavior -- create a new context only in the constructor, destroy it, and recreate it again -- is wrong.\n\nBut we really need to be careful because now that we\u0027ll have multiple \"active\" contexts. If any (even indirect) dependencies of Context refers to a global state, these multiple contexts could cross-talk and confuse each other.\n\nOne thing that can be problematic -- it _is_ actually already problematic even without your change -- is Context.mFilesDir and Context.mCacheDir. Currently we create them like `mFilesDir \u003d createTempDir(packageName + \"_files-dir\")`. This used to be fine because we only had one Context instance in each test, but it\u0027s actually already broken because we now create multiple context instances, yet they\u0027ll get their own unique directory because of `createTempDir()`. Again it\u0027s not a problem in your CL, it\u0027s an existing one.\n\nSo we should make sure we use the same directories, for each package, for each test runner, but different test runners should have different root directories.\n\nBut I\u0027m really not confident that the current architecture -- initialize the environment in the test runner\u0027s constructor -- is the right approach and that we could deal with all future issues that could be caused by this. Another example problem is that, I think the current architecture means\u0027 we\u0027re initializing the environment even for filtered out tests (by JUnit\u0027s Filterable)? \n\nI just looked at CheckFlagsRule and DeviceFlagsValueProvider, but the only use of APIs I found is `InstrumentationRegistry.getInstrumentation().getUiAutomation()` -- is that the actual problem? If so, we can just update it to get it lazily. The other factory method that takes a UiAutomation would still be a problem (e.g. https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:cts/tests/accessibilityservice/src/android/accessibilityservice/cts/AccessibilityOverlayTest.java;l\u003d104?q\u003drepo:googleplex-android%2Fplatform%2Fsuperproject%2Fmain%20b:main%20case:yes%20DeviceFlagsValueProvider%5C.createCheckFlagsRule%5C(%5B%5E%5C)%5D ) but I hope we can find a solution to this too.\n\nSo my feeling is:\n- Want to move back the initialization call to run() from the ctor.\n- Instead, update `DeviceFlagsValueProvider()` to get it to lazily initialize, or maybe even just add a special handling for `InstrumentationRegistry.getInstrumentation().getUiAutomation()` for DeviceFlagsValueProvider\n- Aside that, the current way of handling Context\u0027s files dirs is already broken.\n\nWDYT?",
+      "revId": "ef3a31c62e713975a1f51ca9fb9e6901c591eb82",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
