@@ -2680,6 +2680,7 @@ public class AppProfiler {
 
     void printCurrentCpuState(StringBuilder report, long time) {
         synchronized (mProcessCpuTracker) {
+            report.append("CPU ").append(mProcessCpuTracker.printCurrentLoad());
             // Only print the first 10 processes
             report.append(mProcessCpuTracker.printCurrentState(time, /* maxProcesses= */10));
         }

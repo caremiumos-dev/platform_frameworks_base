@@ -442,6 +442,8 @@ class ProcessErrorStateRecord {
 
         // Log the ANR to the main log.
         StringBuilder info = new StringBuilder();
+        StringBuilder report = new StringBuilder();
+
         info.setLength(0);
         info.append("ANR in ").append(mApp.processName);
         if (activityShortComponentName != null) {
@@ -459,7 +461,7 @@ class ProcessErrorStateRecord {
         if (errorId != null) {
             info.append("ErrorId: ").append(errorId.toString()).append("\n");
         }
-        info.append("Frozen: ").append(mApp.mOptRecord.isFrozen()).append("\n");
+        report.append("Frozen: ").append(mApp.mOptRecord.isFrozen()).append("\n\n");
 
         // Retrieve controller with max ANR delay from AnrControllers
         // Note that we retrieve the controller before dumping stacks because dumping stacks can
@@ -476,8 +478,6 @@ class ProcessErrorStateRecord {
             anrController.onAnrDelayStarted(packageName, uid);
             Slog.i(TAG, "ANR delay of " + anrDialogDelayMs + "ms started for " + packageName);
         }
-
-        StringBuilder report = new StringBuilder();
 
         latencyTracker.currentPsiStateCalled();
         String currentPsiState = ResourcePressureUtil.currentPsiState();
@@ -549,9 +549,6 @@ class ProcessErrorStateRecord {
             }
             mService.updateCpuStatsNow();
             mService.mAppProfiler.printCurrentCpuState(report, anrTime);
-            synchronized (processCpuTracker) {
-                info.append(processCpuTracker.printCurrentLoad());
-            }
             info.append(report);
         }
         report.append(tracesFileException.getBuffer());
