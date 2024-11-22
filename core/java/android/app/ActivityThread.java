@@ -1387,7 +1387,9 @@ public final class ActivityThread extends ClientTransactionHandler
         }
 
         public final void scheduleSuicide() {
-            sendMessage(H.SUICIDE, null);
+            // Do not do "sendMessage(H.SUICIDE, null)" since looper might not work at
+            // this time and message is not dispatched.
+            Process.killProcess(Process.myPid());
         }
 
         public void scheduleApplicationInfoChanged(ApplicationInfo ai) {

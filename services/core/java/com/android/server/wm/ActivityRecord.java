@@ -275,6 +275,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.Size;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
 import android.app.ActivityOptions;
 import android.app.CameraCompatTaskInfo.CameraCompatControlState;
@@ -452,6 +453,8 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
     private static final String ATTR_COMPONENTSPECIFIED = "component_specified";
     private static final String TAG_INITIAL_CALLER_INFO = "initial_caller_info";
     static final String ACTIVITY_ICON_SUFFIX = "_activity_icon_";
+
+    private static final String DESTROY_TIMEOUT_REASON = "destroyTimeout";
 
     // How many activities have to be scheduled to stop to force a stop pass.
     private static final int MAX_STOPPING_TO_FORCE = 3;
@@ -1074,7 +1077,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         public void run() {
             synchronized (mAtmService.mGlobalLock) {
                 Slog.w(TAG, "Activity destroy timeout for " + ActivityRecord.this);
-                destroyed("destroyTimeout");
+                destroyed(DESTROY_TIMEOUT_REASON);
             }
         }
     };
@@ -4240,6 +4243,13 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         if (isInRootTaskLocked()) {
             cleanUp(true /* cleanServices */, false /* setState */);
             removeFromHistory(reason);
+            if (DESTROY_TIMEOUT_REASON.equals(reason)) {
+                try {
+                    ActivityManager.getService().killApplicationProcess(processName, getUid());
+                } catch (RemoteException e) {
+                    // can't happen - ActivityManager is local
+                }
+            }
         }
 
         mRootWindowContainer.resumeFocusedTasksTopActivities();
