@@ -1452,7 +1452,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             String providerPackage = widget.provider.id.componentName.getPackageName();
             String servicePackage = componentName.getPackageName();
             if (!servicePackage.equals(providerPackage)) {
-                throw new SecurityException("The taget service not in the same package"
+                throw new SecurityException("The target service not in the same package"
                         + " as the widget provider");
             }
 
