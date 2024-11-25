@@ -816,7 +816,18 @@ final class InstallPackageHelper {
 
         PackageSetting packageSetting = null;
 
-        final boolean update = request.isUpdate();
+        // In case of multi user setup, it is possible that either primary or secondary users have
+        // already installed the same app.In this case, the removedUsers array contains the user id
+        // of the users who already have this app installed. But the current user is installing the
+        // app and restore must take place, therefore, we need to look into the removedUsers array
+        // to make sure that the app is not considered removed for the current user.
+        final boolean update =
+                request.isUpdate()
+                        && ArrayUtils.contains(
+                                request.getRemovedInfo() != null
+                                        ? request.getRemovedInfo().removedUsers
+                                        : null,
+                                userId);
         boolean doRestore = false;
         if (request.getPkg() != null && !request.isArchived()) {
             // A restore should be requested at this point:
