@@ -1873,9 +1873,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
                     if (posture == DEVICE_POSTURE_OPENED) {
                         mLogger.d("Posture changed to open - attempting to request active"
                                 + " unlock and run face auth");
-                        if (getFaceAuthInteractor() != null) {
-                            getFaceAuthInteractor().onDeviceUnfolded();
-                        }
+                        getFaceAuthInteractor().onDeviceUnfolded();
                         requestActiveUnlockFromWakeReason(PowerManager.WAKE_REASON_UNFOLD_DEVICE,
                                 false);
                     }
