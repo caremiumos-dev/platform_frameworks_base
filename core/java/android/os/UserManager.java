@@ -60,7 +60,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.location.LocationManager;
+//import android.location.LocationManager;
 import android.nfc.Flags;
 import android.provider.Settings;
 import android.util.AndroidException;

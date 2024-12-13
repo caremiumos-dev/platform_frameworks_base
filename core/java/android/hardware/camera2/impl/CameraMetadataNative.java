@@ -70,7 +70,7 @@ import android.hardware.camera2.params.TonemapCurve;
 import android.hardware.camera2.utils.ArrayUtils;
 import android.hardware.camera2.utils.TypeReference;
 import android.location.Location;
-import android.location.LocationManager;
+//import android.location.LocationManager;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -345,10 +345,10 @@ public class CameraMetadataNative implements Parcelable {
             return null;
         }
         switch(provider) {
-            case LocationManager.GPS_PROVIDER:
-                return GPS_PROCESS;
-            case LocationManager.NETWORK_PROVIDER:
-                return CELLID_PROCESS;
+//            case LocationManager.GPS_PROVIDER:
+//                return GPS_PROCESS;
+//            case LocationManager.NETWORK_PROVIDER:
+//                return CELLID_PROCESS;
             default:
                 return null;
         }
@@ -359,10 +359,10 @@ public class CameraMetadataNative implements Parcelable {
             return null;
         }
         switch(process) {
-            case GPS_PROCESS:
-                return LocationManager.GPS_PROVIDER;
-            case CELLID_PROCESS:
-                return LocationManager.NETWORK_PROVIDER;
+//            case GPS_PROCESS:
+//                return LocationManager.GPS_PROVIDER;
+//            case CELLID_PROCESS:
+//                return LocationManager.NETWORK_PROVIDER;
             default:
                 return null;
         }

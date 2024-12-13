@@ -121,10 +121,10 @@ import android.hardware.radio.RadioManager;
 import android.hardware.usb.IUsbManager;
 import android.hardware.usb.UsbManager;
 import android.health.connect.HealthServicesInitializer;
-import android.location.CountryDetector;
-import android.location.ICountryDetector;
-import android.location.ILocationManager;
-import android.location.LocationManager;
+//import android.location.CountryDetector;
+//import android.location.ICountryDetector;
+//import android.location.ILocationManager;
+//import android.location.LocationManager;
 import android.media.AudioDeviceVolumeManager;
 import android.media.AudioManager;
 import android.media.MediaFrameworkInitializer;
@@ -445,13 +445,13 @@ public final class SystemServiceRegistry {
                 return new VpnManager(ctx, service);
             }});
 
-        registerService(Context.COUNTRY_DETECTOR, CountryDetector.class,
-                new StaticServiceFetcher<CountryDetector>() {
-            @Override
-            public CountryDetector createService() throws ServiceNotFoundException {
-                IBinder b = ServiceManager.getServiceOrThrow(Context.COUNTRY_DETECTOR);
-                return new CountryDetector(ICountryDetector.Stub.asInterface(b));
-            }});
+//        registerService(Context.COUNTRY_DETECTOR, CountryDetector.class,
+//                new StaticServiceFetcher<CountryDetector>() {
+//            @Override
+//            public CountryDetector createService() throws ServiceNotFoundException {
+//                IBinder b = ServiceManager.getServiceOrThrow(Context.COUNTRY_DETECTOR);
+//                return new CountryDetector(ICountryDetector.Stub.asInterface(b));
+//            }});
 
         registerService(Context.DEVICE_POLICY_SERVICE, DevicePolicyManager.class,
                 new CachedServiceFetcher<DevicePolicyManager>() {
@@ -555,13 +555,13 @@ public final class SystemServiceRegistry {
                 return new PhoneLayoutInflater(ctx.getOuterContext());
             }});
 
-        registerService(Context.LOCATION_SERVICE, LocationManager.class,
-                new CachedServiceFetcher<LocationManager>() {
-            @Override
-            public LocationManager createService(ContextImpl ctx) throws ServiceNotFoundException {
-                IBinder b = ServiceManager.getServiceOrThrow(Context.LOCATION_SERVICE);
-                return new LocationManager(ctx, ILocationManager.Stub.asInterface(b));
-            }});
+//        registerService(Context.LOCATION_SERVICE, LocationManager.class,
+//                new CachedServiceFetcher<LocationManager>() {
+//            @Override
+//            public LocationManager createService(ContextImpl ctx) throws ServiceNotFoundException {
+//                IBinder b = ServiceManager.getServiceOrThrow(Context.LOCATION_SERVICE);
+//                return new LocationManager(ctx, ILocationManager.Stub.asInterface(b));
+//            }});
 
         registerService(Context.NETWORK_POLICY_SERVICE, NetworkPolicyManager.class,
                 new CachedServiceFetcher<NetworkPolicyManager>() {

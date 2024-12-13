@@ -60,8 +60,8 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.location.ILocationManager;
-import android.location.LocationManager;
+//import android.location.ILocationManager;
+// import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkScoreManager;
@@ -12683,13 +12683,14 @@ public final class Settings {
          */
         @Deprecated
         public static boolean isLocationProviderEnabled(ContentResolver cr, String provider) {
-            IBinder binder = ServiceManager.getService(Context.LOCATION_SERVICE);
-            ILocationManager lm = Objects.requireNonNull(ILocationManager.Stub.asInterface(binder));
-            try {
-                return lm.isProviderEnabledForUser(provider, cr.getUserId());
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
+//            IBinder binder = ServiceManager.getService(Context.LOCATION_SERVICE);
+//            ILocationManager lm = Objects.requireNonNull(ILocationManager.Stub.asInterface(binder));
+//            try {
+//                return lm.isProviderEnabledForUser(provider, cr.getUserId());
+//            } catch (RemoteException e) {
+//                throw e.rethrowFromSystemServer();
+//            }
+            return true;
         }
 
         /**

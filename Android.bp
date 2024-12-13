@@ -488,8 +488,12 @@ java_library {
 java_library {
     name: "framework-minus-apex",
     defaults: [
-        "framework-minus-apex-with-libs-defaults",
+        "framework-minus-apex-defaults",
+        // "framework-minus-apex-with-libs-defaults",
         "framework-non-updatable-lint-defaults",
+    ],
+    libs: [
+        "framework-virtualization.stubs.module_lib",
     ],
     installable: true,
     // For backwards compatibility.

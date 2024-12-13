@@ -35,8 +35,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.UserInfo;
 import android.database.Cursor;
-import android.location.Country;
-import android.location.CountryDetector;
+//import android.location.Country;
+//import android.location.CountryDetector;
 import android.net.Uri;
 import android.os.Build;
 import android.os.OutcomeReceiver;
@@ -2221,16 +2221,17 @@ public class CallLog {
         }
 
         private static String getCurrentCountryIso(Context context) {
-            String countryIso = null;
-            final CountryDetector detector = (CountryDetector) context.getSystemService(
-                    Context.COUNTRY_DETECTOR);
-            if (detector != null) {
-                final Country country = detector.detectCountry();
-                if (country != null) {
-                    countryIso = country.getCountryIso();
-                }
-            }
-            return countryIso;
+            return "US";
+//            String countryIso = null;
+//            final CountryDetector detector = (CountryDetector) context.getSystemService(
+//                    Context.COUNTRY_DETECTOR);
+//            if (detector != null) {
+//                final Country country = detector.detectCountry();
+//                if (country != null) {
+//                    countryIso = country.getCountryIso();
+//                }
+//            }
+//            return countryIso;
         }
 
         /**

@@ -50,7 +50,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.icu.text.ListFormatter;
-import android.location.LocationManager;
+//import android.location.LocationManager;
 import android.media.AudioManager;
 import android.os.Process;
 import android.os.UserHandle;
@@ -468,8 +468,9 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
      * @return If the package is location provider
      */
     private boolean isLocationProvider(String packageName) {
-        return Objects.requireNonNull(
-                mContext.getSystemService(LocationManager.class)).isProviderPackage(packageName);
+        return false;
+//        return Objects.requireNonNull(
+//                mContext.getSystemService(LocationManager.class)).isProviderPackage(packageName);
     }
 
     /**

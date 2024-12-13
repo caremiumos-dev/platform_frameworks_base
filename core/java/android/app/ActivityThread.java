@@ -8833,6 +8833,9 @@ public final class ActivityThread extends ClientTransactionHandler
     void addApplication(@NonNull Application app) {
         mAllApplications.add(app);
         VMDebug.addApplication(app.mLoadedApk.mPackageName);
+
+
+
     }
 
     @Override

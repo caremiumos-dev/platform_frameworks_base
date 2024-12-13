@@ -23,7 +23,7 @@ import android.app.time.UnixEpochTime;
 import android.app.timedetector.ITimeDetectorService;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
-import android.location.ILocationManager;
+//import android.location.ILocationManager;
 import android.location.LocationTime;
 import android.text.format.DateUtils;
 import android.util.Slog;
@@ -401,24 +401,25 @@ public final class SystemClock {
      * @throws DateTimeException when the location provider has not had a location fix since boot.
      */
     public static @NonNull Clock currentGnssTimeClock() {
-        return new SimpleClock(ZoneOffset.UTC) {
-            private final ILocationManager mMgr = ILocationManager.Stub
-                    .asInterface(ServiceManager.getService(Context.LOCATION_SERVICE));
-            @Override
-            public long millis() {
-                LocationTime time;
-                try {
-                    time = mMgr.getGnssTimeMillis();
-                } catch (RemoteException e) {
-                    throw e.rethrowFromSystemServer();
-                }
-                if (time == null) {
-                    throw new DateTimeException("Gnss based time is not available.");
-                }
-                long currentNanos = elapsedRealtimeNanos();
-                long deltaMs = (currentNanos - time.getElapsedRealtimeNanos()) / 1000000L;
-                return time.getUnixEpochTimeMillis() + deltaMs;
-            }
-        };
+        throw new RuntimeException();
+//        return new SimpleClock(ZoneOffset.UTC) {
+//            private final ILocationManager mMgr = ILocationManager.Stub
+//                    .asInterface(ServiceManager.getService(Context.LOCATION_SERVICE));
+//            @Override
+//            public long millis() {
+//                LocationTime time;
+//                try {
+//                    time = mMgr.getGnssTimeMillis();
+//                } catch (RemoteException e) {
+//                    throw e.rethrowFromSystemServer();
+//                }
+//                if (time == null) {
+//                    throw new DateTimeException("Gnss based time is not available.");
+//                }
+//                long currentNanos = elapsedRealtimeNanos();
+//                long deltaMs = (currentNanos - time.getElapsedRealtimeNanos()) / 1000000L;
+//                return time.getUnixEpochTimeMillis() + deltaMs;
+//            }
+//        };
     }
 }
