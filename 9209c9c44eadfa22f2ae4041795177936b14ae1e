@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ad1c4fea_ceeb6ef2",
+        "filename": "services/tests/VpnTests/java/com/android/server/connectivity/VpnTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 969,
+      "author": {
+        "id": 1306837
+      },
+      "writtenOn": "2024-12-13T08:19:55Z",
+      "side": 1,
+      "message": "Maybe also verify if we mock UserManager return null for user A, with onUserRemoved(A), the range is removed?",
+      "revId": "9209c9c44eadfa22f2ae4041795177936b14ae1e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
