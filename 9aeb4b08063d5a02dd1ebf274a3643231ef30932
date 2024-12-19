@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9e925d5a_04ed385e",
+        "filename": "core/java/android/security/net/config/NetworkSecurityTrustManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1334152
+      },
+      "writtenOn": "2024-12-19T14:33:43Z",
+      "side": 1,
+      "message": "nit: \"Conscrypt\" (capital C) throughout.",
+      "revId": "9aeb4b08063d5a02dd1ebf274a3643231ef30932",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3add2db2_32fb285f",
+        "filename": "core/java/android/security/net/config/NetworkSecurityTrustManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1334152
+      },
+      "writtenOn": "2024-12-19T14:33:43Z",
+      "side": 1,
+      "message": "I\u0027m probably being paranoid, but is there anything we can do to ensure this method exists in the delegate? I\u0027m trying to contrive an example where the framework compiles against a Conscrypt which contains the method, but Conscrypt somehow gets downgraded by Mainline (how? I don\u0027t _think_ it\u0027s possible)",
+      "range": {
+        "startLine": 123,
+        "startChar": 0,
+        "endLine": 123,
+        "endChar": 76
+      },
+      "revId": "9aeb4b08063d5a02dd1ebf274a3643231ef30932",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ed2d1ea9_28d922ae",
+        "filename": "core/java/android/security/net/config/RootTrustManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1334152
+      },
+      "writtenOn": "2024-12-19T14:33:43Z",
+      "side": 1,
+      "message": "\"Conscrypt\"",
+      "range": {
+        "startLine": 138,
+        "startChar": 33,
+        "endLine": 138,
+        "endChar": 42
+      },
+      "revId": "9aeb4b08063d5a02dd1ebf274a3643231ef30932",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
