@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "08a4deef_e2696918",
+        "filename": "core/java/android/security/net/config/NetworkSecurityTrustManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1561651
+      },
+      "writtenOn": "2024-12-19T22:05:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9e925d5a_04ed385e",
+      "revId": "9aeb4b08063d5a02dd1ebf274a3643231ef30932",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3add2db2_32fb285f",
@@ -41,6 +59,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "08cf73cd_ebaa7b34",
+        "filename": "core/java/android/security/net/config/NetworkSecurityTrustManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1561651
+      },
+      "writtenOn": "2024-12-19T22:05:14Z",
+      "side": 1,
+      "message": "I\u0027ve been thinking about this a bit. I think having that delegating class (X509TrustManagerExtensions) helps with the flexibilty of handling different versions. At least, it will error gracefully from the API point of view. But it does have these edge cases that are only caught at runtime.\n\nIf we wanted to make it an invariant, we should probably go down the road of defining an interface, and implement it by the delegate (although TrustManagerImpl should not implement it directly? Maybe if we had a subclass of TrustManagerImpl which just implement that interface, to make sure that, from AOSP\u0027s point of view, TrustManagerImpl is good-togo).\n\nAlso, I think by definition, we really should not have an older version of the Mainline module.\n\n(I\u0027m resolving for now, but let\u0027s continue this convo b/385195915)",
+      "parentUuid": "3add2db2_32fb285f",
+      "range": {
+        "startLine": 123,
+        "startChar": 0,
+        "endLine": 123,
+        "endChar": 76
+      },
+      "revId": "9aeb4b08063d5a02dd1ebf274a3643231ef30932",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ed2d1ea9_28d922ae",
@@ -54,6 +96,30 @@
       "writtenOn": "2024-12-19T14:33:43Z",
       "side": 1,
       "message": "\"Conscrypt\"",
+      "range": {
+        "startLine": 138,
+        "startChar": 33,
+        "endLine": 138,
+        "endChar": 42
+      },
+      "revId": "9aeb4b08063d5a02dd1ebf274a3643231ef30932",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "96904147_d9b19024",
+        "filename": "core/java/android/security/net/config/RootTrustManager.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1561651
+      },
+      "writtenOn": "2024-12-19T22:05:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ed2d1ea9_28d922ae",
       "range": {
         "startLine": 138,
         "startChar": 33,
