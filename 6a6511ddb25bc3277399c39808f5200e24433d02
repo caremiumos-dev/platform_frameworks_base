@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "54796490_a976adb5",
+        "filename": "packages/SystemUI/proguard_common.flags",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-03T16:07:45Z",
+      "side": 1,
+      "message": "Where is the reflection lookup? Is there a more appropriate keepanno annotation we could use instead, e.g., `UsedByReflection` here, or even better, `UsesReflection` at the reflective callsite?",
+      "range": {
+        "startLine": 3,
+        "startChar": 15,
+        "endLine": 3,
+        "endChar": 19
+      },
+      "revId": "6a6511ddb25bc3277399c39808f5200e24433d02",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
