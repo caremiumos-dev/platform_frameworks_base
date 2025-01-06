@@ -22,6 +22,30 @@
       },
       "revId": "6a6511ddb25bc3277399c39808f5200e24433d02",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "78a4d905_87410926",
+        "filename": "packages/SystemUI/proguard_common.flags",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1121678
+      },
+      "writtenOn": "2025-01-06T11:54:43Z",
+      "side": 1,
+      "message": "As this is to land the new interpretation of keep rules in full mode, we could postpone moving to annotations until that has happened.\n\nHow about adding a `# TODO(b/XXX)` to look at this again?",
+      "parentUuid": "54796490_a976adb5",
+      "range": {
+        "startLine": 3,
+        "startChar": 15,
+        "endLine": 3,
+        "endChar": 19
+      },
+      "revId": "6a6511ddb25bc3277399c39808f5200e24433d02",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
