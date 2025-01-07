@@ -70,6 +70,30 @@
       },
       "revId": "6a6511ddb25bc3277399c39808f5200e24433d02",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "180b456d_39adc0f6",
+        "filename": "packages/SystemUI/proguard_common.flags",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1327199
+      },
+      "writtenOn": "2025-01-07T13:47:05Z",
+      "side": 1,
+      "message": "I added a comment saying where this is instantiated reflectively from and a TODO for rewriting this to `@UsesReflection`.\n\nHappy to help clean up some of these rules, but I will focus on switching the default in R8 first, which is not trivial.",
+      "parentUuid": "bd9b02d1_f1a8f633",
+      "range": {
+        "startLine": 3,
+        "startChar": 15,
+        "endLine": 3,
+        "endChar": 19
+      },
+      "revId": "6a6511ddb25bc3277399c39808f5200e24433d02",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
