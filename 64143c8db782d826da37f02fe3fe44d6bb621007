@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4e2874df_a515a1f6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-07T17:04:17Z",
+      "side": 1,
+      "message": "Out of curiosity, does AppReduce have the same semantics for not keeping the default constructor (unless explicitly noted) as the future version of R8 full mode? And are all of the upstream Proguard rules for Jetpack and other common libraries already updated?",
+      "revId": "64143c8db782d826da37f02fe3fe44d6bb621007",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
