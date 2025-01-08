@@ -16,6 +16,24 @@
       "message": "Out of curiosity, does AppReduce have the same semantics for not keeping the default constructor (unless explicitly noted) as the future version of R8 full mode? And are all of the upstream Proguard rules for Jetpack and other common libraries already updated?",
       "revId": "64143c8db782d826da37f02fe3fe44d6bb621007",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "637fa17d_aa5b8657",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1327199
+      },
+      "writtenOn": "2025-01-08T07:44:29Z",
+      "side": 1,
+      "message": "I am unaware what semantics AppReduce use. We have had this enabled in some Android Studio canary versions and fixed three issues that showed up (in androidx and firebase-sdk IIRC). I would be surprised if we can enable this in aosp without running into some 3p rules that require changes. I will make sure to enable this behind a feature flag, but before thinking about that I need to get to a green presubmit.\n\nThis behavioral change should become opt-in in the next R8 minor version and then enabled by default with an opt-out in the next major version of R8.",
+      "parentUuid": "4e2874df_a515a1f6",
+      "revId": "64143c8db782d826da37f02fe3fe44d6bb621007",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
