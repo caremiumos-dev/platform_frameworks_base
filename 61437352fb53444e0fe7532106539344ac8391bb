@@ -1,0 +1,148 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2c129a8d_c039a22f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-23T18:53:11Z",
+      "side": 1,
+      "message": "Can you think of a way to ensure that adding a new member/collection gets merged properly? Maybe we already have sufficient unit test coverage and can rely on that?",
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "929419ff_75277f32",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 438,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-23T18:53:11Z",
+      "side": 1,
+      "message": "I was hoping that this version would be simpler, but I guess there\u0027s some nontrivial logic involved in merging everything back together. Don\u0027t see a clean way of avoiding that if we want to preserve ordering, though.",
+      "range": {
+        "startLine": 438,
+        "startChar": 35,
+        "endLine": 438,
+        "endChar": 45
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5806f1e0_5c7dbb44",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 499,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-23T18:53:11Z",
+      "side": 1,
+      "message": "Is this kind of filtering logic already done elsewhere?",
+      "range": {
+        "startLine": 499,
+        "startChar": 35,
+        "endLine": 499,
+        "endChar": 41
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fd16d588_10d1e241",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 929,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-23T18:53:11Z",
+      "side": 1,
+      "message": "Does SystemSever have an executor or thread pool that we can/should reuse?",
+      "range": {
+        "startLine": 929,
+        "startChar": 49,
+        "endLine": 929,
+        "endChar": 50
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c235018f_59f647b2",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1078,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-23T18:53:11Z",
+      "side": 1,
+      "message": "What SystemConfig state or members are needed to implement this method? Is there a static impl version that avoids accidental races on new data members?",
+      "fixSuggestions": [
+        {
+          "fixId": "b55ec825_82206b4f",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "services/core/java/com/android/server/SystemConfig.java",
+              "range": {
+                "startLine": 1077,
+                "startChar": 0,
+                "endLine": 1079,
+                "endChar": 0
+              },
+              "replacement": "    private ConfigInfo readPermissions(File libraryDir, int permissionFlag) {\n"
+            }
+          ]
+        }
+      ],
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "08c463e1_8e17f66e",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1078,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-23T18:53:11Z",
+      "side": 1,
+      "message": "@NonNull",
+      "range": {
+        "startLine": 1078,
+        "startChar": 11,
+        "endLine": 1078,
+        "endChar": 21
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
