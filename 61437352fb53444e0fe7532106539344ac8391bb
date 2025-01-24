@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "6e190a3d_d15852eb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1757736
+      },
+      "writtenOn": "2025-01-24T20:39:06Z",
+      "side": 1,
+      "message": "We have [SystemConfigTest.java], but it only seems to cover a few of the existing cases. I can add test cases for each collection (or each type of merge, if each collection is excessive—what do you think?). I\u0027ll reach out to the author of the mAllowAdasSettings/mAllowIgnoreLocationSettings parts for their input on expected behavior.\n\n[SystemConfigTest.java]: https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/services/tests/servicestests/src/com/android/server/systemconfig/SystemConfigTest.java",
+      "parentUuid": "2c129a8d_c039a22f",
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "929419ff_75277f32",
         "filename": "services/core/java/com/android/server/SystemConfig.java",
         "patchSetId": 2
@@ -31,6 +49,30 @@
       "writtenOn": "2025-01-23T18:53:11Z",
       "side": 1,
       "message": "I was hoping that this version would be simpler, but I guess there\u0027s some nontrivial logic involved in merging everything back together. Don\u0027t see a clean way of avoiding that if we want to preserve ordering, though.",
+      "range": {
+        "startLine": 438,
+        "startChar": 35,
+        "endLine": 438,
+        "endChar": 45
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "63e16429_ea045d07",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 438,
+      "author": {
+        "id": 1757736
+      },
+      "writtenOn": "2025-01-24T20:39:06Z",
+      "side": 1,
+      "message": "Yeah, unfortunately there are several different rules for merging different sets of info, so it wasn\u0027t possible to just addAll()/putAll() everything.",
+      "parentUuid": "929419ff_75277f32",
       "range": {
         "startLine": 438,
         "startChar": 35,
@@ -64,6 +106,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "14fab145_1356596a",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 499,
+      "author": {
+        "id": 1757736
+      },
+      "writtenOn": "2025-01-24T20:39:06Z",
+      "side": 1,
+      "message": "Yes, this was taken from L1462. From what I remember of the original change, this was done in this manner because\n1) \"*\" and no tag both indicate all tags, which is represented by an empty set\n2) the actual string \"null\" is allowed as well.\n\nNow that I\u0027m looking at this section again, I\u0027m not sure if the partition-specific set being empty for a package indicates that the merged set should be emptied as well. I\u0027ll send this review to the original author after this first review pass to double-check.",
+      "parentUuid": "5806f1e0_5c7dbb44",
+      "range": {
+        "startLine": 499,
+        "startChar": 35,
+        "endLine": 499,
+        "endChar": 41
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fd16d588_10d1e241",
@@ -77,6 +143,30 @@
       "writtenOn": "2025-01-23T18:53:11Z",
       "side": 1,
       "message": "Does SystemSever have an executor or thread pool that we can/should reuse?",
+      "range": {
+        "startLine": 929,
+        "startChar": 49,
+        "endLine": 929,
+        "endChar": 50
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4f534a70_18551ac5",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 929,
+      "author": {
+        "id": 1757736
+      },
+      "writtenOn": "2025-01-24T20:39:06Z",
+      "side": 1,
+      "message": "SystemServer has [SystemServerInitThreadPool], but it seems to only take Runnables and doesn\u0027t allow us to get an output ConfigInfo for merging in-order later. From what I can tell, other system_server components seem to define their own executors/thread pools if they need parallel execution.\n\n[SystemServerInitThreadPool]: https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/services/core/java/com/android/server/SystemServerInitThreadPool.java",
+      "parentUuid": "fd16d588_10d1e241",
       "range": {
         "startLine": 929,
         "startChar": 49,
@@ -135,6 +225,48 @@
       "writtenOn": "2025-01-23T18:53:11Z",
       "side": 1,
       "message": "@NonNull",
+      "range": {
+        "startLine": 1078,
+        "startChar": 11,
+        "endLine": 1078,
+        "endChar": 21
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2a30d08_cbb3e132",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1078,
+      "author": {
+        "id": 1757736
+      },
+      "writtenOn": "2025-01-24T20:39:06Z",
+      "side": 1,
+      "message": "I believe only `mInjector` is depended on, for checking `isReadOnlySystemDisabledFeature()` when adding features. Otherwise, everything else that `readPermissions()` depends on can easily be made static. Would you happen to have any ideas in mind for this?",
+      "parentUuid": "c235018f_59f647b2",
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9711757c_4536a1f1",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1078,
+      "author": {
+        "id": 1757736
+      },
+      "writtenOn": "2025-01-24T20:39:06Z",
+      "side": 1,
+      "message": "Done, thanks!",
+      "parentUuid": "08c463e1_8e17f66e",
       "range": {
         "startLine": 1078,
         "startChar": 11,
