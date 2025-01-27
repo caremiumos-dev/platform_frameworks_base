@@ -179,6 +179,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "93d3ff05_064e7dc7",
+        "filename": "services/core/java/com/android/server/SystemConfig.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 929,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-01-27T22:41:38Z",
+      "side": 1,
+      "message": "How does this perform on devices with just 2 cores (e.g., Wear)? Seems like we\u0027d be unnecessarily contending with other work? Did you use go/art-benchmark-service to measure any of this (you can also trigger runs there on Wear devices)\n\nCan you think of a simple way where, if the device won\u0027t really benefit from threading, we can effectively just do all the current work on the same thread and bypass the merge pass entirely? In effect, just swapping the ConfigInfo into the \"current\" `ConfigInfo` member? Maybe we just need to tweak how the executor and new ConfigInfo instances are passed in/out?",
+      "parentUuid": "4f534a70_18551ac5",
+      "range": {
+        "startLine": 929,
+        "startChar": 49,
+        "endLine": 929,
+        "endChar": 50
+      },
+      "revId": "61437352fb53444e0fe7532106539344ac8391bb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c235018f_59f647b2",
         "filename": "services/core/java/com/android/server/SystemConfig.java",
         "patchSetId": 2
