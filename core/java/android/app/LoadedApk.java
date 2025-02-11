@@ -61,6 +61,7 @@ import android.view.DisplayAdjustments;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.os.DebugStore;
 import com.android.internal.util.ArrayUtils;
 
 import dalvik.system.BaseDexClassLoader;
@@ -106,6 +107,9 @@ final class ServiceConnectionLeaked extends AndroidRuntimeException {
 public final class LoadedApk {
     static final String TAG = "LoadedApk";
     static final boolean DEBUG = false;
+
+    private static final boolean DEBUG_STORE_ENABLED =
+      com.android.internal.os.Flags.debugStoreEnabled();
 
     @UnsupportedAppUsage
     private final ActivityThread mActivityThread;
@@ -1805,6 +1809,12 @@ public final class LoadedApk {
                         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                                 "broadcastReceiveReg: " + intent.getAction());
                     }
+                    long debugStoreId = -1;
+                    if (DEBUG_STORE_ENABLED) {
+                        debugStoreId =
+                                DebugStore.recordBroadcastReceiveReg(
+                                        intent, System.identityHashCode(this));
+                    }
 
                     try {
                         ClassLoader cl = mReceiver.getClass().getClassLoader();
@@ -1831,6 +1841,9 @@ public final class LoadedApk {
 
                     if (receiver.getPendingResult() != null) {
                         finish();
+                    }
+                    if (DEBUG_STORE_ENABLED) {
+                        DebugStore.recordEventEnd(debugStoreId);
                     }
                     Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
                 };
