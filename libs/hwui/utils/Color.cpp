@@ -25,6 +25,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "vndk/hardware_buffer.h"
+
 namespace android {
 namespace uirenderer {
 
@@ -59,6 +61,10 @@ static inline SkImageInfo createImageInfo(int32_t width, int32_t height, int32_t
             break;
         case AHARDWAREBUFFER_FORMAT_R8_UNORM:
             colorType = kAlpha_8_SkColorType;
+            alphaType = kPremul_SkAlphaType;
+            break;
+        case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:
+            colorType = kBGRA_8888_SkColorType;
             alphaType = kPremul_SkAlphaType;
             break;
         default:
@@ -98,6 +104,8 @@ uint32_t ColorTypeToBufferFormat(SkColorType colorType) {
             return kRGBA4444;
         case kAlpha_8_SkColorType:
               return AHARDWAREBUFFER_FORMAT_R8_UNORM;
+        case kBGRA_8888_SkColorType:
+            return AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM;
         default:
             ALOGV("Unsupported colorType: %d, return RGBA_8888 by default", (int)colorType);
             return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
@@ -120,6 +128,8 @@ SkColorType BufferFormatToColorType(uint32_t format) {
             return kRGBA_F16_SkColorType;
         case AHARDWAREBUFFER_FORMAT_R8_UNORM:
             return kAlpha_8_SkColorType;
+        case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:
+            return kBGRA_8888_SkColorType;
         default:
             ALOGV("Unsupported format: %d, return unknown by default", format);
             return kUnknown_SkColorType;
@@ -217,7 +227,7 @@ android_dataspace ColorSpaceToADataSpace(SkColorSpace* colorSpace, SkColorType c
 
     if (nearlyEqual(fn, SkNamedTransferFn::kRec2020) &&
         nearlyEqual(gamut, SkNamedGamut::kRec2020)) {
-        return HAL_DATASPACE_BT2020;
+            return HAL_DATASPACE_BT2020;
     }
 
     if (nearlyEqual(fn, k2Dot6) && nearlyEqual(gamut, kDCIP3)) {

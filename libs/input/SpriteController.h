@@ -26,6 +26,9 @@
 
 namespace android {
 
+constexpr AndroidBitmapFormat kSpriteBitmapFormat = ANDROID_BITMAP_FORMAT_BGRA_8888;
+constexpr PixelFormat kSpritePixelFormat = PIXEL_FORMAT_BGRA_8888;
+
 /*
  * Transformation matrix for a sprite.
  */

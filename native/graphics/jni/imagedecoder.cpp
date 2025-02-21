@@ -210,6 +210,8 @@ static SkColorType getColorType(AndroidBitmapFormat format) {
             return kRGBA_F16_SkColorType;
         case ANDROID_BITMAP_FORMAT_RGBA_1010102:
             return kRGBA_1010102_SkColorType;
+        case ANDROID_BITMAP_FORMAT_BGRA_8888:
+            return kBGRA_8888_SkColorType;
         default:
             return kUnknown_SkColorType;
     }
