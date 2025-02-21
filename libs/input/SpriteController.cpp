@@ -356,7 +356,7 @@ sp<SurfaceControl> SpriteController::obtainSurface(int32_t width, int32_t height
     }
     const sp<SurfaceControl> surfaceControl =
             mSurfaceComposerClient->createSurface(String8("Sprite"), width, height,
-                                                  PIXEL_FORMAT_RGBA_8888, createFlags,
+                                                  kSpritePixelFormat, createFlags,
                                                   parent ? parent->getHandle() : nullptr);
     if (surfaceControl == nullptr || !surfaceControl->isValid()) {
         ALOGE("Error creating sprite surface.");
@@ -403,7 +403,7 @@ void SpriteController::SpriteImpl::setIcon(const SpriteIcon& icon) {
 
     uint32_t dirty;
     if (icon.isValid()) {
-        mLocked.state.icon.bitmap = icon.bitmap.copy(ANDROID_BITMAP_FORMAT_RGBA_8888);
+        mLocked.state.icon.bitmap = icon.bitmap.copy(kSpriteBitmapFormat);
         if (!mLocked.state.icon.isValid() || mLocked.state.icon.hotSpotX != icon.hotSpotX ||
             mLocked.state.icon.hotSpotY != icon.hotSpotY ||
             mLocked.state.icon.drawNativeDropShadow != icon.drawNativeDropShadow) {
