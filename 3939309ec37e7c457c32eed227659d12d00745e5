@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "44b60d63_49654f39",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1064003
+      },
+      "writtenOn": "2025-02-26T20:26:37Z",
+      "side": 1,
+      "message": "Looks like I\u0027ll need to fix the merge conflict internally first, leaving this open.",
+      "revId": "3939309ec37e7c457c32eed227659d12d00745e5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
