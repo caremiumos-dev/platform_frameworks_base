@@ -33,6 +33,24 @@
       "message": "Looks good as long as it compiles, but the changes around nullability seem intereseting:\n\n- The Factory one seems to be it\u0027s becasue now we respect \n org.jspecify.annotations.Nullable?\n\n- Also I don\u0027t understand why the change in IgnoreableExpect.kt is needed.\n\nDouble checking, are you sure we need to have these changes? I\u0027m wondering if there any option to make Kotlin 2.1 okay with the existing code and if that\u0027s actually what we want?",
       "revId": "9b7797b4a656f308a25893c70c01800df6a79c67",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c606fd11_9245d124",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1387509
+      },
+      "writtenOn": "2025-03-04T19:31:32Z",
+      "side": 1,
+      "message": "You can read about the jspecify change here: https://kotlinlang.org/docs/whatsnew21.html#change-of-jspecify-nullability-mismatch-diagnostics-severity-to-strict\n\nThat same section mentions: \"Starting from Kotlin 2.1.0, nullability mismatches are raised from warnings to errors by default.\"\n\nThe `IgnoreableExpect` caught me off guard as well, but its internals have `checkNotNull` on its arguments, so maybe the compiler is being smart about that?\n\nhttp://ac/external/truth/core/src/main/java/com/google/common/truth/Expect.java?l\u003d253\n\nYou can see some of the failures here: \nhttps://android-build.corp.google.com/build_explorer/artifact_viewer/P91685420/aosp_cheetah-trunk_staging-userdebug/logs/build_error.log?attemptId\u003dlatest\nhttps://android-build.corp.google.com/build_explorer/artifact_viewer/P91685406/aosp_cf_x86_64_phone-trunk_staging-userdebug_coverage/logs/build_error.log?attemptId\u003dlatest\nhttps://android-build.corp.google.com/build_explorer/artifact_viewer/P91685435/cf_x86_64_tablet-trunk_staging-userdebug/logs/build_error.log?attemptId\u003dlatest",
+      "parentUuid": "6dba06ea_4df1c296",
+      "revId": "9b7797b4a656f308a25893c70c01800df6a79c67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
