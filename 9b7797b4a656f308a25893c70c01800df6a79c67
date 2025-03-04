@@ -16,6 +16,23 @@
       "message": "GroupedRecentTaskInfoTest LGTM",
       "revId": "9b7797b4a656f308a25893c70c01800df6a79c67",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6dba06ea_4df1c296",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003801
+      },
+      "writtenOn": "2025-03-04T19:24:48Z",
+      "side": 1,
+      "message": "Looks good as long as it compiles, but the changes around nullability seem intereseting:\n\n- The Factory one seems to be it\u0027s becasue now we respect \n org.jspecify.annotations.Nullable?\n\n- Also I don\u0027t understand why the change in IgnoreableExpect.kt is needed.\n\nDouble checking, are you sure we need to have these changes? I\u0027m wondering if there any option to make Kotlin 2.1 okay with the existing code and if that\u0027s actually what we want?",
+      "revId": "9b7797b4a656f308a25893c70c01800df6a79c67",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
