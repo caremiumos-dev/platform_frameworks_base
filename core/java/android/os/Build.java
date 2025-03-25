@@ -2008,6 +2008,12 @@ public class Build {
     private static String getVendorDeviceIdProperty(String property) {
         String attestProp = getString(
                 TextUtils.formatSimple("ro.product.%s_for_attestation", property));
+        Slog.e(TAG, "Build.java#getVendorDeviceIdProperty:: product.*_for_attestation for "
+                + property + " = " + attestProp);
+
+        String vendorProp = getString(TextUtils.formatSimple("ro.product.vendor.%s", property));
+        Slog.e(TAG, "Build.java#getVendorDeviceIdProperty:: vendor.* for "
+                + property + " = " + vendorProp);
         return attestProp.equals(UNKNOWN)
                 ? getString(TextUtils.formatSimple("ro.product.vendor.%s", property)) : attestProp;
     }
