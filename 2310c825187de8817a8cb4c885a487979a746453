@@ -16,6 +16,23 @@
       "message": "Thanks @jglazier@google.com. Could you help trigger a presubmit as well to confirm there are no conflicts?\n\nHi @mpietal@google.com @tsuji@google.com, please help review.\n\nThanks.",
       "revId": "2310c825187de8817a8cb4c885a487979a746453",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "feb14a65_a4c7bbcc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1553715
+      },
+      "writtenOn": "2025-03-28T21:06:11Z",
+      "side": 1,
+      "message": "I\u0027m not responsible for lockscreen so removing myself.",
+      "revId": "2310c825187de8817a8cb4c885a487979a746453",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
