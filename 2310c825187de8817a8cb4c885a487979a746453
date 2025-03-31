@@ -51,6 +51,24 @@
       "parentUuid": "9673ba3b_9e1bff9d",
       "revId": "2310c825187de8817a8cb4c885a487979a746453",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ce8cd180_db1ad7e2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1943370
+      },
+      "writtenOn": "2025-03-31T17:06:02Z",
+      "side": 1,
+      "message": "Hi @jglazier@google.com,\n\nSince this can no longer get merged here, could you help pick this up and handle it internally? I\u0027ll proceed to abandon this upon your confirmation.\n\nThanks.",
+      "parentUuid": "3a3681b4_4bdfdd32",
+      "revId": "2310c825187de8817a8cb4c885a487979a746453",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
