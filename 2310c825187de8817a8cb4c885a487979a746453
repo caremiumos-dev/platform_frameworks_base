@@ -69,6 +69,24 @@
       "parentUuid": "3a3681b4_4bdfdd32",
       "revId": "2310c825187de8817a8cb4c885a487979a746453",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a0968752_6bed8b27",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1943111
+      },
+      "writtenOn": "2025-04-01T16:19:01Z",
+      "side": 1,
+      "message": "I\u0027ve merged the change into internal main. It\u0027ll be available in the next release.",
+      "parentUuid": "ce8cd180_db1ad7e2",
+      "revId": "2310c825187de8817a8cb4c885a487979a746453",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
