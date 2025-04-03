@@ -1921,6 +1921,22 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
         }
 
+        if (mTransientLaunches != null) {
+            for (DisplayArea displayArea : mController.mValidateDisplayVis) {
+                // TODO: Remove once another display area except task display area is incorrectly
+                //  hidden.
+                final TaskDisplayArea taskDisplayArea = displayArea.asTaskDisplayArea();
+                // The task display area is not visible in previous transitions, and is visible now
+                // in current recents transition. We'd better show it here since the invocation time
+                // of TransitionController#validateStates is not certain.
+                if (taskDisplayArea != null && taskDisplayArea.isVisibleRequested()) {
+                    Slog.e(TAG, "DisplayArea became visible in a recents transition: "
+                            + taskDisplayArea);
+                    transaction.show(taskDisplayArea.getSurfaceControl());
+                }
+            }
+        }
+
         // Record windowtokens (activity/wallpaper) that are expected to be visible after the
         // transition animation. This will be used in finishTransition to prevent prematurely
         // committing visibility. Skip transient launches since those are only temporarily visible.
