@@ -1255,6 +1255,12 @@ public class ImageReader implements AutoCloseable {
         }
 
         @Override
+        public float[] getTransformMatrix() {
+            throwISEIfImageIsInvalid();
+            return nativeGetTransformMatrix();
+        }
+
+        @Override
         public int getScalingMode() {
             throwISEIfImageIsInvalid();
             return mScalingMode;

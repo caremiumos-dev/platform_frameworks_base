@@ -223,6 +223,27 @@ public abstract class Image implements AutoCloseable {
     public abstract int getTransform();
 
     /**
+     * Returns the 4x4 texture coordinate transform matrix associated with the texture image set by
+     * the most recent call to {@link #updateTexImage}.
+     * <p>
+     * This transform matrix maps 2D homogeneous texture coordinates of the form (s, t, 0, 1) with s
+     * and t in the inclusive range [0, 1] to the texture coordinate that should be used to sample
+     * that location from the texture.  Sampling the texture outside of the range of this transform
+     * is undefined.
+     * <p>
+     * The matrix is stored in column-major order so that it may be passed directly to OpenGL ES via
+     * the {@code glLoadMatrixf} or {@code glUniformMatrix4fv} functions.
+     * <p>
+     * If the underlying buffer has a crop associated with it, the transformation will also include
+     * a slight scale to cut off a 1-texel border around the edge of the crop. This ensures that
+     * when the texture is bilinear sampled that no texels outside of the buffer's valid region
+     * are accessed by the GPU, avoiding any sampling artifacts when scaling.
+     *
+     * @return The float array with 16 elements that contains the transform matrix.
+     */
+    public abstract float[] getTransformMatrix();
+
+    /**
      * Get the scaling mode associated with this frame.
      * @return The scaling mode that needs to be applied for this frame.
      * @hide
@@ -252,6 +273,7 @@ public abstract class Image implements AutoCloseable {
     public int getPlaneCount() {
         return -1;
     }
+
     /**
      * Get the {@link android.hardware.HardwareBuffer HardwareBuffer} handle of the input image
      * intended for GPU and/or hardware access.

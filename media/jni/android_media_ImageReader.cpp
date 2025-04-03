@@ -29,6 +29,7 @@
 #include <gui/Surface.h>
 #include <inttypes.h>
 #include <jni.h>
+#include <math/mat4.h>
 #include <nativehelper/JNIHelp.h>
 #include <private/android/AHardwareBufferHelpers.h>
 #include <stdint.h>
@@ -976,35 +977,122 @@ static jobject Image_getHardwareBuffer(JNIEnv* env, jobject thiz) {
     return android_hardware_HardwareBuffer_createFromAHardwareBuffer(env, b);
 }
 
+static jfloatArray Image_getTransformMatrix(JNIEnv* env, jobject thiz) {
+    ALOGV("%s", __FUNCTION__);
+    BufferItem* buffer = Image_getBufferItem(env, thiz);
+    if (buffer == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException",
+                "Image is not initialized");
+        return;
+    }
+
+    // Transform matrices
+    static const mat4 mtxFlipH(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1);
+    static const mat4 mtxFlipV(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1);
+    static const mat4 mtxRot90(0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1);
+
+    Rect cropRect = buffer->mCrop;
+    uint32_t transform = buffer->mTransform;
+    sp<GraphicBuffer> graphicBuffer = buffer->mGraphicBuffer
+
+    mat4 xform;
+    if (transform & NATIVE_WINDOW_TRANSFORM_FLIP_H) {
+        xform *= mtxFlipH;
+    }
+    if (transform & NATIVE_WINDOW_TRANSFORM_FLIP_V) {
+        xform *= mtxFlipV;
+    }
+    if (transform & NATIVE_WINDOW_TRANSFORM_ROT_90) {
+        xform *= mtxRot90;
+    }
+
+    if (!cropRect.isEmpty() && graphicBuffer.get()) {
+        float tx = 0.0f, ty = 0.0f, sx = 1.0f, sy = 1.0f;
+        float bufferWidth = graphicBuffer->getWidth();
+        float bufferHeight = graphicBuffer->getHeight();
+        float shrinkAmount = 0.0f;
+
+        // In order to prevent bilinear sampling beyond the edge of the
+        // crop rectangle we may need to shrink it by 2 texels in each
+        // dimension.  Normally this would just need to take 1/2 a texel
+        // off each end, but because the chroma channels of YUV420 images
+        // are subsampled we may need to shrink the crop region by a whole
+        // texel on each side.
+        switch (graphicBuffer->getPixelFormat()) {
+            case HAL_PIXEL_FORMAT_RGBA_8888:
+            case HAL_PIXEL_FORMAT_RGBX_8888:
+            case HAL_PIXEL_FORMAT_RGBA_FP16:
+            case HAL_PIXEL_FORMAT_RGBA_1010102:
+            case HAL_PIXEL_FORMAT_RGB_888:
+            case HAL_PIXEL_FORMAT_RGB_565:
+            case HAL_PIXEL_FORMAT_BGRA_8888:
+                // We know there's no subsampling of any channels, so we
+                // only need to shrink by a half a pixel.
+                shrinkAmount = 0.5;
+                break;
+
+            default:
+                // If we don't recognize the format, we must assume the
+                // worst case (that we care about), which is YUV420.
+                shrinkAmount = 1.0;
+                break;
+        }
+
+        // Only shrink the dimensions that are not the size of the buffer.
+        if (cropRect.width() < bufferWidth) {
+            tx = (float(cropRect.left) + shrinkAmount) / bufferWidth;
+            sx = (float(cropRect.width()) - (2.0f * shrinkAmount)) / bufferWidth;
+        }
+        if (cropRect.height() < bufferHeight) {
+            ty = (float(bufferHeight - cropRect.bottom) + shrinkAmount) / bufferHeight;
+            sy = (float(cropRect.height()) - (2.0f * shrinkAmount)) / bufferHeight;
+        }
+
+        mat4 crop(sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1);
+        xform = crop * xform;
+    }
+
+    // SurfaceFlinger expects the top of its window textures to be at a Y
+    // coordinate of 0, so Image must behave the same way.  We don't
+    // want to expose this to applications, however, so we must add an
+    // additional vertical flip to the transform after all the other transforms.
+    xform = mtxFlipV * xform;
+
+    jfloatArray result = env->NewFloatArray(16);
+    env->SetFloatArrayRegion(result, 0, 16, xform.asArray());
+    return result;
+}
+
 } // extern "C"
 
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod gImageReaderMethods[] = {
-    {"nativeClassInit",        "()V",                        (void*)ImageReader_classInit },
-    {"nativeInit",             "(Ljava/lang/Object;IIIJII)V",   (void*)ImageReader_init },
-    {"nativeClose",            "()V",                        (void*)ImageReader_close },
-    {"nativeReleaseImage",     "(Landroid/media/Image;)V",   (void*)ImageReader_imageRelease },
-    {"nativeImageSetup",       "(Landroid/media/Image;)I",   (void*)ImageReader_imageSetup },
-    {"nativeGetSurface",       "()Landroid/view/Surface;",   (void*)ImageReader_getSurface },
+    {"nativeClassInit",        "()V",                         (void*)ImageReader_classInit },
+    {"nativeInit",             "(Ljava/lang/Object;IIIJII)V", (void*)ImageReader_init },
+    {"nativeClose",            "()V",                         (void*)ImageReader_close },
+    {"nativeReleaseImage",     "(Landroid/media/Image;)V",    (void*)ImageReader_imageRelease },
+    {"nativeImageSetup",       "(Landroid/media/Image;)I",    (void*)ImageReader_imageSetup },
+    {"nativeGetSurface",       "()Landroid/view/Surface;",    (void*)ImageReader_getSurface },
     {"nativeDetachImage",      "(Landroid/media/Image;Z)I",   (void*)ImageReader_detachImage },
     {"nativeCreateImagePlanes",
         "(ILandroid/graphics/GraphicBuffer;IIIIII)[Landroid/media/ImageReader$ImagePlane;",
-                                                             (void*)ImageReader_createImagePlanes },
+                                                        (void*)ImageReader_createImagePlanes },
     {"nativeUnlockGraphicBuffer",
-        "(Landroid/graphics/GraphicBuffer;)V",             (void*)ImageReader_unlockGraphicBuffer },
-    {"nativeDiscardFreeBuffers", "()V",                      (void*)ImageReader_discardFreeBuffers }
+        "(Landroid/graphics/GraphicBuffer;)V",          (void*)ImageReader_unlockGraphicBuffer },
+    {"nativeDiscardFreeBuffers", "()V",                 (void*)ImageReader_discardFreeBuffers }
 };
 
 static const JNINativeMethod gImageMethods[] = {
-    {"nativeCreatePlanes",      "(IIJ)[Landroid/media/ImageReader$SurfaceImage$SurfacePlane;",
+    {"nativeCreatePlanes",       "(IIJ)[Landroid/media/ImageReader$SurfaceImage$SurfacePlane;",
                                                              (void*)Image_createSurfacePlanes },
-    {"nativeGetWidth",          "()I",                       (void*)Image_getWidth },
-    {"nativeGetHeight",         "()I",                       (void*)Image_getHeight },
-    {"nativeGetFormat",         "(I)I",                      (void*)Image_getFormat },
-    {"nativeGetFenceFd",        "()I",                       (void*)Image_getFenceFd },
-    {"nativeGetHardwareBuffer", "()Landroid/hardware/HardwareBuffer;",
+    {"nativeGetWidth",           "()I",                      (void*)Image_getWidth },
+    {"nativeGetHeight",          "()I",                      (void*)Image_getHeight },
+    {"nativeGetFormat",          "(I)I",                     (void*)Image_getFormat },
+    {"nativeGetFenceFd",         "()I",                      (void*)Image_getFenceFd },
+    {"nativeGetHardwareBuffer",  "()Landroid/hardware/HardwareBuffer;",
                                                              (void*)Image_getHardwareBuffer },
+    {"nativeGetTransformMatrix", "()[F",                     (void*)Image_getTransformMatrix },
 };
 
 int register_android_media_ImageReader(JNIEnv *env) {
