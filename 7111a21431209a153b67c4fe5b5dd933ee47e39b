@@ -1,0 +1,299 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "962d7049_d91bbb4f",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2025-04-22T15:48:15Z",
+      "side": 1,
+      "message": "why false given we return AudioSystem.STREAM_MUSIC if aag \u003d\u003d null?",
+      "range": {
+        "startLine": 187,
+        "startChar": 41,
+        "endLine": 187,
+        "endChar": 46
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "132105f0_3501f6f6",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 187,
+                "startChar": 0,
+                "endLine": 188,
+                "endChar": 0
+              },
+              "replacement": "                /* fallbackOnDefault\u003d */ true);\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 200,
+                "startChar": 0,
+                "endLine": 200,
+                "endChar": 0
+              },
+              "replacement": "        Log.w(TAG, \"Attributes \" + audioAttributes + \" not supported by any strategy, \"\n                + \"therefore falling back to STREAM_MUSIC\");\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 411,
+                "startChar": 0,
+                "endLine": 412,
+                "endChar": 0
+              },
+              "replacement": "     * Selects the {@link AudioVolumeGroup} id associated with the highest matching\n"
+            }
+          ]
+        }
+      ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a9c274ae_716f0680",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2025-04-22T15:48:15Z",
+      "side": 1,
+      "message": "maybe replace this by an assert because when the constructor is called with a non empty attributes group it is from the parcel reader and the strategy ID better match the strategy ids received in the groups.\nunless the sender side creating the parcel does not fill the strategy IDs?",
+      "range": {
+        "startLine": 291,
+        "startChar": 0,
+        "endLine": 291,
+        "endChar": 53
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "98f31cc5_bb345299",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 291,
+                "startChar": 0,
+                "endLine": 292,
+                "endChar": 0
+              },
+              "replacement": "            if (audioAttributesGroup.getStrategyId() !\u003d 0\n                    \u0026\u0026 audioAttributesGroup.getStrategyId() !\u003d mId) {\n                throw new IllegalArgumentException(\"AudioAttributesGroup strategy id: \"\n                        + audioAttributesGroup.getStrategyId()\n                        + \"does not match AudioProductStrategy id: \" + mId);\n            }\n            audioAttributesGroup.mProductStrategyId \u003d mId;\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 650,
+                "startChar": 0,
+                "endLine": 654,
+                "endChar": 0
+              },
+              "replacement": ""
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 708,
+                "startChar": 0,
+                "endLine": 709,
+                "endChar": 0
+              },
+              "replacement": "                        AudioAttributesGroup aag \u003d\n                                new AudioAttributesGroup(volumeGroupId, streamType, aa);\n                        aag.mProductStrategyId \u003d in.readInt();\n                        return aag;\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 729,
+                "startChar": 0,
+                "endLine": 729,
+                "endChar": 0
+              },
+              "replacement": "                s.append(\" Product Strategy Id: \");\n                s.append(Integer.toString(mProductStrategyId));\n"
+            }
+          ]
+        }
+      ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4022c453_375708fc",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 352,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2025-04-22T15:48:15Z",
+      "side": 1,
+      "message": "if aag is guaranteed to be null when score is NO_MATCH then this work.\nplease add a comment to explain this",
+      "range": {
+        "startLine": 352,
+        "startChar": 0,
+        "endLine": 352,
+        "endChar": 63
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "f1ddd828_51d72498",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 352,
+                "startChar": 0,
+                "endLine": 352,
+                "endChar": 0
+              },
+              "replacement": "        // aag is guaranteed to be null when score is NO_MATCH\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 424,
+                "startChar": 0,
+                "endLine": 424,
+                "endChar": 0
+              },
+              "replacement": "        // aag is guaranteed to be null when score is NO_MATCH\n"
+            }
+          ]
+        }
+      ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4ffe8241_e5e6eb4e",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 379,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2025-04-22T15:48:15Z",
+      "side": 1,
+      "message": "document that if NO_MATCH is returned, the aag is also null",
+      "range": {
+        "startLine": 379,
+        "startChar": 0,
+        "endLine": 379,
+        "endChar": 74
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "4578ba0c_c77e22cc",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 379,
+                "startChar": 0,
+                "endLine": 379,
+                "endChar": 0
+              },
+              "replacement": "    /**\n     * @param aa the {@link AudioAttributes} to be considered\n     * @return the {@link ScoredAudioAttributesGroup} containing the best matching score and the\n     *         associated {@link AudioAttributesGroup}. If no match is found, the score is\n     *         {@code NO_MATCH} and the {@link AudioAttributesGroup} is {@code null}.\n     */\n"
+            }
+          ]
+        }
+      ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a44a2de7_129cb77d",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 602,
+      "author": {
+        "id": 1003259
+      },
+      "writtenOn": "2025-04-22T15:48:15Z",
+      "side": 1,
+      "message": "should we set an invalid strategy ID by default?",
+      "range": {
+        "startLine": 602,
+        "startChar": 0,
+        "endLine": 602,
+        "endChar": 38
+      },
+      "fixSuggestions": [
+        {
+          "fixId": "010b4d32_28abc5de",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 602,
+                "startChar": 0,
+                "endLine": 603,
+                "endChar": 0
+              },
+              "replacement": "        private int mProductStrategyId \u003d -1;\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 655,
+                "startChar": 0,
+                "endLine": 656,
+                "endChar": 0
+              },
+              "replacement": "        int getStrategyId() throws IllegalStateException {\n            if (mProductStrategyId \u003d\u003d -1) {\n                throw new IllegalStateException(\"Product strategy id not set\");\n            }\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 698,
+                "startChar": 0,
+                "endLine": 699,
+                "endChar": 0
+              },
+              "replacement": "            new Parcelable.Creator\u003cAudioAttributesGroup\u003e() {\n"
+            },
+            {
+              "path": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+              "range": {
+                "startLine": 711,
+                "startChar": 0,
+                "endLine": 716,
+                "endChar": 0
+              },
+              "replacement": "                @Override\n                public @NonNull AudioAttributesGroup[] newArray(int size) {\n                    return new AudioAttributesGroup[size];\n                }\n            };\n"
+            }
+          ]
+        }
+      ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
