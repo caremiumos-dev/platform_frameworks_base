@@ -16,6 +16,23 @@
       "message": "deferring to mwachens@",
       "revId": "2a4ed9bce3a33fb3d3651c7b54f9c83a1673ad6a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "39eec0e0_4784a464",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3664976
+      },
+      "writtenOn": "2025-04-25T14:06:31Z",
+      "side": 1,
+      "message": "Is there something else I should do here? I uploaded this to \"main\" one day before the announcement that the main branch will be obsolete... Should I cherry-pick it to the android15-qpr2 branch?",
+      "revId": "2a4ed9bce3a33fb3d3651c7b54f9c83a1673ad6a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
