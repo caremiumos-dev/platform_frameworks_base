@@ -64,6 +64,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "4d918749_3f98e392",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2025-04-28T23:09:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "962d7049_d91bbb4f",
+      "range": {
+        "startLine": 187,
+        "startChar": 41,
+        "endLine": 187,
+        "endChar": 46
+      },
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "a9c274ae_716f0680",
         "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
         "patchSetId": 13
@@ -129,6 +153,30 @@
           ]
         }
       ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "313774b5_fce4955f",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2025-04-28T23:09:25Z",
+      "side": 1,
+      "message": "Looks like this is the method called from the native side and yes the current API for `AudioAttributesGroup` does not set the product strategy ID.\nhttps://cs.android.com/android/platform/superproject/+/android15-qpr2-release:frameworks/base/core/jni/android_media_AudioProductStrategies.cpp;drc\u003d63e4e4431aabf34ec53cc1e0d43aaa5614adf1e8;l\u003d59\n\nWe can either keep it here or add the information to the `AudioAttributesGroup` constructor?\nLet me know your preference or if you have any other suggestions and I\u0027ll follow through on internal CLs.",
+      "parentUuid": "a9c274ae_716f0680",
+      "range": {
+        "startLine": 291,
+        "startChar": 0,
+        "endLine": 291,
+        "endChar": 53
+      },
       "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
