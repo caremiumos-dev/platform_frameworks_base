@@ -86,6 +86,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "96038e47_f1703971",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2025-04-29T04:28:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4d918749_3f98e392",
+      "range": {
+        "startLine": 187,
+        "startChar": 41,
+        "endLine": 187,
+        "endChar": 46
+      },
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a9c274ae_716f0680",
@@ -181,6 +205,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9e2130a8_475f15c9",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2025-04-29T04:28:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "313774b5_fce4955f",
+      "range": {
+        "startLine": 291,
+        "startChar": 0,
+        "endLine": 291,
+        "endChar": 53
+      },
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4022c453_375708fc",
@@ -232,6 +280,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b26d3537_5aae8c67",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 352,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2025-04-29T04:28:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4022c453_375708fc",
+      "range": {
+        "startLine": 352,
+        "startChar": 0,
+        "endLine": 352,
+        "endChar": 63
+      },
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4ffe8241_e5e6eb4e",
@@ -269,6 +341,30 @@
           ]
         }
       ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a9095827_94c40fe2",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 379,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2025-04-29T04:28:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4ffe8241_e5e6eb4e",
+      "range": {
+        "startLine": 379,
+        "startChar": 0,
+        "endLine": 379,
+        "endChar": 74
+      },
       "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -340,6 +436,30 @@
           ]
         }
       ],
+      "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3af339a5_d5510fa8",
+        "filename": "media/java/android/media/audiopolicy/AudioProductStrategy.java",
+        "patchSetId": 13
+      },
+      "lineNbr": 602,
+      "author": {
+        "id": 1512908
+      },
+      "writtenOn": "2025-04-29T04:28:43Z",
+      "side": 1,
+      "message": "I added the info to constructor let me know if this is sufficient or do you still want to initialize this to -1.",
+      "parentUuid": "a44a2de7_129cb77d",
+      "range": {
+        "startLine": 602,
+        "startChar": 0,
+        "endLine": 602,
+        "endChar": 38
+      },
       "revId": "7111a21431209a153b67c4fe5b5dd933ee47e39b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
