@@ -217,6 +217,10 @@ public final class Proxy {
     /** @hide */
     public static void setHttpProxyConfiguration(String host, String port, String exclList,
             Uri pacFileUrl) {
+        final boolean usePac = !Uri.EMPTY.equals(pacFileUrl);
+        if (usePac) {
+            ProxySelector.setDefault(new PacProxySelector());
+        }
         if (exclList != null) exclList = exclList.replace(",", "|");
         if (false) Log.d(TAG, "setHttpProxySystemProperty :"+host+":"+port+" - "+exclList);
         if (host != null) {
@@ -240,9 +244,7 @@ public final class Proxy {
             System.clearProperty("http.nonProxyHosts");
             System.clearProperty("https.nonProxyHosts");
         }
-        if (!Uri.EMPTY.equals(pacFileUrl)) {
-            ProxySelector.setDefault(new PacProxySelector());
-        } else {
+        if (!usePac) {
             ProxySelector.setDefault(sDefaultProxySelector);
         }
     }
