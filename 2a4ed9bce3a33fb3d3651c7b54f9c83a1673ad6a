@@ -50,6 +50,23 @@
       "message": "Possible side-effect discovered; marking as WIP wile we investigate further",
       "revId": "2a4ed9bce3a33fb3d3651c7b54f9c83a1673ad6a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5df07f84_fe0b1a0b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3664976
+      },
+      "writtenOn": "2025-06-10T13:58:43Z",
+      "side": 1,
+      "message": "The mentioned side-effects only happen on Android 14, but are already solved in Android 15. See linked bug for details.",
+      "revId": "2a4ed9bce3a33fb3d3651c7b54f9c83a1673ad6a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
