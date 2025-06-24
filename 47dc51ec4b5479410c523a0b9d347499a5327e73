@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a5ae3e60_5f333b69",
+        "filename": "services/core/java/com/android/server/power/stats/BatteryStatsImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 16594,
+      "author": {
+        "id": 1003473
+      },
+      "writtenOn": "2025-06-24T17:16:59Z",
+      "side": 1,
+      "message": "This operation does not seem necessary because p.marshall does not use dataPosition, see https://android.googlesource.com/platform/frameworks/base/+/jb-release/core/jni/android_os_Parcel.cpp#492",
+      "range": {
+        "startLine": 16594,
+        "startChar": 0,
+        "endLine": 16594,
+        "endChar": 33
+      },
+      "revId": "47dc51ec4b5479410c523a0b9d347499a5327e73",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
