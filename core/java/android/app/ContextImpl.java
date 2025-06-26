@@ -3356,6 +3356,11 @@ class ContextImpl extends Context {
 
             if (res != null) {
                 if (!res.exists() && android.os.Process.myUid() == android.os.Process.SYSTEM_UID) {
+                    if (isCredentialProtectedStorage() && !getSystemService(UserManager.class)
+                                    .isUserUnlockingOrUnlocked(UserHandle.myUserId())) {
+                        Log.w(TAG, "CE not unlocked, delaying dataDir access");
+                        return null;
+                    }
                     Log.wtf(TAG, "Data directory doesn't exist for package " + getPackageName(),
                             new Throwable());
                 }
