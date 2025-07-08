@@ -385,6 +385,14 @@ public class AdbService extends IAdbManager.Stub {
     }
 
     @Override
+    public void setAdbTcpEnabled(boolean enabled) {
+        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
+        if (mDebuggingManager != null) {
+            mDebuggingManager.setAdbTcpEnabled(enabled);
+        }
+    }
+
+    @Override
     public void registerCallback(IAdbCallback callback) throws RemoteException {
         Slog.d(TAG, "Registering callback " + callback);
         mCallbacks.register(callback);

@@ -122,4 +122,6 @@ interface IAdbManager {
      * Unregister callback for ADB debugging changed notification.
      */
     void unregisterCallback(IAdbCallback callback);
+
+    void setAdbTcpEnabled(boolean enabled);
 }

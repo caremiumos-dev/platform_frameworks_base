@@ -127,6 +127,7 @@ import java.util.function.Consumer;
  * The Settings provider contains global system-level device preferences.
  */
 public final class Settings {
+
     /** @hide */
     public static final boolean DEFAULT_OVERRIDEABLE_BY_RESTORE = false;
 
@@ -13463,6 +13464,13 @@ public final class Settings {
          */
         @Readable
         public static final String ADB_WIFI_ENABLED = "adb_wifi_enabled";
+
+        /**
+         * Whether ADB over Ethernet is enabled.
+         * @hide
+         */
+        @Readable
+        public static final String ADB_TCP_ENABLED = "adb_tcp_enabled";
 
         /**
          * Whether existing ADB sessions over both USB and Wifi should be terminated when the user

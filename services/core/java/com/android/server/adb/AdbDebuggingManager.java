@@ -710,6 +710,8 @@ public class AdbDebuggingManager {
         static final int MESSAGE_ADB_PERSIST_KEYSTORE = 8;
         static final int MESSAGE_ADB_UPDATE_KEYSTORE = 9;
         static final int MESSAGE_ADB_CONNECTED_KEY = 10;
+        static final int MESSAGE_ADB_TCP_ENABLED = 2001;
+        static final int MESSAGE_ADB_TCP_DISABLED = 2002;
 
         // === Messages from the UI ==============
         // UI asks adbd to enable adbdwifi
@@ -863,6 +865,24 @@ public class AdbDebuggingManager {
                     }
                     stopAdbDebuggingThread();
                     mAdbUsbEnabled = false;
+                    break;
+
+                case MESSAGE_ADB_TCP_ENABLED:
+                    if (mAdbTcpEnabled)
+                        break;
+                    mAdbTcpEnabled = true;
+                    if (mAdbUsbEnabled || mAdbTcpEnabled) {
+                        startAdbDebuggingThread();
+                    }
+                    break;
+
+                case MESSAGE_ADB_TCP_DISABLED:
+                    if (!mAdbTcpEnabled)
+                        break;
+                    mAdbTcpEnabled = false;
+                    if (!mAdbUsbEnabled && !mAdbTcpEnabled) {
+                        stopAdbDebuggingThread();
+                    }
                     break;
 
                 case MESSAGE_ADB_ALLOW: {
@@ -2206,6 +2226,16 @@ public class AdbDebuggingManager {
         public boolean isTrustedNetwork(String bssid) {
             return mTrustedNetworks.contains(bssid);
         }
+    }
+
+   // private static final int TRANSPORT_TYPE_UNKNOWN = 0;
+   // private static final int TRANSPORT_TYPE_USB = 1;
+   // private static final int TRANSPORT_TYPE_TCP = 2;
+    private boolean mAdbTcpEnabled;
+
+    public void setAdbTcpEnabled(boolean enabled) {
+        mHandler.sendEmptyMessage(enabled ? AdbDebuggingHandler.MESSAGE_ADB_TCP_ENABLED
+                                          : AdbDebuggingHandler.MESSAGE_ADB_TCP_DISABLED);
     }
 
     /**
