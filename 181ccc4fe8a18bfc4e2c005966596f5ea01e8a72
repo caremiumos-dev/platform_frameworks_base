@@ -34,6 +34,24 @@
       "parentUuid": "c4dc215b_93afc91d",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "38702a5a_3e01204a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4220794
+      },
+      "writtenOn": "2025-07-15T19:21:23Z",
+      "side": 1,
+      "message": "Hi Richard,\nI have already reported this as Security issue ,\nhttps://issuetracker.google.com/issues/428344413\nThe Security team marked the bug as - Won\u0027t fix (Infeasible)\nI think,The above security report url won\u0027t be accessible to you. \n\nI Strongly believe this as security issue that if the methods are used in code to prevent File Inclusion or XSS it can be bypassed.\n\nCould you please check this with the security team and Let them know the impact and triage the below report,\nhttps://issuetracker.google.com/issues/428344413",
+      "parentUuid": "467a88e6_0c9249a5",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
