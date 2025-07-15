@@ -70,6 +70,24 @@
       "parentUuid": "38702a5a_3e01204a",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5a2d58db_5bd63c7e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4220794
+      },
+      "writtenOn": "2025-07-15T19:52:45Z",
+      "side": 1,
+      "message": "Hi Thanks for the reply,\n\nThis issue was identified when i was Conducting Penetration testing in a production app. after finding root cause i quickly filed security report to Google.\n\nI have shared sample app code as poc in the security report itself.\n\nIf any information needed let me know.\n\nThank you.",
+      "parentUuid": "7b29bc6f_1ace3b06",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
