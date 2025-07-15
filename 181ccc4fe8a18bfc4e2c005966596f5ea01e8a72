@@ -16,6 +16,24 @@
       "message": "Hi, this patch fixes a security-related bug in URLUtil.isJavaScriptUrl() and URLUtil.isFileUrl(), where case-sensitive checks allow bypasses like \"JavaScript:\" or \"\"FILe:\".\n\nThis change normalizes input to lowercase before checking. Let me know if further Changes needed.\n\nThanks!",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "467a88e6_0c9249a5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1021004
+      },
+      "writtenOn": "2025-07-15T19:07:45Z",
+      "side": 1,
+      "message": "Hi - thanks for spotting this. It\u0027s best to report potential security issues via the process in https://source.android.com/docs/security/overview/updates-resources#report-issues so that they can be triaged and handled by the security team. If you\u0027re able to do that it would be the best way to proceed here. If not, I can file an issue on your behalf.",
+      "parentUuid": "c4dc215b_93afc91d",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
