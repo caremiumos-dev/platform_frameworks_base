@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c4dc215b_93afc91d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4220794
+      },
+      "writtenOn": "2025-07-15T18:08:53Z",
+      "side": 1,
+      "message": "Hi, this patch fixes a security-related bug in URLUtil.isJavaScriptUrl() and URLUtil.isFileUrl(), where case-sensitive checks allow bypasses like \"JavaScript:\" or \"\"FILe:\".\n\nThis change normalizes input to lowercase before checking. Let me know if further Changes needed.\n\nThanks!",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
