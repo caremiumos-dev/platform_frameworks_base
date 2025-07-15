@@ -124,6 +124,24 @@
       "parentUuid": "29925252_7590f7c6",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9d1b4084_4411a299",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1141809
+      },
+      "writtenOn": "2025-07-15T22:42:32Z",
+      "side": 1,
+      "message": "Ok thank you. Let\u0027s wait and see what they say on the internal bug (we are discussing this on internal bug http://b/429182135). We will let you know if we can accept this patch or if we need to go in a different direction.\n\nIf you don\u0027t hear back by the end of this week, then please respond here on Friday or Monday to remind us to give an update.",
+      "parentUuid": "c95215e6_686cfd2c",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
