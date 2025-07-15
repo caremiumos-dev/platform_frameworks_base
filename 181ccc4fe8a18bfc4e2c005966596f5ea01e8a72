@@ -52,6 +52,24 @@
       "parentUuid": "467a88e6_0c9249a5",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7b29bc6f_1ace3b06",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1021004
+      },
+      "writtenOn": "2025-07-15T19:38:59Z",
+      "side": 1,
+      "message": "Thanks for the issue link - I do have access as I work with the security team regularly on WebView-related issues; I\u0027ll discuss with them.\n\nIf you are aware of specific examples of apps relying on these functions for a security check, you should probably share those examples on the security issue.",
+      "parentUuid": "38702a5a_3e01204a",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
