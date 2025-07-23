@@ -178,6 +178,24 @@
       "parentUuid": "53855a46_e6cc2dba",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dec516b7_dc43660d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4220794
+      },
+      "writtenOn": "2025-07-23T10:54:19Z",
+      "side": 1,
+      "message": "Yeah that\u0027s fine Nate.\nI have done some Advance search on public github repositories,\nhttps://github.com/search?q\u003dUrlutil.isJavaScriptURL+OR+UrlUtil.isFileUrl\u0026type\u003dcode\n\nAnd there are various usage of this method\u0027s in both security Validations and Functionality perspective.\nEven Mozilla - Gecko(rendering engine for the web) Java version code used this method.\nExample,\nhttps://github.com/BrowserWorks/Waterfox-Classic/blob/1d1570c2e7b0cffded3b21ea2b2e975bc9f28f48/mobile/android/services/src/main/java/org/mozilla/gecko/sync/setup/activities/WebURLFinder.java#L80\n\nWaterfox classic a legacy web browser built from Mozilla Gecko Java Source code has - isWebURL() method where the method checks can be bypassed by this issue.\n\n\nMay be i will add this additional information in the Bug Report it will be helpful in Triaging the report.",
+      "parentUuid": "08fb53cb_b8f7b980",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
