@@ -196,6 +196,24 @@
       "parentUuid": "08fb53cb_b8f7b980",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7b0fe539_5e2c706b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1141809
+      },
+      "writtenOn": "2025-07-23T16:07:55Z",
+      "side": 1,
+      "message": "Please add the info on the bug report. Let\u0027s keep the code review focused on the code change itself.",
+      "parentUuid": "dec516b7_dc43660d",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
