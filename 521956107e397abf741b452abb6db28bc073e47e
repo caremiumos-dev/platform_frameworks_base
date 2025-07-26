@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8dea20a2_931c8fea",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1889142
+      },
+      "writtenOn": "2025-07-26T20:09:15Z",
+      "side": 1,
+      "message": "Minor nit. Rest all LGTM!",
+      "revId": "521956107e397abf741b452abb6db28bc073e47e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4e6d13fa_d603145e",
+        "filename": "services/core/java/com/android/server/BluetoothManagerService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 752,
+      "author": {
+        "id": 1889142
+      },
+      "writtenOn": "2025-07-26T20:09:15Z",
+      "side": 1,
+      "message": "```suggestion\n                Slog.e(TAG, \"getState failed\", e);\n```",
+      "revId": "521956107e397abf741b452abb6db28bc073e47e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
