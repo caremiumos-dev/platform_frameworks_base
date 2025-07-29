@@ -232,6 +232,24 @@
       "parentUuid": "7b0fe539_5e2c706b",
       "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4e0eef08_4a3ba1b2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1141809
+      },
+      "writtenOn": "2025-07-29T18:04:09Z",
+      "side": 1,
+      "message": "Thank you. The bug is being reviewed internally this week. I hope to have a final response for you in a few days.",
+      "parentUuid": "086f1ee2_4b81fe9b",
+      "revId": "181ccc4fe8a18bfc4e2c005966596f5ea01e8a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
