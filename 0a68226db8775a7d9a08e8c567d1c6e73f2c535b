@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bd15c765_8201bd25",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1141809
+      },
+      "writtenOn": "2025-08-12T21:47:20Z",
+      "side": 1,
+      "message": "Hi, here is the response I was asked to provide. This comes from the Android security council:\n\n\u003e This falls in the broad category of URL/URI (in practice used interchangeably) parsing disparities, which has been extensively discussed in the security community. This is an internet-wide problem and is not specific to Android.\n\u003e\n\u003e Every library that handles URLs has its own philosophy about permissiveness, compatibility, error handling, and intended use-cases. Changing the behavior of core/java/android/webkit/URLUtil.java will break compatibility with its current users, while also not improve security for any future users due to parsing disparities with their ultimate use-cases.\n\nSorry if this is not the response you wanted. Unfortunately, we cannot accept this patch.",
+      "revId": "0a68226db8775a7d9a08e8c567d1c6e73f2c535b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
