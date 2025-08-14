@@ -923,7 +923,7 @@ public class OverScroller {
                     final int index = (int) (NB_SAMPLES * t);
                     float distanceCoef = 1.f;
                     float velocityCoef = 0.f;
-                    if (index < NB_SAMPLES) {
+                    if (index >= 0 && index < NB_SAMPLES) {
                         final float t_inf = (float) index / NB_SAMPLES;
                         final float t_sup = (float) (index + 1) / NB_SAMPLES;
                         final float d_inf = SPLINE_POSITION[index];
