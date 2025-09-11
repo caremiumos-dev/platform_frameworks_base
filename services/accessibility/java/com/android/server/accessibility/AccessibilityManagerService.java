@@ -5535,7 +5535,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     // to create event handler per display. The events should be handled by the
                     // display which is overlaid by it.
                     final Display display = displays[i];
-                    if (isValidDisplay(display)) {
+                    if (display != null) {
                         mDisplaysList.add(display);
                     }
                 }
@@ -5552,7 +5552,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 Slog.e(LOG_TAG, errorMessage);
             }
             final Display display = mDisplayManager.getDisplay(displayId);
-            if (!isValidDisplay(display)) {
+            if (display == null) {
                 return;
             }
 
@@ -5636,24 +5636,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 }
             }
             pw.println();
-        }
-
-        private boolean isValidDisplay(@Nullable Display display) {
-            if (display == null) {
-                return false;
-            }
-            // Private virtual displays are created by the ap and is not allowed to access by other
-            // aps. We assume we could ignore them.
-            // The exceptional case is for bubbles. Because the bubbles use the activityView, and
-            // the virtual display of the activityView is private, so if the owner UID of the
-            // private virtual display is the one of system ui which creates the virtual display of
-            // bubbles, then this private virtual display should track the windows.
-            if (display.getType() == Display.TYPE_VIRTUAL
-                    && (display.getFlags() & Display.FLAG_PRIVATE) != 0
-                    && display.getOwnerUid() != mSystemUiUid) {
-                return false;
-            }
-            return true;
         }
 
         /** Wrapper of DisplayManager for testing. */
