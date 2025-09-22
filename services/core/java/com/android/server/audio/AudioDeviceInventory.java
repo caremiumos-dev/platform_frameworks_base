@@ -1797,6 +1797,7 @@ public class AudioDeviceInventory {
         int device = attributes.getInternalType();
         String address = attributes.getAddress();
         String deviceName = attributes.getName();
+        boolean hdmiArcSadUpdate = false;
         if (AudioService.DEBUG_DEVICES) {
             Slog.i(TAG, "handleDeviceConnection(" + connect + " dev:"
                     + Integer.toHexString(device) + " address:" + address
@@ -1816,19 +1817,26 @@ public class AudioDeviceInventory {
             }
             DeviceInfo di = mConnectedDevices.get(deviceKey);
             boolean isConnected = di != null;
+            if (isConnected &&
+                connect &&
+                (di.mDeviceType == AudioSystem.DEVICE_OUT_HDMI_ARC ||
+                 di.mDeviceType == AudioSystem.DEVICE_OUT_HDMI_EARC)) {
+                hdmiArcSadUpdate = true;
+            }
             if (AudioService.DEBUG_DEVICES) {
-                Slog.i(TAG, "deviceInfo:" + di + " is(already)Connected:" + isConnected);
+                Slog.i(TAG, "deviceInfo:" + di + " is(already)Connected:" + isConnected +
+                        ", hdmiArcSadUpdate:" + hdmiArcSadUpdate);
             }
             // Do not report an error in case of redundant connect or disconnect request
             // as this can cause a state mismatch between BtHelper and AudioDeviceInventory
-            if (connect == isConnected) {
+            if (!hdmiArcSadUpdate && (connect == isConnected)) {
                 Log.i(TAG, "handleDeviceConnection() deviceInfo=" + di + " is already "
                         + (connect ? "" : "dis") + "connected");
                 mmi.set(MediaMetrics.Property.STATE, connect
                         ? MediaMetrics.Value.CONNECT : MediaMetrics.Value.DISCONNECT).record();
                 return true;
             }
-            if (connect && !isConnected) {
+            if ((connect && !isConnected) || hdmiArcSadUpdate) {
                 final int res;
                 if (isForTesting) {
                     res = AudioSystem.AUDIO_STATUS_OK;
