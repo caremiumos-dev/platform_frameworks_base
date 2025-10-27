@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a7cb716b_a35f1612",
+        "filename": "services/core/java/com/android/server/am/ProcessList.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 3445,
+      "author": {
+        "id": 1245797
+      },
+      "writtenOn": "2025-10-27T21:30:26Z",
+      "side": 0,
+      "message": "hmm, I think this removal opens a can of worms.  \nI think there is some investigation that needs to happen here. As this CL stands, persistent processes from non-system users will now have a persistent oom_score and I am not sure that is desirable.  \n\nJust from my gut, I think OomAdjuster policy needs to be reworked to be User state aware and have some decision making around persistent processes from background users. (and perhaps system users are exempt from the importance lowering).\n\n@yamasani@google.com, do have some context on the intent behind persistent processes and some feel about what should happen with persistent processes from secondary users?",
+      "range": {
+        "startLine": 3445,
+        "startChar": 40,
+        "endLine": 3445,
+        "endChar": 51
+      },
+      "revId": "e8c036a1ef65082cbe4e213caea0100ef6120b64",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
