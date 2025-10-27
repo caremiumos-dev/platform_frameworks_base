@@ -22,6 +22,30 @@
       },
       "revId": "e8c036a1ef65082cbe4e213caea0100ef6120b64",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a6296726_9f9dbdd5",
+        "filename": "services/core/java/com/android/server/am/ProcessList.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 3445,
+      "author": {
+        "id": 1245797
+      },
+      "writtenOn": "2025-10-27T22:08:45Z",
+      "side": 0,
+      "message": "Thinking about this a bit more, I think I am further convince of my gut feeling. This issue need to be addressed with an investigation and rework in how OomAdjuster manages processes in Multiuser scnearios. Please file a Feature Request to get this scoped and looked at.",
+      "parentUuid": "a7cb716b_a35f1612",
+      "range": {
+        "startLine": 3445,
+        "startChar": 40,
+        "endLine": 3445,
+        "endChar": 51
+      },
+      "revId": "e8c036a1ef65082cbe4e213caea0100ef6120b64",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
