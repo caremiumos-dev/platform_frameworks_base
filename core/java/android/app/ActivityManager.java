@@ -41,6 +41,7 @@ import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
+import android.app.IAppLaunchObserver;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -164,6 +165,69 @@ public class ActivityManager {
 
     private static volatile boolean sSystemReady = false;
 
+
+    /**
+     * Listener for app launches.
+     * @hide
+     */
+    public interface OnAppLaunchListener {
+        /**
+         * Called when an application is launched.
+         * @param component The component name of the activity that was launched.
+         * @param userId The user id of the user that launched the activity.
+         */
+        void onAppLaunched(ComponentName component, int userId);
+    }
+
+    private final ArrayMap<OnAppLaunchListener, IAppLaunchObserver> mAppLaunchObservers =
+            new ArrayMap<>();
+
+    /**
+     * Registers an observer to be notified when an application is launched.
+     *
+     * @param listener The listener to register.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public void addAppLaunchListener(@NonNull OnAppLaunchListener listener) {
+        synchronized (mAppLaunchObservers) {
+            if (mAppLaunchObservers.containsKey(listener)) {
+                return;
+            }
+            IAppLaunchObserver observer = new IAppLaunchObserver.Stub() {
+                @Override
+                public void onAppLaunched(ComponentName component, int userId) {
+                    listener.onAppLaunched(component, userId);
+                }
+            };
+            try {
+                getTaskService().registerAppLaunchObserver(observer);
+                mAppLaunchObservers.put(listener, observer);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Unregisters a previously registered app launch listener.
+     *
+     * @param listener The listener to unregister.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public void removeAppLaunchListener(@NonNull OnAppLaunchListener listener) {
+        synchronized (mAppLaunchObservers) {
+            IAppLaunchObserver observer = mAppLaunchObservers.remove(listener);
+            if (observer != null) {
+                try {
+                    getTaskService().unregisterAppLaunchObserver(observer);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        }
+    }
 
     private static final int FIRST_START_FATAL_ERROR_CODE = -100;
     private static final int LAST_START_FATAL_ERROR_CODE = -1;

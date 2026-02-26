@@ -161,6 +161,7 @@ import android.app.HandoffActivityData;
 import android.app.IActivityClientController;
 import android.app.IActivityController;
 import android.app.IActivityTaskManager;
+import android.app.IAppLaunchObserver;
 import android.app.IAppTask;
 import android.app.IApplicationThread;
 import android.app.IAssistDataReceiver;
@@ -225,6 +226,7 @@ import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.RemoteCallback;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -407,6 +409,24 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     /** The starting activities which are waiting for their processes to attach. */
     final ArrayList<ActivityRecord> mStartingProcessActivities = new ArrayList<>();
+
+    final RemoteCallbackList<IAppLaunchObserver> mAppLaunchObservers = new RemoteCallbackList<>();
+
+    private final ActivityMetricsLaunchObserver mLaunchObserver = new ActivityMetricsLaunchObserver() {
+        @Override
+        public void onActivityLaunched(long id, ComponentName name, int temperature, String processName, int uid) {
+            int i = mAppLaunchObservers.beginBroadcast();
+            while (i > 0) {
+                i--;
+                try {
+                    mAppLaunchObservers.getBroadcastItem(i).onAppLaunched(name, UserHandle.getUserId(uid));
+                } catch (RemoteException e) {
+                    // RemoteCallbackList handles this
+                }
+            }
+            mAppLaunchObservers.finishBroadcast();
+        }
+    };
 
     /* Global service lock used by the package the owns this service. */
     final WindowManagerGlobalLock mGlobalLock = new WindowManagerGlobalLock();
@@ -1033,6 +1053,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         mVrController = new VrController(mGlobalLock);
         mKeyguardController = mTaskSupervisor.getKeyguardController();
         mPackageConfigPersister = new PackageConfigPersister(mTaskSupervisor.mPersisterQueue, this);
+        mTaskSupervisor.getActivityMetricsLogger().getLaunchObserverRegistry()
+                .registerLaunchObserver(mLaunchObserver);
     }
 
     public void onActivityManagerInternalAdded() {
@@ -2927,6 +2949,18 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         notifyHandoffTaskDataRequestResultReceived(request.receiver, request.taskId, data);
+    }
+
+    @Override
+    public void registerAppLaunchObserver(IAppLaunchObserver observer) {
+        enforceTaskPermission("registerAppLaunchObserver()");
+        mAppLaunchObservers.register(observer);
+    }
+
+    @Override
+    public void unregisterAppLaunchObserver(IAppLaunchObserver observer) {
+        enforceTaskPermission("unregisterAppLaunchObserver()");
+        mAppLaunchObservers.unregister(observer);
     }
 
     @Override

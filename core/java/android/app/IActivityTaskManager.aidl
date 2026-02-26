@@ -22,6 +22,7 @@ import android.app.ApplicationErrorReport;
 import android.app.ContentProviderHolder;
 import android.app.GrantedUriPermission;
 import android.app.HandoffActivityData;
+import android.app.IAppLaunchObserver;
 import android.app.IApplicationThread;
 import android.app.IActivityClientController;
 import android.app.IActivityController;
@@ -440,4 +441,20 @@ interface IActivityTaskManager {
      * @hide
      */
     void reportHandoffActivityData(in IBinder requestToken, in List<HandoffActivityData> data);
+
+    /**
+     * Registers an observer to be notified when an application is launched.
+     *
+     * @param observer The observer to register.
+     * @hide
+     */
+    void registerAppLaunchObserver(in IAppLaunchObserver observer);
+
+    /**
+     * Unregisters a previously registered app launch observer.
+     *
+     * @param observer The observer to unregister.
+     * @hide
+     */
+    void unregisterAppLaunchObserver(in IAppLaunchObserver observer);
 }
