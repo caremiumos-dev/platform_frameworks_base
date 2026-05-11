@@ -435,7 +435,7 @@ public final class FontManagerService extends IFontManager.Stub {
             final Map<String, Typeface> typefaceMap =
                     SystemFonts.buildSystemTypefaces(fontConfig, fallback);
             return Typeface.serializeFontMap(typefaceMap);
-        } catch (IOException | ErrnoException e) {
+        } catch (IOException | ErrnoException e | IllegalArgumentException e) {
             Slog.w(TAG, "Failed to serialize updatable font map. "
                     + "Retrying with system image fonts.", e);
             return null;
