@@ -36,6 +36,9 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.providers.settings.SettingsOperationProto;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.OsConstants;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.AtomicFile;
@@ -849,6 +852,7 @@ final class SettingsState {
                 serializer.endTag(null, TAG_NAMESPACE_HASHES);
                 serializer.endDocument();
                 destination.finishWrite(out);
+                syncParentDirectory(destination.getBaseFile());
 
                 wroteState = true;
 
@@ -911,6 +915,23 @@ final class SettingsState {
                 }
                 break;
             }
+        }
+    }
+
+    private static void syncParentDirectory(File file) {
+        File parent = file.getParentFile();
+        if (parent == null) {
+            return;
+        }
+
+        FileDescriptor fd = null;
+        try {
+            fd = Os.open(parent.getAbsolutePath(), OsConstants.O_RDONLY, 0);
+            Os.fsync(fd);
+        } catch (ErrnoException e) {
+            Slog.w(LOG_TAG, "Failed to fsync parent directory: " + parent, e);
+        } finally {
+            FileUtils.closeQuietly(fd);
         }
     }
 
