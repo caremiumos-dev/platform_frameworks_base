@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4dfc2cc5_9e4563a9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4942682
+      },
+      "writtenOn": "2026-06-23T09:14:38Z",
+      "side": 1,
+      "message": "Hi google,\nWe discovered an issue with fadeout during silent playback and have developed a solution. Could you please review it?",
+      "revId": "e1a5578fa0cd60a22bbfce0d57e70dd5613809f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
