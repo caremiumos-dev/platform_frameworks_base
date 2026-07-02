@@ -59,7 +59,8 @@ class HdrRenderState implements Consumer<Display> {
     }
 
     void startListening() {
-        if (isHdrEnabled() && !mIsListenerRegistered && mViewRoot.mDisplay != null) {
+        if (isHdrEnabled() && !mIsListenerRegistered && mViewRoot.mDisplay != null
+                && mViewRoot.mDisplay.isHdrSdrRatioAvailable()) {
             mViewRoot.mDisplay.registerHdrSdrRatioChangedListener(mViewRoot.mExecutor, this);
             mIsListenerRegistered = true;
         }
