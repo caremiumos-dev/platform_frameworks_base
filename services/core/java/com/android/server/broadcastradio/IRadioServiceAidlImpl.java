@@ -49,9 +49,6 @@ import java.util.Objects;
 final class IRadioServiceAidlImpl extends IRadioService.Stub {
     private static final String TAG = "BcRadioSrvAidl";
 
-    private static final List<String> SERVICE_NAMES = Arrays.asList(
-            IBroadcastRadio.DESCRIPTOR + "/amfm", IBroadcastRadio.DESCRIPTOR + "/dab");
-
     private final BroadcastRadioServiceImpl mAidlHalClient;
     private final BroadcastRadioService mService;
 
@@ -60,10 +57,15 @@ final class IRadioServiceAidlImpl extends IRadioService.Stub {
      */
     public static ArrayList<String> getServicesNames() {
         ArrayList<String> serviceList = new ArrayList<>();
-        for (int i = 0; i < SERVICE_NAMES.size(); i++) {
-            IBinder serviceBinder = ServiceManager.waitForDeclaredService(SERVICE_NAMES.get(i));
-            if (serviceBinder != null) {
-                serviceList.add(SERVICE_NAMES.get(i));
+        String[] instances = ServiceManager.getDeclaredInstances(IBroadcastRadio.DESCRIPTOR);
+        if (instances != null) {
+            for (String instance : instances) {
+                String fullName = IBroadcastRadio.DESCRIPTOR + "/" + instance;
+                IBinder binder = ServiceManager.waitForDeclaredService(fullName);
+                if (binder != null) {
+                    Slogf.i(TAG, "Found service name: (%s)", fullName);
+                    serviceList.add(fullName);
+                }
             }
         }
         return serviceList;

@@ -52,6 +52,8 @@ import java.util.List;
 public final class IRadioServiceAidlImplTest extends ExtendedRadioMockitoTestCase {
 
     private static final int[] ENABLE_TYPES = new int[]{Announcement.TYPE_TRAFFIC};
+    private static final String DEFAULT_SERVICE_NAME =
+            "android.hardware.broadcastradio.IBroadcastRadio/default";
     private static final String AM_FM_SERVICE_NAME =
             "android.hardware.broadcastradio.IBroadcastRadio/amfm";
     private static final String DAB_SERVICE_NAME =
@@ -97,6 +99,9 @@ public final class IRadioServiceAidlImplTest extends ExtendedRadioMockitoTestCas
 
     @Test
     public void getServicesNames_forAidlImpl() {
+        doReturn(new String[]{"amfm", "dab"}).when(
+        () -> ServiceManager.getDeclaredInstances(
+                "android.hardware.broadcastradio.IBroadcastRadio"));
         doReturn(null).when(() -> ServiceManager.waitForDeclaredService(
                 AM_FM_SERVICE_NAME));
         doReturn(mServiceBinderMock).when(() -> ServiceManager.waitForDeclaredService(
@@ -104,6 +109,33 @@ public final class IRadioServiceAidlImplTest extends ExtendedRadioMockitoTestCas
 
         assertWithMessage("Names of services available")
                 .that(IRadioServiceAidlImpl.getServicesNames()).containsExactly(DAB_SERVICE_NAME);
+    }
+
+    @Test
+    public void getServicesNames_withNoDeclaredInstances_returnsEmpty() {
+        doReturn(null).when(
+                () -> ServiceManager.getDeclaredInstances(
+                        "android.hardware.broadcastradio.IBroadcastRadio"));
+
+        assertWithMessage("Names of services when none declared")
+                .that(IRadioServiceAidlImpl.getServicesNames()).isEmpty();
+    }
+
+    @Test
+    public void getServicesNames_withAllInstancesAvailable() {
+        doReturn(new String[]{"default", "amfm", "dab"}).when(
+                () -> ServiceManager.getDeclaredInstances(
+                        "android.hardware.broadcastradio.IBroadcastRadio"));
+        doReturn(mServiceBinderMock).when(() -> ServiceManager.waitForDeclaredService(
+                DEFAULT_SERVICE_NAME));
+        doReturn(mServiceBinderMock).when(() -> ServiceManager.waitForDeclaredService(
+                AM_FM_SERVICE_NAME));
+        doReturn(mServiceBinderMock).when(() -> ServiceManager.waitForDeclaredService(
+                DAB_SERVICE_NAME));
+
+        assertWithMessage("Names of services available")
+                .that(IRadioServiceAidlImpl.getServicesNames())
+                .containsExactly(DEFAULT_SERVICE_NAME, AM_FM_SERVICE_NAME, DAB_SERVICE_NAME);
     }
 
     @Test
