@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "231d56ee_4783d92c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1568592
+      },
+      "writtenOn": "2026-08-11T11:48:40Z",
+      "side": 1,
+      "message": "Thank you for this fix. We are merging this internally now to be available for the next AOSP release",
+      "revId": "f08c3292bfca46e019393a1381bdc3fac8aca6c5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
