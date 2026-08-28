@@ -634,6 +634,9 @@ public final class AudioAttributes implements Parcelable {
      * @return one of the values that can be set in {@link Builder#setContentType(int)}
      */
     public int getContentType() {
+        if (isSdkContentType(mContentType)) {
+            return CONTENT_TYPE_UNKNOWN;
+        }
         return mContentType;
     }
 
@@ -1013,17 +1016,12 @@ public final class AudioAttributes implements Parcelable {
          * @return the same Builder instance.
          */
         public Builder setContentType(@AttributeContentType int contentType) {
-            switch (contentType) {
-                case CONTENT_TYPE_UNKNOWN:
-                case CONTENT_TYPE_MOVIE:
-                case CONTENT_TYPE_MUSIC:
-                case CONTENT_TYPE_SONIFICATION:
-                case CONTENT_TYPE_SPEECH:
-                    mContentType = contentType;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid content type " + contentType);
+            if (isSdkContentType(contentType)) {
+                mContentType = contentType;
+            } else {
+                throw new IllegalArgumentException("Invalid content type " + contentType);
             }
+
             return this;
         }
 
