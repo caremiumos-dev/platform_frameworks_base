@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apns version="8">
+  <apn carrier="Private 5G"
+       mcc="315"
+       mnc="010"
+       apn="internet"
+       type="default,ia,supl"
+       protocol="IPV4V6"
+       roaming_protocol="IPV4V6"
+       authtype="-1"
+  />
+</apns>
