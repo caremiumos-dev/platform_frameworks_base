@@ -19,11 +19,38 @@ package com.android.server.pm.permission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 
 /**
  * Data class for OEM and privileged app permission allowlist state.
  */
 public final class PermissionAllowlist {
+    // Scope is a partition name, or "apex:" followed by the APEX module name.
+    private final ArrayMap<String, ArrayMap<String, ArraySet<String>>> mForceDeniedPermissions =
+            new ArrayMap<>();
+
+    public void addForceDeniedPermission(@NonNull String scope, @NonNull String packageName,
+            @NonNull String permissionName) {
+        ArrayMap<String, ArraySet<String>> packages = mForceDeniedPermissions.get(scope);
+        if (packages == null) {
+            packages = new ArrayMap<>();
+            mForceDeniedPermissions.put(scope, packages);
+        }
+        ArraySet<String> permissions = packages.get(packageName);
+        if (permissions == null) {
+            permissions = new ArraySet<>();
+            packages.put(packageName, permissions);
+        }
+        permissions.add(permissionName);
+    }
+
+    public boolean isPermissionForceDenied(@NonNull String scope, @NonNull String packageName,
+            @NonNull String permissionName) {
+        final ArrayMap<String, ArraySet<String>> packages = mForceDeniedPermissions.get(scope);
+        final ArraySet<String> permissions = packages == null ? null : packages.get(packageName);
+        return permissions != null && permissions.contains(permissionName);
+    }
+
     @NonNull
     private final ArrayMap<String, ArrayMap<String, Boolean>> mOemAppAllowlist = new ArrayMap<>();
 

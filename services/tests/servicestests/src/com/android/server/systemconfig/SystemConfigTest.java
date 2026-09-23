@@ -96,6 +96,50 @@ public class SystemConfigTest {
         mSysConfig.readPermissions(parser, libraryDir, permissionFlag);
     }
 
+    @Test
+    public void readForceDenyPermissions() throws Exception {
+        final File folder = createTempSubfolder("force-deny/etc/permissions");
+        createTempFile(folder, "policy.xml", "<permissions>"
+                + "<force-deny-permission package=\"com.example.app\" name=\"test.permission\"/>"
+                + "<privapp-permissions package=\"com.example.app\">"
+                + "<permission name=\"test.permission\"/></privapp-permissions>"
+                + "<force-deny-permission package=\"com.example.app\"/>"
+                + "<force-deny-permission name=\"missing.package\"/>"
+                + "</permissions>");
+        readPermissions(folder, ~0);
+        assertThat(mSysConfig.getPermissionAllowlist().isPermissionForceDenied(
+                "system", "com.example.app", "test.permission")).isTrue();
+        assertThat(mSysConfig.getPermissionAllowlist().isPermissionForceDenied(
+                "product", "com.example.app", "test.permission")).isFalse();
+        assertThat(mSysConfig.getPermissionAllowlist().getPrivilegedAppAllowlistState(
+                "com.example.app", "test.permission")).isTrue();
+        assertThat(mSysConfig.getPermissionAllowlist().isPermissionForceDenied(
+                "system", "com.example.app", "missing.package")).isFalse();
+    }
+
+    @Test
+    public void readForceDenyPermissionsDisallowedSource() throws Exception {
+        final File folder = createTempSubfolder("disallowed/etc/permissions");
+        createTempFile(folder, "policy.xml", "<permissions>"
+                + "<force-deny-permission package=\"com.example.app\" name=\"test.permission\"/>"
+                + "</permissions>");
+        readPermissions(folder, 0);
+        assertThat(mSysConfig.getPermissionAllowlist().isPermissionForceDenied(
+                "system", "com.example.app", "test.permission")).isFalse();
+    }
+
+    @Test
+    public void readLegacyDenyPermissionsForMigration() throws Exception {
+        final File folder = createTempSubfolder("legacy-deny/etc/permissions");
+        createTempFile(folder, "policy.xml", "<permissions>"
+                + "<privapp-permissions package=\"com.example.app\">"
+                + "<deny-permission name=\"test.permission\"/></privapp-permissions>"
+                + "</permissions>");
+        readPermissions(folder, ~0);
+        assertThat(mSysConfig.getPermissionAllowlist().getPrivilegedAppAllowlistState(
+                "com.example.app", "test.permission")).isFalse();
+    }
+
     /**
      * Tests that readPermissions works correctly for the tag: install-in-user-type
      */

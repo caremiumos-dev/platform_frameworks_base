@@ -18,6 +18,7 @@ package com.android.server.permission.test
 
 import android.content.pm.PermissionInfo
 import android.os.Build
+import com.android.internal.os.RoSystemProperties
 import com.android.server.permission.access.MutableAccessState
 import com.android.server.permission.access.MutateStateScope
 import com.android.server.permission.access.immutable.IndexedListSet
@@ -29,6 +30,7 @@ import com.android.server.pm.pkg.PackageState
 import com.android.server.testutils.mock
 import com.android.server.testutils.whenever
 import com.google.common.truth.Truth.assertWithMessage
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -196,6 +198,7 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
 
     @Test
     fun testEvaluatePermissionState_signaturePrivilegedPermissionNotAllowlisted_isNotGranted() {
+        assumeTrue(!RoSystemProperties.CONTROL_PRIVAPP_PERMISSIONS_DISABLE)
         val oldFlags = 0
         testEvaluatePermissionState(
             oldFlags,
@@ -203,8 +206,6 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
             isInstalledPackageSystem = true,
             isInstalledPackagePrivileged = true,
             isInstalledPackageProduct = true,
-            // To mock the return value of shouldGrantPrivilegedOrOemPermission()
-            isInstalledPackageVendor = true,
             isNewInstall = true
         ) {
             val platformPackage = mockPackageState(
@@ -288,13 +289,106 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
             .isEqualTo(expectedNewFlags)
     }
 
+    @Test
+    fun testEvaluatePermissionState_signatureMatchMissingPrivilegedAllowlist_getsGranted() {
+        testSignatureGrantWithoutPrivilegedAllowlist(null)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_signatureMatchLegacyDeny_isNotGranted() {
+        assumeTrue(!RoSystemProperties.CONTROL_PRIVAPP_PERMISSIONS_DISABLE)
+        testSignatureGrantWithoutPrivilegedAllowlist(false, expectedGranted = false)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_signatureMatchForceDenyPrivApp_isNotGranted() {
+        testSignatureGrantWithoutPrivilegedAllowlist(null, forceDeny = true,
+            expectedGranted = false)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_signatureMatchForceDenyNormalSystemApp_isNotGranted() {
+        testSignatureGrantWithoutPrivilegedAllowlist(null, forceDeny = true,
+            privileged = false, expectedGranted = false)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_forceDenyOtherPartition_doesNotDeny() {
+        testSignatureGrantWithoutPrivilegedAllowlist(null, forceDeny = true, denyScope = "system")
+    }
+
+    @Test
+    fun testEvaluatePermissionState_forceDenyOverridesAllowEntry_isNotGranted() {
+        testSignatureGrantWithoutPrivilegedAllowlist(true, forceDeny = true,
+            expectedGranted = false)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_forceDenySharedUid_isNotGranted() {
+        testSignatureGrantWithoutPrivilegedAllowlist(null, forceDeny = true, sharedUid = true,
+            expectedGranted = false)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_forceDenyDevelopmentCannotBeRegranted() {
+        testSignatureGrantWithoutPrivilegedAllowlist(null, forceDeny = true, development = true,
+            expectedGranted = false)
+        mutateState {
+            with(appIdPermissionPolicy) {
+                updatePermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_NAME_0,
+                    PermissionFlags.RUNTIME_GRANTED, PermissionFlags.RUNTIME_GRANTED)
+            }
+        }
+        assertWithMessage("Development grants must not bypass explicit denial")
+            .that(getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_NAME_0))
+            .isEqualTo(0)
+    }
+
+    private fun testSignatureGrantWithoutPrivilegedAllowlist(
+        allowlistState: Boolean?,
+        forceDeny: Boolean = false,
+        privileged: Boolean = true,
+        denyScope: String = "product",
+        sharedUid: Boolean = false,
+        development: Boolean = false,
+        expectedGranted: Boolean = true
+    ) {
+        testEvaluatePermissionState(
+            0,
+            PermissionInfo.PROTECTION_SIGNATURE or PermissionInfo.PROTECTION_FLAG_PRIVILEGED or
+                (if (development) PermissionInfo.PROTECTION_FLAG_DEVELOPMENT else 0),
+            isInstalledPackageSystem = true,
+            isInstalledPackagePrivileged = privileged,
+            isInstalledPackageProduct = true,
+            isInstalledPackageSignatureMatching = true,
+            isNewInstall = true
+        ) {
+            addPackageState(mockPackageState(PLATFORM_APP_ID,
+                mockAndroidPackage(PLATFORM_PACKAGE_NAME)))
+            setupAllowlist(PACKAGE_NAME_1, allowlistState)
+            val deniedPackage = if (sharedUid) PACKAGE_NAME_2 else PACKAGE_NAME_1
+            if (sharedUid) {
+                addPackageState(mockPackageState(APP_ID_1, mockAndroidPackage(PACKAGE_NAME_2),
+                    isSystem = true, isProduct = true))
+            }
+            val allowlist = oldState.externalState.permissionAllowlist
+            whenever(allowlist.isPermissionForceDenied(denyScope, deniedPackage,
+                PERMISSION_NAME_0)).thenReturn(forceDeny)
+        }
+
+        assertWithMessage("Explicit denial must precede signature and privileged authorization")
+            .that(getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_NAME_0))
+            .isEqualTo(if (expectedGranted) PermissionFlags.PROTECTION_GRANTED else 0)
+        mutateState { with(appIdPermissionPolicy) { onSystemReady() } }
+    }
+
     private fun setupAllowlist(
         packageName: String,
-        allowlistState: Boolean,
+        allowlistState: Boolean?,
         state: MutableAccessState = oldState
     ) {
         state.mutateExternalState().setPrivilegedPermissionAllowlistPackages(
-            MutableIndexedListSet<String>().apply { add(packageName) }
+            MutableIndexedListSet<String>().apply { add(PACKAGE_NAME_0) }
         )
         val mockAllowlist = mock<PermissionAllowlist> {
             whenever(

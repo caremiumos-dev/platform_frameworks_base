@@ -885,6 +885,10 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 setPermissionFlags(appId, userId, permissionName, newFlags)
             }
         } else if (permission.isSignature || permission.isInternal) {
+            if (isPermissionForceDenied(appId, permission)) {
+                setPermissionFlags(appId, userId, permissionName, 0)
+                return
+            }
             val wasProtectionGranted = oldFlags.hasBits(PermissionFlags.PROTECTION_GRANTED)
             var newFlags =
                 if (hasMissingPackage && wasProtectionGranted) {
@@ -892,15 +896,16 @@ class AppIdPermissionPolicy : SchemePolicy() {
                     // androidPackage
                     PermissionFlags.PROTECTION_GRANTED
                 } else {
-                    val mayGrantByPrivileged =
-                        !permission.isPrivileged ||
-                            requestingPackageStates.anyIndexed { _, it ->
-                                checkPrivilegedPermissionAllowlistIfNeeded(it, permission)
-                            }
                     val shouldGrantBySignature =
                         permission.isSignature &&
                             requestingPackageStates.anyIndexed { _, it ->
                                 shouldGrantPermissionBySignature(it, permission)
+                            }
+                    val mayGrantByPrivileged =
+                        shouldGrantBySignature ||
+                            !permission.isPrivileged ||
+                            requestingPackageStates.anyIndexed { _, it ->
+                                checkPrivilegedPermissionAllowlistIfNeeded(it, permission)
                             }
                     val shouldGrantByProtectionFlags =
                         requestingPackageStates.anyIndexed { _, it ->
@@ -1170,6 +1175,31 @@ class AppIdPermissionPolicy : SchemePolicy() {
             }
         }
         return false
+    }
+
+    private fun MutateStateScope.isPermissionForceDenied(
+        appId: Int,
+        permission: Permission
+    ): Boolean {
+        if (!(permission.isSignature || permission.isInternal)) return false
+        val allowlist = newState.externalState.permissionAllowlist
+        return newState.externalState.appIdPackageNames[appId]?.anyIndexed { _, packageName ->
+            val packageState = newState.externalState.packageStates[packageName]
+            if (packageState == null || !packageState.isSystem) return@anyIndexed false
+            val scope = when {
+                packageState.apexModuleName != null -> "apex:${packageState.apexModuleName}"
+                packageState.isVendor || packageState.isOdm -> "vendor"
+                packageState.isProduct -> "product"
+                packageState.isSystemExt -> "system_ext"
+                else -> "system"
+            }
+            allowlist.isPermissionForceDenied(scope, packageName, permission.name) ||
+                (!RoSystemProperties.CONTROL_PRIVAPP_PERMISSIONS_DISABLE &&
+                    packageState.isPrivileged && permission.isPrivileged &&
+                    packageName != PLATFORM_PACKAGE_NAME &&
+                    permission.packageName in newState.externalState.privilegedPermissionAllowlistPackages &&
+                    getPrivilegedPermissionAllowlistState(packageState, permission.name) == false)
+        } == true
     }
 
     private fun MutateStateScope.shouldGrantPermissionBySignature(
@@ -1747,7 +1777,12 @@ class AppIdPermissionPolicy : SchemePolicy() {
             newState.userStates[userId]!!
                 .appIdPermissionFlags[appId]
                 .getWithDefault(permissionName, 0)
-        val newFlags = (oldFlags andInv flagMask) or (flagValues and flagMask)
+        val permission = newState.systemState.permissions[permissionName]
+        val newFlags = if (permission != null && isPermissionForceDenied(appId, permission)) {
+            0
+        } else {
+            (oldFlags andInv flagMask) or (flagValues and flagMask)
+        }
         if (oldFlags == newFlags) {
             return false
         }

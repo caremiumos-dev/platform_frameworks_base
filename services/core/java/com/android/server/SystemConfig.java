@@ -1390,6 +1390,14 @@ public class SystemConfig {
                             XmlUtils.skipCurrentTag(parser);
                         }
                     } break;
+                    case "force-deny-permission": {
+                        if (allowPrivappPermissions) {
+                            readForceDenyPermission(parser, permFile);
+                        } else {
+                            logNotAllowedInPartition(name, permFile, parser);
+                            XmlUtils.skipCurrentTag(parser);
+                        }
+                    } break;
                     case "signature-permissions": {
                         if (allowSignaturePermissions) {
                             // signature permissions from system, apex, vendor, product and
@@ -1922,6 +1930,35 @@ public class SystemConfig {
         readPermissionAllowlist(parser, allowlist, "privapp-permissions");
     }
 
+    private void readForceDenyPermission(XmlPullParser parser, File permFile)
+            throws IOException, XmlPullParserException {
+        final String packageName = parser.getAttributeValue(null, "package");
+        final String permissionName = parser.getAttributeValue(null, "name");
+        if (TextUtils.isEmpty(packageName) || TextUtils.isEmpty(permissionName)) {
+            Slog.w(TAG, "package and name are required for <force-deny-permission> in "
+                    + permFile);
+            XmlUtils.skipCurrentTag(parser);
+            return;
+        }
+        final Path path = permFile.toPath();
+        final String scope;
+        if (path.startsWith(Environment.getVendorDirectory().toPath())
+                || path.startsWith(Environment.getOdmDirectory().toPath())) {
+            scope = "vendor";
+        } else if (path.startsWith(Environment.getProductDirectory().toPath())) {
+            scope = "product";
+        } else if (path.startsWith(Environment.getSystemExtDirectory().toPath())) {
+            scope = "system_ext";
+        } else if (path.startsWith(Environment.getApexDirectory().toPath())) {
+            scope = "apex:" + getApexModuleNameFromFilePath(path,
+                    Environment.getApexDirectory().toPath());
+        } else {
+            scope = "system";
+        }
+        mPermissionAllowlist.addForceDeniedPermission(scope, packageName, permissionName);
+        XmlUtils.skipCurrentTag(parser);
+    }
+
     private void readSignatureAppPermissions(@NonNull XmlPullParser parser,
             @NonNull ArrayMap<String, ArrayMap<String, Boolean>> allowlist)
             throws IOException, XmlPullParserException {
@@ -2006,6 +2043,10 @@ public class SystemConfig {
                 }
                 permissions.put(permissionName, Boolean.TRUE);
             } else if ("deny-permission".equals(name)) {
+                if ("privapp-permissions".equals(tagName)) {
+                    Slog.w(TAG, "Deprecated <deny-permission> for " + packageName
+                            + "; migrate to a top-level <force-deny-permission>");
+                }
                 String permissionName = parser.getAttributeValue(null, "name");
                 if (TextUtils.isEmpty(permissionName)) {
                     Slog.w(TAG, "name is required for <deny-permission> in "
