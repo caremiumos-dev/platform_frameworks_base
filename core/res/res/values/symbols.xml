@@ -1686,6 +1686,7 @@
   <java-symbol type="string" name="global_action_assist" />
   <java-symbol type="string" name="invalidPuk" />
   <java-symbol type="string" name="lockscreen_carrier_default" />
+  <java-symbol type="string" name="lockscreen_pattern_correct" />
   <java-symbol type="style" name="Animation.LockScreen" />
   <java-symbol type="style" name="Theme.Dialog.RecentApplications" />
   <java-symbol type="style" name="Theme.ExpandedMenu" />
