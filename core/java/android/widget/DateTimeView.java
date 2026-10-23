@@ -34,6 +34,7 @@ import android.icu.util.Calendar;
 import android.os.Handler;
 import android.text.format.Time;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.RemoteViews.RemoteView;
 
@@ -60,6 +61,9 @@ import java.util.TimeZone;
 public class DateTimeView extends TextView {
     private static final int SHOW_TIME = 0;
     private static final int SHOW_MONTH_DAY_YEAR = 1;
+
+    // XTC: broadcast sent when the system time is changed by the vendor time service.
+    private static final String XTC_TIME_CHANGE_ACTION = "com.xtc.time.change.ACTION";
 
     Date mTime;
     long mTimeMillis;
@@ -333,6 +337,15 @@ public class DateTimeView extends TextView {
         update();
     }
 
+    // XTC: shift the displayed time by the given offset and refresh.
+    public void updateTime(long offset) {
+        Time time = new Time();
+        time.set(mTimeMillis + offset);
+        mTimeMillis = time.toMillis(false);
+        mTime = new Date(time.year - 1900, time.month, time.monthDay, time.hour, time.minute, 0);
+        update();
+    }
+
     @Override
     public void onInitializeAccessibilityNodeInfoInternal(AccessibilityNodeInfo info) {
         super.onInitializeAccessibilityNodeInfoInternal(info);
@@ -415,6 +428,14 @@ public class DateTimeView extends TextView {
                         // every minute.
                         return;
                     }
+                } else if (XTC_TIME_CHANGE_ACTION.equals(action)) {
+                    long oldTime = intent.getLongExtra("old_time", 0L);
+                    long newTime = intent.getLongExtra("new_time", 0L);
+                    Log.d("DateTimeView", "notification time update: oldTime=" + oldTime
+                            + ", newTime=" + newTime);
+                    if (oldTime != 0 && newTime != 0) {
+                        updateTimeMillis(newTime - oldTime);
+                    }
                 }
                 // ACTION_TIME_CHANGED can also signal a change of 12/24 hr. format.
                 updateAll();
@@ -459,6 +480,14 @@ public class DateTimeView extends TextView {
             }
         }
 
+        // XTC: apply a time delta (from the vendor time-change broadcast) to all attached views.
+        void updateTimeMillis(long offset) {
+            final int count = mAttachedViews.size();
+            for (int i = 0; i < count; i++) {
+                mAttachedViews.get(i).updateTime(offset);
+            }
+        }
+
         long getSoonestUpdateTime() {
             long result = Long.MAX_VALUE;
             synchronized (mAttachedViews) {
@@ -484,6 +513,8 @@ public class DateTimeView extends TextView {
             filter.addAction(Intent.ACTION_TIME_CHANGED);
             filter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
             filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
+            // XTC: vendor time service change broadcast.
+            filter.addAction(XTC_TIME_CHANGE_ACTION);
             context.registerReceiver(mReceiver, filter, null, mHandler);
         }
 

@@ -40,6 +40,7 @@ import android.renderscript.RenderScript;
 import android.renderscript.Type;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SeempLog;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -513,16 +514,61 @@ public class Camera {
 
     /** used by Camera#open, Camera#open(int) */
     Camera(int cameraId) {
-        int err = cameraInitNormal(cameraId);
-        if (checkInitErrors(err)) {
-            if (err == -EACCES) {
-                throw new RuntimeException("Fail to connect to camera service");
-            } else if (err == -ENODEV) {
-                throw new RuntimeException("Camera initialization failed");
+        // XTC/BBK: gate camera init behind the vendor sub-permission for specific callers.
+        if (isPermissionGranted()) {
+            int err = cameraInitNormal(cameraId);
+            if (checkInitErrors(err)) {
+                if (err == -EACCES) {
+                    throw new RuntimeException("Fail to connect to camera service");
+                } else if (err == -ENODEV) {
+                    throw new RuntimeException("Camera initialization failed");
+                }
+                // Should never hit this.
+                throw new RuntimeException("Unknown camera error");
             }
-            // Should never hit this.
-            throw new RuntimeException("Unknown camera error");
         }
+    }
+
+    /**
+     * XTC/BBK: for the "moms" packages, require the private OPEN_CAMERA sub-permission
+     * and kill the caller if it is denied. NOTE: this bypasses the normal
+     * CAMERA permission model for those packages.
+     */
+    private boolean isPermissionGranted() {
+        if (com.xtc.auth.MobileManagerUtils.isSupported()) {
+            com.xtc.auth.IMobileManagerService service =
+                    com.xtc.auth.IMobileManagerService.Stub.asInterface(
+                            android.os.ServiceManager.getService(
+                                    android.content.Context.XTC_AUTH_SERVICE));
+            int callingUid = android.os.Binder.getCallingUid();
+            int callingPid = android.os.Binder.getCallingPid();
+            String packageName = android.app.ActivityThread.currentOpPackageName();
+            android.util.Log.i(TAG, "openCamera: packageName =" + packageName + ", pid ="
+                    + callingPid + ", uid =" + callingUid);
+            if (packageName != null
+                    && (packageName.startsWith("com.cttl")
+                            || packageName.startsWith("com.tsinghua"))
+                    && service != null) {
+                try {
+                    if (service.checkPermission(com.xtc.auth.SubPermissions.OPEN_CAMERA,
+                            callingUid) != 0) {
+                        android.util.Log.d(TAG, "open: user denied permission "
+                                + com.xtc.auth.SubPermissions.OPEN_CAMERA + " for uid "
+                                + callingUid);
+                        com.xtc.auth.MobileManagerUtils.killCallingPid("User denied permission "
+                                + com.xtc.auth.SubPermissions.OPEN_CAMERA + " for uid "
+                                + callingUid);
+                        return false;
+                    }
+                } catch (android.os.RemoteException e) {
+                    android.util.Log.e(TAG,
+                            "CheckPermission failed in open with RemoteException, continues open.",
+                            e);
+                    return true;
+                }
+            }
+        }
+        return true;
     }
 
 
@@ -805,6 +851,7 @@ public class Camera {
      * @see android.media.MediaActionSound
      */
     public final void setPreviewCallback(PreviewCallback cb) {
+        SeempLog.record(66);
         mPreviewCallback = cb;
         mOneShot = false;
         mWithBuffer = false;
@@ -833,6 +880,7 @@ public class Camera {
      * @see android.media.MediaActionSound
      */
     public final void setOneShotPreviewCallback(PreviewCallback cb) {
+        SeempLog.record(68);
         mPreviewCallback = cb;
         mOneShot = true;
         mWithBuffer = false;
@@ -873,6 +921,7 @@ public class Camera {
      * @see android.media.MediaActionSound
      */
     public final void setPreviewCallbackWithBuffer(PreviewCallback cb) {
+        SeempLog.record(67);
         mPreviewCallback = cb;
         mOneShot = false;
         mWithBuffer = true;
@@ -1428,6 +1477,7 @@ public class Camera {
      */
     public final void takePicture(ShutterCallback shutter, PictureCallback raw,
             PictureCallback jpeg) {
+        SeempLog.record(65);
         takePicture(shutter, raw, null, jpeg);
     }
     private native final void native_takePicture(int msgType);
@@ -1466,6 +1516,7 @@ public class Camera {
      */
     public final void takePicture(ShutterCallback shutter, PictureCallback raw,
             PictureCallback postview, PictureCallback jpeg) {
+        SeempLog.record(65);
         mShutterCallback = shutter;
         mRawImageCallback = raw;
         mPostviewCallback = postview;

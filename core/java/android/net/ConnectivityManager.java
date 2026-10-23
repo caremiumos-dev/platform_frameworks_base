@@ -58,6 +58,7 @@ import libcore.net.event.NetworkEventDispatcher;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.InetAddress;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -405,6 +406,19 @@ public class ConnectivityManager {
      */
     @SystemApi
     public static final int TETHERING_BLUETOOTH = 2;
+
+    /**
+     * WiGig tethering.
+     * @hide
+     */
+    public static final int TETHERING_WIGIG = 3;
+
+    /**
+     * Broadcast sent when the tethering connection state changes (Qualcomm addition).
+     * @hide
+     */
+    public static final String TETHER_CONNECT_STATE_CHANGED =
+            "codeaurora.net.conn.TETHER_CONNECT_STATE_CHANGED";
 
     /**
      * Extra used for communicating with the TetherService. Includes the type of tethering to
@@ -755,6 +769,52 @@ public class ConnectivityManager {
     }
 
     /**
+     * Sets the billing cycle day and timezone for all network policies.
+     * @hide
+     */
+    public boolean setPolicyCycleDay(int cycleDay, String timezone) {
+        NetworkPolicy[] policies = readPolicy();
+        if (policies.length <= 0) {
+            Log.w(TAG, "network policy is null");
+            return false;
+        }
+        for (NetworkPolicy policy : policies) {
+            Log.d(TAG, "cycle rule:" + policy.cycleRule.toString());
+            policy.cycleRule = NetworkPolicy.buildRule(cycleDay, ZoneId.of(timezone));
+            policy.inferred = false;
+            policy.clearSnooze();
+            Log.d(TAG, "after cycle rule:" + policy.cycleRule.toString());
+        }
+        try {
+            getNetworkPolicyManager().setNetworkPolicies(policies);
+            return true;
+        } catch (RemoteException e) {
+            Log.w(TAG, "set policy error", e);
+            return false;
+        }
+    }
+
+    private NetworkPolicy[] readPolicy() {
+        NetworkPolicy[] policies;
+        try {
+            policies = getNetworkPolicyManager().getNetworkPolicies(
+                    mContext.getPackageName());
+        } catch (RemoteException e) {
+            Log.w(TAG, "get policy error", e);
+            policies = new NetworkPolicy[0];
+        }
+        for (NetworkPolicy policy : policies) {
+            if (policy.limitBytes < -1) {
+                policy.limitBytes = -1;
+            }
+            if (policy.warningBytes < -1) {
+                policy.warningBytes = -1;
+            }
+        }
+        return policies;
+    }
+
+    /**
      * Retrieves the current preferred network type.
      *
      * @return an integer representing the preferred network type
@@ -942,6 +1002,8 @@ public class ConnectivityManager {
     @Deprecated
     @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
     public NetworkInfo getNetworkInfo(int networkType) {
+        Log.d(TAG, "XTCNetin getNetworkInfo 0x00 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         try {
             return mService.getNetworkInfo(networkType);
         } catch (RemoteException e) {
@@ -961,6 +1023,8 @@ public class ConnectivityManager {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
     public NetworkInfo getNetworkInfo(Network network) {
+        Log.d(TAG, "XTCNetin getNetworkInfo 0x01 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         return getNetworkInfoForUid(network, Process.myUid(), false);
     }
 
@@ -3230,6 +3294,8 @@ public class ConnectivityManager {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
     public void registerNetworkCallback(NetworkRequest request, NetworkCallback networkCallback) {
+        Log.d(TAG, "XTCNetin registerNetworkCallback 0x02 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         registerNetworkCallback(request, networkCallback, getDefaultHandler());
     }
 
@@ -3246,6 +3312,8 @@ public class ConnectivityManager {
     @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
     public void registerNetworkCallback(
             NetworkRequest request, NetworkCallback networkCallback, Handler handler) {
+        Log.d(TAG, "XTCNetin registerNetworkCallback 0x03 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         CallbackHandler cbHandler = new CallbackHandler(handler);
         NetworkCapabilities nc = request.networkCapabilities;
         sendRequestForNetwork(nc, networkCallback, 0, LISTEN, TYPE_NONE, cbHandler);
@@ -3283,6 +3351,8 @@ public class ConnectivityManager {
     @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
     public void registerNetworkCallback(NetworkRequest request, PendingIntent operation) {
         checkPendingIntentNotNull(operation);
+        Log.d(TAG, "XTCNetin registerNetworkCallback 0x04 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         try {
             mService.pendingListenForNetwork(request.networkCapabilities, operation);
         } catch (RemoteException e) {
@@ -3363,6 +3433,8 @@ public class ConnectivityManager {
      * @param networkCallback The {@link NetworkCallback} used when making the request.
      */
     public void unregisterNetworkCallback(NetworkCallback networkCallback) {
+        Log.d(TAG, "XTCNetin unregisterNetworkCallback 0x05 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         checkCallbackNotNull(networkCallback);
         final List<NetworkRequest> reqs = new ArrayList<>();
         // Find all requests associated to this callback and stop callback triggers immediately.
@@ -3402,6 +3474,8 @@ public class ConnectivityManager {
      */
     public void unregisterNetworkCallback(PendingIntent operation) {
         checkPendingIntentNotNull(operation);
+        Log.d(TAG, "XTCNetin unregisterNetworkCallback 0x06 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         releaseNetworkRequest(operation);
     }
 

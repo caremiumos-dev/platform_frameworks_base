@@ -35,7 +35,11 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.ServiceManager.ServiceNotFoundException;
+import android.telephony.TelephonyManager;
+import android.util.ArrayMap;
 import android.util.Log;
+
+import java.util.ArrayList;
 
 /**
  * Provides access to network usage history and statistics. Usage data is collected in
@@ -101,6 +105,10 @@ public class NetworkStatsManager {
     public static final int FLAG_AUGMENT_WITH_SUBSCRIPTION_PLAN = 1 << 1;
 
     private int mFlags;
+
+    // XTC/BBK vendor extension: mobile data monitoring.
+    private static long moblieDataMonitorStartTime = 0;
+    private static ArrayMap<String, Integer> resultMap = new ArrayMap<>();
 
     /**
      * {@hide}
@@ -490,5 +498,110 @@ public class NetworkStatsManager {
         private static Object getObject(Message msg, String key) {
             return msg.getData().getParcelable(key);
         }
+    }
+
+    // ===== XTC/BBK vendor extension: mobile data monitoring =====
+
+    private ArrayList<String> bbkQuerySummary(String subscriberId, long startTime, long endTime) {
+        Log.d(TAG, "bbkQuerySummary  startTime = " + startTime + ",endTime = " + endTime);
+        try {
+            NetworkStats stats = queryDetails(ConnectivityManager.TYPE_MOBILE, subscriberId,
+                    startTime, endTime);
+            ArrayList<String> list = new ArrayList<>();
+            int lastUid = -1;
+            while (stats.hasNextBucket()) {
+                Bucket bucket = new Bucket();
+                stats.getNextBucket(bucket);
+                int uid = bucket.getUid();
+                Log.d(TAG, "ReportDataForTraffic bbkQuerySummary uid = " + uid
+                        + ", RxBytes = " + bucket.getRxBytes() + ", TxBytes = " + bucket.getTxBytes()
+                        + ", RxPackets = " + bucket.getRxPackets() + ", TxPackets = "
+                        + bucket.getTxPackets());
+                if (uid >= 10000 || uid == 1000) {
+                    if (uid != lastUid) {
+                        list.add(getPackageNameForUid(uid));
+                        lastUid = uid;
+                    }
+                }
+            }
+            stats.close();
+            Log.d(TAG, "ReportDataForTraffic bbkQuerySummary savelist = " + list.toString());
+            return list;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error while querying stats for uid = " + e);
+            return null;
+        }
+    }
+
+    private void collateResultData(ArrayList<String> list) {
+        Log.d(TAG, "collateResultData list = " + list.toString());
+        for (String packageName : list) {
+            Integer count = resultMap.get(packageName);
+            Log.d(TAG, "collateResultData count = " + count + ",packageName = " + packageName);
+            resultMap.put(packageName, count == null ? 1 : count + 1);
+        }
+    }
+
+    private String getPackageNameForUid(int uid) {
+        if (uid == 1000) {
+            return "com.xtc.i3launcher";
+        }
+        StringBuilder sb = new StringBuilder("");
+        String[] packagesForUid = mContext.getPackageManager().getPackagesForUid(uid);
+        if (packagesForUid != null && packagesForUid.length != 0) {
+            for (int i = 0; i < packagesForUid.length; i++) {
+                sb.append(packagesForUid[i]);
+                if (i < packagesForUid.length - 1) {
+                    sb.append(":");
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    /** @hide */
+    public void clearMobileDataStats() {
+        if (resultMap.size() != 0) {
+            resultMap.clear();
+        }
+    }
+
+    /** @hide */
+    public ArrayMap<String, Integer> getMobileDataStats() {
+        if (resultMap.size() != 0) {
+            return resultMap;
+        }
+        return null;
+    }
+
+    /** @hide */
+    public void rrcSyncNetworkStats() {
+        Log.d(TAG, "rrcSyncNetworkStats  start");
+        if (moblieDataMonitorStartTime == 0) {
+            Log.d(TAG, "rrcSyncNetworkStats  this is first calling... return !!");
+            moblieDataMonitorStartTime = System.currentTimeMillis();
+            return;
+        }
+        TelephonyManager telephonyManager =
+                (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        String subscriberId = telephonyManager.getSubscriberId();
+        long now = System.currentTimeMillis();
+        ArrayList<String> list = new ArrayList<>();
+        list.addAll(bbkQuerySummary(subscriberId, moblieDataMonitorStartTime, now));
+        moblieDataMonitorStartTime = now;
+        if (list == null || list.size() == 0) {
+            return;
+        }
+        Log.d(TAG, "rrcSyncNetworkStats  list = " + list.toString());
+        if (resultMap != null && !resultMap.isEmpty()) {
+            Log.d(TAG, "ReportDataForTraffic getMobileDataStats before resultMap = "
+                    + resultMap.toString());
+        }
+        collateResultData(list);
+        if (resultMap == null || resultMap.isEmpty()) {
+            return;
+        }
+        Log.d(TAG, "ReportDataForTraffic getMobileDataStats after resultMap = "
+                + resultMap.toString());
     }
 }

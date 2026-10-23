@@ -614,6 +614,12 @@ class StorageManagerService extends IStorageManager.Stub
     private final File mLastMaintenanceFile;
     private long mLastMaintenance;
 
+    // XTC 差异：强制整理（e4defrag）周期记录，默认 7 天。
+    private static final long DEFAULT_MANDATORY_CLEAN_INTERVAL = 604800000L;
+    private static final String LAST_CLEAN_FILE = "last-clean";
+    private final File mLastCleanFile;
+    private long mLastCleanTime;
+
     // Handler messages
     private static final int H_SYSTEM_READY = 1;
     private static final int H_DAEMON_CONNECTED = 2;
@@ -650,6 +656,24 @@ class StorageManagerService extends IStorageManager.Stub
                         break;
                     }
 
+                    // XTC 差异：距上次强制整理超过 7 天则触发 e4defrag（厂商存储整理）。
+                    Runnable callback = (Runnable) msg.obj;
+                    if (callback != null) {
+                        long timeSinceLast = System.currentTimeMillis() - mLastCleanTime;
+                        Slog.i(TAG, "H_FSTRIM callback timeSinceLast=" + timeSinceLast);
+                        if (timeSinceLast > DEFAULT_MANDATORY_CLEAN_INTERVAL) {
+                            Slog.i(TAG, "CLEAN START");
+                            SystemProperties.set("sys.flash.e4defrag", "true");
+                            Slog.i(TAG, "CLEAN END");
+                            try {
+                                mLastCleanTime = System.currentTimeMillis();
+                                mLastCleanFile.setLastModified(mLastCleanTime);
+                            } catch (Exception e) {
+                                Slog.e(TAG, "Unable to record last clean!");
+                            }
+                        }
+                    }
+
                     Slog.i(TAG, "Running fstrim idle maintenance");
 
                     // Remember when we kicked it off
@@ -665,7 +689,6 @@ class StorageManagerService extends IStorageManager.Stub
 
                     // invoke the completion callback, if any
                     // TODO: fstrim is non-blocking, so remove this useless callback
-                    Runnable callback = (Runnable) msg.obj;
                     if (callback != null) {
                         callback.run();
                     }
@@ -1529,6 +1552,18 @@ class StorageManagerService extends IStorageManager.Stub
             }
         } else {
             mLastMaintenance = mLastMaintenanceFile.lastModified();
+        }
+
+        // XTC 差异：强制整理周期记录文件。
+        mLastCleanFile = new File(systemDir, LAST_CLEAN_FILE);
+        if (mLastCleanFile.exists()) {
+            mLastCleanTime = mLastCleanFile.lastModified();
+        } else {
+            try {
+                (new FileOutputStream(mLastCleanFile)).close();
+            } catch (IOException e) {
+                Slog.e(TAG, "Unable to create clean record " + mLastCleanFile.getPath());
+            }
         }
 
         mSettingsFile = new AtomicFile(

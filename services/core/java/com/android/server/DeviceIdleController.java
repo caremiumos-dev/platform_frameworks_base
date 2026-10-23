@@ -45,6 +45,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.BatteryStats;
 import android.os.Binder;
+import android.util.Log;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileUtils;
@@ -464,6 +465,9 @@ public class DeviceIdleController extends SystemService
     private final LocationListener mGenericLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            // XTC/BBK: positioning telemetry log (0x03).
+            Log.d(TAG, "XTCNetin Deviceldle onLocationChanged 0x03 uid:"
+                    + Binder.getCallingUid() + " packagename:" + getContext().getPackageName());
             synchronized (DeviceIdleController.this) {
                 receivedGenericLocationLocked(location);
             }
@@ -485,6 +489,9 @@ public class DeviceIdleController extends SystemService
     private final LocationListener mGpsLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            // XTC/BBK: positioning telemetry log (0x04).
+            Log.d(TAG, "XTCNetin Deviceldle onLocationChanged 0x04 uid:"
+                    + Binder.getCallingUid() + " packagename:" + getContext().getPackageName());
             synchronized (DeviceIdleController.this) {
                 receivedGpsLocationLocked(location);
             }

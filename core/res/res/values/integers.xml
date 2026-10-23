@@ -34,4 +34,10 @@
     <integer name="time_picker_mode_material">2</integer>
 
     <integer name="date_picker_header_max_lines_material">2</integer>
+
+    <!-- XTC/BBK: minimum number length used for caller-id suffix matching. -->
+    <integer name="phoneNumber_length">8</integer>
+
+    <!-- QTI: 出站短信授权超时（毫秒）。设备值为 0。 -->
+    <integer name="config_sms_authorization_timeout_ms">0</integer>
 </resources>

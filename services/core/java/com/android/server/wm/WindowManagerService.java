@@ -159,6 +159,8 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.StrictMode;
 import android.os.SystemClock;
+
+import java.util.LinkedHashMap;
 import android.os.SystemProperties;
 import android.os.SystemService;
 import android.os.Trace;
@@ -218,10 +220,12 @@ import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManagerInternal;
 
 import com.android.internal.R;
+import com.android.internal.app.ActivityTrigger;
 import com.android.internal.app.IAssistScreenshotReceiver;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.IKeyguardDismissCallback;
+import com.android.internal.policy.IKeyguardEventCallback;
 import com.android.internal.policy.IShortcutService;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FastPrintWriter;
@@ -266,7 +270,12 @@ public class WindowManagerService extends IWindowManager.Stub
     static final int LAYOUT_REPEAT_THRESHOLD = 4;
 
     static final boolean PROFILE_ORIENTATION = false;
-    static final boolean localLOGV = DEBUG;
+    // XTC 差异：可由 dumpsys window -d 动态修改。
+    static boolean localLOGV = DEBUG;
+
+    // XTC 差异：dumpsys 参数解析辅助。
+    private String[] mArgs;
+    private int mNextArg;
 
     /** How much to multiply the policy's type layer, to reserve room
      * for multiple windows of the same type and Z-ordering adjustment
@@ -888,6 +897,13 @@ public class WindowManagerService extends IWindowManager.Stub
     // since they won't be notified through the app window animator.
     final List<IBinder> mNoAnimationNotifyOnTransitionFinished = new ArrayList<>();
 
+    // XTC/QTI: per-activity animation-scale override driven by ActivityTrigger.
+    static final boolean mEnableAnimCheck =
+            SystemProperties.getBoolean("persist.vendor.qti.animcheck.enable", false);
+    static ActivityTrigger mActivityTrigger = new ActivityTrigger();
+    // Title of the window that most recently requested focus, fed to ActivityTrigger.
+    String mFocusingActivity;
+
     static WindowManagerThreadPriorityBooster sThreadPriorityBooster =
             new WindowManagerThreadPriorityBooster();
 
@@ -1212,6 +1228,7 @@ public class WindowManagerService extends IWindowManager.Stub
         long origId;
         final int callingUid = Binder.getCallingUid();
         final int type = attrs.type;
+        mFocusingActivity = attrs.getTitle().toString();
 
         synchronized(mWindowMap) {
             if (!mDisplayReady) {
@@ -3254,12 +3271,45 @@ public class WindowManagerService extends IWindowManager.Stub
         ValueAnimator.setDurationScale(scale);
     }
 
-    public float getWindowAnimationScaleLocked() {
-        return mAnimationsDisabled ? 0 : mWindowAnimationScaleSetting;
+    public float getTransitionAnimationScaleLocked() {
+        return animationScalesCheck(1);
     }
 
-    public float getTransitionAnimationScaleLocked() {
-        return mAnimationsDisabled ? 0 : mTransitionAnimationScaleSetting;
+    public float getWindowAnimationScaleLocked() {
+        return animationScalesCheck(0);
+    }
+
+    /**
+     * XTC/QTI: return the animation scale for the given type, letting the vendor native
+     * ActivityTrigger override it for the currently focused activity.
+     */
+    private float animationScalesCheck(int i) {
+        float scale;
+        if (mAnimationsDisabled) {
+            return 0.0f;
+        }
+        if (!mEnableAnimCheck || mFocusingActivity == null) {
+            scale = -1.0f;
+        } else {
+            if (mActivityTrigger == null) {
+                mActivityTrigger = new ActivityTrigger();
+            }
+            scale = mActivityTrigger.activityMiscTrigger(ActivityTrigger.ANIMATION_SCALE,
+                    mFocusingActivity, i, 0);
+        }
+        if (scale != -1.0f) {
+            return scale;
+        }
+        switch (i) {
+            case 0:
+                return mWindowAnimationScaleSetting;
+            case 1:
+                return mTransitionAnimationScaleSetting;
+            case 2:
+                return mAnimatorDurationScaleSetting;
+            default:
+                return scale;
+        }
     }
 
     @Override
@@ -3280,9 +3330,16 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @Override
     public float getCurrentAnimatorScale() {
-        synchronized(mWindowMap) {
-            return mAnimationsDisabled ? 0 : mAnimatorDurationScaleSetting;
+        float scale;
+        synchronized (mWindowMap) {
+            boostPriorityForLockedSection();
+            try {
+                scale = animationScalesCheck(2);
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
         }
+        return scale;
     }
 
     void dispatchNewAnimatorScaleLocked(Session session) {
@@ -3551,6 +3608,8 @@ public class WindowManagerService extends IWindowManager.Stub
             EventLog.writeEvent(EventLogTags.WM_BOOT_ANIMATION_DONE, SystemClock.uptimeMillis());
             Trace.asyncTraceEnd(TRACE_TAG_WINDOW_MANAGER, "Stop bootanim", 0);
             mDisplayEnabled = true;
+            // XTC/厂商扩展：上报 boot_time。
+            doBootTimeBehavior();
             if (DEBUG_SCREEN_ON || DEBUG_BOOT) Slog.i(TAG_WM, "******************** ENABLING SCREEN!");
 
             // Enable input dispatch.
@@ -4744,6 +4803,63 @@ public class WindowManagerService extends IWindowManager.Stub
         return mCurrentFocus;
     }
 
+    public WindowState getWindowBehindFocused() {
+        final WindowState[] behind = { getFocusedWindow() };
+        final int[] count = new int[1];
+        synchronized (mWindowMap) {
+            try {
+                boostPriorityForLockedSection();
+                mRoot.forAllWindows(new java.util.function.Consumer<WindowState>() {
+                    @Override
+                    public void accept(WindowState windowState) {
+                        if (windowState == null || windowState.getAttrs() == null
+                                || windowState.isInputMethodWindow()) {
+                            return;
+                        }
+                        count[0] = count[0] + 1;
+                        if (count[0] == 2) {
+                            Log.d("HallEventManager", "found behind window");
+                            behind[0] = windowState;
+                        }
+                    }
+                }, true);
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+        return behind[0];
+    }
+
+    /**
+     * XTC: returns the topmost non-IME window that has attributes.
+     */
+    public WindowState getTopWindow() {
+        final WindowState[] topWindow = new WindowState[1];
+        synchronized (mWindowMap) {
+            try {
+                boostPriorityForLockedSection();
+                mRoot.forAllWindows(new java.util.function.Consumer<WindowState>() {
+                    @Override
+                    public void accept(WindowState windowState) {
+                        if (windowState == null || windowState.getAttrs() == null
+                                || windowState.isInputMethodWindow()
+                                || topWindow[0] != null) {
+                            return;
+                        }
+                        topWindow[0] = windowState;
+                    }
+                }, true);
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+        return topWindow[0];
+    }
+
+    public void requestHallEvent(String type, String value) {
+        ((com.android.server.policy.PhoneWindowManager) mPolicy).requestHallEvent(type, value);
+    }
+
     TaskStack getImeFocusStackLocked() {
         // Don't use mCurrentFocus.getStack() because it returns home stack for system windows.
         // Also don't use mInputMethodTarget's stack, because some window with FLAG_NOT_FOCUSABLE
@@ -4794,6 +4910,19 @@ public class WindowManagerService extends IWindowManager.Stub
         }
         mPolicy.setSafeMode(mSafeMode);
         return mSafeMode;
+    }
+
+    /**
+     * XTC/厂商扩展：开机动画结束时上报 boot_time 给厂商行为服务 XtcBehavior。
+     */
+    private void doBootTimeBehavior() {
+        LinkedHashMap<String, String> data = new LinkedHashMap<>();
+        data.put("type", "boot_time");
+        data.put("time", String.valueOf(SystemClock.uptimeMillis()));
+        data.put("packageName", "android");
+        data.put("data", "");
+        new com.xtc.behavior.XtcBehavior.Builder(mContext, "fw_time_monitor", data)
+                .build().sendData();
     }
 
     public void displayReady() {
@@ -6827,6 +6956,233 @@ public class WindowManagerService extends IWindowManager.Stub
         mH.sendEmptyMessageDelayed(H.RESET_ANR_MESSAGE, LAST_ANR_LIFETIME_DURATION_MSECS);
     }
 
+    // XTC 差异：dumpsys window -d 运行时调试开关。
+    private String nextArg() {
+        if (mNextArg >= mArgs.length) {
+            return null;
+        }
+        String arg = mArgs[mNextArg];
+        mNextArg++;
+        return arg;
+    }
+
+    private void runDebug(FileDescriptor fd, PrintWriter pw) {
+        String nextArg = nextArg();
+        if (nextArg == null) {
+            showUsage(pw);
+            return;
+        }
+        if (nextArg.equals("list")) {
+            runDebugList(pw);
+            return;
+        }
+        if (nextArg.equals("enable")) {
+            runDebugEnable(pw, true);
+        } else if (nextArg.equals("disable")) {
+            runDebugEnable(pw, false);
+        } else {
+            showUsage(pw);
+        }
+    }
+
+    private void runDebugEnable(PrintWriter pw, boolean enable) {
+        String nextArg = nextArg();
+        if (nextArg == null) {
+            showUsage(pw);
+            return;
+        }
+        String[] policyArgs = new String[1];
+        do {
+            if (nextArg.equals("a")) {
+                policyArgs[0] = enable ? "-d enable a" : "-d disable a";
+                mPolicy.dump("", pw, policyArgs);
+                enableAllWindowLog(enable);
+            } else if (nextArg.equals("0")) {
+                WindowManagerDebugConfig.DEBUG = enable;
+                localLOGV = WindowManagerDebugConfig.DEBUG;
+                policyArgs[0] = enable ? "-d enable 0" : "-d disable 0";
+                mPolicy.dump("", pw, policyArgs);
+            } else if (nextArg.equals("1")) {
+                WindowManagerDebugConfig.DEBUG_FOCUS = enable;
+                WindowManagerDebugConfig.DEBUG_FOCUS_LIGHT = enable;
+            } else if (nextArg.equals("2")) {
+                WindowManagerDebugConfig.DEBUG_ANIM = enable;
+            } else if (nextArg.equals("3")) {
+                WindowManagerDebugConfig.DEBUG_LAYOUT = enable;
+                policyArgs[0] = enable ? "-d enable 3" : "-d disable 3";
+                mPolicy.dump("", pw, policyArgs);
+            } else if (nextArg.equals("4")) {
+                WindowManagerDebugConfig.DEBUG_RESIZE = enable;
+            } else if (nextArg.equals("5")) {
+                WindowManagerDebugConfig.DEBUG_LAYERS = enable;
+            } else if (nextArg.equals("6")) {
+                WindowManagerDebugConfig.DEBUG_INPUT = enable;
+                policyArgs[0] = enable ? "-d enable 6" : "-d disable 6";
+                mPolicy.dump("", pw, policyArgs);
+            } else if (nextArg.equals("7")) {
+                WindowManagerDebugConfig.DEBUG_INPUT_METHOD = enable;
+            } else if (nextArg.equals("8")) {
+                WindowManagerDebugConfig.DEBUG_VISIBILITY = enable;
+            } else if (nextArg.equals("9")) {
+                WindowManagerDebugConfig.DEBUG_WINDOW_MOVEMENT = enable;
+            } else if (nextArg.equals("10")) {
+                WindowManagerDebugConfig.DEBUG_ORIENTATION = enable;
+            } else if (nextArg.equals("11")) {
+                WindowManagerDebugConfig.DEBUG_CONFIGURATION = enable;
+            } else if (nextArg.equals("12")) {
+                WindowManagerDebugConfig.DEBUG_APP_TRANSITIONS = enable;
+            } else if (nextArg.equals("13")) {
+                WindowManagerDebugConfig.DEBUG_STARTING_WINDOW = enable;
+                policyArgs[0] = enable ? "-d enable 13" : "-d disable 13";
+                mPolicy.dump("", pw, policyArgs);
+            } else if (nextArg.equals("14")) {
+                WindowManagerDebugConfig.DEBUG_KEYGUARD = enable;
+                policyArgs[0] = enable ? "-d enable 14" : "-d disable 14";
+                mPolicy.dump("", pw, policyArgs);
+            } else if (nextArg.equals("15")) {
+                WindowManagerDebugConfig.DEBUG_WALLPAPER = enable;
+            } else if (nextArg.equals("16")) {
+                WindowManagerDebugConfig.DEBUG_WALLPAPER_LIGHT = enable;
+            } else if (nextArg.equals("17")) {
+                WindowManagerDebugConfig.DEBUG_TASK_MOVEMENT = enable;
+            } else if (nextArg.equals("18")) {
+                WindowManagerDebugConfig.DEBUG_ADD_REMOVE = enable;
+            } else if (nextArg.equals("19")) {
+                WindowManagerDebugConfig.DEBUG_TOKEN_MOVEMENT = enable;
+            } else if (nextArg.equals("20")) {
+                WindowManagerDebugConfig.DEBUG_APP_ORIENTATION = enable;
+            } else if (nextArg.equals("21")) {
+                WindowManagerDebugConfig.DEBUG_DRAG = enable;
+            } else if (nextArg.equals("22")) {
+                WindowManagerDebugConfig.DEBUG_SCREEN_ON = enable;
+                policyArgs[0] = enable ? "-d enable 25" : "-d disable 25";
+                mPolicy.dump("", pw, policyArgs);
+            } else if (nextArg.equals("23")) {
+                WindowManagerDebugConfig.DEBUG_SCREENSHOT = enable;
+            } else if (nextArg.equals("24")) {
+                WindowManagerDebugConfig.DEBUG_BOOT = enable;
+            } else if (nextArg.equals("25")) {
+                WindowManagerDebugConfig.DEBUG_LAYOUT_REPEATS = enable;
+            } else if (nextArg.equals("26")) {
+                WindowManagerDebugConfig.DEBUG_SURFACE_TRACE = enable;
+            } else if (nextArg.equals("27")) {
+                WindowManagerDebugConfig.DEBUG_WINDOW_TRACE = enable;
+            } else if (nextArg.equals("28")) {
+                WindowManagerDebugConfig.DEBUG_STACK = enable;
+            } else {
+                showUsage(pw);
+            }
+            nextArg = nextArg();
+        } while (nextArg != null);
+    }
+
+    private void runDebugList(PrintWriter pw) {
+        pw.println("a  . ALLDEBUG");
+        pw.print("0  . DEBUG = "); pw.println(WindowManagerDebugConfig.DEBUG);
+        pw.print("1  . DEBUG_FOCUS = "); pw.println(WindowManagerDebugConfig.DEBUG_FOCUS);
+        pw.print("2  . DEBUG_ANIM = "); pw.println(WindowManagerDebugConfig.DEBUG_ANIM);
+        pw.print("3  . DEBUG_LAYOUT = "); pw.println(WindowManagerDebugConfig.DEBUG_LAYOUT);
+        pw.print("4  . DEBUG_RESIZE = "); pw.println(WindowManagerDebugConfig.DEBUG_RESIZE);
+        pw.print("5  . DEBUG_LAYERS = "); pw.println(WindowManagerDebugConfig.DEBUG_LAYERS);
+        pw.print("6  . DEBUG_INPUT = "); pw.println(WindowManagerDebugConfig.DEBUG_INPUT);
+        pw.print("7  . DEBUG_INPUT_METHOD = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_INPUT_METHOD);
+        pw.print("8  . DEBUG_VISIBILITY = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_VISIBILITY);
+        pw.print("9  . DEBUG_WINDOW_MOVEMENT = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_WINDOW_MOVEMENT);
+        pw.print("10 . DEBUG_ORIENTATION = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_ORIENTATION);
+        pw.print("11 . DEBUG_CONFIGURATION = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_CONFIGURATION);
+        pw.print("12 . DEBUG_APP_TRANSITIONS = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_APP_TRANSITIONS);
+        pw.print("13 . DEBUG_STARTING_WINDOW = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_STARTING_WINDOW);
+        pw.print("14 . DEBUG_KEYGUARD = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_KEYGUARD);
+        pw.print("15 . DEBUG_WALLPAPER = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_WALLPAPER);
+        pw.print("16 . DEBUG_WALLPAPER_LIGHT = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_WALLPAPER_LIGHT);
+        pw.print("17 . DEBUG_TASK_MOVEMENT = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_TASK_MOVEMENT);
+        pw.print("18 . DEBUG_ADD_REMOVE = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_ADD_REMOVE);
+        pw.print("19 . DEBUG_TOKEN_MOVEMENT = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_TOKEN_MOVEMENT);
+        pw.print("20 . DEBUG_APP_ORIENTATION = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_APP_ORIENTATION);
+        pw.print("21 . DEBUG_DRAG = "); pw.println(WindowManagerDebugConfig.DEBUG_DRAG);
+        pw.print("22 . DEBUG_SCREEN_ON = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_SCREEN_ON);
+        pw.print("23 . DEBUG_SCREENSHOT = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_SCREENSHOT);
+        pw.print("24 . DEBUG_BOOT = "); pw.println(WindowManagerDebugConfig.DEBUG_BOOT);
+        pw.print("25 . DEBUG_LAYOUT_REPEATS = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_LAYOUT_REPEATS);
+        pw.print("26 . DEBUG_SURFACE_TRACE = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_SURFACE_TRACE);
+        pw.print("27 . DEBUG_WINDOW_TRACE = ");
+        pw.println(WindowManagerDebugConfig.DEBUG_WINDOW_TRACE);
+        pw.print("28 . DEBUG_STACK = "); pw.println(WindowManagerDebugConfig.DEBUG_STACK);
+    }
+
+    void enableAllWindowLog(boolean enable) {
+        WindowManagerDebugConfig.DEBUG = enable;
+        WindowManagerDebugConfig.DEBUG_ADD_REMOVE = enable;
+        WindowManagerDebugConfig.DEBUG_TASK_MOVEMENT = enable;
+        WindowManagerDebugConfig.DEBUG_STACK = enable;
+        WindowManagerDebugConfig.DEBUG_FOCUS = enable;
+        WindowManagerDebugConfig.DEBUG_FOCUS_LIGHT = enable;
+        WindowManagerDebugConfig.DEBUG_ANIM = enable;
+        WindowManagerDebugConfig.DEBUG_LAYOUT = enable;
+        WindowManagerDebugConfig.DEBUG_RESIZE = enable;
+        WindowManagerDebugConfig.DEBUG_LAYERS = enable;
+        WindowManagerDebugConfig.DEBUG_INPUT = enable;
+        WindowManagerDebugConfig.DEBUG_INPUT_METHOD = enable;
+        WindowManagerDebugConfig.DEBUG_VISIBILITY = enable;
+        WindowManagerDebugConfig.DEBUG_WINDOW_MOVEMENT = enable;
+        WindowManagerDebugConfig.DEBUG_TOKEN_MOVEMENT = enable;
+        WindowManagerDebugConfig.DEBUG_ORIENTATION = enable;
+        WindowManagerDebugConfig.DEBUG_APP_ORIENTATION = enable;
+        WindowManagerDebugConfig.DEBUG_CONFIGURATION = enable;
+        WindowManagerDebugConfig.DEBUG_APP_TRANSITIONS = enable;
+        WindowManagerDebugConfig.DEBUG_STARTING_WINDOW = enable;
+        WindowManagerDebugConfig.DEBUG_KEYGUARD = enable;
+        WindowManagerDebugConfig.DEBUG_WALLPAPER = enable;
+        WindowManagerDebugConfig.DEBUG_WALLPAPER_LIGHT = enable;
+        WindowManagerDebugConfig.DEBUG_DRAG = enable;
+        WindowManagerDebugConfig.DEBUG_SCREEN_ON = enable;
+        WindowManagerDebugConfig.DEBUG_SCREENSHOT = enable;
+        WindowManagerDebugConfig.DEBUG_BOOT = enable;
+        WindowManagerDebugConfig.DEBUG_LAYOUT_REPEATS = enable;
+        WindowManagerDebugConfig.DEBUG_SURFACE_TRACE = enable;
+        WindowManagerDebugConfig.DEBUG_WINDOW_TRACE = enable;
+        WindowManagerDebugConfig.DEBUG_DISPLAY = enable;
+    }
+
+    private void showUsage(PrintWriter pw) {
+        pw.println("Window manager dump options:");
+        pw.println("  [-a] [-h] [cmd] ...");
+        pw.println("  cmd may be one of:");
+        pw.println("    l[astanr]: last ANR information");
+        pw.println("    p[policy]: policy state");
+        pw.println("    a[animator]: animator state");
+        pw.println("    s[essions]: active sessions");
+        pw.println("    surfaces: active surfaces (debugging enabled only)");
+        pw.println("    d[isplays]: active display contents");
+        pw.println("    t[okens]: token list");
+        pw.println("    w[indows]: window list");
+        pw.println("  cmd may also be a NAME to dump windows.  NAME may");
+        pw.println("    be a partial substring in a window name, a");
+        pw.println("    Window hex object identifier, or");
+        pw.println("    \"all\" for all windows, or");
+        pw.println("    \"visible\" for the visible windows.");
+        pw.println("    \"visible-apps\" for the visible app windows.");
+        pw.println("  -a: include all available server state.");
+    }
+
     @Override
     public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
         if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) return;
@@ -6840,6 +7196,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 break;
             }
             opti++;
+            mArgs = args;
+            mNextArg = 1;
             if ("-a".equals(opt)) {
                 dumpAll = true;
             } else if ("-h".equals(opt)) {
@@ -6861,6 +7219,10 @@ public class WindowManagerService extends IWindowManager.Stub
                 pw.println("    \"visible\" for the visible windows.");
                 pw.println("    \"visible-apps\" for the visible app windows.");
                 pw.println("  -a: include all available server state.");
+                return;
+            } else if ("-d".equals(opt)) {
+                // XTC 差异：运行时窗口管理器调试开关。
+                runDebug(fd, pw);
                 return;
             } else {
                 pw.println("Unknown argument: " + opt + "; use -h for help");
@@ -7328,6 +7690,18 @@ public class WindowManagerService extends IWindowManager.Stub
         mPolicy.registerShortcutKey(shortcutCode, shortcutKeyReceiver);
     }
 
+    @Override
+    public void registerKeyguardListener(IKeyguardEventCallback callback) {
+        ((com.android.server.policy.PhoneWindowManager) mPolicy).getKeyguardListener()
+                .registerKeyguardListener(callback);
+    }
+
+    @Override
+    public void unregisterKeyguardListener(IKeyguardEventCallback callback) {
+        ((com.android.server.policy.PhoneWindowManager) mPolicy).getKeyguardListener()
+                .unregisterKeyguardListener(callback);
+    }
+
     void markForSeamlessRotation(WindowState w, boolean seamlesslyRotated) {
         if (seamlesslyRotated == w.mSeamlesslyRotated) {
             return;
@@ -7454,6 +7828,16 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 return null;
             }
+        }
+
+        @Override
+        public android.view.WindowManagerPolicy.WindowState getWindowBehindFocused() {
+            return WindowManagerService.this.getWindowBehindFocused();
+        }
+
+        @Override
+        public android.view.WindowManagerPolicy.WindowState getTopWindow() {
+            return WindowManagerService.this.getTopWindow();
         }
 
         @Override

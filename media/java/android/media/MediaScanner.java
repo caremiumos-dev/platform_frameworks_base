@@ -403,6 +403,8 @@ public class MediaScanner implements AutoCloseable {
         mBitmapOptions.inSampleSize = 1;
         mBitmapOptions.inJustDecodeBounds = true;
 
+        // XTC/BBK: initialize custom-edition assets before reading the default sounds.
+        com.xtc.utils.CustomEditionUtil.instance().init(c);
         setDefaultRingtoneFileNames();
 
         mMediaProvider = mContext.getContentResolver()
@@ -455,6 +457,13 @@ public class MediaScanner implements AutoCloseable {
                 + Settings.System.NOTIFICATION_SOUND);
         mDefaultAlarmAlertFilename = SystemProperties.get(DEFAULT_RINGTONE_PROPERTY_PREFIX
                 + Settings.System.ALARM_ALERT);
+        // XTC/BBK: allow the custom-edition config to override the default sounds.
+        mDefaultRingtoneFilename =
+                com.xtc.utils.CustomEditionUtil.instance().getRingtoneName();
+        mDefaultNotificationFilename =
+                com.xtc.utils.CustomEditionUtil.instance().getNotificationName();
+        Log.d(TAG, "mDefaultRingtoneFilename=" + mDefaultRingtoneFilename
+                + ", mDefaultNotificationFilename=" + mDefaultNotificationFilename);
     }
 
     private final MyMediaScannerClient mClient = new MyMediaScannerClient();

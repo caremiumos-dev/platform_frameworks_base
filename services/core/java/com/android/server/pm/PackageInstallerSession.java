@@ -62,6 +62,7 @@ import android.content.pm.Signature;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.FileBridge;
 import android.os.FileUtils;
@@ -110,6 +111,7 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PackageInstallerSession extends IPackageInstallerSession.Stub {
@@ -119,6 +121,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
     private static final int MSG_COMMIT = 0;
     private static final int MSG_SESSION_FINISHED_WITH_EXCEPTION = 1;
+    private static final int MSG_VERIFY_ON_XTC_SERVER = 2;
+    private static final int MSG_VERIFY_ON_LOCAL = 3;
+    private static final int MSG_VERIFY_FAIL = 4;
+
+    private static final int APP_INSTALL_SECURE_MODULE_SWITCH_ID = 3415;
 
     /** XML constants used for persisting a session */
     static final String TAG_SESSION = "session";
@@ -296,11 +303,45 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     dispatchSessionFinished(e.error, ExceptionUtils.getCompleteMessage(e),
                             null);
                     break;
+                case MSG_VERIFY_ON_XTC_SERVER:
+                    verifyOnXTCServer();
+                    break;
+                case MSG_VERIFY_ON_LOCAL:
+                    verifyOnLocal((String) msg.obj, getInstallerUid());
+                    break;
+                case MSG_VERIFY_FAIL:
+                    verifyFail();
+                    break;
             }
 
             return true;
         }
     };
+
+    class IAppVerifyCallbackStub extends com.xtc.secure.pm.IAppVerifyCallback.Stub {
+        private final Handler mHandler;
+
+        public IAppVerifyCallbackStub(Handler handler) {
+            mHandler = handler;
+        }
+
+        @Override
+        public void onVerifyResult(String apkPath, int resultCode, String reason) {
+            Slog.w(TAG, "onVerifyResult resultCode:" + resultCode + ", reason:" + reason
+                    + ", apkpath:" + apkPath);
+            if (resultCode != com.xtc.secure.pm.AppInstallerConstants.VerifyResult.SUCCESS
+                    && resultCode
+                            != com.xtc.secure.pm.AppInstallerConstants.VerifyResult.FAIL_NOT_BIND) {
+                mHandler.obtainMessage(MSG_VERIFY_FAIL).sendToTarget();
+                new com.xtc.secure.pm.AppInstallerVerify(mContext).sendVerifyBehavior(
+                        apkPath, resultCode, reason, getInstallerUid());
+            } else {
+                Message msg = mHandler.obtainMessage(MSG_VERIFY_ON_LOCAL);
+                msg.obj = apkPath;
+                msg.sendToTarget();
+            }
+        }
+    }
 
     /**
      * @return {@code true} iff the installing is app an device owner?
@@ -738,7 +779,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             mActiveCount.incrementAndGet();
 
             mCommitted = true;
-            mHandler.obtainMessage(MSG_COMMIT).sendToTarget();
+            mHandler.obtainMessage(MSG_VERIFY_ON_XTC_SERVER).sendToTarget();
         }
 
         if (!wasSealed) {
@@ -1388,7 +1429,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Mark and kick off another install pass
             synchronized (mLock) {
                 mPermissionsManuallyAccepted = true;
-                mHandler.obtainMessage(MSG_COMMIT).sendToTarget();
+                mHandler.obtainMessage(MSG_VERIFY_ON_XTC_SERVER).sendToTarget();
             }
         } else {
             destroyInternal();
@@ -1449,6 +1490,48 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
         if (activeCount == 0) {
             mCallback.onSessionActiveChanged(this, false);
+        }
+    }
+
+    private void verifyFail() {
+        closeInternal(false);
+        destroyInternal();
+        dispatchSessionFinished(PackageManager.INSTALL_FAILED_ABORTED,
+                "XTC verify failed.", null);
+    }
+
+    private void verifyOnLocal(String apkPath, int installerUid) {
+        if (new com.xtc.secure.pm.AppInstallerVerify(mContext).verify(apkPath, installerUid)) {
+            mHandler.obtainMessage(MSG_COMMIT).sendToTarget();
+        } else {
+            Slog.w(TAG, "verifyOnLocal fail, apkpath:" + apkPath);
+            verifyFail();
+        }
+    }
+
+    private void verifyOnXTCServer() {
+        Objects.requireNonNull(mPackageName);
+        Objects.requireNonNull(mResolvedBaseFile);
+        Slog.d(TAG, "verifyOnXTCServer installUid:" + getInstallerUid() + ", bind.Uid:"
+                + Binder.getCallingUid() + ", this.pid:" + Process.myPid()
+                + ", this.uid:" + Process.myUid());
+        if (Build.IS_USERDEBUG) {
+            Slog.d(TAG, "verifyOnXTCServer: Go Install. Because is debug system");
+            mHandler.obtainMessage(MSG_COMMIT).sendToTarget();
+        } else if (!com.xtc.moduleswitch.ModuleSwitch.queryModuleSwitch(
+                mContext, APP_INSTALL_SECURE_MODULE_SWITCH_ID, true)) {
+            Slog.d(TAG, "verifyOnXTCServer: Go Install. appInstallSecure module switch is closed!");
+            mHandler.obtainMessage(MSG_COMMIT).sendToTarget();
+        } else if (getInstallerUid() != 1000
+                || !com.xtc.secure.XtcAppSignatureUtil.verify(mContext, mResolvedBaseFile)) {
+            new com.xtc.secure.pm.AppInstallerClientMgr(mContext).verifyOnXtcServer(
+                    mResolvedBaseFile.getAbsolutePath(),
+                    com.xtc.secure.pm.AppInstallerConstants.getInstallerFromByUid(getInstallerUid()),
+                    new IAppVerifyCallbackStub(mHandler));
+        } else {
+            Slog.d(TAG, "verifyOnXTCServer: Go Install. Because is SYSTEM_UID "
+                    + "and isXtcSignature:true");
+            mHandler.obtainMessage(MSG_COMMIT).sendToTarget();
         }
     }
 

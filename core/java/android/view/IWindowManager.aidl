@@ -21,6 +21,7 @@ import com.android.internal.os.IResultReceiver;
 import com.android.internal.view.IInputContext;
 import com.android.internal.view.IInputMethodClient;
 import com.android.internal.policy.IKeyguardDismissCallback;
+import com.android.internal.policy.IKeyguardEventCallback;
 import com.android.internal.policy.IShortcutService;
 
 import android.content.res.CompatibilityInfo;
@@ -381,6 +382,18 @@ interface IWindowManager
      * @hide
      */
     void registerShortcutKey(in long shortcutCode, IShortcutService keySubscriber);
+
+    /**
+     * XTC: register a listener for keyguard lifecycle events.
+     * @hide
+     */
+    void registerKeyguardListener(IKeyguardEventCallback callback);
+
+    /**
+     * XTC: unregister a keyguard lifecycle listener.
+     * @hide
+     */
+    void unregisterKeyguardListener(IKeyguardEventCallback callback);
 
     /**
      * Create an input consumer by name.

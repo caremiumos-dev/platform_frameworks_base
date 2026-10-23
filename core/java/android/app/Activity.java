@@ -698,6 +698,9 @@ public class Activity extends ContextThemeWrapper
     private static final String TAG = "Activity";
     private static final boolean DEBUG_LIFECYCLE = false;
 
+    /** XTC camera menu attached to the decor view of camera activities. */
+    private com.xtc.widget.CameraMenuView mCameraMenuView;
+
     /** Standard activity result: operation canceled. */
     public static final int RESULT_CANCELED    = 0;
     /** Standard activity result: operation succeeded. */
@@ -733,7 +736,8 @@ public class Activity extends ContextThemeWrapper
     private static final String REQUEST_PERMISSIONS_WHO_PREFIX = "@android:requestPermissions:";
     private static final String AUTO_FILL_AUTH_WHO_PREFIX = "@android:autoFillAuth:";
 
-    private static final String KEYBOARD_SHORTCUTS_RECEIVER_PKG_NAME = "com.android.systemui";
+    // XTC device addition: SystemUI keyboard-shortcuts receiver lives in the launcher package.
+    private static final String KEYBOARD_SHORTCUTS_RECEIVER_PKG_NAME = "com.xtc.i3launcher";
 
     private static class ManagedDialog {
         Dialog mDialog;
@@ -987,6 +991,7 @@ public class Activity extends ContextThemeWrapper
     @MainThread
     @CallSuper
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        checkShowWhenLockFlag(getIntent());
         if (DEBUG_LIFECYCLE) Slog.v(TAG, "onCreate " + this + ": " + savedInstanceState);
         if (mLastNonConfigurationInstances != null) {
             mFragments.restoreLoaderNonConfig(mLastNonConfigurationInstances.loaders);
@@ -1043,6 +1048,66 @@ public class Activity extends ContextThemeWrapper
     public void onCreate(@Nullable Bundle savedInstanceState,
             @Nullable PersistableBundle persistentState) {
         onCreate(savedInstanceState);
+    }
+
+    /**
+     * XTC: bring the window to the front when the launching intent asks for it
+     * (hall / camera-menu launches).
+     */
+    private void checkShowWhenLockFlag(Intent intent) {
+        if (intent.getBooleanExtra(
+                com.xtc.utils.KeyguardEventManager.EXTRA_SHOW_WHEN_LOCKED, false)) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        }
+    }
+
+    /**
+     * XTC: true when the intent was produced by opening the hall or the camera
+     * menu.
+     */
+    private boolean fromHallOpen(Intent intent) {
+        if (intent.getBooleanExtra(com.xtc.utils.HallUtil.HALL_EXTRA_KEY, false)) {
+            return true;
+        }
+        return intent.getBooleanExtra(com.xtc.widget.CameraMenuView.XTC_ADD_MENU, false);
+    }
+
+    /**
+     * XTC: true when the hall / camera-menu launch flow wants a menu for this
+     * activity.
+     */
+    private boolean showMenu(Intent intent) {
+        if (!android.os.Build.SUPPORT_HALL) {
+            return false;
+        }
+        if (intent.getBooleanExtra(com.xtc.widget.CameraMenuView.XTC_ADD_MENU, false)) {
+            return true;
+        }
+        return intent.getBooleanExtra(com.xtc.widget.CameraMenuView.XTC_FROM_PHOTO, false);
+    }
+
+    /**
+     * XTC: the camera menu attached to this activity, or null.
+     */
+    public com.xtc.widget.CameraMenuView getCameraMenu() {
+        return mCameraMenuView;
+    }
+
+    /**
+     * XTC: hall event hook. {@code OPEN_ANIM} plays the menu open animation,
+     * {@code MENU_VISIBILITY} toggles the menu visibility.
+     */
+    public void requestHallEvent(String event, int value) {
+        String valueStr = String.valueOf(value);
+        if ("0".equals(valueStr) && com.xtc.utils.HallUtil.OPEN_ANIM.equals(event)) {
+            if (mCameraMenuView != null) {
+                mCameraMenuView.onHideOpenAnimation();
+            }
+        } else if (com.xtc.utils.HallUtil.MENU_VISIBILITY.equals(event)) {
+            if (mCameraMenuView != null) {
+                mCameraMenuView.setMenuVisibility(value);
+            }
+        }
     }
 
     /**
@@ -1482,6 +1547,22 @@ public class Activity extends ContextThemeWrapper
      * @see #onResume
      */
     protected void onNewIntent(Intent intent) {
+        if (fromHallOpen(intent)) {
+            getIntent().putExtra(com.xtc.utils.HallUtil.HALL_EXTRA_KEY, true);
+        }
+        checkShowWhenLockFlag(intent);
+        if (!showMenu(intent) || mCameraMenuView != null) {
+            if (mCameraMenuView != null) {
+                getIntent().putExtra(com.xtc.widget.CameraMenuView.XTC_ADD_MENU, true);
+            }
+        } else {
+            getIntent().putExtra(com.xtc.widget.CameraMenuView.XTC_ADD_MENU, true);
+            getIntent().putExtra(com.xtc.widget.CameraMenuView.XTC_SHOW_TIP,
+                    intent.getBooleanExtra(com.xtc.widget.CameraMenuView.XTC_SHOW_TIP, false));
+            mCameraMenuView = new com.xtc.widget.CameraMenuView(this);
+            ((com.android.internal.policy.DecorView) getWindow().getDecorView())
+                    .addView(mCameraMenuView);
+        }
     }
 
     /**
@@ -2742,6 +2823,32 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
+     * XTC device addition: drive the swipe-right-to-exit back-window animation.
+     * @hide
+     */
+    public boolean setBackActivityAnim(float anim) {
+        try {
+            return ActivityManager.getService().setBackActivityAnim(mToken, anim);
+        } catch (RemoteException e) {
+            Log.e(TAG, "getBackActivity: error");
+            return false;
+        }
+    }
+
+    /**
+     * XTC device addition: apply/restore the back activity background.
+     * @hide
+     */
+    public boolean setBackActivityBackground(boolean restore) {
+        try {
+            return ActivityManager.getService().setBackActivityBackground(mToken, restore);
+        } catch (RemoteException e) {
+            Log.e(TAG, "setBackActivityBackground: error");
+            return false;
+        }
+    }
+
+    /**
      * Retrieve the {@link Scene} representing this window's current content.
      * Requires {@link Window#FEATURE_CONTENT_TRANSITIONS}.
      *
@@ -3157,6 +3264,11 @@ public class Activity extends ContextThemeWrapper
      * @see View#onWindowFocusChanged(boolean)
      */
     public void onWindowFocusChanged(boolean hasFocus) {
+        if (hasFocus && showMenu(getIntent()) && mCameraMenuView == null) {
+            mCameraMenuView = new com.xtc.widget.CameraMenuView(this);
+            ((com.android.internal.policy.DecorView) getWindow().getDecorView())
+                    .addView(mCameraMenuView);
+        }
     }
 
     /**

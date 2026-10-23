@@ -154,6 +154,19 @@ public class KeyguardServiceDelegate {
         }
     }
 
+    /**
+     * XTC device addition: whether this device actually has a keyguard. Returns
+     * false when the keyguard service could not be bound (e.g. a vendor ROM
+     * without the standard SystemUI keyguard), so callers can skip waiting for
+     * a keyguard that will never be drawn.
+     */
+    public boolean deviceHasKeyguard() {
+        if (mKeyguardState != null) {
+            return mKeyguardState.deviceHasKeyguard;
+        }
+        return false;
+    }
+
     private final ServiceConnection mKeyguardConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {

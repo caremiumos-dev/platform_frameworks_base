@@ -149,11 +149,17 @@ public interface BluetoothProfile {
     static public final int INPUT_HOST = 19;
 
     /**
+     * XTC/QTI DUN profile.
+     * @hide
+     */
+    static public final int DUN = 20;
+
+    /**
      * Max profile ID. This value should be updated whenever a new profile is added to match
      * the largest value assigned to a profile.
      * @hide
      */
-    public static final int MAX_PROFILE_ID = 19;
+    public static final int MAX_PROFILE_ID = 20;
 
     /**
      * Default priority for devices that we try to auto-connect to and

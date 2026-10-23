@@ -28,9 +28,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.ContactsContract.PhoneLookup;
+import android.telecom.XtcSecurePii;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.telephony.Rlog;
@@ -63,6 +65,16 @@ public class CallerInfoAsyncQuery {
     // (TODO: This could become a flag in config.xml if it ever needs to be
     // configured on a per-product basis.)
     private static final boolean ENABLE_UNKNOWN_NUMBER_GEO_DESCRIPTION = true;
+
+    // XTC/BBK: caller-id is looked up in the vendor contact provider, and the 110
+    // emergency number is configurable.
+    public static final String NUMBER_110_PROP = "persist.sys.110.number";
+    static final android.net.Uri CONTACT_ITEM_URI =
+            android.net.Uri.parse("content://com.xtc.contact/item");
+    static final android.net.Uri CONTACT_ITEM_REF = CONTACT_ITEM_URI.buildUpon().build();
+    static final android.net.Uri CONTACT_SHORT_WHITE_URI =
+            android.net.Uri.parse("content://com.xtc.contact/item_join_white_column");
+    static final android.net.Uri CONTACT_SHORT_WHITE_REF = CONTACT_SHORT_WHITE_URI.buildUpon().build();
 
     /**
      * Interface for a CallerInfoAsyncQueryHandler result return.
@@ -324,6 +336,10 @@ public class CallerInfoAsyncQuery {
                     // Note we're setting the phone number here (refer to javadoc
                     // comments at the top of CallerInfo class).
                     mCallerInfo = new CallerInfo().markAsEmergency(mContext);
+                    // XTC 差异：110（由 persist.sys.110.number 配置）保留原始号码。
+                    if (isXtcEmergencyCall(cw.number)) {
+                        mCallerInfo.phoneNumber = cw.number;
+                    }
                 } else if (cw.event == EVENT_VOICEMAIL_NUMBER) {
                     mCallerInfo = new CallerInfo().markAsVoiceMail(cw.subId);
                 } else {
@@ -448,35 +464,16 @@ public class CallerInfoAsyncQuery {
     public static CallerInfoAsyncQuery startQuery(int token, Context context, String number,
             OnQueryCompleteListener listener, Object cookie, int subId) {
 
-        if (DBG) {
-            Rlog.d(LOG_TAG, "##### CallerInfoAsyncQuery startQuery()... #####");
-            Rlog.d(LOG_TAG, "- number: " + /*number*/ "xxxxxxx");
-            Rlog.d(LOG_TAG, "- cookie: " + cookie);
-        }
-
-        // Construct the URI object and query params, and start the query.
-
-        final Uri contactRef = PhoneLookup.ENTERPRISE_CONTENT_FILTER_URI.buildUpon()
-                .appendPath(number)
-                .appendQueryParameter(PhoneLookup.QUERY_PARAMETER_SIP_ADDRESS,
-                        String.valueOf(PhoneNumberUtils.isUriNumber(number)))
-                .build();
-
-        if (DBG) {
-            Rlog.d(LOG_TAG, "==> contactRef: " + sanitizeUriToString(contactRef));
-        }
+        Rlog.d(LOG_TAG, "##### CallerInfoAsyncQuery startQuery()... #####");
+        Rlog.d(LOG_TAG, "- number: " + android.telecom.XtcSecurePii.encrypt(number));
+        Rlog.d(LOG_TAG, "- cookie: " + cookie);
 
         CallerInfoAsyncQuery c = new CallerInfoAsyncQuery();
-        c.allocate(context, contactRef);
-
-        //create cookieWrapper, start query
         CookieWrapper cw = new CookieWrapper();
         cw.listener = listener;
         cw.cookie = cookie;
         cw.number = number;
         cw.subId = subId;
-
-        // check to see if these are recognized numbers, and use shortcuts if we can.
         if (PhoneNumberUtils.isLocalEmergencyNumber(context, number)) {
             cw.event = EVENT_EMERGENCY_NUMBER;
         } else if (PhoneNumberUtils.isVoiceMailNumber(context, subId, number)) {
@@ -484,14 +481,29 @@ public class CallerInfoAsyncQuery {
         } else {
             cw.event = EVENT_NEW_QUERY;
         }
-
-        c.mHandler.startQuery(token,
-                              cw,  // cookie
-                              contactRef,  // uri
-                              null,  // projection
-                              null,  // selection
-                              null,  // selectionArgs
-                              null);  // orderBy
+        android.util.Log.d(LOG_TAG, "bbklhj----cw.number   1111="
+                + android.telecom.XtcSecurePii.encrypt(cw.number));
+        // XTC/BBK: query the vendor contact provider, matching on the trailing
+        // phoneNumber_length digits of the number.
+        int phoneNumberLength = context.getResources().getInteger(
+                com.android.internal.R.integer.phoneNumber_length);
+        android.util.Log.d(LOG_TAG, "[Telephony] phoneNumber_length: " + phoneNumberLength);
+        if (cw.number == null || cw.number.length() < phoneNumberLength) {
+            android.util.Log.d(LOG_TAG, "bbklhj----cw.number.length() is < "
+                    + String.valueOf(phoneNumberLength));
+            c.allocate(context, CONTACT_ITEM_REF);
+            c.mHandler.startQuery(token, cw, CONTACT_ITEM_REF, null,
+                    "number=\"" + number + "\"", null, null);
+        } else {
+            android.util.Log.d(LOG_TAG, "bbklhj----cw.number.length()=" + cw.number.length());
+            c.allocate(context, CONTACT_ITEM_REF);
+            String queryNumber = cw.number.substring(cw.number.length() - phoneNumberLength,
+                    cw.number.length());
+            android.util.Log.d(LOG_TAG, "bbklhj----queryNumber="
+                    + android.telecom.XtcSecurePii.encrypt(queryNumber));
+            c.mHandler.startQuery(token, cw, CONTACT_ITEM_REF, null, "number LIKE ?",
+                    new String[]{"%" + queryNumber}, null);
+        }
         return c;
     }
 
@@ -522,6 +534,18 @@ public class CallerInfoAsyncQuery {
         }
         mHandler = new CallerInfoAsyncQueryHandler(context);
         mHandler.mQueryUri = contactRef;
+    }
+
+    // XTC 差异：判断号码是否为配置的 110（persist.sys.110.number，默认 "110"）。
+    private boolean isXtcEmergencyCall(String number) {
+        if (TextUtils.isEmpty(number)) {
+            return false;
+        }
+        String stripped = number.replace(" ", "");
+        String propNumber = SystemProperties.get(NUMBER_110_PROP, "110");
+        Rlog.d(LOG_TAG, "isXtcEmergencyCall propNumber: " + propNumber + " , number: "
+                + XtcSecurePii.encrypt(stripped));
+        return stripped.equals(propNumber);
     }
 
     /**

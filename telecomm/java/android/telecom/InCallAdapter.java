@@ -149,6 +149,14 @@ public final class InCallAdapter {
         }
     }
 
+    // CAF/XTC 差异：请求 Telecom 为来电播放铃声。
+    public void playIncomingCallRingtone() {
+        try {
+            mAdapter.playIncomingCallRingtone();
+        } catch (RemoteException e) {
+        }
+    }
+
     /**
      * Instructs Telecom to stop any dual-tone multi-frequency signaling (DTMF) tone currently
      * playing.

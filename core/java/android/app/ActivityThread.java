@@ -67,6 +67,7 @@ import android.os.DropBoxManager;
 import android.os.Environment;
 import android.os.GraphicsEnvironment;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.Looper;
@@ -103,6 +104,7 @@ import android.util.LogPrinter;
 import android.util.LogWriter;
 import android.util.Pair;
 import android.util.PrintWriterPrinter;
+import android.util.Printer;
 import android.util.Slog;
 import android.util.SparseIntArray;
 import android.util.SuperNotCalledException;
@@ -177,17 +179,18 @@ public final class ActivityThread {
     /** @hide */
     public static final String TAG = "ActivityThread";
     private static final android.graphics.Bitmap.Config THUMBNAIL_FORMAT = Bitmap.Config.RGB_565;
-    static final boolean localLOGV = false;
-    static final boolean DEBUG_MESSAGES = false;
+    // XTC 差异：这些调试开关在设备端可被 enableActivityThreadLog() 动态修改（故非 final）。
+    static boolean localLOGV = false;
+    static boolean DEBUG_MESSAGES = false;
     /** @hide */
-    public static final boolean DEBUG_BROADCAST = false;
-    private static final boolean DEBUG_RESULTS = false;
-    private static final boolean DEBUG_BACKUP = false;
-    public static final boolean DEBUG_CONFIGURATION = false;
-    private static final boolean DEBUG_SERVICE = false;
-    private static final boolean DEBUG_MEMORY_TRIM = false;
-    private static final boolean DEBUG_PROVIDER = false;
-    private static final boolean DEBUG_ORDER = false;
+    public static boolean DEBUG_BROADCAST = false;
+    private static boolean DEBUG_RESULTS = false;
+    private static boolean DEBUG_BACKUP = false;
+    public static boolean DEBUG_CONFIGURATION = false;
+    private static boolean DEBUG_SERVICE = false;
+    private static boolean DEBUG_MEMORY_TRIM = false;
+    private static boolean DEBUG_PROVIDER = false;
+    private static boolean DEBUG_ORDER = false;
     private static final long MIN_TIME_BETWEEN_GCS = 5*1000;
     private static final int SQLITE_MEM_RELEASED_EVENT_LOG_TAG = 75003;
     private static final int LOG_AM_ON_PAUSE_CALLED = 30021;
@@ -267,6 +270,30 @@ public final class ActivityThread {
     boolean mSomeActivitiesChanged = false;
     boolean mUpdatingSystemConfig = false;
 
+    // XTC performance: main-thread caton (block) stack monitor.
+    private static final String CATON_OPEN_PROP = "persist.sys.caton.open";
+    private static final String SKIP_STACK_STRING = "android.os.MessageQueue.nativePollOnce";
+    private static final String MSG_START = ">>>>> Dispatching";
+    private static final String MSG_END = "<<<<< Finished";
+    private static final long TIME_BLOCK = 50;
+    private static boolean isRunningMonitor = false;
+    private static boolean started = false;
+    private static int sameCount = 0;
+    private static StackTraceElement[] lastStackTrace = null;
+    private static HandlerThread mLogThread;
+    private static Handler mIoHandler;
+    private static Runnable mLogRunnable;
+
+    /** XTC bbk_traffic: timer that periodically tags the process's socket fds. */
+    private static java.util.Timer mTimer;
+    /** XTC bbk_traffic: fds already tagged by {@link #setUDPSocketFD()}. */
+    private static ArrayList<String> socketFD = new ArrayList<>();
+    /** XTC bbk_traffic: true when this process has its own socket counter tag. */
+    private boolean isDiffSystemUIDTraffic = false;
+
+    /** XTC performance: performance service used for pre-fork and caton reports. */
+    com.xtc.performance.PerformanceManager mPm;
+
     // These can be accessed by multiple threads; mResourcesManager is the lock.
     // XXX For now we keep around information about all packages we have
     // seen, not removing entries from this map.
@@ -332,6 +359,12 @@ public final class ActivityThread {
 
     final GcIdler mGcIdler = new GcIdler();
     boolean mGcIdlerScheduled = false;
+
+    final PurgeIdler mPurgeIdler = new PurgeIdler();
+    boolean mPurgeIdlerScheduled = false;
+
+    // XTC/APM 差异：设备基座字段，反编译中未见赋值处（恒为 null，仅保留兼容）。
+    private com.android.internal.apm.AppPerformanceMonitorManager mAppPerformanceMonitorManager;
 
     static volatile Handler sMainThreadHandler;  // set once in main()
 
@@ -692,6 +725,10 @@ public final class ActivityThread {
 
         private int mLastProcessState = -1;
 
+        // XTC device addition: state for the swipe-right-to-exit back-window animation.
+        private ActivityClientRecord backRecord;
+        private android.graphics.drawable.Drawable mWindowBackgroundDrawable;
+
         private void updatePendingConfiguration(Configuration config) {
             synchronized (mResourcesManager) {
                 if (mPendingConfiguration == null ||
@@ -948,6 +985,79 @@ public final class ActivityThread {
 
         public void scheduleApplicationInfoChanged(ApplicationInfo ai) {
             sendMessage(H.APPLICATION_INFO_CHANGED, ai);
+        }
+
+        public final void schedPreforkStart() {
+            sendMessage(H.PREFORK_START, null);
+        }
+
+        public final void schedStopMonitor() {
+            sendMessage(H.STOP_MONITOR, null);
+        }
+
+        @Override
+        public void reportActivityLaunchTimeLocked(String shortComponentName, long launchTime) {
+            sendMessage(H.REPORT_LAUCH_TIME,
+                    new com.android.internal.apm.LaunchTimeData(shortComponentName, launchTime));
+        }
+
+        @Override
+        public void enableActivityThreadLog(boolean enable, String flags) {
+            ActivityThread.this.enableActivityThreadLog(enable, flags);
+        }
+
+        @Override
+        public void setBackWindowAnim(IBinder token, float anim) {
+            ActivityClientRecord r = currentActivityThread().mActivities.get(token);
+            if (r == null || mWindowBackgroundDrawable == null) {
+                return;
+            }
+            Message msg = Message.obtain();
+            msg.what = H.ACTIVITY_WINDOW_SCALE;
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = r.activity.getWindow();
+            args.arg2 = Float.valueOf(anim);
+            msg.obj = args;
+            ActivityThread.this.mH.sendMessage(msg);
+        }
+
+        @Override
+        public void setBackActivityBackground(IBinder token, boolean restore) {
+            ActivityClientRecord r = currentActivityThread().mActivities.get(token);
+            Log.d(TAG, "setBackActivityBackground: record=" + r + ", restore=" + restore);
+            if (r == null) {
+                return;
+            }
+            Window window = r.activity.getWindow();
+            Message msg = Message.obtain();
+            msg.what = H.ACTIVITY_WINDOW_BACKGROUND;
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = window;
+            args.argi1 = restore ? 1 : 0;
+            if (restore) {
+                args.arg2 = mWindowBackgroundDrawable;
+                if (backRecord == null || backRecord.activity != r.activity) {
+                    return;
+                }
+                msg.obj = args;
+                ActivityThread.this.mH.sendMessage(msg);
+                backRecord = null;
+                mWindowBackgroundDrawable = null;
+                return;
+            }
+            mWindowBackgroundDrawable = window.getDecorViewBackgroundDrawable();
+            if (mWindowBackgroundDrawable == null && r.activity != null
+                    && r.activity.getPackageName() != null
+                    && (r.activity.getPackageName().startsWith("com.xtc.i3launcher")
+                            || r.activity.getPackageName().startsWith("com.xtc.camera.app"))) {
+                mWindowBackgroundDrawable =
+                        new android.graphics.drawable.ColorDrawable(0xff000000);
+            }
+            backRecord = r;
+            args.arg2 = mWindowBackgroundDrawable;
+            args.arg3 = window.getContentRoot().getBackground();
+            msg.obj = args;
+            ActivityThread.this.mH.sendMessage(msg);
         }
 
         public void updateTimeZone() {
@@ -1484,8 +1594,7 @@ public final class ActivityThread {
         public static final int BIND_SERVICE            = 121;
         public static final int UNBIND_SERVICE          = 122;
         public static final int DUMP_SERVICE            = 123;
-        public static final int LOW_MEMORY              = 124;
-        public static final int ACTIVITY_CONFIGURATION_CHANGED = 125;
+        public static final int LOW_MEMORY              = 124;        public static final int ACTIVITY_CONFIGURATION_CHANGED = 125;
         public static final int RELAUNCH_ACTIVITY       = 126;
         public static final int PROFILER_CONTROL        = 127;
         public static final int CREATE_BACKUP_AGENT     = 128;
@@ -1516,6 +1625,17 @@ public final class ActivityThread {
         public static final int ATTACH_AGENT = 155;
         public static final int APPLICATION_INFO_CHANGED = 156;
         public static final int ACTIVITY_MOVED_TO_DISPLAY = 157;
+        /** XTC back-gesture: apply the window background for swipe-right-to-exit. */
+        public static final int ACTIVITY_WINDOW_BACKGROUND = 158;
+        /** XTC back-gesture: scale/fade the window content root. */
+        public static final int ACTIVITY_WINDOW_SCALE = 159;
+        /** XTC: schedule a purge of pending resources when the queue goes idle. */
+        public static final int PURGE_WHEN_IDLE = 160;
+        /** XTC pre-fork: turn a pre-forked process into the real process. */
+        public static final int PREFORK_START = 161;        /** XTC performance: stop the main-thread caton stack monitor. */
+        public static final int STOP_MONITOR = 162;
+        /** XTC/APM: report activity launch time. */
+        public static final int REPORT_LAUCH_TIME = 163;
 
         String codeToString(int code) {
             if (DEBUG_MESSAGES) {
@@ -1546,6 +1666,11 @@ public final class ActivityThread {
                     case LOW_MEMORY: return "LOW_MEMORY";
                     case ACTIVITY_CONFIGURATION_CHANGED: return "ACTIVITY_CONFIGURATION_CHANGED";
                     case ACTIVITY_MOVED_TO_DISPLAY: return "ACTIVITY_MOVED_TO_DISPLAY";
+                    case ACTIVITY_WINDOW_BACKGROUND: return "ACTIVITY_WINDOW_BACKGROUND";
+                    case ACTIVITY_WINDOW_SCALE: return "ACTIVITY_WINDOW_SCALE";
+                    case PREFORK_START: return "PREFORK_START";
+                    case STOP_MONITOR: return "STOP_MONITOR";
+                    case REPORT_LAUCH_TIME: return "REPORT_LAUCH_TIME";
                     case RELAUNCH_ACTIVITY: return "RELAUNCH_ACTIVITY";
                     case PROFILER_CONTROL: return "PROFILER_CONTROL";
                     case CREATE_BACKUP_AGENT: return "CREATE_BACKUP_AGENT";
@@ -1685,6 +1810,7 @@ public final class ActivityThread {
                 case UNBIND_SERVICE:
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "serviceUnbind");
                     handleUnbindService((BindServiceData)msg.obj);
+                    schedulePurgeIdler();
                     Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
                     break;
                 case SERVICE_ARGS:
@@ -1695,6 +1821,7 @@ public final class ActivityThread {
                 case STOP_SERVICE:
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "serviceStop");
                     handleStopService((IBinder)msg.obj);
+                    schedulePurgeIdler();
                     Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
                     break;
                 case CONFIGURATION_CHANGED:
@@ -1714,6 +1841,9 @@ public final class ActivityThread {
                     break;
                 case GC_WHEN_IDLE:
                     scheduleGcIdler();
+                    break;
+                case PURGE_WHEN_IDLE:
+                    schedulePurgeIdler();
                     break;
                 case DUMP_SERVICE:
                     handleDumpService((DumpComponentInfo)msg.obj);
@@ -1843,6 +1973,57 @@ public final class ActivityThread {
                         mUpdatingSystemConfig = false;
                     }
                     break;
+                case PREFORK_START:
+                    handlePreforkStart();
+                    break;
+                case STOP_MONITOR:
+                    stopMonitor();
+                    break;
+                case REPORT_LAUCH_TIME:
+                    reportActivityLaunchTimeLocked(
+                            (com.android.internal.apm.LaunchTimeData) msg.obj);
+                    break;
+                case ACTIVITY_WINDOW_BACKGROUND: {
+                    SomeArgs bgArgs = (SomeArgs) msg.obj;
+                    Window bgWindow = (Window) bgArgs.arg1;
+                    android.view.ViewGroup bgContentRoot = bgWindow.getContentRoot();
+                    if (bgContentRoot != null) {
+                        android.graphics.drawable.Drawable drawable =
+                                (android.graphics.drawable.Drawable) bgArgs.arg2;
+                        android.graphics.drawable.Drawable viewGroupBackground =
+                                (android.graphics.drawable.Drawable) bgArgs.arg3;
+                        Log.d(TAG, "ACTIVITY_WINDOW_BACKGROUND: mWindowBackground=" + drawable
+                                + ", mViewGroupBackground=" + viewGroupBackground
+                                + ", restore=" + bgArgs.argi1);
+                        if (bgArgs.argi1 != 1) {
+                            if (viewGroupBackground == null && drawable != null) {
+                                bgContentRoot.setBackgroundDrawable(drawable);
+                            }
+                            if (drawable != null) {
+                                bgWindow.setBackgroundDrawable(
+                                        new android.graphics.drawable.ColorDrawable(0xff000000));
+                            }
+                        } else if (drawable != null) {
+                            bgWindow.setBackgroundDrawable(drawable);
+                            bgContentRoot.setScaleX(1.0f);
+                            bgContentRoot.setScaleY(1.0f);
+                            bgContentRoot.setAlpha(1.0f);
+                        }
+                    }
+                    break;
+                }
+                case ACTIVITY_WINDOW_SCALE: {
+                    SomeArgs scaleArgs = (SomeArgs) msg.obj;
+                    Window scaleWindow = (Window) scaleArgs.arg1;
+                    float scale = ((Float) scaleArgs.arg2).floatValue();
+                    android.view.ViewGroup scaleContentRoot = scaleWindow.getContentRoot();
+                    if (scaleContentRoot != null) {
+                        scaleContentRoot.setScaleX(scale);
+                        scaleContentRoot.setScaleY(scale);
+                        scaleContentRoot.setAlpha(scale);
+                    }
+                    break;
+                }
             }
             Object obj = msg.obj;
             if (obj instanceof SomeArgs) {
@@ -1895,6 +2076,15 @@ public final class ActivityThread {
         @Override
         public final boolean queueIdle() {
             doGcIfNeeded();
+            purgePendingResources();
+            return false;
+        }
+    }
+
+    final class PurgeIdler implements MessageQueue.IdleHandler {
+        @Override
+        public boolean queueIdle() {
+            purgePendingResources();
             return false;
         }
     }
@@ -2201,6 +2391,22 @@ public final class ActivityThread {
         mH.removeMessages(H.GC_WHEN_IDLE);
     }
 
+    void schedulePurgeIdler() {
+        if (!mPurgeIdlerScheduled) {
+            mPurgeIdlerScheduled = true;
+            Looper.myQueue().addIdleHandler(mPurgeIdler);
+        }
+        mH.removeMessages(H.PURGE_WHEN_IDLE);
+    }
+
+    void unschedulePurgeIdler() {
+        if (mPurgeIdlerScheduled) {
+            mPurgeIdlerScheduled = false;
+            Looper.myQueue().removeIdleHandler(mPurgeIdler);
+        }
+        mH.removeMessages(H.PURGE_WHEN_IDLE);
+    }
+
     void doGcIfNeeded() {
         mGcIdlerScheduled = false;
         final long now = SystemClock.uptimeMillis();
@@ -2210,6 +2416,12 @@ public final class ActivityThread {
             //Slog.i(TAG, "**** WE DO, WE DO WANT TO GC!");
             BinderInternal.forceGc("bg");
         }
+    }
+
+    private void purgePendingResources() {
+        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "purgePendingResources");
+        nPurgePendingResources();
+        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }
 
     private static final String HEAP_FULL_COLUMN
@@ -2643,6 +2855,7 @@ public final class ActivityThread {
 
     private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) {
         // System.out.println("##### [" + System.currentTimeMillis() + "] ActivityThread.performLaunchActivity(" + r + ")");
+        startMonitor();
 
         ActivityInfo aInfo = r.activityInfo;
         if (r.packageInfo == null) {
@@ -3125,6 +3338,232 @@ public final class ActivityThread {
         } catch (IOException e) {
             Slog.e(TAG, "Attaching agent failed: " + agent);
         }
+    }
+
+    private void handlePreforkStart() {
+        Slog.d(TAG, "handlePreforkStart() -> attach(false)");
+        attach(false);
+    }
+
+    /**
+     * XTC performance: start the main-thread caton (block) stack monitor.
+     * When the main looper stays inside a single message for more than
+     * {@link #TIME_BLOCK} ms and the stack is stable for several samples, the
+     * stack is reported to the performance service so that it can be persisted
+     * for diagnostics.
+     */
+    private static void startMonitor() {
+        if (isRunningMonitor || !SystemProperties.getBoolean(CATON_OPEN_PROP, false)) {
+            return;
+        }
+        mLogThread = new HandlerThread("block-monitor");
+        mLogThread.start();
+        isRunningMonitor = true;
+        mIoHandler = new Handler(mLogThread.getLooper());
+        mLogRunnable = new Runnable() {
+            private boolean first = true;
+
+            @Override
+            public void run() {
+                try {
+                    if (first) {
+                        first = false;
+                        return;
+                    }
+                    StackTraceElement[] stackTrace = Looper.getMainLooper().getThread()
+                            .getStackTrace();
+                    if (lastStackTrace == null) {
+                        lastStackTrace = stackTrace;
+                        return;
+                    }
+                    if (checkSame(lastStackTrace, stackTrace)) {
+                        sameCount++;
+                        if (sameCount >= 8) {
+                            ArrayList<String> stack = new ArrayList<String>(stackTrace.length);
+                            for (StackTraceElement element : stackTrace) {
+                                stack.add(element.toString());
+                            }
+                            if (sCurrentActivityThread != null) {
+                                sCurrentActivityThread.saveAppCatonStack(stack);
+                            }
+                            sameCount = 0;
+                        }
+                    } else {
+                        lastStackTrace = stackTrace;
+                        sameCount = 0;
+                    }
+                } finally {
+                    if (started && mIoHandler != null) {
+                        mIoHandler.postDelayed(this, TIME_BLOCK);
+                    }
+                }
+            }
+        };
+        Looper.getMainLooper().setMessageLogging(new Printer() {
+            @Override
+            public void println(String message) {
+                if (message.startsWith(MSG_START) && !started) {
+                    started = true;
+                    mIoHandler.post(mLogRunnable);
+                }
+                if (message.startsWith(MSG_END) && started) {
+                    mIoHandler.removeCallbacksAndMessages(null);
+                    started = false;
+                }
+            }
+        });
+    }
+
+    private static void stopMonitor() {
+        if (isRunningMonitor) {
+            Looper.getMainLooper().setMessageLogging(null);
+            if (mIoHandler != null) {
+                mIoHandler.removeCallbacksAndMessages(null);
+                mIoHandler.getLooper().quit();
+                mIoHandler = null;
+                mLogThread = null;
+            }
+            started = false;
+            isRunningMonitor = false;
+        }
+    }
+
+    // XTC/APM 差异：转发 Activity 启动耗时给性能监控管理器（设备中该字段恒为 null）。
+    public void reportActivityLaunchTimeLocked(
+            com.android.internal.apm.LaunchTimeData launchTimeData) {
+        if (mAppPerformanceMonitorManager != null) {
+            mAppPerformanceMonitorManager.reportActivityLaunchTimeLocked(launchTimeData);
+        }
+    }
+
+    // XTC 差异：按逗号分隔的 flag 列表动态开关 ActivityThread 调试日志。
+    public void enableActivityThreadLog(boolean enable, String flags) {
+        Log.v(TAG, "enableActivityThreadLog: enable = " + enable + ", flags = " + flags);
+        if (flags == null || flags.length() == 0) {
+            return;
+        }
+        String[] flagArray = flags.split(",");
+        if (flagArray[0].equals(android.app.backup.FullBackup.APK_TREE_TOKEN)) {
+            localLOGV = enable;
+            DEBUG_MESSAGES = enable;
+            DEBUG_BROADCAST = enable;
+            DEBUG_RESULTS = enable;
+            DEBUG_BACKUP = enable;
+            DEBUG_CONFIGURATION = enable;
+            DEBUG_SERVICE = enable;
+            DEBUG_MEMORY_TRIM = enable;
+            DEBUG_PROVIDER = enable;
+            DEBUG_ORDER = enable;
+            return;
+        }
+        for (String flag : flagArray) {
+            try {
+                switch (Integer.parseInt(flag)) {
+                    case 0: localLOGV = enable; continue;
+                    case 1: DEBUG_MESSAGES = enable; continue;
+                    case 2: DEBUG_BROADCAST = enable; continue;
+                    case 3: DEBUG_RESULTS = enable; continue;
+                    case 4: DEBUG_BACKUP = enable; continue;
+                    case 5: DEBUG_CONFIGURATION = enable; continue;
+                    case 6: DEBUG_SERVICE = enable; continue;
+                    case 7: DEBUG_MEMORY_TRIM = enable; continue;
+                    case 8: DEBUG_PROVIDER = enable; break;
+                    case 9: break;
+                    default: continue;
+                }
+                DEBUG_ORDER = enable;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+    }
+
+    /** XTC performance: true when two main-thread stacks are effectively equal. */
+    public static boolean checkSame(StackTraceElement[] stack1, StackTraceElement[] stack2) {
+        try {
+            if (stack1.length != stack2.length) {
+                return false;
+            }
+            for (int i = 0; i < stack1.length; i++) {
+                StackTraceElement element1 = stack1[i];
+                StackTraceElement element2 = stack2[i];
+                if (!element1.equals(element2)
+                        || element2.toString().contains(SKIP_STACK_STRING)) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** XTC performance: forward a captured caton stack to the performance service. */
+    private void saveAppCatonStack(ArrayList<String> stack) {
+        if (mPm == null) {
+            mPm = (com.xtc.performance.PerformanceManager) getSystemContext()
+                    .getSystemService(Context.XTC_PERFORMANCE_SERVICE);
+        }
+        if (mPm == null || stack == null || stack.isEmpty()) {
+            return;
+        }
+        mPm.saveCatonStack(stack);
+    }
+
+    /** XTC bbk_traffic: cancel the socket-fd tagging timer and clear tracked fds. */
+    private static void cancelSocketFDTimer() {
+        if (mTimer != null) {
+            Slog.d(TAG, "bbk_traffic  cancelSocketFDTimer");
+            mTimer.cancel();
+            mTimer = null;
+        }
+        if (socketFD.size() > 0) {
+            Slog.d(TAG, "bbk_traffic  cancelSocketFDTimer socketFD size = " + socketFD.size());
+            socketFD.clear();
+        }
+    }
+
+    /** XTC bbk_traffic: tag every currently-open socket fd with the process tag. */
+    private static void setUDPSocketFD() {
+        Slog.d(TAG, "bbk_traffic  setUDPSocketFD start");
+        File[] files = new File("/proc/" + Process.myPid() + "/fd").listFiles();
+        int length = files.length;
+        for (int i = 0; i < length; i++) {
+            try {
+                if (android.system.Os.readlink(files[i].getAbsolutePath()).contains("socket")) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(files[i]);
+                    String fd = sb.substring(sb.lastIndexOf("/") + 1);
+                    if (socketFD.size() <= 0 || !socketFD.contains(fd)) {
+                        socketFD.add(fd);
+                        int fdInt;
+                        try {
+                            fdInt = Integer.parseInt(fd);
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                            fdInt = 0;
+                        }
+                        com.android.internal.os.RuntimeInit.setNetworkSCTag(0, fdInt);
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "listFd error=" + e);
+            }
+        }
+        Slog.d(TAG, "bbk_traffic  setUDPSocketFD end");
+    }
+
+    /** XTC bbk_traffic: start the periodic socket-fd tagging timer. */
+    private static void startSocketFDTimer() {
+        mTimer = new java.util.Timer();
+        mTimer.schedule(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                setUDPSocketFD();
+            }
+        }, 2000L, 15000L);
     }
 
     private static final ThreadLocal<Intent> sCurrentBroadcastIntent = new ThreadLocal<Intent>();
@@ -3628,6 +4067,11 @@ public final class ActivityThread {
                 a.mStartedActivity + ", hideForNow: " + r.hideForNow
                 + ", finished: " + a.mFinished);
 
+            if (isDiffSystemUIDTraffic && r.activityInfo.getComponentName().getClassName()
+                    .equals("com.xtc.videochat.module.VideoChatMainActivity")) {
+                startSocketFDTimer();
+            }
+
             final int forwardBit = isForward ?
                     WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION : 0;
 
@@ -3824,6 +4268,10 @@ public final class ActivityThread {
 
             r.activity.mConfigChangeFlags |= configChanges;
             performPauseActivity(token, finished, r.isPreHoneycomb(), "handlePauseActivity");
+            if (isDiffSystemUIDTraffic && r.activityInfo.getComponentName().getClassName()
+                    .equals("com.xtc.videochat.module.VideoChatMainActivity")) {
+                cancelSocketFDTimer();
+            }
 
             // Make sure any pending writes are now committed.
             if (r.isPreHoneycomb()) {
@@ -4092,6 +4540,10 @@ public final class ActivityThread {
         // Make sure any pending writes are now committed.
         if (!r.isPreHoneycomb()) {
             QueuedWork.waitToFinish();
+        }
+        if (isDiffSystemUIDTraffic && r.activityInfo.getComponentName().getClassName()
+                .equals("com.xtc.videochat.module.VideoChatMainActivity")) {
+            cancelSocketFDTimer();
         }
 
         // Schedule the call to tell the activity manager we have
@@ -4386,11 +4838,11 @@ public final class ActivityThread {
                 }
             }
         }
+        schedulePurgeIdler();
         mActivities.remove(token);
         StrictMode.decrementExpectedActivityCount(activityClass);
         return r;
     }
-
     private static String safeToComponentShortString(Intent intent) {
         ComponentName component = intent.getComponent();
         return component == null ? "[Unknown]" : component.toShortString();
@@ -4997,6 +5449,11 @@ public final class ActivityThread {
             if (DEBUG_CONFIGURATION) Slog.v(TAG, "Handle configuration changed: "
                     + config);
 
+            if (android.graphics.Typeface.isNeedRecreateCustomTypeface(config.customFontPath)) {
+                android.graphics.Typeface.createCustomTypeface(
+                        getApplication().getApplicationContext());
+            }
+
             mResourcesManager.applyConfigurationToResourcesLocked(config, compat);
             updateLocaleListFromAppContext(mInitialApplication.getApplicationContext(),
                     mResourcesManager.getConfiguration().getLocales());
@@ -5319,6 +5776,13 @@ public final class ActivityThread {
     final void handleTrimMemory(int level) {
         if (DEBUG_MEMORY_TRIM) Slog.v(TAG, "Trimming memory to level: " + level);
 
+        if (level >= 80) {
+            Slog.v(TAG, "handleTrimMemory PropertyInvalidatedCache clear level=" + level);
+            for (PropertyInvalidatedCache cache : PropertyInvalidatedCache.getActiveCaches()) {
+                cache.clear();
+            }
+        }
+
         ArrayList<ComponentCallbacks2> callbacks = collectComponentCallbacks(true, null);
 
         final int N = callbacks.size();
@@ -5327,6 +5791,12 @@ public final class ActivityThread {
         }
 
         WindowManagerGlobal.getInstance().trimMemory(level);
+
+        if (SystemProperties.getInt("debug.am.run_mallopt_trim_level", Integer.MAX_VALUE) <= level) {
+            Slog.v(TAG, "handleTrimMemory -> purgePendingResources");
+            unschedulePurgeIdler();
+            purgePendingResources();
+        }
     }
 
     private void setupGraphicsSupport(Context context) {
@@ -5640,6 +6110,12 @@ public final class ActivityThread {
         updateLocaleListFromAppContext(appContext,
                 mResourcesManager.getConfiguration().getLocales());
 
+        // XTC/APM 差异：绑定应用时通知性能监控管理器（设备中该字段恒为 null）。
+        if (mAppPerformanceMonitorManager != null) {
+            mAppPerformanceMonitorManager.bindApplication(appContext, data.appInfo.packageName,
+                    data.processName);
+        }
+
         if (!Process.isIsolated()) {
             setupGraphicsSupport(appContext);
         }
@@ -5767,6 +6243,14 @@ public final class ActivityThread {
                         ApplicationInfo.METADATA_PRELOADED_FONTS, 0);
                 if (preloadedFontsResource != 0) {
                     data.info.getResources().preloadFonts(preloadedFontsResource);
+                }
+                final int trafficTag = info.metaData.getInt(
+                        ApplicationInfo.METADATA_XTC_TRAFFIC_TAG, 0);
+                if (trafficTag != 0 && info.uid == Process.SYSTEM_UID) {
+                    isDiffSystemUIDTraffic = true;
+                    com.android.internal.os.RuntimeInit.setNetworkSCTag(trafficTag, 0);
+                    Slog.d(TAG, "bbk_traffic, isDiffSystemUIDTraffic =true ,ApplicationInfo name = "
+                            + info.packageName + ", appProjectId = " + trafficTag);
                 }
             }
         } catch (RemoteException e) {
@@ -6499,4 +6983,6 @@ public final class ActivityThread {
     // ------------------ Regular JNI ------------------------
 
     private native void nDumpGraphicsInfo(FileDescriptor fd);
+
+    private native void nPurgePendingResources();
 }

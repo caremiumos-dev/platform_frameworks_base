@@ -611,4 +611,16 @@
     -->
     <dimen name="autofill_save_icon_max_size">300dp</dimen>
 
+    <!-- XTC camera menu. -->
+    <dimen name="itemImageHeight">40.0dip</dimen>
+    <dimen name="itemImageWidth">47.0dip</dimen>
+    <dimen name="itemMenuHeight">66.0dip</dimen>
+    <dimen name="itemMenuWidth">148.0dip</dimen>
+    <dimen name="menuImagePaddingL">12.0dip</dimen>
+    <dimen name="menuImagePaddingR">8.0dip</dimen>
+    <dimen name="menuTextSize">15.0sp</dimen>
+    <dimen name="menuItemPaddingVer">2.5dip</dimen>
+    <dimen name="menuItemRadius">6.0dip</dimen>
+    <dimen name="menuItemSelectedWidth">1.0dip</dimen>
+
 </resources>

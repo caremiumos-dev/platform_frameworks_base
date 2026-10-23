@@ -22,6 +22,9 @@ import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.os.ProcessCpuTracker;
 import com.android.server.RescueParty;
 import com.android.server.Watchdog;
+import com.android.server.job.controllers.JobStatus;
+import com.xtc.behavior.XtcBehavior;
+import com.xtc.behavior.XtcBehaviorDataLevel;
 
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -51,10 +54,14 @@ import android.util.TimeUtils;
 
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import static com.android.server.Watchdog.NATIVE_STACKS_OF_INTEREST;
@@ -71,10 +78,26 @@ class AppErrors {
 
     private static final String TAG = TAG_WITH_CLASS_NAME ? "AppErrors" : TAG_AM;
 
+    /**
+     * XTC/BBK: launcher repeated-crash reboot state, persisted across the launcher update reboot.
+     */
+    private static final String XTC_LAUNCHER_CRASH_REBOOT_STATE = "persist.sys.xtc_crash_reboot_state";
+    /**
+     * XTC/BBK: persisted ANR counter, exported to XtcBehavior as "AnrTimes".
+     */
+    private static final String XTC_PERSIST_ANR_KEY = "persist.sys.xtc_ANR_num";
+
     private final ActivityManagerService mService;
     private final Context mContext;
 
     private ArraySet<String> mAppsNotReportingCrashes;
+
+    // XTC/BBK: launcher java-crash burst tracking (4 crashes within 1 minute trigger
+    // the "launcher repeated crash" recovery flow).
+    private long mLauncherLastJavaCrashTime = 0;
+    private long javaCrashCounts = 0;
+
+    private final SimpleDateFormat mTraceDateFormat = new SimpleDateFormat("dd_MMM_HH_mm_ss.SSS");
 
     /**
      * The last time that various processes have crashed since they were last explicitly started.
@@ -101,6 +124,94 @@ class AppErrors {
         context.assertRuntimeOverlayThemable();
         mService = service;
         mContext = context;
+    }
+
+    class ClearUserDataObserver extends android.content.pm.IPackageDataObserver.Stub {
+        ClearUserDataObserver() {
+        }
+
+        public void onRemoveCompleted(String packageName, boolean succeeded) {
+            Slog.d(TAG, "xtc_launcher_crash clear launcher data remove completed. "
+                    + (succeeded ? "remove_success" : "remove_failed"));
+        }
+    }
+
+    private void bbkRebootDevice() {
+        Slog.d(TAG, "xtc_launcher_crash bbkRebootDevice START");
+        SystemProperties.set("sys.powerctl", "reboot,launcher_repeated_crash");
+    }
+
+    private void clearUserData(String packageName, String exceptionType) {
+        if (packageName == null || packageName.length() == 0) {
+            return;
+        }
+        boolean cleanSucceed = mService.clearApplicationUserData(
+                packageName, new ClearUserDataObserver(), 0);
+        Slog.d(TAG, "xtc_launcher_crash  clearUserData cleanSucceed = " + cleanSucceed
+                + " uid = " + mContext.getUserId());
+        reportRepeatedCrash(false, cleanSucceed, exceptionType);
+    }
+
+    private boolean isNeedRebootAfterCrash() {
+        return SystemProperties.getBoolean(XTC_LAUNCHER_CRASH_REBOOT_STATE, true);
+    }
+
+    private void reportRepeatedCrash(boolean onlyReboot, boolean deleteSucceeded,
+            String exceptionType) {
+        Slog.d(TAG, "xtc_launcher_crash reportRepeatedCrash");
+        String rebootTime = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        LinkedHashMap<String, String> values = new LinkedHashMap<>();
+        values.put("rebootType", onlyReboot ? "only_R" : "de_R");
+        values.put("delete", deleteSucceeded ? "SUCCESSED" : "FAIL");
+        values.put("rebootTime", rebootTime);
+        if (exceptionType != null && exceptionType.length() != 0) {
+            values.put("exceptionType", exceptionType);
+        }
+        new XtcBehavior.Builder(mContext, "Launcher_Repeated_Crash", values)
+                .dataCollectLevel(XtcBehaviorDataLevel.A).build().sendData();
+        Slog.d(TAG, "xtc_launcher_crash  reportRepeatedCrash end values = " + values.toString());
+    }
+
+    public void AppRepeatedCrash(String packageName, String exceptionType) {
+        if (packageName.equals(com.android.server.xgseserver.xss.HttpConfigOptions.PackageName
+                .PACKAGE_NAME_LAUNCHER)) {
+            boolean isRebootAfterUpdateLauncher = mService.checkLastUpdateTime(packageName);
+            boolean isNeedRebootDevice = isNeedRebootAfterCrash();
+            Slog.d(TAG, "xtc_launcher_crash isRebootAfterUpdateLauncher = "
+                    + isRebootAfterUpdateLauncher + ",exceptionType =" + exceptionType
+                    + ", isNeedRebootDevice= " + isNeedRebootDevice);
+            if (isRebootAfterUpdateLauncher && !isNeedRebootDevice) {
+                SystemProperties.set(XTC_LAUNCHER_CRASH_REBOOT_STATE, "true");
+                clearUserData(packageName, exceptionType);
+                Slog.d(TAG, "xtc_launcher_crash clearUserData after");
+            } else {
+                reportRepeatedCrash(true, false, "watch is not reboot after launcher update");
+                SystemProperties.set(XTC_LAUNCHER_CRASH_REBOOT_STATE, "false");
+                bbkRebootDevice();
+                Slog.d(TAG, "xtc_launcher_crash watch is not reboot after launcher update, "
+                        + "reboot now!!!");
+            }
+        }
+    }
+
+    private void dumpMeminfo() {
+        new Thread("dump meminfo") {
+            @Override
+            public void run() {
+                try {
+                    FileWriter fw = new FileWriter(new File("/data/anr/meminfo.txt"), true);
+                    PrintWriter pw = new PrintWriter(fw);
+                    mService.dumpApplicationMemoryUsage(null, pw, "  ",
+                            new String[]{"--oom"}, false, null);
+                    pw.flush();
+                    fw.flush();
+                    pw.close();
+                    fw.close();
+                } catch (Exception e) {
+                    Slog.e(TAG, "DumpMeminfo Error!");
+                }
+            }
+        }.start();
     }
 
     boolean dumpLocked(FileDescriptor fd, PrintWriter pw, boolean needSep,
@@ -393,12 +504,41 @@ class AppErrors {
                 return;
             }
 
-            final Message msg = Message.obtain();
-            msg.what = ActivityManagerService.SHOW_ERROR_UI_MSG;
-
             task = data.task;
-            msg.obj = data;
-            mService.mUiHandler.sendMessage(msg);
+            // XTC/BBK: on user builds the launcher gets no crash dialog. Instead the crash
+            // is counted, and 4 java crashes within JobStatus.DEFAULT_TRIGGER_MAX_DELAY
+            // escalate to the "launcher repeated crash" recovery flow (data wipe/reboot).
+            if (android.os.Build.IS_USER) {
+                result.set(AppErrorDialog.FORCE_QUIT);
+                boolean isIgnoreLauncherCrash = SystemProperties.getBoolean(
+                        "persist.sys.xtc_launcher_crash_ignore", false);
+                Slog.d(TAG, "xtc_launcher_crash this is user build, java crash package name = "
+                        + r.processName + ", isIgnoreLauncherCrash = " + isIgnoreLauncherCrash);
+                if (!isIgnoreLauncherCrash) {
+                    long now = SystemClock.uptimeMillis();
+                    Slog.d(TAG, "xtc_launcher_crash  java crash mLauncherLastJavaCrashTime = "
+                            + mLauncherLastJavaCrashTime + ", now = " + now);
+                    if (now > mLauncherLastJavaCrashTime + JobStatus.DEFAULT_TRIGGER_MAX_DELAY) {
+                        mLauncherLastJavaCrashTime = now;
+                        javaCrashCounts = 0L;
+                    }
+                    javaCrashCounts++;
+                    Slog.d(TAG, "xtc_launcher_crash java crash  javaCrashCounts = "
+                            + javaCrashCounts);
+                    if (javaCrashCounts >= 4
+                            && now < mLauncherLastJavaCrashTime
+                                    + JobStatus.DEFAULT_TRIGGER_MAX_DELAY) {
+                        javaCrashCounts = 0L;
+                        mLauncherLastJavaCrashTime = now;
+                        AppRepeatedCrash(r.processName, stackTrace);
+                    }
+                }
+            } else {
+                final Message msg = Message.obtain();
+                msg.what = ActivityManagerService.SHOW_ERROR_UI_MSG;
+                msg.obj = data;
+                mService.mUiHandler.sendMessage(msg);
+            }
         }
 
         int res = result.get();
@@ -805,13 +945,16 @@ class AppErrors {
             ActivityRecord parent, boolean aboveSystem, final String annotation) {
         ArrayList<Integer> firstPids = new ArrayList<Integer>(5);
         SparseArray<Boolean> lastPids = new SparseArray<Boolean>(20);
+        LinkedHashMap<String, String> linkedHashMap = new LinkedHashMap<>();
+        int persistAnrNum = SystemProperties.getInt(XTC_PERSIST_ANR_KEY, 0);
+        int anrTimes;
 
         if (mService.mController != null) {
             try {
                 // 0 == continue, -1 = kill process immediately
                 int res = mService.mController.appEarlyNotResponding(
                         app.processName, app.pid, annotation);
-                if (res < 0 && app.pid != MY_PID) {
+                if (res < 0 && app.pid != MY_PID && app.notResponding) {
                     app.kill("anr", true);
                 }
             } catch (RemoteException e) {
@@ -855,8 +998,13 @@ class AppErrors {
             app.notResponding = true;
 
             // Log the ANR to the event log.
+            anrTimes = persistAnrNum >= 0 ? persistAnrNum + 1 : persistAnrNum;
             EventLog.writeEvent(EventLogTags.AM_ANR, app.userId, app.pid,
                     app.processName, app.info.flags, annotation);
+            linkedHashMap.put("AnrPid", Integer.toString(app.pid));
+            linkedHashMap.put("AnrProcessName", app.processName);
+            linkedHashMap.put("AnrReason", annotation);
+            linkedHashMap.put("AnrTimes", Integer.toString(anrTimes));
 
             // Dump thread traces as quickly as we can, starting with "interesting" processes.
             firstPids.add(app.pid);
@@ -892,6 +1040,11 @@ class AppErrors {
                 }
             }
         }
+
+        // XTC/BBK: report the ANR to XtcBehavior, persist the counter and dump meminfo.
+        new XtcBehavior.Builder(mContext, "AM_ANR_times", linkedHashMap).build().sendData();
+        SystemProperties.set(XTC_PERSIST_ANR_KEY, Integer.toString(anrTimes));
+        dumpMeminfo();
 
         // Log the ANR to the main log.
         StringBuilder info = new StringBuilder();
@@ -997,6 +1150,24 @@ class AppErrors {
                     activity != null ? activity.shortComponentName : null,
                     annotation != null ? "ANR " + annotation : "ANR",
                     info.toString());
+
+            // XTC/BBK: optionally rename the dalvik stack-trace file so it survives the next ANR.
+            if (SystemProperties.getBoolean("persist.sys.enableTraceRename", false)) {
+                String traceFile = SystemProperties.get("dalvik.vm.stack-trace-file", null);
+                if (traceFile != null && traceFile.length() != 0) {
+                    File file = new File(traceFile);
+                    int lastIndexOf = traceFile.lastIndexOf(".");
+                    if (lastIndexOf != -1) {
+                        file.renameTo(new File(traceFile.substring(0, lastIndexOf) + "_"
+                                + app.processName + "_"
+                                + mTraceDateFormat.format(new Date())
+                                + traceFile.substring(lastIndexOf)));
+                    } else {
+                        file.renameTo(new File(traceFile + "_" + app.processName));
+                    }
+                    SystemClock.sleep(1000L);
+                }
+            }
 
             // Bring up the infamous App Not Responding dialog
             Message msg = Message.obtain();

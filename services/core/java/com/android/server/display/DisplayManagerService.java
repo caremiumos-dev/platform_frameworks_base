@@ -184,6 +184,8 @@ public final class DisplayManagerService extends SystemService {
     private final SparseArray<LogicalDisplay> mLogicalDisplays =
             new SparseArray<LogicalDisplay>();
     private int mNextNonDefaultDisplayId = Display.DEFAULT_DISPLAY + 1;
+    // XTC 差异：内置显示设备 id 计数器。
+    private int mNextBuiltInDisplayId = 4096;
 
     // List of all display transaction listeners.
     private final CopyOnWriteArrayList<DisplayTransactionListener> mDisplayTransactionListeners =
@@ -901,7 +903,8 @@ public final class DisplayManagerService extends SystemService {
             return null;
         }
 
-        final int displayId = assignDisplayIdLocked(isDefault);
+        // XTC 差异：内置显示设备按物理 id 分配显示 id。
+        final int displayId = assignDisplayIdLocked(isDefault, device.getPhysicalId());
         final int layerStack = assignLayerStackLocked(displayId);
 
         LogicalDisplay display = new LogicalDisplay(displayId, layerStack, device);
@@ -931,6 +934,16 @@ public final class DisplayManagerService extends SystemService {
 
     private int assignDisplayIdLocked(boolean isDefault) {
         return isDefault ? Display.DEFAULT_DISPLAY : mNextNonDefaultDisplayId++;
+    }
+
+    // XTC 差异：物理 id 5..7 的内置显示设备使用独立 id 空间（从 4096 起）。
+    private int assignDisplayIdLocked(boolean isDefault, int physicalId) {
+        if (physicalId < 5 || physicalId > 7) {
+            return assignDisplayIdLocked(isDefault);
+        }
+        int displayId = mNextBuiltInDisplayId;
+        mNextBuiltInDisplayId = displayId + 1;
+        return displayId;
     }
 
     private int assignLayerStackLocked(int displayId) {

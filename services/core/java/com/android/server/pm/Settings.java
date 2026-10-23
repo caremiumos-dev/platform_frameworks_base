@@ -933,6 +933,10 @@ final class Settings {
                 userId);
     }
 
+    private static void invalidatePackageCache() {
+        PackageManager.invalidatePackageInfoCache();
+    }
+
     void insertPackageSettingLPw(PackageSetting p, PackageParser.Package pkg) {
         p.pkg = pkg;
         // pkg.mSetEnabled = p.getEnabled(userId);
@@ -996,6 +1000,12 @@ final class Settings {
         } else {
             p.usesStaticLibraries = null;
             p.usesStaticLibrariesVersions = null;
+        }
+        if (!pkg.applicationInfo.isSystemSignature) {
+            p.isThirdPartyApp = true;
+        }
+        if (pkg.applicationInfo.isInstallFromAdb) {
+            p.isIFAC = true;
         }
         addPackageSettingLPw(p, p.sharedUser);
     }
@@ -2060,6 +2070,7 @@ final class Settings {
     }
 
     void writePackageRestrictionsLPr(int userId) {
+        invalidatePackageCache();
         if (DEBUG_MU) {
             Log.i(TAG, "Writing package restrictions for user=" + userId);
         }
@@ -2451,6 +2462,7 @@ final class Settings {
     }
 
     void writeLPr() {
+        invalidatePackageCache();
         //Debug.startMethodTracing("/data/system/packageprof", 8 * 1024 * 1024);
 
         // Keep the old settings around until we know the new ones have
@@ -2908,6 +2920,12 @@ final class Settings {
         }
         if (pkg.isOrphaned) {
             serializer.attribute(null, "isOrphaned", "true");
+        }
+        if (pkg.isThirdPartyApp) {
+            serializer.attribute(null, "isThirdPartyApp", "true");
+        }
+        if (pkg.isIFAC) {
+            serializer.attribute(null, "isIFAC", "true");
         }
         if (pkg.volumeUuid != null) {
             serializer.attribute(null, "volumeUuid", pkg.volumeUuid);
@@ -3787,6 +3805,8 @@ final class Settings {
         String systemStr = null;
         String installerPackageName = null;
         String isOrphaned = null;
+        String isThirdPartyApp = null;
+        String isIFAC = null;
         String volumeUuid = null;
         String categoryHintString = null;
         String updateAvailable = null;
@@ -3833,6 +3853,8 @@ final class Settings {
             }
             installerPackageName = parser.getAttributeValue(null, "installer");
             isOrphaned = parser.getAttributeValue(null, "isOrphaned");
+            isThirdPartyApp = parser.getAttributeValue(null, "isThirdPartyApp");
+            isIFAC = parser.getAttributeValue(null, "isIFAC");
             volumeUuid = parser.getAttributeValue(null, "volumeUuid");
             categoryHintString = parser.getAttributeValue(null, "categoryHint");
             if (categoryHintString != null) {
@@ -3993,6 +4015,8 @@ final class Settings {
             packageSetting.uidError = "true".equals(uidError);
             packageSetting.installerPackageName = installerPackageName;
             packageSetting.isOrphaned = "true".equals(isOrphaned);
+            packageSetting.isThirdPartyApp = "true".equals(isThirdPartyApp);
+            packageSetting.isIFAC = "true".equals(isIFAC);
             packageSetting.volumeUuid = volumeUuid;
             packageSetting.categoryHint = categoryHint;
             packageSetting.legacyNativeLibraryPathString = legacyNativeLibraryPathStr;

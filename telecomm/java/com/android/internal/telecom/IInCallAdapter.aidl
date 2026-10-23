@@ -77,4 +77,7 @@ oneway interface IInCallAdapter {
     void stopRtt(String callId);
 
     void setRttMode(String callId, int mode);
+
+    // CAF/XTC 差异：设备基座新增（txn 26）。
+    void playIncomingCallRingtone();
 }

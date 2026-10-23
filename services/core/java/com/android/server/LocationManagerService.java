@@ -2028,6 +2028,16 @@ public class LocationManagerService extends ILocationManager.Stub {
 
         final int pid = Binder.getCallingPid();
         final int uid = Binder.getCallingUid();
+        Log.v(TAG, "requestLocationUpdates packageName: " + packageName);
+        // XTC/BBK: private sub-permission gate (see getLastLocation).
+        if (packageName != null && (packageName.startsWith("com.cttl")
+                || packageName.startsWith("com.tsinghua"))
+                && com.xtc.auth.MobileManagerUtils.isSupported()
+                && !com.xtc.auth.MobileManagerUtils.checkPermission(
+                        "sub-permission.ACCESS_LOCATION", uid)) {
+            Log.d(TAG, "moms denied requestLocationUpdates pkg:" + packageName + " uid:" + uid);
+            return;
+        }
         // providers may use public location API's, need to clear identity
         long identity = Binder.clearCallingIdentity();
         try {
@@ -2082,6 +2092,8 @@ public class LocationManagerService extends ILocationManager.Stub {
         // Update the monitoring here just in case multiple location requests were added to the
         // same receiver (this request may be high power and the initial might not have been).
         receiver.updateMonitoring(true);
+        // CAF 差异：记录发起定位的包名，供 provider 的 PwrHistorian 遥测使用。
+        provider.setPackageName(packageName);
     }
 
     @Override
@@ -2165,6 +2177,19 @@ public class LocationManagerService extends ILocationManager.Stub {
                 request.getProvider());
         // no need to sanitize this request, as only the provider name is used
 
+        // XTC/BBK: private sub-permission gate for specific "moms" packages, layered on
+        // top of the public ACCESS_FINE_LOCATION model. NOTE: this overrides the standard
+        // permission model for these packages.
+        if (packageName != null && (packageName.startsWith("com.cttl")
+                || packageName.startsWith("com.tsinghua"))
+                && com.xtc.auth.MobileManagerUtils.isSupported()
+                && !com.xtc.auth.MobileManagerUtils.checkPermission(
+                        "sub-permission.ACCESS_LOCATION", Binder.getCallingUid())) {
+            Log.d(TAG, "moms denied getLastLocation pkg:" + packageName + " uid:"
+                    + Binder.getCallingUid());
+            return null;
+        }
+
         final int pid = Binder.getCallingPid();
         final int uid = Binder.getCallingUid();
         final long identity = Binder.clearCallingIdentity();
@@ -2230,6 +2255,16 @@ public class LocationManagerService extends ILocationManager.Stub {
         LocationRequest sanitizedRequest = createSanitizedRequest(request, allowedResolutionLevel);
 
         if (D) Log.d(TAG, "requestGeofence: " + sanitizedRequest + " " + geofence + " " + intent);
+
+        // XTC/BBK: private sub-permission gate (see getLastLocation).
+        if (packageName != null && (packageName.startsWith("com.cttl")
+                || packageName.startsWith("com.tsinghua"))
+                && com.xtc.auth.MobileManagerUtils.isSupported()
+                && !com.xtc.auth.MobileManagerUtils.checkPermission(
+                        "sub-permission.ACCESS_LOCATION", Binder.getCallingUid())) {
+            Log.d(TAG, "moms denied requestGeofence pkg:" + packageName + " request:" + request);
+            return;
+        }
 
         // geo-fence manager uses the public location API, need to clear identity
         int uid = Binder.getCallingUid();

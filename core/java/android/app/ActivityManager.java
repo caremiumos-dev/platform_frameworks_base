@@ -1050,6 +1050,99 @@ public class ActivityManager {
     }
 
     /**
+     * Triggers the XTC "security exception" path on the system server, which
+     * reboots the device.
+     *
+     * <p><b>Strong condemnation.</b> Reboots the user's device in response to a
+     * vendor policy; see {@code ActivityManagerService#xseException()}.
+     *
+     * @hide
+     */
+    public static void logSeException() {
+        if (isSystemReady()) {
+            try {
+                getService().xseException();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * XTC performance: apply an OOM adj tuning from a {@link ProcessInfo}.
+     * @hide
+     */
+    public void applyOomAdjByProcessInfoLocked(ProcessInfo processInfo, long pss,
+            long swapPss) {
+        try {
+            getService().applyOomAdjByProcessInfoLocked(processInfo, pss, swapPss);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * XTC/BBK: force an OOM-adjust pass.
+     * @hide
+     */
+    public void callUpdateOom() {
+        try {
+            getService().callUpdateOomAdj();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * XTC performance: returns the home process info.
+     * @hide
+     */
+    public ProcessInfo getHomeProcess() {
+        try {
+            return getService().getHomeProcess();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * XTC performance: returns the list of running process infos.
+     * @hide
+     */
+    public List<ProcessInfo> getRunningProcessesInfo() {
+        try {
+            return getService().getRunningProcessesInfo();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * XTC performance: returns the package that launched the top activity.
+     * @hide
+     */
+    public String getTopActivityCallingPkg() {
+        try {
+            return getService().getTopActivityCallingPkg();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * XTC performance: ask every application process to stop its main-thread
+     * caton (block) stack monitor.
+     * @hide
+     */
+    public void stopCatonStackMonitor() {
+        try {
+            getService().stopCatonStackMonitor();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Return the approximate per-application memory class of the current
      * device.  This gives you an idea of how hard a memory limit you should
      * impose on your application to let the overall system work best.  The
@@ -1106,6 +1199,18 @@ public class ActivityManager {
      */
     public boolean isLowRamDevice() {
         return isLowRamDeviceStatic();
+    }
+
+    /**
+     * XTC device addition: whether the given package is on the self-start whitelist.
+     * @hide
+     */
+    public boolean isPackageWhiteList(String packageName) {
+        try {
+            return getService().isPackageWhiteList(packageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /** @hide */
@@ -4267,6 +4372,30 @@ public class ActivityManager {
      *
      * @param pssSize The size in bytes to set the limit at.
      */
+    /**
+     * XTC device addition: add/remove a package from the self-start whitelist.
+     * @hide
+     */
+    public boolean setSelfstartPackage(String packageName, boolean enable) {
+        try {
+            return getService().setSelfstartPackage(packageName, enable);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * XTC device addition: replace the whole self-start whitelist.
+     * @hide
+     */
+    public boolean setSelfstartPackageList(java.util.List<String> packages) {
+        try {
+            return getService().setSelfstartPackageList(packages);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     public void setWatchHeapLimit(long pssSize) {
         try {
             getService().setDumpHeapDebugLimit(null, 0, pssSize,
@@ -4481,6 +4610,19 @@ public class ActivityManager {
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
+        }
+    }
+
+    /**
+     * XTC: kill the process hosting the given package for the given uid.
+     * This is a vendor process-management hook backed by
+     * {@link IActivityManager#killApplicationProcess}.
+     */
+    public void xtcKillAPP(String packageName, int uid) {
+        try {
+            getService().killApplicationProcess(packageName, uid);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 }

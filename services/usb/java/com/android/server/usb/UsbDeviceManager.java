@@ -156,6 +156,8 @@ public class UsbDeviceManager {
     private NotificationManager mNotificationManager;
     private final boolean mHasUsbAccessory;
     private boolean mUseUsbNotification;
+    // XTC/BBK: vendor ADB gating helper.
+    private com.android.server.xtclog.XTCAdbControl mXtcAdbControl;
     private boolean mAdbEnabled;
     private boolean mAudioSourceEnabled;
     private boolean mMidiEnabled;
@@ -292,6 +294,8 @@ public class UsbDeviceManager {
 
         mContext.registerReceiver(languageChangedReceiver,
                 new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
+
+        mXtcAdbControl = new com.android.server.xtclog.XTCAdbControl(context);
     }
 
     private UsbProfileGroupSettingsManager getCurrentSettings() {
@@ -667,7 +671,14 @@ public class UsbDeviceManager {
                     || !mCurrentFunctions.equals(functions)
                     || !mCurrentFunctionsApplied
                     || forceRestart) {
-                Slog.i(TAG, "Setting USB config to " + functions);
+                // XTC/BBK: enable the debugging manager whenever adb is part of the config.
+                if (UsbManager.containsFunction(functions, UsbManager.USB_FUNCTION_ADB)
+                        && mDebuggingManager != null) {
+                    mDebuggingManager.setAdbEnabled(true);
+                    Slog.e(TAG, "xtc enable adb USB config to user version " + functions);
+                }
+                Slog.i(TAG, "xtc Setting USB config to " + functions + ", oemFunctions:"
+                        + oemFunctions);
                 mCurrentFunctions = functions;
                 mCurrentOemFunctions = oemFunctions;
                 mCurrentFunctionsApplied = false;
@@ -706,12 +717,33 @@ public class UsbDeviceManager {
             if (functions == null) {
                 functions = "";
             }
-            if (mAdbEnabled) {
-                functions = UsbManager.addFunction(functions, UsbManager.USB_FUNCTION_ADB);
-            } else {
-                functions = UsbManager.removeFunction(functions, UsbManager.USB_FUNCTION_ADB);
+            // XTC/BBK: under strict-op mode, force adb off while an MTP session is locked.
+            boolean enableAdb = mAdbEnabled;
+            if (isStrictOpEnable() && UsbManager.containsFunction(functions,
+                    UsbManager.USB_FUNCTION_MTP) && !mUsbDataUnlocked) {
+                enableAdb = false;
             }
-            return functions;
+            // XTC/BBK: force adb on in factory/after-sale/self-test modes.
+            String adbEnableFrom = SystemProperties.get(
+                    com.android.server.xtclog.XTCAdbControl.PROP_ADB_ENABLE_FROM);
+            if (com.android.server.xtclog.XTCAdbControl.ADB_FROM_ALTER_SALE_ON
+                        .equals(adbEnableFrom)
+                    || com.android.server.xtclog.XTCAdbControl.ADB_FROM_SELF_TEST_ON
+                        .equals(adbEnableFrom)
+                    || com.android.server.xtclog.XTCAdbControl.ADB_FROM_105_SWITCH_ON
+                        .equals(adbEnableFrom)) {
+                enableAdb = true;
+            }
+            Slog.e(TAG, "applyAdbFunction enable:" + enableAdb);
+            if (enableAdb) {
+                return UsbManager.addFunction(functions, UsbManager.USB_FUNCTION_ADB);
+            }
+            return isNormalBoot() ? UsbManager.removeFunction(functions, UsbManager.USB_FUNCTION_ADB)
+                    : functions;
+        }
+
+        private boolean isStrictOpEnable() {
+            return SystemProperties.getBoolean("persist.vendor.strict_op_enable", false);
         }
 
         private boolean isUsbTransferAllowed() {

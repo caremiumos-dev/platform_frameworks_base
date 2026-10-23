@@ -38,6 +38,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.assist.AssistStructure;
 import android.content.ClipData;
+import android.content.pm.PackageManager;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -401,6 +402,10 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     private boolean mPreDrawListenerDetached;
 
     private TextClassifier mTextClassifier;
+    // XTC: user whose context is used to resolve per-user services such as the
+    // text classification manager. Never assigned in this build, so lookups
+    // fall back to the view's own context.
+    private UserHandle mTextOperationUser;
 
     // A flag to prevent repeated movements from escaping the enclosing text view. The idea here is
     // that if a user is holding down a movement key to traverse text, we shouldn't also traverse
@@ -10877,12 +10882,13 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                 return true;
 
             case ID_CUT:
-                setPrimaryClip(ClipData.newPlainText(null, getTransformedText(min, max)));
+                // XTC: no clipboard service, so cut only deletes the selection.
                 deleteText_internal(min, max);
                 return true;
 
             case ID_COPY:
-                setPrimaryClip(ClipData.newPlainText(null, getTransformedText(min, max)));
+                // XTC: no clipboard service, so copy is a no-op beyond closing the
+                // text action mode.
                 stopTextActionMode();
                 return true;
 
@@ -11079,8 +11085,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     @NonNull
     public TextClassifier getTextClassifier() {
         if (mTextClassifier == null) {
-            TextClassificationManager tcm =
-                    mContext.getSystemService(TextClassificationManager.class);
+            TextClassificationManager tcm = getTextClassificationManagerForUser();
             if (tcm != null) {
                 mTextClassifier = tcm.getTextClassifier();
             } else {
@@ -11088,6 +11093,23 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             }
         }
         return mTextClassifier;
+    }
+
+    final <T> T getServiceManagerForUser(String packageName, Class<T> serviceClass) {
+        if (mTextOperationUser == null) {
+            return getContext().getSystemService(serviceClass);
+        }
+        try {
+            return getContext().createPackageContextAsUser(packageName, 0, mTextOperationUser)
+                    .getSystemService(serviceClass);
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
+    }
+
+    final TextClassificationManager getTextClassificationManagerForUser() {
+        return getServiceManagerForUser(getContext().getPackageName(),
+                TextClassificationManager.class);
     }
 
     /**
@@ -11162,18 +11184,8 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     }
 
     boolean canPaste() {
-        if (mIsRestrictedAcrossUser
-                && UserHandle.myUserId() != ActivityManager.getCurrentUser()) {
-            // When it's restricted, and the curren user is not the process user. It can't paste
-            // because it may copy the text from the user 0 clipboard in current user is 10.
-            return false;
-        }
-        return (mText instanceof Editable
-                && mEditor != null && mEditor.mKeyListener != null
-                && getSelectionStart() >= 0
-                && getSelectionEnd() >= 0
-                && ((ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE))
-                        .hasPrimaryClip());
+        // XTC: the clipboard service is not available on this device.
+        return false;
     }
 
     boolean canPasteAsPlainText() {
@@ -11226,33 +11238,8 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
      * Paste clipboard content between min and max positions.
      */
     private void paste(int min, int max, boolean withFormatting) {
-        ClipboardManager clipboard =
-                (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = clipboard.getPrimaryClip();
-        if (clip != null) {
-            boolean didFirst = false;
-            for (int i = 0; i < clip.getItemCount(); i++) {
-                final CharSequence paste;
-                if (withFormatting) {
-                    paste = clip.getItemAt(i).coerceToStyledText(getContext());
-                } else {
-                    // Get an item as text and remove all spans by toString().
-                    final CharSequence text = clip.getItemAt(i).coerceToText(getContext());
-                    paste = (text instanceof Spanned) ? text.toString() : text;
-                }
-                if (paste != null) {
-                    if (!didFirst) {
-                        Selection.setSelection((Spannable) mText, max);
-                        ((Editable) mText).replace(min, max, paste);
-                        didFirst = true;
-                    } else {
-                        ((Editable) mText).insert(getSelectionEnd(), "\n");
-                        ((Editable) mText).insert(getSelectionEnd(), paste);
-                    }
-                }
-            }
-            sLastCutCopyOrTextChangedTime = 0;
-        }
+        // XTC: the clipboard service is not available on this device.
+        Log.d("Textview", "paste is failed because xtc unsupport ClipService.");
     }
 
     private void shareSelectedText() {
@@ -11265,13 +11252,6 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             getContext().startActivity(Intent.createChooser(sharingIntent, null));
             Selection.setSelection((Spannable) mText, getSelectionEnd());
         }
-    }
-
-    private void setPrimaryClip(ClipData clip) {
-        ClipboardManager clipboard =
-                (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboard.setPrimaryClip(clip);
-        sLastCutCopyOrTextChangedTime = SystemClock.uptimeMillis();
     }
 
     /**

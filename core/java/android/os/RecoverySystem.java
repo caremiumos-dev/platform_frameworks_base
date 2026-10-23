@@ -118,6 +118,9 @@ public class RecoverySystem {
      */
     public static final File UNCRYPT_PACKAGE_FILE = new File(RECOVERY_DIR, "uncrypt_file");
 
+    /** XTC: marker file requesting factory reset state reporting. */
+    private static final File XTC_FACTORY_FILE = new File(RECOVERY_DIR, "xtc_factory_reset");
+
     /**
      * UNCRYPT_STATUS_FILE stores the time cost (and error code in the case of a failure)
      * of uncrypt.
@@ -1099,6 +1102,12 @@ public class RecoverySystem {
             if (names[i].startsWith(LAST_PREFIX)) continue;
             if (reservePackage && names[i].equals(BLOCK_MAP_FILE.getName())) continue;
             if (reservePackage && names[i].equals(UNCRYPT_PACKAGE_FILE.getName())) continue;
+
+            // XTC: 恢复出厂设置时置位 sys.xtc.factory_reset，供厂商逻辑识别。
+            if (names[i].equals(XTC_FACTORY_FILE.getName())) {
+                Log.d(TAG, "set XTC_FACTORY_FILE to true");
+                SystemProperties.set("sys.xtc.factory_reset", "true");
+            }
 
             recursiveDelete(new File(RECOVERY_DIR, names[i]));
         }

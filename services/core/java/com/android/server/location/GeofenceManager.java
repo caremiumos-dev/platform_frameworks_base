@@ -32,6 +32,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationRequest;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,6 +40,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.Slog;
 
 import com.android.server.LocationManagerService;
@@ -411,6 +413,9 @@ public class GeofenceManager implements LocationListener, PendingIntent.OnFinish
     // Runs on the handler (which was passed into LocationManager.requestLocationUpdates())
     @Override
     public void onLocationChanged(Location location) {
+        // XTC/BBK: positioning telemetry log (0x01).
+        Log.d(TAG, "XTCNetin GeofenceManager onLocationChanged 0x01 uid:"
+                + Binder.getCallingUid() + " packagename:" + mContext.getPackageName());
         synchronized (mLock) {
             if (mReceivingLocationUpdates) {
                 mLastLocationUpdate = location;

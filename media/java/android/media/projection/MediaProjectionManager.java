@@ -71,7 +71,8 @@ public final class MediaProjectionManager {
      */
     public Intent createScreenCaptureIntent() {
         Intent i = new Intent();
-        i.setClassName("com.android.systemui",
+        // XTC device addition: SystemUI media projection activity lives in the launcher package.
+        i.setClassName("com.xtc.i3launcher",
                 "com.android.systemui.media.MediaProjectionPermissionActivity");
         return i;
     }

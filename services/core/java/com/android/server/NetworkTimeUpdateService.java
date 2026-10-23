@@ -23,6 +23,9 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+
+import java.util.Arrays;
+import java.util.List;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.net.ConnectivityManager;
@@ -69,11 +72,21 @@ public class NetworkTimeUpdateService extends Binder {
     private static final String ACTION_POLL =
             "com.android.server.NetworkTimeUpdateService.action.POLL";
 
+    // XTC/厂商扩展：NTP 强制同步开关广播。
+    private static final String ACTION_NTP_SWITCH = "com.example.action.NTP_SWITCH";
+    private static final String NTP_SWITCH_STATE = "NTP_SWITCH_STATE";
+
     private static final int NETWORK_CHANGE_EVENT_DELAY_MS = 1000;
     private static int POLL_REQUEST = 0;
 
     private static final long NOT_SET = -1;
     private long mNitzTimeSetTime = NOT_SET;
+
+    // XTC/厂商扩展：中国时区强制 NTP 同步。
+    private String mZoneId;
+    private static final List<String> CITY_LIST = Arrays.asList(
+            "Asia/Shanghai", "Asia/Hong_Kong", "Asia/Macau");
+    private boolean NTPswitch = true;
     // TODO: Have a way to look up the timezone we are in
     private long mNitzZoneSetTime = NOT_SET;
     private Network mDefaultNetwork = null;
@@ -172,9 +185,20 @@ public class NetworkTimeUpdateService extends Binder {
 
     private void onPollNetworkTimeUnderWakeLock(int event) {
         final long refTime = SystemClock.elapsedRealtime();
-        // If NITZ time was received less than mPollingIntervalMs time ago,
-        // no need to sync to NTP.
-        if (mNitzTimeSetTime != NOT_SET && refTime - mNitzTimeSetTime < mPollingIntervalMs) {
+        // XTC/厂商扩展：中国时区且模块开关打开时强制 NTP 同步。
+        NTPswitch = com.xtc.moduleswitch.ModuleSwitch.queryModuleSwitch(mContext, 3523, true);
+        Log.d(TAG, "NTPswitch is " + NTPswitch + " event is " + event);
+        Log.d(TAG, "onPollNetworkTimeUnderWakeLock: refTime = " + refTime
+                + " System time = " + System.currentTimeMillis() + " mZoneId is " + mZoneId);
+        if (CITY_LIST.contains(mZoneId) && NTPswitch) {
+            Log.d(TAG, "The NTP time synchronization is triggered in the China time zone");
+            if (mNitzTimeSetTime != NOT_SET) {
+                Log.d(TAG, "NITZ time was set, forcing NTP synchronization.");
+            }
+        } else if (mNitzTimeSetTime != NOT_SET
+                && refTime - mNitzTimeSetTime < mPollingIntervalMs) {
+            // If NITZ time was received less than mPollingIntervalMs time ago,
+            // no need to sync to NTP.
             resetAlarm(mPollingIntervalMs);
             return;
         }
@@ -207,6 +231,10 @@ public class NetworkTimeUpdateService extends Binder {
                     // Make sure we don't overflow, since it's going to be converted to an int
                     if (ntp / 1000 < Integer.MAX_VALUE) {
                         SystemClock.setCurrentTimeMillis(ntp);
+                        // XTC/厂商扩展：广播 NTP 同步开关状态。
+                        Intent ntpIntent = new Intent(ACTION_NTP_SWITCH);
+                        ntpIntent.putExtra(NTP_SWITCH_STATE, NTPswitch);
+                        mContext.sendBroadcast(ntpIntent);
                     }
                 } else {
                     if (DBG) Log.d(TAG, "Ntp time is close enough = " + ntp);
@@ -259,6 +287,8 @@ public class NetworkTimeUpdateService extends Binder {
                 mNitzTimeSetTime = SystemClock.elapsedRealtime();
             } else if (TelephonyIntents.ACTION_NETWORK_SET_TIMEZONE.equals(action)) {
                 mNitzZoneSetTime = SystemClock.elapsedRealtime();
+                mZoneId = intent.getStringExtra("time-zone");
+                Log.d(TAG, "Received zoneId: " + mZoneId);
             }
         }
     };

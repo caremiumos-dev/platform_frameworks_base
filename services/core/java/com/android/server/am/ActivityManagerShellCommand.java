@@ -70,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static android.app.ActivityManager.RESIZE_MODE_SYSTEM;
 import static android.app.ActivityManager.RESIZE_MODE_USER;
@@ -119,6 +120,17 @@ final class ActivityManagerShellCommand extends ShellCommand {
     private int mTaskId;
     private boolean mIsTaskOverlay;
 
+    // XTC/BBK: on user builds without DE permissions, only these shell commands and
+    // broadcast actions are allowed. This deliberately restricts the owner of the device.
+    private static final List<String> userAllowCmdWhiteList = new CopyOnWriteArrayList<>();
+    private static final List<String> userAllowBroadcastList = new CopyOnWriteArrayList<>();
+
+    static {
+        userAllowCmdWhiteList.add("broadcast");
+        userAllowBroadcastList.add("com.xtc.diag.aftersale.start_server");
+        userAllowBroadcastList.add("xtc.recovery.action.FACTORY_RESET");
+    }
+
     final boolean mDumping;
 
     ActivityManagerShellCommand(ActivityManagerService service, boolean dumping) {
@@ -131,6 +143,11 @@ final class ActivityManagerShellCommand extends ShellCommand {
     @Override
     public int onCommand(String cmd) {
         if (cmd == null) {
+            return handleDefaultCommands(cmd);
+        }
+        // XTC/BBK: block all but a tiny allow-list of am commands on user builds.
+        if (Build.IS_USER && !Build.isHasDePermissions() && !userAllowCmdWhiteList.contains(cmd)) {
+            getErrPrintWriter().println("XTC not allow to do cmd:" + cmd);
             return handleDefaultCommands(cmd);
         }
         PrintWriter pw = getOutPrintWriter();
@@ -339,6 +356,15 @@ final class ActivityManagerShellCommand extends ShellCommand {
         if (mimeType == null && intent.getData() != null
                 && "content".equals(intent.getData().getScheme())) {
             mimeType = mInterface.getProviderMimeType(intent.getData(), mUserId);
+        }
+
+        // XTC/QTI: block starting the qmmi factory test app from shell on user builds.
+        if (Build.IS_USER && intent.getComponent() != null) {
+            String packageName = intent.getComponent().getPackageName();
+            if (packageName != null && packageName.equals("com.qualcomm.qti.qmmi")) {
+                getErrPrintWriter().println("Error: Can't start " + packageName);
+                return 1;
+            }
         }
 
         do {
@@ -611,6 +637,12 @@ final class ActivityManagerShellCommand extends ShellCommand {
             intent = makeIntent(UserHandle.USER_CURRENT);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+        // XTC/BBK: block broadcast actions outside the allow-list on user builds.
+        if (Build.IS_USER && !Build.isHasDePermissions()
+                && !userAllowBroadcastList.contains(intent.getAction())) {
+            pw.println("XTC not allow to send broadcast:" + intent);
+            return -1;
         }
         intent.addFlags(Intent.FLAG_RECEIVER_FROM_SHELL);
         IntentReceiver receiver = new IntentReceiver(pw);

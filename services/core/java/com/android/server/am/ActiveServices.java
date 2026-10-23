@@ -95,6 +95,9 @@ public final class ActiveServices {
 
     private static final boolean DEBUG_DELAYED_SERVICE = DEBUG_SERVICE;
     private static final boolean DEBUG_DELAYED_STARTS = DEBUG_DELAYED_SERVICE;
+    // QTI: when enabled, defer service restarts while the owning app is launching.
+    private static final boolean SERVICE_RESCHEDULE =
+            SystemProperties.getBoolean("ro.vendor.qti.am.reschedule_service", false);
 
     private static final boolean LOG_SERVICE_START_STOP = false;
 
@@ -345,7 +348,7 @@ public final class ActiveServices {
         }
 
         ServiceLookupResult res =
-            retrieveServiceLocked(service, resolvedType, callingPackage,
+            retrieveServiceLockedWrapper(service, resolvedType, callingPackage,
                     callingPid, callingUid, userId, true, callerFg, false);
         if (res == null) {
             return null;
@@ -594,7 +597,7 @@ public final class ActiveServices {
         }
 
         // If this service is active, make sure it is stopped.
-        ServiceLookupResult r = retrieveServiceLocked(service, resolvedType, null,
+        ServiceLookupResult r = retrieveServiceLockedWrapper(service, resolvedType, null,
                 Binder.getCallingPid(), Binder.getCallingUid(), userId, false, false, false);
         if (r != null) {
             if (r.record != null) {
@@ -663,7 +666,7 @@ public final class ActiveServices {
     }
 
     IBinder peekServiceLocked(Intent service, String resolvedType, String callingPackage) {
-        ServiceLookupResult r = retrieveServiceLocked(service, resolvedType, callingPackage,
+        ServiceLookupResult r = retrieveServiceLockedWrapper(service, resolvedType, callingPackage,
                 Binder.getCallingPid(), Binder.getCallingUid(),
                 UserHandle.getCallingUserId(), false, false, false);
 
@@ -1293,8 +1296,9 @@ public final class ActiveServices {
         final boolean isBindExternal = (flags & Context.BIND_EXTERNAL_SERVICE) != 0;
 
         ServiceLookupResult res =
-            retrieveServiceLocked(service, resolvedType, callingPackage, Binder.getCallingPid(),
-                    Binder.getCallingUid(), userId, true, callerFg, isBindExternal);
+            retrieveServiceLockedWrapper(service, resolvedType, callingPackage,
+                    Binder.getCallingPid(), Binder.getCallingUid(), userId, true, callerFg,
+                    isBindExternal);
         if (res == null) {
             return 0;
         }
@@ -1882,6 +1886,30 @@ public final class ActiveServices {
         return true;
     }
 
+    /**
+     * XTC/BBK: wraps {@link #retrieveServiceLocked} with the self-start whitelist gate and a
+     * special-case block on starting {@code com.xtc.mmitest} from other apps.
+     */
+    private ServiceLookupResult retrieveServiceLockedWrapper(Intent intent, String resolvedType,
+            String callingPackage, int callingPid, int callingUid, int userId,
+            boolean createIfNeeded, boolean callingFromFg, boolean isBindExternal) {
+        ServiceLookupResult res = retrieveServiceLocked(intent, resolvedType, callingPackage,
+                callingPid, callingUid, userId, createIfNeeded, callingFromFg, isBindExternal);
+        String targetPackage = null;
+        if (res != null && res.record != null) {
+            targetPackage = res.record.packageName;
+        }
+        if (mAm.getSelfstartManager().restrictRetrieveService(intent, callingPackage, callingPid,
+                callingUid, targetPackage, createIfNeeded)) {
+            return null;
+        }
+        if (!"com.xtc.mmitest".equals(targetPackage) || callingUid == 1000) {
+            return res;
+        }
+        Slog.w(TAG, "AdbSecure XTC not allowed to start mmitest(in service)");
+        return null;
+    }
+
     private final boolean scheduleServiceRestartLocked(ServiceRecord r, boolean allowCancel) {
         boolean canceled = false;
 
@@ -1920,6 +1948,12 @@ public final class ActiveServices {
                         r.pendingStarts.add(0, si);
                         long dur = SystemClock.uptimeMillis() - si.deliveredTime;
                         dur *= 2;
+                        if (SERVICE_RESCHEDULE && DEBUG_DELAYED_SERVICE) {
+                            Slog.w(TAG, "Can add more delay !!! si.deliveredTime "
+                                    + si.deliveredTime + " dur " + dur + " si.deliveryCount "
+                                    + si.deliveryCount + " si.doneExecutingCount "
+                                    + si.doneExecutingCount + " allowCancel " + allowCancel);
+                        }
                         if (minDuration < dur) minDuration = dur;
                         if (resetTime < dur) resetTime = dur;
                     } else {
@@ -1932,6 +1966,12 @@ public final class ActiveServices {
             }
 
             r.totalRestartCount++;
+            if (SERVICE_RESCHEDULE && DEBUG_DELAYED_SERVICE) {
+                Slog.w(TAG, "r.name " + r.name + " N " + N + " minDuration " + minDuration
+                        + " resetTime " + resetTime + " now " + now + " r.restartDelay "
+                        + r.restartDelay + " r.restartTime+resetTime "
+                        + (r.restartTime + resetTime) + " allowCancel " + allowCancel);
+            }
             if (r.restartDelay == 0) {
                 r.restartCount++;
                 r.restartDelay = minDuration;
@@ -1956,6 +1996,13 @@ public final class ActiveServices {
             }
 
             r.nextRestartTime = now + r.restartDelay;
+            if (SERVICE_RESCHEDULE && DEBUG_DELAYED_SERVICE) {
+                Slog.w(TAG, "r.name " + r.name + " N " + N + " minDuration " + minDuration
+                        + " resetTime " + resetTime + " now " + now + " r.restartDelay "
+                        + r.restartDelay + " r.restartTime+resetTime "
+                        + (r.restartTime + resetTime) + " r.nextRestartTime " + r.nextRestartTime
+                        + " allowCancel " + allowCancel);
+            }
 
             // Make sure that we don't end up restarting a bunch of services
             // all at the same time.
@@ -1997,6 +2044,13 @@ public final class ActiveServices {
         r.nextRestartTime = SystemClock.uptimeMillis() + r.restartDelay;
         Slog.w(TAG, "Scheduling restart of crashed service "
                 + r.shortName + " in " + r.restartDelay + "ms");
+        if (SERVICE_RESCHEDULE && DEBUG_DELAYED_SERVICE) {
+            for (int i = mRestartingServices.size() - 1; i >= 0; i--) {
+                ServiceRecord r2 = mRestartingServices.get(i);
+                Slog.w(TAG, "Restarting list - i " + i + " r2.nextRestartTime "
+                        + r2.nextRestartTime + " r2.name " + r2.name);
+            }
+        }
         EventLog.writeEvent(EventLogTags.AM_SCHEDULE_SERVICE_RESTART,
                 r.userId, r.shortName, r.restartDelay);
 
@@ -2017,7 +2071,31 @@ public final class ActiveServices {
             return;
         }
         try {
-            bringUpServiceLocked(r, r.intent.getIntent().getFlags(), r.createdFromFg, true, false);
+            if (!SERVICE_RESCHEDULE) {
+                bringUpServiceLocked(r, r.intent.getIntent().getFlags(), r.createdFromFg, true,
+                        false);
+                return;
+            }
+            // QTI: if the owning app is currently launching, defer the restart instead of
+            // racing the app start.
+            ActivityStack focusedStack = mAm.getFocusedStack();
+            ActivityRecord top = focusedStack != null
+                    ? focusedStack.topRunningActivityLocked() : null;
+            boolean persistent = (r.serviceInfo.applicationInfo.flags
+                    & ApplicationInfo.FLAG_PERSISTENT) != 0;
+            boolean reschedule = top != null && top.launching
+                    && r.shortName.contains(top.packageName) && persistent;
+            if (!reschedule) {
+                bringUpServiceLocked(r, r.intent.getIntent().getFlags(), r.createdFromFg, true,
+                        false);
+                return;
+            }
+            if (DEBUG_DELAYED_SERVICE) {
+                Slog.v(TAG, "Reschedule service restart due to app launch r.shortName "
+                        + r.shortName + " r.app = " + r.app);
+            }
+            r.resetRestartCounter();
+            scheduleServiceRestartLocked(r, true);
         } catch (TransactionTooLargeException e) {
             // Ignore, it's been logged and nothing upstack cares.
         }
@@ -2258,6 +2336,10 @@ public final class ActiveServices {
                 if (newService) {
                     app.services.remove(r);
                     r.app = null;
+                    if (SERVICE_RESCHEDULE && DEBUG_DELAYED_SERVICE) {
+                        Slog.w(TAG, " Failed to create Service !!!! .This will introduce huge "
+                                + "delay...  " + r.shortName + " in " + r.restartDelay + "ms");
+                    }
                 }
 
                 // Retry.

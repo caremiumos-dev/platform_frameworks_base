@@ -1767,4 +1767,46 @@
     <string name="mmcc_illegal_ms" msgid="2769452751852211112">"不受允许的 SIM 卡"</string>
     <string name="mmcc_illegal_me" msgid="4438696681169345015">"不受允许的手机"</string>
     <string name="popup_window_default_title" msgid="4874318849712115433">"弹出式窗口"</string>
+    <string name="battery_warning_content">"当前手表可能存在问题，请前往售后检测"</string>
+    <string name="battery_warning_confirm_button">"我知道了"</string>
+    <string name="space_clean_full">"空间已满，请清理"</string>
+    <string name="space_clean_low">"手表空间不足300M,可\n前往“应用中心”下载云\n盘进行照片视频备份。\n"</string>
+    <string name="space_clean_low_one">"· 备份后可前往”空间管理“删\n  除已备份的照片和视频；\n"</string>
+    <string name="space_clean_low_two">"· 可前往“空间管理”清理历史\n  缓存或卸载不常用功能；\n"</string>
+    <string name="space_goto_clean">"前往清理"</string>
+    <string name="space_low_tips">"温馨提示"</string>
+    <string name="space_nexttime">"下次再说"</string>
+    <string name="shutdown_reboot_cancel">"取消"</string>
+    <string name="shutdown_reboot_confirm">"确定"</string>
+    <string name="shutdown_reboot_title1">"系统修复会清空所有"</string>
+    <string name="shutdown_reboot_title2">"本地数据,确定清理?"</string>
+    <string name="not_allow_shutdown_tips">"家长不允许手表\n主动关机"</string>
+    <string name="reboot_title">"重启"</string>
+    <string name="reboot_to_restore">"系统修复"</string>
+    <string name="reboot_to_restore_title2">"系统修复后"</string>
+    <string name="reboot_to_restore_title3">"会清空本地数据"</string>
+    <string name="reboot_to_restoreing">"即将重置系统..."</string>
+    <string name="more_action">"更多操作"</string>
+    <string name="not_need">"暂不需要"</string>
+    <string name="system_restore_title2">"系统修复"</string>
+    <string name="system_restore_title3">"系统修复后会还原手表设置等数据，请谨慎操作"</string>
+    <string name="system_restore_confirm">"系统修复后会还原手表设置，但不会清除相册、视\n频等本地数据，如手表遇\n到问题无法正常使用，可\n尝试进行系统修复"</string>
+    <string name="system_restore_forbidden_details">"“系统修复”处于禁用\n状态，无法使用"</string>
+    <string name="system_restore_forbidden_hint">"如何退出功能禁用？"</string>
+    <string name="system_restore_forbidden_title">"功能禁用"</string>
+    <string name="system_restore_quit_forbidden_title">"如何退出应用禁用？"</string>
+    <string name="system_restore_quit_forbidden_details"><font fgcolor="#999999">请在最新版</font><font fgcolor="#fafafa">"小天才APP-更\n多-应用禁用"</font><font fgcolor="#999999">"中，选择手表\n设置，调整功能"</font><font fgcolor="#fafafa">禁用</font><font fgcolor="#999999">"开\n关，即可正常使用。"</font></string>
+    <string name="flip_ok_msg">"我知道了"</string>
+    <string name="exception_disable_app_message">"检测到手表中存在未经授权的应用，为了防止出现安全风险，确保手表正常使用，系统已经对该应用进行了冻结处理。"</string>
+    <string name="exception_disable_net_message">"检测到手表系统中存在未经授权的应用，为了防止出现安全风险，确保手表数据安全，系统已经对该应用进行了禁网处理。"</string>
+    <string name="exception_ok_btn_str">"我知道了"</string>
+    <string name="exception_root_message">"系统检测到手表有安全风险，请升级新系统或者联系售后客服。"</string>
+    <string name="exception_root_title">"系统检测到手表被ROOT"</string>
+    <string name="exception_uninstall_message">"检测到手表系统中存在未经授权的应用，为了防止出现安全风险，系统已经进行了卸载处理。"</string>
+    <string name="exception_overlay_default_message">"检测到手表系统存在异常，为避免可能的安全问题，请升级到最新系统或者联系售后客服。"</string>
+    <string name="exception_overlay_default_title">"警告"</string>
+    <string name="menu_function_disable">"该功能已经被家长禁止使用"</string>
+    <string name="menu_period_disable">"该功能当前时间段已被禁用"</string>
+    <string name="flip_restrict_msg">"%d 分钟内停用翻转功能"</string>
+    <string name="flip_restrict_tip">"请勿频繁翻转"</string>
 </resources>

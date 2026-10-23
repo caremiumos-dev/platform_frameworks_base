@@ -1714,6 +1714,20 @@ public class AudioManager {
     }
 
     /**
+     * XTC/BBK: whether the given process currently holds audio focus.
+     * @hide
+     */
+    public boolean isProccessHasAudioFoucs(String packageName) {
+        try {
+            return getService().isProccessHasAudioFoucs(packageName);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error in calling Audio service interface"
+                    + "isProccessHasAudioFoucs() due to " + e);
+            return false;
+        }
+    }
+
+    /**
      * @hide
      * Checks whether the current audio focus is exclusive.
      * @return true if the top of the audio focus stack requested focus

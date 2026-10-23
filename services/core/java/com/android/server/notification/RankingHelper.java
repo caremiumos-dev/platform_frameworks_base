@@ -399,7 +399,12 @@ public class RankingHelper implements RankingConfig {
                                 channel.writeXmlForBackup(out, mContext);
                             }
                         } else {
-                            channel.writeXml(out);
+                            // XTC/BBK: tolerate a null channel during XML persistence.
+                            try {
+                                channel.writeXml(out);
+                            } catch (NullPointerException e) {
+                                Slog.d(TAG, "xtc catch NullPointerException:: " + e);
+                            }
                         }
                     }
 

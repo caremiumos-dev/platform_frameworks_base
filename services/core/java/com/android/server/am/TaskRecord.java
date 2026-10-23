@@ -906,6 +906,16 @@ final class TaskRecord extends ConfigurationContainer implements TaskWindowConta
         return this.intent.filterEquals(intent);
     }
 
+    /** XTC 差异：任务中任一 activity 可见即视为任务可见。 */
+    boolean isVisible() {
+        for (int i = mActivities.size() - 1; i >= 0; i--) {
+            if (mActivities.get(i).visible) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void setTaskToReturnTo(int taskToReturnTo) {
         mTaskToReturnTo = (taskToReturnTo == RECENTS_ACTIVITY_TYPE)
                 ? HOME_ACTIVITY_TYPE : taskToReturnTo;

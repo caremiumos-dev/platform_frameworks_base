@@ -35,6 +35,8 @@ import android.content.pm.IPackageMoveObserver;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.IOnPermissionsChangeListener;
 import android.content.pm.IntentFilterVerificationInfo;
+
+import java.util.Map;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.KeySet;
 import android.content.pm.PackageInfo;
@@ -664,4 +666,12 @@ interface IPackageManager {
     ComponentName getInstantAppInstallerComponent();
 
     String getInstantAppAndroidId(String packageName, int userId);
+
+    boolean isSupportXtcInstallVerify();
+    String getXtcInstallChannelName(String packageName);
+    Map getXtcInstallChannelExtInfo(String packageName);
+    String getApkFileMd5(String packageName);
+
+    ParceledListSlice XtcGetInstalledPackages(int flags, int userId, String callingPackage);
+    ParceledListSlice xtcGetInstalledApplications(int flags, int userId, String callingPackage);
 }

@@ -69,6 +69,15 @@ public final class BroadcastQueue {
     static final int MAX_BROADCAST_SUMMARY_HISTORY
             = ActivityManager.isLowRamDeviceStatic() ? 25 : 300;
 
+    // XTC/BBK: broadcast actions that are always allowed through to non-system receivers.
+    private static java.util.List<String> allowBroadcastActionList;
+
+    static {
+        allowBroadcastActionList = new java.util.ArrayList<>();
+        allowBroadcastActionList.add("android.intent.action.SCREEN_OFF");
+        allowBroadcastActionList.add("com.xtc.initservice.action.NET_PARAM_UPDATE");
+    }
+
     final ActivityManagerService mService;
 
     /**
@@ -514,6 +523,25 @@ public final class BroadcastQueue {
         }
     }
 
+    /**
+     * XTC/BBK: whether an SMS/WAP-push receiver may receive the broadcast. Returns true
+     * (i.e. block) for any app that is not the system uid or the system-signed camera app.
+     * NOTE: this bypasses the normal broadcast permission model for third-party SMS apps.
+     */
+    private boolean checkReceiverList(android.content.pm.ApplicationInfo applicationInfo) {
+        if (applicationInfo != null) {
+            Slog.d(TAG, "checkReceiverList app.uid = " + applicationInfo.uid + " app.processName = "
+                    + applicationInfo.processName + " ,isPlatformK="
+                    + applicationInfo.isSystemSignature);
+        }
+        if (applicationInfo == null || applicationInfo.uid != 1000) {
+            return applicationInfo != null
+                    && applicationInfo.processName.equals("com.xtc.camera.app")
+                    && applicationInfo.isSystemSignature ? false : true;
+        }
+        return false;
+    }
+
     private void deliverToRegisteredReceiverLocked(BroadcastRecord r,
             BroadcastFilter filter, boolean ordered, int index) {
         boolean skip = false;
@@ -649,6 +677,28 @@ public final class BroadcastQueue {
                     + " requires receiver be visible to instant apps"
                     + " due to sender " + r.callerPackage
                     + " (uid " + r.callingUid + ")");
+            skip = true;
+        }
+
+        // XTC/BBK: do not deliver broadcasts to third-party (non-system-signed) receivers
+        // that are not currently visible/foreground, unless the action is allow-listed.
+        // NOTE: this discriminates against third-party applications; reproduced for fidelity.
+        if (!skip && !filter.receiverList.app.info.isSystemSignature
+                && !mService.isSendBroadcastToAPP(filter.packageName)
+                && !allowBroadcastActionList.contains(r.intent.getAction())) {
+            Slog.d(TAG, "bbk_third_party_app skip broadcast deliver, recevice app = "
+                    + filter.packageName + ", action = " + r.intent.getAction());
+            skip = true;
+        }
+        // XTC/BBK: restrict SMS/WAP-push delivery to system-signed receivers.
+        String action = r.intent.getAction();
+        if (!skip && ("android.provider.Telephony.SMS_DELIVER".equals(action)
+                || "android.provider.Telephony.SMS_RECEIVED".equals(action)
+                || "android.provider.Telephony.WAP_PUSH_DELIVER".equals(action)
+                || "android.provider.Telephony.WAP_PUSH_RECEIVED".equals(action))
+                && checkReceiverList(filter.receiverList.app.info)) {
+            Slog.w(TAG, "XTC do not allowed process message:" + r.intent + " to package:"
+                    + filter.packageName);
             skip = true;
         }
 
@@ -1270,13 +1320,37 @@ public final class BroadcastQueue {
                                 && ((r.intent.getFlags()
                                         & Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND) == 0)
                                 && !isSignaturePerm(r.requiredPermissions))) {
-                        mService.addBackgroundCheckViolationLocked(r.intent.getAction(),
-                                component.getPackageName());
-                        Slog.w(TAG, "Background execution not allowed: receiving "
-                                + r.intent + " to "
-                                + component.flattenToShortString());
-                        skip = true;
+                        // XTC/BBK: the launcher and a handful of vendor/system packages are
+                        // exempt from the background-execution restriction.
+                        String componentString = component.flattenToShortString();
+                        if (componentString.startsWith(com.android.server.xgseserver.xss
+                                        .HttpConfigOptions.PackageName.PACKAGE_NAME_LAUNCHER)
+                                || componentString.startsWith("com.xtc.setting")
+                                || componentString.startsWith("com.cttl")
+                                || componentString.startsWith("com.tsinghua")
+                                || componentString.startsWith("com.xtc.xws")) {
+                            // exempt
+                        } else {
+                            mService.addBackgroundCheckViolationLocked(r.intent.getAction(),
+                                    component.getPackageName());
+                            Slog.w(TAG, "Background execution not allowed: receiving "
+                                    + r.intent + " to "
+                                    + component.flattenToShortString());
+                            skip = true;
+                        }
                     }
+                }
+                // XTC/BBK: restrict SMS/WAP-push delivery in the ordered path too.
+                String action = r.intent.getAction();
+                if (!skip
+                        && ("android.provider.Telephony.SMS_DELIVER".equals(action)
+                        || "android.provider.Telephony.SMS_RECEIVED".equals(action)
+                        || "android.provider.Telephony.WAP_PUSH_DELIVER".equals(action)
+                        || "android.provider.Telephony.WAP_PUSH_RECEIVED".equals(action))
+                        && checkReceiverList(info.activityInfo.applicationInfo)) {
+                    Slog.w(TAG, "XTC do not allowed process message:" + r.intent + " to cmp:"
+                            + component.flattenToShortString());
+                    skip = true;
                 }
             }
 

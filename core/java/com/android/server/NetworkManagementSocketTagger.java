@@ -40,6 +40,9 @@ public final class NetworkManagementSocketTagger extends SocketTagger {
     // TODO: remove when always enabled, or once socket tagging silently fails.
     public static final String PROP_QTAGUID_ENABLED = "net.qtaguid_enabled";
 
+    // XTC bbk_traffic: process-wide socket counter tag applied to newly created fds.
+    private static int sc_tag = 0;
+
     private static ThreadLocal<SocketTags> threadSocketTags = new ThreadLocal<SocketTags>() {
         @Override
         protected SocketTags initialValue() {
@@ -67,6 +70,31 @@ public final class NetworkManagementSocketTagger extends SocketTagger {
         return old;
     }
 
+    /**
+     * XTC bbk_traffic: set the process-wide socket counter tag. When non-zero it
+     * overrides the per-thread stats tag when tagging new socket fds.
+     */
+    public static void setSCTag(int tag) {
+        Log.d(TAG, "bbk_traffic setSCTag for current app process, the socket tag is = " + tag);
+        sc_tag = tag;
+    }
+
+    /**
+     * XTC bbk_traffic: tag an already-open udp socket fd with {@link #sc_tag}.
+     */
+    public static void setUDPSocketTag(int fd) {
+        Log.d(TAG, "bbk_traffic setUDPSocketTag for current app process, the socket FD is = " + fd);
+        if (fd == 0 || sc_tag == 0) {
+            return;
+        }
+        final int errno = native_tagSocketFdInt(fd, sc_tag, 1000);
+        Log.d(TAG, "bbk_traffic setUDPSocketTag  fd = " + fd + ", tag = " + sc_tag
+                + ", errno = " + errno);
+        if (errno < 0) {
+            Log.i(TAG, "setUDPSocketTag fd = " + fd + ", failed with errno" + errno);
+        }
+    }
+
     @Override
     public void tag(FileDescriptor fd) throws SocketException {
         final SocketTags options = threadSocketTags.get();
@@ -82,15 +110,23 @@ public final class NetworkManagementSocketTagger extends SocketTagger {
     }
 
     private void tagSocketFd(FileDescriptor fd, int tag, int uid) {
-        if (tag == -1 && uid == -1) return;
+        Log.d(TAG, "bbk_traffic tagSocketFd  fd.tag = " + tag + ",uid = " + uid
+                + ",sc_tag = " + sc_tag);
+        if ((tag == -1 && uid == -1 && sc_tag == 0)
+                || !SystemProperties.getBoolean(PROP_QTAGUID_ENABLED, false)) {
+            return;
+        }
 
-        if (SystemProperties.getBoolean(PROP_QTAGUID_ENABLED, false)) {
-            final int errno = native_tagSocketFd(fd, tag, uid);
-            if (errno < 0) {
-                Log.i(TAG, "tagSocketFd(" + fd.getInt$() + ", "
-                      + tag + ", " +
-                      + uid + ") failed with errno" + errno);
-            }
+        if (sc_tag != 0) {
+            tag = sc_tag;
+        }
+        final int errno = native_tagSocketFd(fd, tag, uid);
+        Log.d(TAG, "bbk_traffic tagSocketFd  fd.getInt = " + fd.getInt$() + "  uid = " + uid
+                + ", tag = " + tag + ", sc_tag = " + sc_tag);
+        if (errno < 0) {
+            Log.i(TAG, "tagSocketFd(" + fd.getInt$() + ", "
+                  + tag + ", " +
+                  + uid + ") failed with errno" + errno);
         }
     }
 
@@ -108,10 +144,19 @@ public final class NetworkManagementSocketTagger extends SocketTagger {
 
         if (SystemProperties.getBoolean(PROP_QTAGUID_ENABLED, false)) {
             final int errno = native_untagSocketFd(fd);
+            Log.d(TAG, "bbk_traffic unTagSocketFd  fd.getInt = " + fd.getInt$()
+                    + "  uid = " + options.statsUid + ", tag = " + options.statsTag);
             if (errno < 0) {
                 Log.w(TAG, "untagSocket(" + fd.getInt$() + ") failed with errno " + errno);
             }
         }
+    }
+
+    /**
+     * XTC bbk_traffic: tag a specific socket fd with an explicit tag/uid.
+     */
+    public void setSocketFdTag(FileDescriptor fd, int tag, int uid) throws SocketException {
+        tagSocketFd(fd, tag, uid);
     }
 
     public static class SocketTags {
@@ -152,6 +197,7 @@ public final class NetworkManagementSocketTagger extends SocketTagger {
     }
 
     private static native int native_tagSocketFd(FileDescriptor fd, int tag, int uid);
+    private static native int native_tagSocketFdInt(int fd, int tag, int uid);
     private static native int native_untagSocketFd(FileDescriptor fd);
     private static native int native_setCounterSet(int uid, int counterSetNum);
     private static native int native_deleteTagData(int tag, int uid);

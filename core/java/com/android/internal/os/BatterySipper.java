@@ -81,6 +81,8 @@ public class BatterySipper implements Comparable<BatterySipper> {
     public long cameraTimeMs;
     public long flashlightTimeMs;
     public long bluetoothRunningTimeMs;
+    public long audioTimeMs;
+    public long videoTimeMs;
 
     public long mobileRxPackets;
     public long mobileTxPackets;
@@ -111,6 +113,8 @@ public class BatterySipper implements Comparable<BatterySipper> {
     public double cameraPowerMah;
     public double flashlightPowerMah;
     public double bluetoothPowerMah;
+    public double audioPowerMah;
+    public double videoPowerMah;
 
     public enum DrainType {
         IDLE,

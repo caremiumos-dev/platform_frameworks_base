@@ -81,7 +81,7 @@ public final class PhoneAccount implements Parcelable {
      * @hide
      */
     public static final String EXTRA_ALWAYS_USE_VOIP_AUDIO_MODE =
-            "android.telecom.extra.ALWAYS_USE_VOIP_AUDIO_MODE";
+            "codeaurora.org.extra.ALWAYS_USE_VOIP_AUDIO_MODE";
 
     /**
      * Boolean {@link PhoneAccount} extras key (see {@link PhoneAccount#getExtras()}) which

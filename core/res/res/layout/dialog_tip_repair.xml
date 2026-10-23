@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_dialog_parent" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="16.0sp" android:textColor="#fffafafa" android:gravity="center" android:id="@id/tv_reboot_title" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/reboot_to_restore_title2" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="16.0sp" android:textColor="#fffafafa" android:gravity="center" android:id="@id/tv_reboot_title2" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="1.0dip" android:text="@string/reboot_to_restore_title3" android:layout_below="@id/tv_reboot_title" android:layout_alignParentStart="true" />
+    <RelativeLayout android:id="@id/rl_dialog_default_right" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_alignParentBottom="true">
+        <TextView android:textSize="16.0sp" android:textColor="@drawable/text_color_white" android:gravity="center" android:id="@id/tv_dialog_positive_repair" android:background="@drawable/bg_dialog_text_recovery_red" android:layout_width="fill_parent" android:layout_height="40.0dip" android:text="@string/reboot_to_restore" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="16.0sp" android:textColor="@drawable/text_color_black" android:gravity="center" android:id="@id/tv_dialog_negative" android:background="@drawable/bg_dialog_text_recovery_white" android:layout_width="fill_parent" android:layout_height="40.0dip" android:layout_marginTop="8.0dip" android:text="@string/cancel" android:layout_below="@id/tv_dialog_positive_repair" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+</RelativeLayout>

@@ -89,12 +89,18 @@ public final class WindowManagerImpl implements WindowManager {
 
     @Override
     public void addView(@NonNull View view, @NonNull ViewGroup.LayoutParams params) {
+        // XTC SEEMP: 383 is the layout-tag API id (JADX rendered it as
+        // MetricsEvent.SETTINGS_CONDITION_WORK_MODE).
+        android.util.SeempLog.record_vg_layout(383, params);
         applyDefaultToken(params);
         mGlobal.addView(view, params, mContext.getDisplay(), mParentWindow);
     }
 
     @Override
     public void updateViewLayout(@NonNull View view, @NonNull ViewGroup.LayoutParams params) {
+        // XTC SEEMP: 384 is the layout-tag API id (JADX rendered it as
+        // MetricsEvent.ACTION_SHOW_SETTINGS_SUGGESTION).
+        android.util.SeempLog.record_vg_layout(384, params);
         applyDefaultToken(params);
         mGlobal.updateViewLayout(view, params);
     }

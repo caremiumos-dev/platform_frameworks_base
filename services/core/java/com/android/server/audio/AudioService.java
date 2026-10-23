@@ -777,6 +777,9 @@ public class AudioService extends IAudioService.Stub
         intentFilter.addAction(Intent.ACTION_USER_FOREGROUND);
         intentFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        // XTC: A2DP connection state drives the blue-safe media volume clamp.
+        intentFilter.addAction("android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED");
+        intentFilter.addAction(Intent.ACTION_SHUTDOWN);
 
         intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
         // TODO merge orientation and rotation
@@ -1501,7 +1504,15 @@ public class AudioService extends IAudioService.Stub
                 (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
                 synchronized (mA2dpAvrcpLock) {
                     if (mA2dp != null && mAvrcpAbsVolSupported) {
-                        mA2dp.adjustAvrcpAbsoluteVolume(direction);
+                        if (mSafeMediaVolumeState == SAFE_MEDIA_VOLUME_ACTIVE
+                                && mBlueSafeFirstControl
+                                && getStreamVolume(AudioSystem.STREAM_MUSIC)
+                                        >= BLUE_SAFE_MEDIA_VOLUME_INDEX) {
+                            Log.d(TAG, "Do not adjust the volume for the moment, and adjust it"
+                                    + " after the user agrees by adjustStreamVolume");
+                        } else {
+                            mA2dp.adjustAvrcpAbsoluteVolume(direction);
+                        }
                     }
                 }
             }
@@ -1768,12 +1779,19 @@ public class AudioService extends IAudioService.Stub
             return;
         }
 
+        // XTC: while the blue-safe control is armed and the user has not yet
+        // acknowledged it, (re-)enable safe media volume.
+        if (mBlueSafeFirstControl && !mBlueSafeVolumeState) {
+            setSafeMediaVolumeEnabled(true, caller);
+        }
+
         synchronized (mSafeMediaVolumeState) {
             // reset any pending volume command
             mPendingVolumeCommand = null;
 
             oldIndex = streamState.getIndex(device);
 
+            final int requestedIndex = index;
             index = rescaleIndex(index * 10, streamType, streamTypeAlias);
 
             if (streamTypeAlias == AudioSystem.STREAM_MUSIC &&
@@ -1781,7 +1799,14 @@ public class AudioService extends IAudioService.Stub
                 (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
                 synchronized (mA2dpAvrcpLock) {
                     if (mA2dp != null && mAvrcpAbsVolSupported) {
-                        mA2dp.setAvrcpAbsoluteVolume(index / 10);
+                        if (mSafeMediaVolumeState == SAFE_MEDIA_VOLUME_ACTIVE
+                                && mBlueSafeFirstControl
+                                && requestedIndex > BLUE_SAFE_MEDIA_VOLUME_INDEX) {
+                            Log.d(TAG, "Do not adjust the volume for the moment, and adjust it"
+                                    + " after the user agrees by setStreamVolume");
+                        } else {
+                            mA2dp.setAvrcpAbsoluteVolume(index / 10);
+                        }
                     }
                 }
             }
@@ -4198,6 +4223,8 @@ public class AudioService extends IAudioService.Stub
         private final SparseIntArray mIndexMap = new SparseIntArray(8);
         private final Intent mVolumeChanged;
         private final Intent mStreamDevicesChanged;
+        // XTC: pre-built intent announcing the blue-safe media volume clamp.
+        private final Intent mVolumeBluetoothSafeChanged;
 
         private VolumeStreamState(String settingName, int streamType) {
 
@@ -4210,9 +4237,15 @@ public class AudioService extends IAudioService.Stub
 
             readSettings();
             mVolumeChanged = new Intent(AudioManager.VOLUME_CHANGED_ACTION);
+            mVolumeChanged.addFlags(Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
             mVolumeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE, mStreamType);
             mStreamDevicesChanged = new Intent(AudioManager.STREAM_DEVICES_CHANGED_ACTION);
             mStreamDevicesChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE, mStreamType);
+            mVolumeBluetoothSafeChanged = new Intent(AudioManager.VOLUME_CHANGED_ACTION);
+            mVolumeBluetoothSafeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE,
+                    AudioSystem.STREAM_MUSIC);
+            mVolumeBluetoothSafeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_VALUE,
+                    BLUE_SAFE_MEDIA_VOLUME_INDEX);
         }
 
         public int observeDevicesForStream_syncVSS(boolean checkOthers) {
@@ -5607,26 +5640,16 @@ public class AudioService extends IAudioService.Stub
                             caller,
                             MUSIC_ACTIVE_POLL_PERIOD_MS);
                 }
-                // Television devices without CEC service apply software volume on HDMI output
+                // XTC: HDMI audio is not supported on this device; keep the software
+                // volume policy but do not talk to the HDMI CEC service.
                 if (isPlatformTelevision() && ((device & AudioSystem.DEVICE_OUT_HDMI) != 0)) {
                     mFixedVolumeDevices |= AudioSystem.DEVICE_OUT_HDMI;
                     checkAllFixedVolumeDevices();
-                    if (mHdmiManager != null) {
-                        synchronized (mHdmiManager) {
-                            if (mHdmiPlaybackClient != null) {
-                                mHdmiCecSink = false;
-                                mHdmiPlaybackClient.queryDisplayStatus(mHdmiDisplayStatusCallback);
-                            }
-                        }
-                    }
+                    Slog.i(TAG, "xtc unsupport HDMI");
                 }
             } else {
                 if (isPlatformTelevision() && ((device & AudioSystem.DEVICE_OUT_HDMI) != 0)) {
-                    if (mHdmiManager != null) {
-                        synchronized (mHdmiManager) {
-                            mHdmiCecSink = false;
-                        }
-                    }
+                    Slog.i(TAG, "xtc unsupport HDMI");
                 }
             }
             sendDeviceConnectionIntent(device, state, address, deviceName);
@@ -5729,6 +5752,27 @@ public class AudioService extends IAudioService.Stub
                                                BluetoothProfile.STATE_DISCONNECTED);
                 BluetoothDevice btDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 setBtScoDeviceConnectionState(btDevice, state);
+            } else if (action.equals("android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED")) {
+                // XTC: when an A2DP sink connects, clamp media volume to the blue-safe index.
+                int a2dpState = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, 0);
+                BluetoothDevice btDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.i(TAG, "In onReceive(), calling setBtScoDeviceConnectionState() with btDevice: "
+                        + btDevice + ", state: " + a2dpState);
+                setBtScoDeviceConnectionState(btDevice, a2dpState);
+                if (a2dpState == BluetoothProfile.STATE_CONNECTED) {
+                    mBlueSafeFirstControl = true;
+                    AudioManager audioManager =
+                            (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                    if (audioManager.getStreamVolume(AudioSystem.STREAM_MUSIC)
+                            > BLUE_SAFE_MEDIA_VOLUME_INDEX) {
+                        Log.d(TAG, "Bluetooth headset connected, volume protection enabled");
+                        audioManager.setStreamVolume(AudioSystem.STREAM_MUSIC,
+                                BLUE_SAFE_MEDIA_VOLUME_INDEX, AudioManager.FLAG_SHOW_UI);
+                    }
+                    mSafeMediaVolumeState = SAFE_MEDIA_VOLUME_ACTIVE;
+                    return;
+                }
+                return;
             } else if (action.equals(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)) {
                 boolean broadcast = false;
                 int scoAudioState = AudioManager.SCO_AUDIO_STATE_ERROR;
@@ -5832,11 +5876,15 @@ public class AudioService extends IAudioService.Stub
                 state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
                 if (state == BluetoothAdapter.STATE_OFF ||
                         state == BluetoothAdapter.STATE_TURNING_OFF) {
+                    mBlueSafeFirstControl = false;
+                    mBlueSafeVolumeState = false;
                     disconnectAllBluetoothProfiles();
                 }
             } else if (action.equals(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION) ||
                     action.equals(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION)) {
                 handleAudioEffectBroadcast(context, intent);
+            } else if (action.equals(Intent.ACTION_SHUTDOWN)) {
+                AudioSystem.setParameters("dev_shutdown=true");
             }
         }
     } // end class AudioServiceBroadcastReceiver
@@ -5977,6 +6025,12 @@ public class AudioService extends IAudioService.Stub
 
     public int getCurrentAudioFocus() {
         return mMediaFocusControl.getCurrentAudioFocus();
+    }
+
+    /** @hide */
+    @Override
+    public boolean isProccessHasAudioFoucs(String packageName) {
+        return mMediaFocusControl.isProccessHasAudioFoucs(packageName);
     }
 
     public int getFocusRampTimeMs(int focusGain, AudioAttributes attr) {
@@ -6157,6 +6211,13 @@ public class AudioService extends IAudioService.Stub
     private static final int SAFE_MEDIA_VOLUME_ACTIVE = 3;  // unconfirmed
     private Integer mSafeMediaVolumeState;
 
+    // XTC "blue safe" media volume: when a Bluetooth A2DP device connects the
+    // media volume is clamped to BLUE_SAFE_MEDIA_VOLUME_INDEX until the user
+    // acknowledges the safe-volume warning.
+    private static final int BLUE_SAFE_MEDIA_VOLUME_INDEX = 8;
+    private boolean mBlueSafeFirstControl = false;
+    private boolean mBlueSafeVolumeState = false;
+
     private int mMcc = 0;
     // mSafeMediaVolumeIndex is the cached value of config_safe_media_volume_index property
     private int mSafeMediaVolumeIndex;
@@ -6169,9 +6230,10 @@ public class AudioService extends IAudioService.Stub
     private int mSafeUsbMediaVolumeIndex;
     private static final float SAFE_VOLUME_GAIN_DBFS = -37.0f;
     // mSafeMediaVolumeDevices lists the devices for which safe media volume is enforced,
-    private final int mSafeMediaVolumeDevices = AudioSystem.DEVICE_OUT_WIRED_HEADSET |
+private final int mSafeMediaVolumeDevices = AudioSystem.DEVICE_OUT_WIRED_HEADSET |
                                                 AudioSystem.DEVICE_OUT_WIRED_HEADPHONE |
-                                                AudioSystem.DEVICE_OUT_USB_HEADSET;
+                                                AudioSystem.DEVICE_OUT_USB_HEADSET |
+                                                AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP;
     // mMusicActiveMs is the cumulative time of music activity since safe volume was disabled.
     // When this time reaches UNSAFE_VOLUME_MUSIC_ACTIVE_MS_MAX, the safe media volume is re-enabled
     // automatically. mMusicActiveMs is rounded to a multiple of MUSIC_ACTIVE_POLL_PERIOD_MS.
@@ -6241,6 +6303,12 @@ public class AudioService extends IAudioService.Stub
 
     private boolean checkSafeMediaVolume(int streamType, int index, int device) {
         synchronized (mSafeMediaVolumeState) {
+            // XTC: while the blue-safe control is armed (A2DP just connected),
+            // force safe media volume to be active so the user is warned before
+            // raising the media volume above the safe index.
+            if (mBlueSafeFirstControl) {
+                mSafeMediaVolumeState = SAFE_MEDIA_VOLUME_ACTIVE;
+            }
             if ((mSafeMediaVolumeState == SAFE_MEDIA_VOLUME_ACTIVE) &&
                     (mStreamVolumeAlias[streamType] == AudioSystem.STREAM_MUSIC) &&
                     ((device & mSafeMediaVolumeDevices) != 0) &&
@@ -6255,6 +6323,8 @@ public class AudioService extends IAudioService.Stub
     public void disableSafeMediaVolume(String callingPackage) {
         enforceVolumeController("disable the safe media volume");
         synchronized (mSafeMediaVolumeState) {
+            mBlueSafeFirstControl = false;
+            mBlueSafeVolumeState = true;
             setSafeMediaVolumeEnabled(false, callingPackage);
             if (mPendingVolumeCommand != null) {
                 onSetStreamVolume(mPendingVolumeCommand.mStreamType,

@@ -321,26 +321,26 @@ public class UsbDebuggingManager {
     }
 
     private void startConfirmation(String key, String fingerprints) {
-        int currentUserId = ActivityManager.getCurrentUser();
-        UserInfo userInfo = UserManager.get(mContext).getUserInfo(currentUserId);
-        String componentString;
-        if (userInfo.isAdmin()) {
-            componentString = Resources.getSystem().getString(
-                    com.android.internal.R.string.config_customAdbPublicKeyConfirmationComponent);
+        // XTC/BBK: skip the interactive key-confirmation UI and decide based on vendor
+        // adb-enable state instead. NOTE: this bypasses the user's ADB authorization
+        // prompt whenever the device is in a factory/after-sale/self-test mode.
+        String adbEnableFrom = SystemProperties.get(
+                com.android.server.xtclog.XTCAdbControl.PROP_ADB_ENABLE_FROM,
+                com.android.server.xtclog.XTCAdbControl.ADB_FROM_TIMEOUT_OFF);
+        String factoryState = SystemProperties.get("persist.sys.xtc.adb_port", "none");
+        Slog.d(TAG, "startConfirmation adbEnableFrom:" + adbEnableFrom
+                + ", factoryState:" + factoryState);
+        if ("1".equals(factoryState)
+                || com.android.server.xtclog.XTCAdbControl.ADB_FROM_ALTER_SALE_ON
+                        .equals(adbEnableFrom)
+                || com.android.server.xtclog.XTCAdbControl.ADB_FROM_105_SWITCH_ON
+                        .equals(adbEnableFrom)
+                || com.android.server.xtclog.XTCAdbControl.ADB_FROM_SELF_TEST_ON
+                        .equals(adbEnableFrom)) {
+            allowUsbDebugging(true, key);
         } else {
-            // If the current foreground user is not the admin user we send a different
-            // notification specific to secondary users.
-            componentString = Resources.getSystem().getString(
-                    R.string.config_customAdbPublicKeyConfirmationSecondaryUserComponent);
+            denyUsbDebugging();
         }
-        ComponentName componentName = ComponentName.unflattenFromString(componentString);
-        if (startConfirmationActivity(componentName, userInfo.getUserHandle(), key, fingerprints)
-                || startConfirmationService(componentName, userInfo.getUserHandle(),
-                        key, fingerprints)) {
-            return;
-        }
-        Slog.e(TAG, "unable to start customAdbPublicKeyConfirmation[SecondaryUser]Component "
-                + componentString + " as an Activity or a Service");
     }
 
     /**

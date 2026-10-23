@@ -1510,4 +1510,30 @@ please see styles_device_defaults.xml.
         <item name="gravity">top</item>
     </style>
 
+    <!-- Theme used by the XTC xses SystemExceptionDialog. -->
+    <style name="NotificationEmphasizedAction" parent="Theme.Material.Dialog.Alert">
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+    </style>
+
+    <!-- XTC camera menu. -->
+    <style name="ScrollbarRecyclerView" parent="@style/Widget">
+        <item name="scrollbars">vertical</item>
+    </style>
+
+    <style name="BlackDialogStyle">
+        <item name="windowBackground">@color/black</item>
+        <item name="windowSwipeToDismiss">true</item>
+    </style>
+    <style name="CustomFontLoadingStyle">
+        <item name="windowBackground">@color/black</item>
+        <item name="windowSwipeToDismiss">false</item>
+    </style>
+
+    <!-- Style of the vendor factory-reset "restoring" dialog (MasterClearReceiver). -->
+    <style name="restoreingDialogStyle">
+        <item name="windowBackground">@color/black</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowSwipeToDismiss">false</item>
+    </style>
+
 </resources>

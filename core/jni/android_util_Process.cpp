@@ -663,6 +663,20 @@ static jlong android_os_Process_getTotalMemory(JNIEnv* env, jobject clazz)
     return getFreeMemoryImpl(sums, sumsLen, 1);
 }
 
+/*
+ * Condemnation: vendor addition used by the XTC memory policy to read the
+ * device swap state. It reuses the /proc/meminfo parser above with the
+ * "SwapFree:" field. The device binary passes a bogus count of 5, which is
+ * harmless because the sums array is NULL-terminated; the effective result is
+ * identical to the single-key form implemented here.
+ */
+static jlong android_os_Process_getBbkFreeSwap(JNIEnv* env, jobject clazz)
+{
+    static const char* const sums[] = { "SwapFree:", NULL };
+    static const size_t sumsLen[] = { strlen("SwapFree:"), 0 };
+    return getFreeMemoryImpl(sums, sumsLen, 1);
+}
+
 void android_os_Process_readProcLines(JNIEnv* env, jobject clazz, jstring fileStr,
                                       jobjectArray reqFields, jlongArray outFields)
 {
@@ -1231,6 +1245,7 @@ static const JNINativeMethod methods[] = {
     {"sendSignalQuiet", "(II)V", (void*)android_os_Process_sendSignalQuiet},
     {"getFreeMemory", "()J", (void*)android_os_Process_getFreeMemory},
     {"getTotalMemory", "()J", (void*)android_os_Process_getTotalMemory},
+    {"getBbkFreeSwap", "()J", (void*)android_os_Process_getBbkFreeSwap},
     {"readProcLines", "(Ljava/lang/String;[Ljava/lang/String;[J)V", (void*)android_os_Process_readProcLines},
     {"getPids", "(Ljava/lang/String;[I)[I", (void*)android_os_Process_getPids},
     {"readProcFile", "(Ljava/lang/String;[I[Ljava/lang/String;[J[F)Z", (void*)android_os_Process_readProcFile},

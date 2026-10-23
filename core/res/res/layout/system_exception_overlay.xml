@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@drawable/overlay_background" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="15.0sp" android:textColor="#ffff3535" android:gravity="center|top" android:id="@id/overlay_warning" android:layout_width="144.0dip" android:layout_height="20.0dip" android:layout_marginLeft="8.0dip" android:layout_marginTop="19.0dip" android:text="@string/exception_overlay_default_title" android:layout_alignParentLeft="true" android:layout_alignParentTop="true" android:lineSpacingExtra="2.0sp" android:alpha="1.0" android:fontWeight="513" />
+    <TextView android:textSize="12.0sp" android:textColor="#ffffffff" android:gravity="center|left|top" android:id="@id/system_exception_overylay_message_body" android:layout_width="wrap_content" android:layout_height="64.0dip" android:layout_marginLeft="8.0dip" android:layout_marginTop="41.0dip" android:layout_marginRight="8.0dip" android:text="@string/exception_overlay_default_message" android:layout_alignParentLeft="true" android:layout_alignParentTop="true" android:lineSpacingExtra="1.5999756sp" android:alpha="1.0" android:breakStrategy="high_quality" android:fontWeight="400" />
+</RelativeLayout>

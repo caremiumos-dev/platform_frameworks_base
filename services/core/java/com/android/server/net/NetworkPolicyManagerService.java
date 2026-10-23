@@ -321,6 +321,8 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
             "com.android.server.net.action.ALLOW_BACKGROUND";
     private static final String ACTION_SNOOZE_WARNING =
             "com.android.server.net.action.SNOOZE_WARNING";
+    // XTC/BBK: broadcast emitted when a mobile data limit/warning is reached.
+    private static final String ACTION_NETWORK_LIMIT = "com.xtc.android.NETWORK_POLICY_LIMIT";
 
     private static final long TIME_CACHE_MAX_AGE = DAY_IN_MILLIS;
 
@@ -1061,20 +1063,12 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
             final long end = cycle.second.toInstant().toEpochMilli();
             final long totalBytes = getTotalBytes(policy.template, start, end);
 
+            // XTC/BBK: emit a broadcast instead of system notifications for limits.
             if (policy.isOverLimit(totalBytes)) {
-                if (policy.lastLimitSnooze >= start) {
-                    enqueueNotification(policy, TYPE_LIMIT_SNOOZED, totalBytes);
-                } else {
-                    enqueueNotification(policy, TYPE_LIMIT, totalBytes);
-                    notifyOverLimitNL(policy.template);
-                }
-
-            } else {
-                notifyUnderLimitNL(policy.template);
-
-                if (policy.isOverWarning(totalBytes) && policy.lastWarningSnooze < start) {
-                    enqueueNotification(policy, TYPE_WARNING, totalBytes);
-                }
+                sendMobileLimitBroadcast("limit");
+            } else if (policy.isOverWarning(totalBytes) && policy.lastWarningSnooze < start) {
+                Log.d(TAG, "sendMobileLimitBroadcast totalBytes=" + totalBytes);
+                sendMobileLimitBroadcast("warning");
             }
         }
 
@@ -2211,6 +2205,37 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
         }
     }
 
+    /**
+     * XTC xses: deny all network access for a UID.
+     *
+     * <p><b>Condemnation.</b> Remote network isolation of a package chosen by
+     * the vendor. See {@code com.android.server.xgseserver.xss.SystemExceptionManager}.
+     */
+    @Override
+    public boolean setUidDenyNetworkAccess(int uid) {
+        try {
+            return mNetworkManager.setUidDisableNetwork(uid);
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
+
+    /**
+     * XTC xses: deny network access to a specific address.
+     *
+     * <p><b>Condemnation.</b> Remote blocking of arbitrary network addresses
+     * chosen by the vendor. See
+     * {@code com.android.server.xgseserver.xss.SystemExceptionManager}.
+     */
+    @Override
+    public boolean setAddressDenyNetworkAccess(String address) {
+        try {
+            return mNetworkManager.setAddressDisableNetwork(address);
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
+
     @Override
     public void addUidPolicy(int uid, int policy) {
         mContext.enforceCallingOrSelfPermission(MANAGE_NETWORK_POLICY, TAG);
@@ -2280,11 +2305,24 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
 
         // uid policy changed, recompute rules and persist policy.
         updateRulesForDataUsageRestrictionsUL(uid);
+        updateRulesForXtcRestrictionsUL(uid);
         if (persist) {
             synchronized (mNetworkPoliciesSecondLock) {
                 writePolicyAL();
             }
         }
+    }
+
+    /**
+     * XTC/BBK: apply the metered-network blacklist for a uid and notify listeners.
+     */
+    private void updateRulesForXtcRestrictionsUL(int uid) {
+        Log.d(TAG, "updateRulesForXtcRestrictionsUL start");
+        int policy = mUidPolicy.get(uid, 0);
+        boolean rejectMetered = (policy & POLICY_REJECT_METERED_BACKGROUND) != 0;
+        setMeteredNetworkBlacklist(uid, rejectMetered);
+        mHandler.obtainMessage(MSG_RULES_CHANGED, uid, policy).sendToTarget();
+        Log.i(TAG, "xtc uid:" + uid + " rejectMetered:" + rejectMetered);
     }
 
     @Override
@@ -4071,6 +4109,19 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
         } catch (RemoteException e) {
             // ignored; service lives in system_server
         }
+    }
+
+    /**
+     * XTC/BBK: broadcast a mobile-data limit/warning notification.
+     */
+    private void sendMobileLimitBroadcast(String type) {
+        Intent intent = new Intent();
+        intent.setAction(ACTION_NETWORK_LIMIT);
+        mContext.sendBroadcast(intent);
+        if (type == null || type.length() <= 0) {
+            return;
+        }
+        Log.d(TAG, "sendMobileLimitBroadcast  com.xtc.android.NETWORK_POLICY_LIMIT the type=" + type);
     }
 
     private void setMeteredNetworkWhitelist(int uid, boolean enable) {

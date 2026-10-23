@@ -73,9 +73,12 @@ final class LogicalDisplay {
     /**
      * Current display info. Initialized with {@link #mBaseDisplayInfo}. Set to {@code null} if
      * needs to be updated.
+     *
+     * XTC device addition: wrapped in a {@link DisplayInfoProxy} so that setting it also
+     * invalidates the local display-info caches in {@link DisplayManagerGlobal}.
      * @see #getDisplayInfoLocked()
      */
-    private DisplayInfo mInfo;
+    private final DisplayInfoProxy mInfo = new DisplayInfoProxy(null);
 
     // The display device that this logical display is based on and which
     // determines the base metrics that it uses.
@@ -128,29 +131,30 @@ final class LogicalDisplay {
      * the data changes.
      */
     public DisplayInfo getDisplayInfoLocked() {
-        if (mInfo == null) {
-            mInfo = new DisplayInfo();
-            mInfo.copyFrom(mBaseDisplayInfo);
+        if (mInfo.get() == null) {
+            DisplayInfo displayInfo = new DisplayInfo();
+            displayInfo.copyFrom(mBaseDisplayInfo);
             if (mOverrideDisplayInfo != null) {
-                mInfo.appWidth = mOverrideDisplayInfo.appWidth;
-                mInfo.appHeight = mOverrideDisplayInfo.appHeight;
-                mInfo.smallestNominalAppWidth = mOverrideDisplayInfo.smallestNominalAppWidth;
-                mInfo.smallestNominalAppHeight = mOverrideDisplayInfo.smallestNominalAppHeight;
-                mInfo.largestNominalAppWidth = mOverrideDisplayInfo.largestNominalAppWidth;
-                mInfo.largestNominalAppHeight = mOverrideDisplayInfo.largestNominalAppHeight;
-                mInfo.logicalWidth = mOverrideDisplayInfo.logicalWidth;
-                mInfo.logicalHeight = mOverrideDisplayInfo.logicalHeight;
-                mInfo.overscanLeft = mOverrideDisplayInfo.overscanLeft;
-                mInfo.overscanTop = mOverrideDisplayInfo.overscanTop;
-                mInfo.overscanRight = mOverrideDisplayInfo.overscanRight;
-                mInfo.overscanBottom = mOverrideDisplayInfo.overscanBottom;
-                mInfo.rotation = mOverrideDisplayInfo.rotation;
-                mInfo.logicalDensityDpi = mOverrideDisplayInfo.logicalDensityDpi;
-                mInfo.physicalXDpi = mOverrideDisplayInfo.physicalXDpi;
-                mInfo.physicalYDpi = mOverrideDisplayInfo.physicalYDpi;
+                displayInfo.appWidth = mOverrideDisplayInfo.appWidth;
+                displayInfo.appHeight = mOverrideDisplayInfo.appHeight;
+                displayInfo.smallestNominalAppWidth = mOverrideDisplayInfo.smallestNominalAppWidth;
+                displayInfo.smallestNominalAppHeight = mOverrideDisplayInfo.smallestNominalAppHeight;
+                displayInfo.largestNominalAppWidth = mOverrideDisplayInfo.largestNominalAppWidth;
+                displayInfo.largestNominalAppHeight = mOverrideDisplayInfo.largestNominalAppHeight;
+                displayInfo.logicalWidth = mOverrideDisplayInfo.logicalWidth;
+                displayInfo.logicalHeight = mOverrideDisplayInfo.logicalHeight;
+                displayInfo.overscanLeft = mOverrideDisplayInfo.overscanLeft;
+                displayInfo.overscanTop = mOverrideDisplayInfo.overscanTop;
+                displayInfo.overscanRight = mOverrideDisplayInfo.overscanRight;
+                displayInfo.overscanBottom = mOverrideDisplayInfo.overscanBottom;
+                displayInfo.rotation = mOverrideDisplayInfo.rotation;
+                displayInfo.logicalDensityDpi = mOverrideDisplayInfo.logicalDensityDpi;
+                displayInfo.physicalXDpi = mOverrideDisplayInfo.physicalXDpi;
+                displayInfo.physicalYDpi = mOverrideDisplayInfo.physicalYDpi;
             }
+            mInfo.set(displayInfo);
         }
-        return mInfo;
+        return mInfo.get();
     }
 
     /**
@@ -171,17 +175,17 @@ final class LogicalDisplay {
         if (info != null) {
             if (mOverrideDisplayInfo == null) {
                 mOverrideDisplayInfo = new DisplayInfo(info);
-                mInfo = null;
+                mInfo.set(null);
                 return true;
             }
             if (!mOverrideDisplayInfo.equals(info)) {
                 mOverrideDisplayInfo.copyFrom(info);
-                mInfo = null;
+                mInfo.set(null);
                 return true;
             }
         } else if (mOverrideDisplayInfo != null) {
             mOverrideDisplayInfo = null;
-            mInfo = null;
+            mInfo.set(null);
             return true;
         }
         return false;
@@ -282,7 +286,7 @@ final class LogicalDisplay {
             mBaseDisplayInfo.ownerPackageName = deviceInfo.ownerPackageName;
 
             mPrimaryDisplayDeviceInfo = deviceInfo;
-            mInfo = null;
+            mInfo.set(null);
         }
     }
 

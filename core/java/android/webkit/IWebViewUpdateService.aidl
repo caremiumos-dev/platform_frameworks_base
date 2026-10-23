@@ -88,4 +88,16 @@ interface IWebViewUpdateService {
      * Used by Settings to enable/disable multiprocess.
      */
     void enableMultiProcess(boolean enable);
+
+    /**
+     * Returns the XTC network white-list pushed by the vendor server.
+     * @hide
+     */
+    String getNetWhiteList();
+
+    /**
+     * Sets the XTC network white-list. Only the system uid may call this.
+     * @hide
+     */
+    void setNetWhiteList(String list);
 }

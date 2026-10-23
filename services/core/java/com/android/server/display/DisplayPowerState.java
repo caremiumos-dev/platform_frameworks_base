@@ -24,7 +24,6 @@ import android.os.Trace;
 import android.util.FloatProperty;
 import android.util.IntProperty;
 import android.util.Slog;
-import android.view.Choreographer;
 import android.view.Display;
 
 import java.io.PrintWriter;
@@ -53,9 +52,10 @@ final class DisplayPowerState {
     private static String COUNTER_COLOR_FADE = "ColorFadeLevel";
 
     private final Handler mHandler;
-    private final Choreographer mChoreographer;
     private final DisplayBlanker mBlanker;
-    private final ColorFade mColorFade;
+    // XTC device addition: replaces AOSP's ColorFade with a vendor view-based
+    // screen-off animation.
+    private ScreenOffAnimator mScreenOffAnimator;
     private final PhotonicModulator mPhotonicModulator;
 
     private int mScreenState;
@@ -63,18 +63,14 @@ final class DisplayPowerState {
     private boolean mScreenReady;
     private boolean mScreenUpdatePending;
 
-    private boolean mColorFadePrepared;
     private float mColorFadeLevel;
-    private boolean mColorFadeReady;
-    private boolean mColorFadeDrawPending;
 
     private Runnable mCleanListener;
 
-    public DisplayPowerState(DisplayBlanker blanker, ColorFade colorFade) {
+    public DisplayPowerState(DisplayBlanker blanker) {
         mHandler = new Handler(true /*async*/);
-        mChoreographer = Choreographer.getInstance();
         mBlanker = blanker;
-        mColorFade = colorFade;
+        mScreenOffAnimator = new ScreenOffAnimator();
         mPhotonicModulator = new PhotonicModulator();
         mPhotonicModulator.start();
 
@@ -88,9 +84,7 @@ final class DisplayPowerState {
         mScreenBrightness = PowerManager.BRIGHTNESS_ON;
         scheduleScreenUpdate();
 
-        mColorFadePrepared = false;
         mColorFadeLevel = 1.0f;
-        mColorFadeReady = true;
     }
 
     public static final FloatProperty<DisplayPowerState> COLOR_FADE_LEVEL =
@@ -176,16 +170,8 @@ final class DisplayPowerState {
      * @return True if the electron beam was prepared.
      */
     public boolean prepareColorFade(Context context, int mode) {
-        if (mColorFade == null || !mColorFade.prepare(context, mode)) {
-            mColorFadePrepared = false;
-            mColorFadeReady = true;
-            return false;
-        }
-
-        mColorFadePrepared = true;
-        mColorFadeReady = false;
-        scheduleColorFadeDraw();
-        return true;
+        // XTC device addition: ScreenOffAnimator ignores the ColorFade mode.
+        return mScreenOffAnimator.prepare(context);
     }
 
     /**
@@ -193,16 +179,16 @@ final class DisplayPowerState {
      */
     public void dismissColorFade() {
         Trace.traceCounter(Trace.TRACE_TAG_POWER, COUNTER_COLOR_FADE, 100);
-        if (mColorFade != null) mColorFade.dismiss();
-        mColorFadePrepared = false;
-        mColorFadeReady = true;
+        mScreenOffAnimator.removeView();
     }
 
    /**
      * Dismisses the color fade resources.
      */
     public void dismissColorFadeResources() {
-        if (mColorFade != null) mColorFade.dismissResources();
+        if (mScreenReady) {
+            mScreenOffAnimator.removeView();
+        }
     }
 
     /**
@@ -229,10 +215,8 @@ final class DisplayPowerState {
                 mScreenReady = false;
                 scheduleScreenUpdate(); // update backlight brightness
             }
-            if (mColorFadePrepared) {
-                mColorFadeReady = false;
-                scheduleColorFadeDraw();
-            }
+            // XTC device addition: drive the vendor screen-off animation overlay.
+            mScreenOffAnimator.setAlpha(1.0f - level);
         }
     }
 
@@ -250,13 +234,12 @@ final class DisplayPowerState {
      * The listener always overrides any previously set listener.
      */
     public boolean waitUntilClean(Runnable listener) {
-        if (!mScreenReady || !mColorFadeReady) {
-            mCleanListener = listener;
-            return false;
-        } else {
+        if (mScreenReady) {
             mCleanListener = null;
             return true;
         }
+        mCleanListener = listener;
+        return false;
     }
 
     public void dump(PrintWriter pw) {
@@ -266,13 +249,9 @@ final class DisplayPowerState {
         pw.println("  mScreenBrightness=" + mScreenBrightness);
         pw.println("  mScreenReady=" + mScreenReady);
         pw.println("  mScreenUpdatePending=" + mScreenUpdatePending);
-        pw.println("  mColorFadePrepared=" + mColorFadePrepared);
         pw.println("  mColorFadeLevel=" + mColorFadeLevel);
-        pw.println("  mColorFadeReady=" + mColorFadeReady);
-        pw.println("  mColorFadeDrawPending=" + mColorFadeDrawPending);
 
         mPhotonicModulator.dump(pw);
-        if (mColorFade != null) mColorFade.dump(pw);
     }
 
     private void scheduleScreenUpdate() {
@@ -287,17 +266,9 @@ final class DisplayPowerState {
         mHandler.post(mScreenUpdateRunnable);
     }
 
-    private void scheduleColorFadeDraw() {
-        if (!mColorFadeDrawPending) {
-            mColorFadeDrawPending = true;
-            mChoreographer.postCallback(Choreographer.CALLBACK_TRAVERSAL,
-                    mColorFadeDrawRunnable, null);
-        }
-    }
-
     private void invokeCleanListenerIfNeeded() {
         final Runnable listener = mCleanListener;
-        if (listener != null && mScreenReady && mColorFadeReady) {
+        if (listener != null && mScreenReady) {
             mCleanListener = null;
             listener.run();
         }
@@ -321,22 +292,6 @@ final class DisplayPowerState {
                     Slog.d(TAG, "Screen not ready");
                 }
             }
-        }
-    };
-
-    private final Runnable mColorFadeDrawRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mColorFadeDrawPending = false;
-
-            if (mColorFadePrepared) {
-                mColorFade.draw(mColorFadeLevel);
-                Trace.traceCounter(Trace.TRACE_TAG_POWER,
-                        COUNTER_COLOR_FADE, Math.round(mColorFadeLevel * 100));
-            }
-
-            mColorFadeReady = true;
-            invokeCleanListenerIfNeeded();
         }
     };
 

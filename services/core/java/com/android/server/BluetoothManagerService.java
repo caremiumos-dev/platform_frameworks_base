@@ -401,15 +401,9 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                 true, mAirplaneModeObserver);
         }
 
-        int systemUiUid = -1;
-        try {
-            systemUiUid = mContext.getPackageManager().getPackageUidAsUser("com.android.systemui",
-                    PackageManager.MATCH_SYSTEM_ONLY, UserHandle.USER_SYSTEM);
-        } catch (PackageManager.NameNotFoundException e) {
-            // Some platforms, such as wearables do not have a system ui.
-            Slog.w(TAG, "Unable to resolve SystemUI's UID.", e);
-        }
-        mSystemUiUid = systemUiUid;
+        // XTC device addition: the vendor ROM has no standalone com.android.systemui
+        // package, so SystemUI's UID cannot be resolved. Use -1 (never matches).
+        mSystemUiUid = -1;
     }
 
     /**

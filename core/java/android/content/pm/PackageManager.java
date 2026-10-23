@@ -31,6 +31,8 @@ import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
 import android.annotation.XmlRes;
+import android.app.ActivityThread;
+import android.app.PropertyInvalidatedCache;
 import android.app.ActivityManager;
 import android.app.PackageDeleteObserver;
 import android.app.PackageInstallObserver;
@@ -67,6 +69,8 @@ import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Class for retrieving various kinds of information related to the application
@@ -76,6 +80,179 @@ import java.util.List;
  */
 public abstract class PackageManager {
     private static final String TAG = "PackageManager";
+
+    private static final String CACHE_KEY_PACKAGE_INFO = "cache_key.package_info";
+
+    private static final PropertyInvalidatedCache<ApplicationInfoQuery, ApplicationInfo>
+            sApplicationInfoCache = new PropertyInvalidatedCache<ApplicationInfoQuery,
+                    ApplicationInfo>(16, CACHE_KEY_PACKAGE_INFO) {
+                @Override
+                protected ApplicationInfo recompute(ApplicationInfoQuery query) {
+                    return getApplicationInfoAsUserUncached(
+                            query.packageName, query.flags, query.userId);
+                }
+
+                @Override
+                protected ApplicationInfo maybeCheckConsistency(ApplicationInfoQuery query,
+                        ApplicationInfo result) {
+                    return result;
+                }
+            };
+
+    private static final PropertyInvalidatedCache.AutoCorker sCacheAutoCorker =
+            new PropertyInvalidatedCache.AutoCorker(CACHE_KEY_PACKAGE_INFO);
+
+    private static final PropertyInvalidatedCache<PackageInfoQuery, PackageInfo>
+            sPackageInfoCache = new PropertyInvalidatedCache<PackageInfoQuery, PackageInfo>(
+                    32, CACHE_KEY_PACKAGE_INFO) {
+                @Override
+                protected PackageInfo recompute(PackageInfoQuery query) {
+                    return getPackageInfoAsUserUncached(
+                            query.packageName, query.flags, query.userId);
+                }
+
+                @Override
+                protected PackageInfo maybeCheckConsistency(PackageInfoQuery query,
+                        PackageInfo result) {
+                    return result;
+                }
+            };
+
+    private static final class ApplicationInfoQuery {
+        final String packageName;
+        final int flags;
+        final int userId;
+
+        ApplicationInfoQuery(String packageName, int flags, int userId) {
+            this.packageName = packageName;
+            this.flags = flags;
+            this.userId = userId;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            try {
+                ApplicationInfoQuery other = (ApplicationInfoQuery) obj;
+                return Objects.equals(packageName, other.packageName)
+                        && flags == other.flags
+                        && userId == other.userId;
+            } catch (ClassCastException e) {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return ((Objects.hashCode(packageName) * 13) + Objects.hashCode(flags)) * 13
+                    + Objects.hashCode(userId);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "ApplicationInfoQuery(packageName=\"%s\", flags=%s, userId=%s)",
+                    packageName, flags, userId);
+        }
+    }
+
+    private static final class PackageInfoQuery {
+        final String packageName;
+        final int flags;
+        final int userId;
+
+        PackageInfoQuery(String packageName, int flags, int userId) {
+            this.packageName = packageName;
+            this.flags = flags;
+            this.userId = userId;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            try {
+                PackageInfoQuery other = (PackageInfoQuery) obj;
+                return Objects.equals(packageName, other.packageName)
+                        && flags == other.flags
+                        && userId == other.userId;
+            } catch (ClassCastException e) {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return ((Objects.hashCode(packageName) * 13) + Objects.hashCode(flags)) * 13
+                    + Objects.hashCode(userId);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "PackageInfoQuery(packageName=\"%s\", flags=%s, userId=%s)",
+                    packageName, flags, userId);
+        }
+    }
+
+    /** {@hide} */
+    public static void disableApplicationInfoCache() {
+        sApplicationInfoCache.disableLocal();
+    }
+
+    /** {@hide} */
+    public static void disablePackageInfoCache() {
+        sPackageInfoCache.disableLocal();
+    }
+
+    /** {@hide} */
+    public static ApplicationInfo getApplicationInfoAsUserCached(
+            String packageName, int flags, int userId) {
+        return sApplicationInfoCache.query(
+                new ApplicationInfoQuery(packageName, flags, userId));
+    }
+
+    private static ApplicationInfo getApplicationInfoAsUserUncached(
+            String packageName, int flags, int userId) {
+        try {
+            return ActivityThread.getPackageManager().getApplicationInfo(packageName, flags, userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /** {@hide} */
+    public static PackageInfo getPackageInfoAsUserCached(
+            String packageName, int flags, int userId) {
+        return sPackageInfoCache.query(new PackageInfoQuery(packageName, flags, userId));
+    }
+
+    private static PackageInfo getPackageInfoAsUserUncached(
+            String packageName, int flags, int userId) {
+        try {
+            return ActivityThread.getPackageManager().getPackageInfo(packageName, flags, userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /** {@hide} */
+    public static void invalidatePackageInfoCache() {
+        sCacheAutoCorker.autoCork();
+    }
+
+    /** {@hide} */
+    public static void corkPackageInfoCache() {
+        PropertyInvalidatedCache.corkInvalidations(CACHE_KEY_PACKAGE_INFO);
+    }
+
+    /** {@hide} */
+    public static void uncorkPackageInfoCache() {
+        PropertyInvalidatedCache.uncorkInvalidations(CACHE_KEY_PACKAGE_INFO);
+    }
 
     /** {@hide} */
     public static final boolean APPLY_DEFAULT_TO_DEVICE_PROTECTED_STORAGE = true;
@@ -3169,6 +3346,12 @@ public abstract class PackageManager {
             @PermissionGroupInfoFlags int flags);
 
     /**
+     * Returns the MD5 of the APK file for the given package, or {@code null} if unknown.
+     * @hide
+     */
+    public abstract String getApkFileMd5(String packageName);
+
+    /**
      * Retrieve all of the information we know about a particular
      * package/application.
      *
@@ -4606,6 +4789,18 @@ public abstract class PackageManager {
             ApplicationInfo appInfo);
 
     /**
+     * Returns the install channel name recorded for the given package.
+     * @hide
+     */
+    public abstract String getXtcInstallChannelName(String packageName);
+
+    /**
+     * Returns the install channel extended info recorded for the given package.
+     * @hide
+     */
+    public abstract Map<String, String> getXtcInstallChannelExtInfo(String packageName);
+
+    /**
      * Return the label to use for this application.
      *
      * @return Returns the label associated with this application, or null if
@@ -5433,6 +5628,12 @@ public abstract class PackageManager {
      * @hide
      */
     public abstract boolean isSignedByExactly(String packageName, KeySet ks);
+
+    /**
+     * Returns whether XTC install verification is supported on this device.
+     * @hide
+     */
+    public abstract boolean isSupportXtcInstallVerify();
 
     /**
      * Puts the package in a suspended state, where attempts at starting activities are denied.

@@ -89,6 +89,7 @@ import android.util.Log;
 import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.Immutable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.util.Preconditions;
@@ -116,6 +117,148 @@ public class ApplicationPackageManager extends PackageManager {
     // Default flags to use with PackageManager when no flags are given.
     private final static int sDefaultFlags = PackageManager.GET_SHARED_LIBRARY_FILES;
 
+    private static final String CACHE_KEY_PERMISSION_INFO = "cache_key.permission";
+
+    private static PropertyInvalidatedCache<PackageNamePermissionQuery, Integer>
+            sPackageNamePermissionCache;
+    private static final PropertyInvalidatedCache<PermissionQuery, Integer> sPermissionCache;
+
+    static {
+        final int maxEntries = 16;
+        sPermissionCache = new PropertyInvalidatedCache<PermissionQuery, Integer>(
+                maxEntries, CACHE_KEY_PERMISSION_INFO) {
+            @Override
+            protected Integer recompute(PermissionQuery query) {
+                return checkPermissionUncached(query.permission, query.pid, query.uid);
+            }
+        };
+        sPackageNamePermissionCache = new PropertyInvalidatedCache<PackageNamePermissionQuery,
+                Integer>(maxEntries, CACHE_KEY_PERMISSION_INFO) {
+            @Override
+            protected Integer recompute(PackageNamePermissionQuery query) {
+                try {
+                    ActivityThread.currentActivityThread();
+                    return ActivityThread.getPackageManager().checkPermission(
+                            query.permName, query.pkgName, query.uid);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        };
+    }
+
+    @Immutable
+    private static final class PackageNamePermissionQuery {
+        final String permName;
+        final String pkgName;
+        final int uid;
+
+        PackageNamePermissionQuery(String permName, String pkgName, int uid) {
+            this.permName = permName;
+            this.pkgName = pkgName;
+            this.uid = uid;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            try {
+                PackageNamePermissionQuery other = (PackageNamePermissionQuery) obj;
+                return Objects.equals(permName, other.permName)
+                        && Objects.equals(pkgName, other.pkgName)
+                        && uid == other.uid;
+            } catch (ClassCastException e) {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(permName, pkgName, uid);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("PackageNamePermissionQuery(pkgName=\"%s\", permName=\"%s, uid=%s\")",
+                    pkgName, permName, uid);
+        }
+    }
+
+    @Immutable
+    private static final class PermissionQuery {
+        final String permission;
+        final int pid;
+        final int uid;
+
+        PermissionQuery(String permission, int pid, int uid) {
+            this.permission = permission;
+            this.pid = pid;
+            this.uid = uid;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            try {
+                PermissionQuery other = (PermissionQuery) obj;
+                if (uid == other.uid) {
+                    return Objects.equals(permission, other.permission);
+                }
+                return false;
+            } catch (ClassCastException e) {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return (Objects.hashCode(permission) * 13) + Objects.hashCode(uid);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("PermissionQuery(permission=\"%s\", pid=%s, uid=%s)",
+                    permission, pid, uid);
+        }
+    }
+
+    /** @hide */
+    public static int checkPermission(String permName, int pid, int uid) {
+        return sPermissionCache.query(new PermissionQuery(permName, pid, uid));
+    }
+
+    private static int checkPermissionUncached(String permName, int pid, int uid) {
+        IActivityManager am = ActivityManagerNative.getDefault();
+        if (am != null) {
+            try {
+                return am.checkPermission(permName, pid, uid);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        int appId = UserHandle.getAppId(uid);
+        if (appId == 0 || appId == 1000) {
+            Log.w(TAG, "Missing ActivityManager; assuming " + uid + " holds " + permName);
+            return PackageManager.PERMISSION_GRANTED;
+        }
+        Log.w(TAG, "Missing ActivityManager; assuming " + uid + " does not hold " + permName);
+        return PackageManager.PERMISSION_DENIED;
+    }
+
+    /** @hide */
+    public static void disablePackageNamePermissionCache() {
+        sPackageNamePermissionCache.disableLocal();
+    }
+
+    /** @hide */
+    public static void disablePermissionCache() {
+        sPermissionCache.disableLocal();
+    }
+
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
@@ -128,6 +271,54 @@ public class ApplicationPackageManager extends PackageManager {
 
     @GuardedBy("mLock")
     private String mPermissionsControllerPackageName;
+
+    private static final PropertyInvalidatedCache<HasSystemFeatureQuery, Boolean>
+            mHasSystemFeatureCache = new PropertyInvalidatedCache<HasSystemFeatureQuery,
+                    Boolean>(256, "cache_key.has_system_feature") {
+                @Override
+                protected Boolean recompute(HasSystemFeatureQuery query) {
+                    try {
+                        ActivityThread.currentActivityThread();
+                        return ActivityThread.getPackageManager().hasSystemFeature(
+                                query.name, query.version);
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                }
+            };
+
+    private static final PropertyInvalidatedCache.AutoCorker sCacheAutoCorker =
+            new PropertyInvalidatedCache.AutoCorker(CACHE_KEY_PERMISSION_INFO);
+
+    @Immutable
+    private static final class HasSystemFeatureQuery {
+        public final String name;
+        public final int version;
+
+        public HasSystemFeatureQuery(String name, int version) {
+            this.name = name;
+            this.version = version;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof HasSystemFeatureQuery)) {
+                return false;
+            }
+            HasSystemFeatureQuery other = (HasSystemFeatureQuery) obj;
+            return Objects.equals(name, other.name) && version == other.version;
+        }
+
+        @Override
+        public int hashCode() {
+            return (Objects.hashCode(name) * 13) + version;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("HasSystemFeatureQuery(name=\"%s\", version=%d)", name, version);
+        }
+    }
 
     UserManager getUserManager() {
         synchronized (mLock) {
@@ -162,15 +353,11 @@ public class ApplicationPackageManager extends PackageManager {
     @Override
     public PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
             throws NameNotFoundException {
-        try {
-            PackageInfo pi = mPM.getPackageInfo(packageName, flags, userId);
-            if (pi != null) {
-                return pi;
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        PackageInfo pi = getPackageInfoAsUserCached(packageName, flags, userId);
+        if (pi == null) {
+            throw new NameNotFoundException(packageName);
         }
-        throw new NameNotFoundException(packageName);
+        return pi;
     }
 
     @Override
@@ -355,6 +542,15 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @Override
+    public String getApkFileMd5(String packageName) {
+        try {
+            return mPM.getApkFileMd5(packageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
     public ApplicationInfo getApplicationInfo(String packageName, int flags)
             throws NameNotFoundException {
         return getApplicationInfoAsUser(packageName, flags, mContext.getUserId());
@@ -363,19 +559,14 @@ public class ApplicationPackageManager extends PackageManager {
     @Override
     public ApplicationInfo getApplicationInfoAsUser(String packageName, int flags, int userId)
             throws NameNotFoundException {
-        try {
-            ApplicationInfo ai = mPM.getApplicationInfo(packageName, flags, userId);
-            if (ai != null) {
-                // This is a temporary hack. Callers must use
-                // createPackageContext(packageName).getApplicationInfo() to
-                // get the right paths.
-                return maybeAdjustApplicationInfo(ai);
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        ApplicationInfo ai = getApplicationInfoAsUserCached(packageName, flags, userId);
+        if (ai == null) {
+            throw new NameNotFoundException(packageName);
         }
-
-        throw new NameNotFoundException(packageName);
+        // This is a temporary hack. Callers must use
+        // createPackageContext(packageName).getApplicationInfo() to
+        // get the right paths.
+        return maybeAdjustApplicationInfo(ai);
     }
 
     private static ApplicationInfo maybeAdjustApplicationInfo(ApplicationInfo info) {
@@ -551,20 +742,28 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public boolean hasSystemFeature(String name, int version) {
-        try {
-            return mPM.hasSystemFeature(name, version);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mHasSystemFeatureCache.query(new HasSystemFeatureQuery(name, version));
+    }
+
+    /** @hide */
+    public static void invalidateHasSystemFeatureCache() {
+        mHasSystemFeatureCache.invalidateCache();
+    }
+
+    /** @hide */
+    public static void invalidatePermissionCaches() {
+        sCacheAutoCorker.autoCork();
+    }
+
+    /** @hide */
+    public void disableHasSystemFeatureCache() {
+        mHasSystemFeatureCache.disableLocal();
     }
 
     @Override
     public int checkPermission(String permName, String pkgName) {
-        try {
-            return mPM.checkPermission(permName, pkgName, mContext.getUserId());
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return sPackageNamePermissionCache.query(
+                new PackageNamePermissionQuery(permName, pkgName, mContext.getUserId()));
     }
 
     @Override
@@ -732,7 +931,22 @@ public class ApplicationPackageManager extends PackageManager {
     @SuppressWarnings("unchecked")
     @Override
     public List<PackageInfo> getInstalledPackages(int flags) {
-        return getInstalledPackagesAsUser(flags, mContext.getUserId());
+        return XtcGetInstalledPackagesAsUser(flags, mContext.getUserId(),
+                ActivityThread.currentPackageName());
+    }
+
+    private List<PackageInfo> XtcGetInstalledPackagesAsUser(int flags, int userId,
+            String callingPackage) {
+        try {
+            ParceledListSlice<PackageInfo> parceledList =
+                    mPM.XtcGetInstalledPackages(flags, userId, callingPackage);
+            if (parceledList == null) {
+                return Collections.emptyList();
+            }
+            return parceledList.getList();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /** @hide */
@@ -771,7 +985,22 @@ public class ApplicationPackageManager extends PackageManager {
     @SuppressWarnings("unchecked")
     @Override
     public List<ApplicationInfo> getInstalledApplications(int flags) {
-        return getInstalledApplicationsAsUser(flags, mContext.getUserId());
+        return xtcGetInstalledApplicationsAsUser(flags, mContext.getUserId(),
+                ActivityThread.currentPackageName());
+    }
+
+    private List<ApplicationInfo> xtcGetInstalledApplicationsAsUser(int flags, int userId,
+            String callingPackage) {
+        try {
+            ParceledListSlice<ApplicationInfo> parceledList =
+                    mPM.xtcGetInstalledApplications(flags, userId, callingPackage);
+            if (parceledList == null) {
+                return Collections.emptyList();
+            }
+            return parceledList.getList();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /** @hide */
@@ -1676,6 +1905,24 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @Override
+    public String getXtcInstallChannelName(String packageName) {
+        try {
+            return mPM.getXtcInstallChannelName(packageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public Map<String, String> getXtcInstallChannelExtInfo(String packageName) {
+        try {
+            return mPM.getXtcInstallChannelExtInfo(packageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
     public CharSequence getApplicationLabel(ApplicationInfo info) {
         return info.loadLabel(this);
     }
@@ -2379,6 +2626,18 @@ public class ApplicationPackageManager extends PackageManager {
         Preconditions.checkNotNull(ks);
         try {
             return mPM.isPackageSignedByKeySetExactly(packageName, ks);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     */
+    @Override
+    public boolean isSupportXtcInstallVerify() {
+        try {
+            return mPM.isSupportXtcInstallVerify();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

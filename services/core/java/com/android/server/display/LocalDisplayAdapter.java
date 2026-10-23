@@ -176,7 +176,9 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         public LocalDisplayDevice(IBinder displayToken, int builtInDisplayId,
                 SurfaceControl.PhysicalDisplayInfo[] physicalDisplayInfos, int activeDisplayInfo,
                 int[] colorModes, int activeColorMode) {
-            super(LocalDisplayAdapter.this, displayToken, UNIQUE_ID_PREFIX + builtInDisplayId);
+            // XTC 差异：把内置显示 id 作为物理 id 传入。
+            super(LocalDisplayAdapter.this, displayToken, UNIQUE_ID_PREFIX + builtInDisplayId,
+                    builtInDisplayId);
             mBuiltInDisplayId = builtInDisplayId;
             updatePhysicalDisplayInfoLocked(physicalDisplayInfos, activeDisplayInfo,
                     colorModes, activeColorMode);

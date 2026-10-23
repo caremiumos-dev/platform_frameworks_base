@@ -38,6 +38,9 @@ public interface LocationProviderInterface {
     public boolean isEnabled();
     public void setRequest(ProviderRequest request, WorkSource source);
 
+    // CAF 差异：设备基座允许记录当前请求定位的调用包名（用于 PwrHistorian 遥测）。
+    public void setPackageName(String name);
+
     public void dump(FileDescriptor fd, PrintWriter pw, String[] args);
 
     // --- deprecated (but still supported) ---

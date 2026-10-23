@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.AudioAttributes;
@@ -50,6 +51,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.Vibrator;
 import android.os.storage.IStorageManager;
+import android.provider.Settings;
 import android.os.storage.IStorageShutdownObserver;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -62,8 +64,11 @@ import com.android.server.LocalServices;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -102,6 +107,9 @@ public final class ShutdownThread extends Thread {
     public static final String REBOOT_SAFEMODE_PROPERTY = "persist.sys.safemode";
     public static final String RO_SAFEMODE_PROPERTY = "ro.sys.safemode";
 
+    // XTC device addition: indicates the watch has been reported lost.
+    public static final String PROPERTY_WATCH_LOSS_STATUS = "persist.sys.watchlossstatus";
+
     // static instance of this thread
     private static final ShutdownThread sInstance = new ShutdownThread();
 
@@ -126,6 +134,52 @@ public final class ShutdownThread extends Thread {
     private static String METRIC_RADIO = "shutdown_radio";
     private static String METRIC_NFC = "shutdown_nfc";
     private static String METRIC_SM = "shutdown_storage_manager";
+
+    // XTC device additions: vendor shutdown / system-restore confirmation flow.
+    private static final int MAX_LAUNCHER_WAIT_TIME = 3000;
+    private static final String XTC_SHUTDOWN_STATE = "xtc_shutdown";
+    private static final String POWEROFFALARM_ACTION_SHUTDOWN =
+            "org.codeaurora.poweroffalarm.ACTION_SHUTDOWN";
+    private static final int VENDOR_SUBSYS_MAX_WAIT_MS = 600;
+    private static final int VENDOR_SUBSYS_STATE_CHECK_INTERVAL_MS = 100;
+
+    // XTC device addition: button ids used to distinguish the vendor dialogs' actions.
+    public static final int ID_SHUTDOWN = 1001;
+    public static final int ID_REPAIR = 1002;
+    public static final int ID_MORE = 1003;
+    public static final int ID_CANCEL = 1004;
+    public static final int ID_REBOOT = 1005;
+    public static final int ID_RESTORE = 1005;
+
+    private static AlertDialog lpd;
+    private static AlertDialog srd;
+    private static com.xtc.utils.KeyguardEventManager mKeyguard;
+    private static boolean isRestore = false;
+    private static boolean isRestoreAlready = false;
+    private static boolean isShutdown = true;
+    private static String positiveButtonText = "true";
+    private static boolean isLauncherShutdown = false;
+    private static ShutdownObserver shutdownObserver;
+    private static com.xtc.utils.KeyguardEventManager.Listener mListener =
+            new com.xtc.utils.KeyguardEventManager.Listener() {
+                @Override
+                public void onFinishedGoingToSleep() {
+                    if (lpd != null) {
+                        lpd.dismiss();
+                        lpd = null;
+                        isShutdown = true;
+                        isRestore = false;
+                        isRestoreAlready = false;
+                    }
+                    if (srd != null) {
+                        srd.dismiss();
+                        srd = null;
+                        isShutdown = true;
+                        isRestore = false;
+                        isRestoreAlready = false;
+                    }
+                }
+            };
 
     private final Object mActionDoneSync = new Object();
     private boolean mActionDone;
@@ -152,6 +206,12 @@ public final class ShutdownThread extends Thread {
      * @param confirm true if user confirmation is needed before shutting down.
      */
     public static void shutdown(final Context context, String reason, boolean confirm) {
+        // XTC device addition: dismiss the shutdown dialogs when the device sleeps.
+        if (mKeyguard == null) {
+            Log.d(TAG, "init mKeyguard...");
+            mKeyguard = new com.xtc.utils.KeyguardEventManager();
+            mKeyguard.registerListener(mListener);
+        }
         mReboot = false;
         mRebootSafeMode = false;
         mReason = reason;
@@ -183,26 +243,156 @@ public final class ShutdownThread extends Thread {
         Log.d(TAG, "Notifying thread to start shutdown longPressBehavior=" + longPressBehavior);
 
         if (confirm) {
-            final CloseDialogReceiver closer = new CloseDialogReceiver(context);
+            // XTC device addition: vendor shutdown / system-restore confirmation flow.
+            if (isRestoreAlready) {
+                return;
+            }
             if (sConfirmDialog != null) {
                 sConfirmDialog.dismiss();
             }
-            sConfirmDialog = new AlertDialog.Builder(context)
-                    .setTitle(mRebootSafeMode
-                            ? com.android.internal.R.string.reboot_safemode_title
-                            : com.android.internal.R.string.power_off)
-                    .setMessage(resourceId)
-                    .setPositiveButton(com.android.internal.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            beginShutdownSequence(context);
+            if (srd != null) {
+                srd.dismiss();
+            }
+            if (isRestore && !SystemProperties.getBoolean(PROPERTY_WATCH_LOSS_STATUS, false)) {
+                positiveButtonText = context.getResources().getString(
+                        com.android.internal.R.string.reboot_to_restore);
+                isShutdown = false;
+            } else {
+                positiveButtonText = context.getResources().getString(
+                        com.android.internal.R.string.power_off);
+                isRestore = true;
+                isShutdown = true;
+            }
+            boolean clearAppDataOnly =
+                    SystemProperties.getBoolean("sys.clearAppDataOnly", false);
+            if (com.xtc.moduleswitch.ModuleSwitch.queryModuleSwitch(context, 2875, true)) {
+                clearAppDataOnly = true;
+            }
+            final boolean allowRepair =
+                    SystemProperties.getBoolean("persist.sys.allowrepair", true);
+            final Context ctx = context;
+            final boolean clearApp = clearAppDataOnly;
+
+            final ShutdownDialogCallback restoreCallback = new ShutdownDialogCallback() {
+                @Override
+                public void clickCallBack(android.view.View view) {
+                    Log.v(TAG, "isRestore>>>>>>>>>>");
+                    if (lpd != null) {
+                        lpd.dismiss();
+                    }
+                    isRestoreAlready = true;
+                    Intent restoreType = new Intent("com.xtc.i11.restore.type");
+                    restoreType.putExtra("restore_type", "HAND_RESTORE");
+                    ctx.sendBroadcast(restoreType);
+                    Intent reset = new Intent(Intent.ACTION_FACTORY_RESET);
+                    reset.setPackage("android");
+                    reset.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    reset.putExtra(Intent.EXTRA_REASON,
+                            "Long press power key to factory reset!");
+                    reset.putExtra("clearAppDataOnly", clearApp);
+                    ctx.sendBroadcast(reset);
+                }
+
+                @Override
+                public void dismissCallBack(android.view.View view) {
+                    isShutdown = true;
+                    isRestore = false;
+                    isRestoreAlready = false;
+                }
+            };
+
+            ShutdownDialogCallback callback = new ShutdownDialogCallback() {
+                @Override
+                public void clickCallBack(android.view.View view) {
+                    switch (view.getId()) {
+                        case ID_SHUTDOWN:
+                            if (isShutdown) {
+                                Log.v(TAG, "Shutdown>>>>>>>>>>");
+                                beginShutdownSequence(ctx);
+                                mReboot = false;
+                                Intent i = new Intent("com.xtc.i11.shutdown.type");
+                                i.putExtra("shutdown_type", "HAND_SHUT_DOWN");
+                                ctx.sendBroadcast(i);
+                            }
+                            break;
+                        case ID_REPAIR: {
+                            AlertDialog d;
+                            if (!allowRepair) {
+                                SystemRestoreForbiddenDialog fd =
+                                        new SystemRestoreForbiddenDialog(ctx);
+                                fd.setCallback(restoreCallback);
+                                d = fd;
+                            } else if (clearApp) {
+                                SystemRestoreConfirmDialog cd =
+                                        new SystemRestoreConfirmDialog(ctx);
+                                cd.setCallback(restoreCallback);
+                                d = cd;
+                            } else {
+                                ShutdownOrRebootConfirmDialog od =
+                                        new ShutdownOrRebootConfirmDialog(ctx);
+                                od.setCallback(restoreCallback);
+                                d = od;
+                            }
+                            d.show();
+                            srd = d;
+                            break;
                         }
-                    })
-                    .setNegativeButton(com.android.internal.R.string.no, null)
-                    .create();
-            closer.dialog = sConfirmDialog;
-            sConfirmDialog.setOnDismissListener(closer);
-            sConfirmDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
-            sConfirmDialog.show();
+                        case ID_MORE:
+                            try {
+                                isShutdown = true;
+                                isRestore = false;
+                                isRestoreAlready = false;
+                                ctx.startActivity(new Intent(
+                                        "com.android.internal.intent.action.MORE_ACTION"));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                        case ID_REBOOT:
+                            Log.v(TAG, "reboot>>>>>>>>>>");
+                            Intent rebootIntent = new Intent("com.xtc.i11.shutdown.type");
+                            rebootIntent.putExtra("shutdown_type", "HAND_REBOOT");
+                            ctx.sendBroadcast(rebootIntent);
+                            reboot(ctx, TAG, false);
+                            break;
+                    }
+                }
+
+                @Override
+                public void dismissCallBack(android.view.View view) {
+                    isShutdown = true;
+                    isRestore = false;
+                    isRestoreAlready = false;
+                }
+            };
+
+            AlertDialog dialog;
+            if (clearApp) {
+                SystemRestoreDialog d = new SystemRestoreDialog(ctx, positiveButtonText);
+                d.setCallback(restoreCallback);
+                dialog = d;
+            } else {
+                ShutdownDialog d = new ShutdownDialog(ctx, positiveButtonText);
+                d.setCallback(callback);
+                dialog = d;
+            }
+            final AlertDialog shownDialog = dialog;
+            dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface d) {
+                    new Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (lpd != null) {
+                                lpd.dismiss();
+                            }
+                            lpd = shownDialog;
+                        }
+                    }, 500L);
+                }
+            });
+            dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+            dialog.show();
         } else {
             beginShutdownSequence(context);
         }
@@ -227,6 +417,62 @@ public final class ShutdownThread extends Thread {
         public void onDismiss(DialogInterface unused) {
             mContext.unregisterReceiver(this);
         }
+    }
+
+    /**
+     * XTC device addition: observes the launcher's shutdown state so shutdown can
+     * wait for the launcher to close cleanly.
+     */
+    static class ShutdownObserver extends ContentObserver {
+        private Context context;
+        private Handler handler;
+
+        ShutdownObserver(Context context, Handler handler) {
+            super(handler);
+            this.context = context;
+            this.handler = handler;
+        }
+
+        void observe() {
+            context.getContentResolver().registerContentObserver(
+                    Settings.System.getUriFor(XTC_SHUTDOWN_STATE), false, this, -1);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+            if (Settings.System.getIntForUser(context.getContentResolver(), XTC_SHUTDOWN_STATE,
+                    -1, UserHandle.USER_ALL) == 1) {
+                Log.d(TAG, "Launcher is closed");
+                isLauncherShutdown = true;
+            }
+        }
+    }
+
+    /**
+     * XTC device addition: write {@code content} to the file at {@code path}.
+     */
+    public static void RebootreasonToxtcdata(String path, String content) {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(path));
+            writer.write(content);
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "FileNotFoundException start");
+        } catch (IOException e) {
+            Log.e(TAG, "IOException");
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
+    public static boolean getShutDownDialogState() {
+        return isRestore;
     }
 
     /**
@@ -269,6 +515,14 @@ public final class ShutdownThread extends Thread {
     }
 
     private static ProgressDialog showShutdownDialog(Context context) {
+        // XTC device addition: tell the anti-addiction service the device is shutting down.
+        com.android.server.addiction.AntiAddictionManagerService antiAddictionManagerService =
+                (com.android.server.addiction.AntiAddictionManagerService)
+                        ServiceManager.getService("anti_addiction");
+        if (antiAddictionManagerService != null) {
+            antiAddictionManagerService.notifyAppState("", "", "", -1,
+                    com.android.server.addiction.AntiAddictionManagerService.AppState.shutdown);
+        }
         // Throw up a system dialog to indicate the device is rebooting / shutting down.
         ProgressDialog pd = new ProgressDialog(context);
 
@@ -409,6 +663,37 @@ public final class ShutdownThread extends Thread {
         sInstance.start();
     }
 
+    /**
+     * XTC device addition: wait up to {@code timeoutMs} for the launcher to close.
+     */
+    private void waitLauncherShutdown(int timeoutMs) {
+        final boolean[] done = { false };
+        final long deadline = SystemClock.elapsedRealtime() + timeoutMs;
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                long end = deadline;
+                for (long now = SystemClock.elapsedRealtime(); end - now > 0;
+                        now = SystemClock.elapsedRealtime()) {
+                    if (isLauncherShutdown) {
+                        done[0] = true;
+                        return;
+                    }
+                    end = deadline;
+                }
+            }
+        };
+        thread.start();
+        try {
+            thread.join(timeoutMs);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (!done[0]) {
+            Log.w(TAG, "waiting for Launcher shutdown.");
+        }
+    }
+
     void actionDone() {
         synchronized (mActionDoneSync) {
             mActionDone = true;
@@ -440,6 +725,16 @@ public final class ShutdownThread extends Thread {
         {
             String reason = (mReboot ? "1" : "0") + (mReason != null ? mReason : "");
             SystemProperties.set(SHUTDOWN_ACTION_PROPERTY, reason);
+            // XTC device addition: report the shutdown/reboot target.
+            if (mReboot) {
+                Log.d(TAG, "Target--reboot. '" + reason + "'");
+                android.util.ShowKernel.v("5", "1reboot," + (mReason != null ? mReason : ""));
+                RebootreasonToxtcdata("/xtcdata/app_reboot.txt",
+                        SystemProperties.get("ro.boot.xtc.bootcounter") + "," + mReason + ",");
+            } else {
+                Log.d(TAG, "Target--shutdown.");
+                android.util.ShowKernel.v("1", "1shutdown");
+            }
         }
 
         /*
@@ -461,6 +756,15 @@ public final class ShutdownThread extends Thread {
                 | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
         mContext.sendOrderedBroadcastAsUser(intent,
                 UserHandle.ALL, null, br, mHandler, 0, null, null);
+
+        // XTC device addition: wait for the launcher to close before proceeding.
+        if (mReason == null || !mReason.contains("AutoTest")) {
+            Log.d(TAG, "waitLauncherShutdown start...");
+            waitLauncherShutdown(MAX_LAUNCHER_WAIT_TIME);
+            Log.d(TAG, "waitLauncherShutdown end...");
+        } else {
+            Log.d(TAG, "auto reboot test, remove waitLauncherShutdown");
+        }
 
         final long endTime = SystemClock.elapsedRealtime() + MAX_BROADCAST_TIME;
         synchronized (mActionDoneSync) {
@@ -769,6 +1073,42 @@ public final class ShutdownThread extends Thread {
      * @param reason reason for reboot/shutdown
      */
     public static void rebootOrShutdown(final Context context, boolean reboot, String reason) {
+        // XTC device addition: wait briefly for critical vendor subsystems to power down.
+        String subsysList = SystemProperties.get(
+                "vendor.peripheral.shutdown_critical_list", "ERROR");
+        if (!subsysList.equals("ERROR")) {
+            Log.i(TAG, "Shutdown critical subsyslist is :" + subsysList + ": ");
+            Log.i(TAG, "Waiting for a maximum of " + VENDOR_SUBSYS_MAX_WAIT_MS + "ms");
+            String[] subsys = subsysList.split(" ");
+            int count = 0;
+            boolean allDone;
+            do {
+                allDone = true;
+                for (String s : subsys) {
+                    if (SystemProperties.get("vendor.peripheral." + s + ".state", "ERROR")
+                            .equals("ONLINE")) {
+                        allDone = false;
+                    }
+                }
+                if (!allDone) {
+                    SystemClock.sleep(VENDOR_SUBSYS_STATE_CHECK_INTERVAL_MS);
+                    count++;
+                }
+                if (allDone) {
+                    break;
+                }
+            } while (count < VENDOR_SUBSYS_MAX_WAIT_MS / VENDOR_SUBSYS_STATE_CHECK_INTERVAL_MS);
+            if (allDone) {
+                Log.i(TAG, "Vendor subsystem(s) shutdown successful");
+            } else {
+                for (String s : subsys) {
+                    if (SystemProperties.get("vendor.peripheral." + s + ".state", "ERROR")
+                            .equals("ONLINE")) {
+                        Log.w(TAG, "Subsystem " + s + "did not shut down within timeout");
+                    }
+                }
+            }
+        }
         if (reboot) {
             Log.i(TAG, "Rebooting, reason: " + reason);
             PowerManagerService.lowLevelReboot(reason);

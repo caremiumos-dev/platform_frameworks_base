@@ -114,6 +114,9 @@ public class Watchdog extends Thread {
     boolean mAllowRestart = true;
     final OpenFdMonitor mOpenFdMonitor;
 
+    // XTC 差异：WDT trace 文件名时间戳格式。
+    java.text.SimpleDateFormat mTraceDateFormat;
+
     /**
      * Used for checking status of handle threads and scheduling monitor callbacks.
      */
@@ -248,6 +251,8 @@ public class Watchdog extends Thread {
 
     private Watchdog() {
         super("watchdog");
+        // XTC 差异：WDT trace 文件名时间戳格式。
+        mTraceDateFormat = new java.text.SimpleDateFormat("dd_MMM_HH_mm_ss.SSS");
         // Initialize handler checkers for each common thread we want to check.  Note
         // that we are not currently checking the background thread, since it can
         // potentially hold longer running operations with no guarantees about the timeliness
@@ -417,6 +422,8 @@ public class Watchdog extends Thread {
     @Override
     public void run() {
         boolean waitedHalf = false;
+        // XTC 差异：保存半程 dump 的 trace 文件，供 WDT trace 合并使用。
+        File halfStack = null;
         while (true) {
             final List<HandlerChecker> blockedCheckers;
             final String subject;
@@ -475,8 +482,8 @@ public class Watchdog extends Thread {
                             // trace and wait another half.
                             ArrayList<Integer> pids = new ArrayList<Integer>();
                             pids.add(Process.myPid());
-                            ActivityManagerService.dumpStackTraces(true, pids, null, null,
-                                getInterestingNativePids());
+                            halfStack = ActivityManagerService.dumpStackTraces(true, pids, null,
+                                null, getInterestingNativePids());
                             waitedHalf = true;
                         }
                         continue;
@@ -502,8 +509,13 @@ public class Watchdog extends Thread {
             if (mPhonePid > 0) pids.add(mPhonePid);
             // Pass !waitedHalf so that just in case we somehow wind up here without having
             // dumped the halfway stacks, we properly re-initialize the trace file.
-            final File stack = ActivityManagerService.dumpStackTraces(
+            File stack = ActivityManagerService.dumpStackTraces(
                     !waitedHalf, pids, null, null, getInterestingNativePids());
+
+            // XTC 差异：debuggable 构建下收集 binder 事务状态到 /data/anr/BinderTraces.txt。
+            if ("1".equals(SystemProperties.get("ro.debuggable"))) {
+                binderStateRead();
+            }
 
             // Give some extra time to make sure the stack traces get written.
             // The system's been hanging for a minute, another second or two won't hurt much.
@@ -514,18 +526,72 @@ public class Watchdog extends Thread {
                 dumpKernelStackTraces();
             }
 
-            // Trigger the kernel to dump all blocked threads, and backtraces on all CPUs to the kernel log
-            doSysRq('w');
-            doSysRq('l');
+            // XTC 差异：为 WDT trace 生成带时间戳的文件名，并合并半程/全程两批栈。
+            String traceDir = SystemProperties.get("dalvik.vm.stack-trace-dir", "");
+            if (traceDir.isEmpty()) {
+                String tracePath = SystemProperties.get("dalvik.vm.stack-trace-file", null);
+                String suffix = "_SystemServer_WDT"
+                        + mTraceDateFormat.format(new java.util.Date());
+                if (tracePath == null || tracePath.length() == 0) {
+                    Slog.w(TAG, "dump WDT Traces: no trace path configured");
+                } else {
+                    File traceFile = new File(tracePath);
+                    int dot = tracePath.lastIndexOf(".");
+                    String renamed = (-1 != dot)
+                            ? tracePath.substring(0, dot) + suffix + tracePath.substring(dot)
+                            : tracePath + suffix;
+                    traceFile.renameTo(new File(renamed));
+                    stack = new File(renamed);
+                }
+            } else {
+                File wdtFile = new File(new File(traceDir), "traces_SystemServer_WDT"
+                        + mTraceDateFormat.format(new java.util.Date())
+                        + "_pid" + Process.myPid());
+                try {
+                    if (wdtFile.createNewFile()) {
+                        android.os.FileUtils.setPermissions(
+                                wdtFile.getAbsolutePath(), 384, -1, -1);
+                        if (halfStack == null) {
+                            Slog.e(TAG, "First set of traces are empty!");
+                        } else if (System.currentTimeMillis() - halfStack.lastModified() < 60000) {
+                            Slog.e(TAG, "First set of traces taken from "
+                                    + halfStack.getAbsolutePath());
+                            appendFile(wdtFile, halfStack);
+                        }
+                        if (stack != null) {
+                            Slog.e(TAG, "Second set of traces taken from "
+                                    + stack.getAbsolutePath());
+                            appendFile(wdtFile, stack);
+                        } else {
+                            Slog.e(TAG, "Second set of traces are empty!");
+                        }
+                    } else {
+                        Slog.w(TAG, "Unable to create Watchdog dump file: createNewFile failed");
+                    }
+                } catch (IOException e) {
+                    Slog.e(TAG, "Exception creating Watchdog dump file:", e);
+                }
+            }
+
+            // Trigger the kernel to dump all blocked threads, and backtraces on all CPUs to the
+            // kernel log. XTC 差异：默认仅在 persist.sys.crashOnWatchdog 为真时触发。
+            if (SystemProperties.getBoolean("persist.sys.crashOnWatchdog", false)) {
+                Slog.e(TAG, "Triggering SysRq for system_server watchdog");
+                doSysRq('w');
+                doSysRq('l');
+                SystemClock.sleep(3000);
+                doSysRq('c');
+            }
 
             // Try to add the error to the dropbox, but assuming that the ActivityManager
             // itself may be deadlocked.  (which has happened, causing this statement to
             // deadlock and the watchdog as a whole to be ineffective)
+            final File stackToDump = stack;
             Thread dropboxThread = new Thread("watchdogWriteToDropbox") {
                     public void run() {
                         mActivity.addErrorToDropBox(
                                 "watchdog", null, "system_server", null, null,
-                                subject, null, stack, null);
+                                subject, null, stackToDump, null);
                     }
                 };
             dropboxThread.start();
@@ -578,6 +644,47 @@ public class Watchdog extends Thread {
             }
 
             waitedHalf = false;
+        }
+    }
+
+    // XTC 差异：把 src 文件内容追加到 dst 文件末尾。
+    private void appendFile(File dst, File src) {
+        try {
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(src));
+            FileWriter writer = new FileWriter(dst, true);
+            while (true) {
+                String line = reader.readLine();
+                if (line == null) {
+                    reader.close();
+                    writer.close();
+                    return;
+                }
+                writer.write(line);
+                writer.write(10);
+            }
+        } catch (IOException e) {
+            Slog.e(TAG, "Exception while writing watchdog traces to new file!");
+            e.printStackTrace();
+        }
+    }
+
+    // XTC 差异：debuggable 构建下把 binder 事务状态收集到 /data/anr/BinderTraces.txt。
+    private void binderStateRead() {
+        try {
+            Slog.i(TAG, "Collect Binder Transaction Status Information");
+            java.io.FileReader reader = new java.io.FileReader("/sys/kernel/debug/binder/state");
+            FileWriter writer = new FileWriter("/data/anr/BinderTraces.txt");
+            while (true) {
+                int c = reader.read();
+                if (c == -1) {
+                    reader.close();
+                    writer.close();
+                    return;
+                }
+                writer.write(c);
+            }
+        } catch (IOException e) {
+            Slog.w(TAG, "Failed to collect state file", e);
         }
     }
 

@@ -142,4 +142,88 @@
   <!-- Action used to manually trigger an autofill request -->
   <item type="id" name="autofill" />
 
+  <!-- Identifier used by the XTC hall tip layout. -->
+  <item type="id" name="preinstalled" />
+
+  <!-- Identifiers used by the XTC xses exception dialog. -->
+  <item type="id" name="notouch" />
+  <item type="id" name="notification_progress_end_icon" />
+  <item type="id" name="notification_progress_start_icon" />
+
+  <!-- Identifiers used by the XTC battery-temperature-warning dialog. -->
+  <item type="id" name="dialog_battery_imageView" />
+  <item type="id" name="dialog_battery_warning_confirm_button" />
+  <item type="id" name="dialog_battery_warning_content" />
+
+  <!-- Identifiers used by the XTC space-clean dialog. -->
+  <item type="id" name="rl_dialog_parent" />
+  <item type="id" name="tv_low_tip" />
+  <item type="id" name="tv_spaceclean_full" />
+  <item type="id" name="tv_spaceclean_low" />
+  <item type="id" name="tv_spaceclean_low_tipone" />
+  <item type="id" name="tv_spaceclean_low_tiptwo" />
+  <item type="id" name="dialog_btn_cancel" />
+  <item type="id" name="dialog_btn_spaceclean" />
+
+  <!-- Identifiers used by the XTC shutdown/reboot confirm dialog. -->
+  <item type="id" name="tv_confirm_negative" />
+  <item type="id" name="tv_confirm_positive" />
+  <item type="id" name="tv_confirm_title1" />
+  <item type="id" name="tv_confirm_title2" />
+
+  <!-- Identifiers used by the XTC shutdown / system-restore dialogs. -->
+  <item type="id" name="dialog_toast" />
+  <item type="id" name="rl_dialog_default" />
+  <item type="id" name="rl_dialog_default_left" />
+  <item type="id" name="rl_dialog_default_right" />
+  <item type="id" name="tv_dialog_negative" />
+  <item type="id" name="tv_dialog_positive" />
+  <item type="id" name="tv_dialog_reboot" />
+  <item type="id" name="tv_dialog_positive_repair" />
+  <item type="id" name="tv_reboot_title" />
+  <item type="id" name="tv_reboot_title2" />
+  <item type="id" name="tv_more_action" />
+  <item type="id" name="dialog_view" />
+  <item type="id" name="tv_forbidden_title" />
+  <item type="id" name="tv_forbidden_details" />
+  <item type="id" name="tv_forbidden_hint" />
+  <item type="id" name="tv_forbidden_know" />
+  <item type="id" name="tv_quit_forbidden_title" />
+  <item type="id" name="tv_quit_forbidden_details" />
+
+  <!-- Identifiers used by the XTC xses system-exception dialogs. -->
+  <item type="id" name="system_exception_message" />
+  <item type="id" name="system_exception_ok_btn" />
+  <item type="id" name="system_exception_overylay_message_body" />
+  <item type="id" name="system_root_ok_btn" />
+  <item type="id" name="dialog_title" />
+  <item type="id" name="overlay_warning" />
+
+  <!-- Identifiers used by the XTC permission-confirmation dialog. -->
+  <item type="id" name="parentPanel" />
+  <item type="id" name="permission_text" />
+
+  <!-- Identifiers used by the XTC camera menu. -->
+  <item type="id" name="menu_container" />
+  <item type="id" name="menu_icon" />
+  <item type="id" name="menu_title" />
+
+  <!-- Identifiers used by the XTC hall flip-restriction tip. -->
+  <item type="id" name="tv_flip_tip" />
+  <item type="id" name="tv_flip_msg" />
+  <item type="id" name="tv_flip_ok" />
+
+  <item type="id" name="btn_i_know" />
+  <item type="id" name="ll_adb_switch" />
+  <item type="id" name="ll_bind_number" />
+  <item type="id" name="ll_selftest_mode" />
+  <item type="id" name="tv_bind_number" />
+  <item type="id" name="text" />
+  <item type="id" name="btn_next" />
+  <item type="id" name="tv_check_code" />
+  <item type="id" name="btn_ok" />
+  <item type="id" name="et_check_code" />
+  <item type="id" name="fl_show_check_code" />
+  <item type="id" name="fl_input_check_code" />
+
 </resources>

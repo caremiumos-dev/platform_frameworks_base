@@ -24,6 +24,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.Manifest;
 import android.app.AppOpsManager;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
@@ -505,6 +506,14 @@ public abstract class ContentProvider implements ComponentCallbacks2 {
                 return mode;
             }
 
+            // XTC/厂商门禁：对 com.cttl / com.tsinghua 开头的调用包，用私有 sub-permission
+            // 覆盖公开的读取授权。谴责：这是对特定第三方包的差别对待与对公开权限模型的私有覆盖。
+            if (callingPkg != null && (callingPkg.startsWith("com.cttl")
+                    || callingPkg.startsWith("com.tsinghua"))
+                    && !checkMoMSPermission(getReadPermission())) {
+                return AppOpsManager.MODE_IGNORED;
+            }
+
             if (mReadOp != AppOpsManager.OP_NONE) {
                 return mAppOpsManager.noteProxyOp(mReadOp, callingPkg);
             }
@@ -519,12 +528,50 @@ public abstract class ContentProvider implements ComponentCallbacks2 {
                 return mode;
             }
 
+            // XTC/厂商门禁：同 enforceReadPermission。谴责：差别对待特定包并覆盖公开权限模型。
+            if (callingPkg != null && (callingPkg.startsWith("com.cttl")
+                    || callingPkg.startsWith("com.tsinghua"))
+                    && !checkMoMSPermission(getWritePermission())) {
+                return AppOpsManager.MODE_IGNORED;
+            }
+
             if (mWriteOp != AppOpsManager.OP_NONE) {
                 return mAppOpsManager.noteProxyOp(mWriteOp, callingPkg);
             }
 
             return AppOpsManager.MODE_ALLOWED;
         }
+    }
+
+    /**
+     * XTC/厂商扩展：把公开的 READ_SMS/READ_CONTACTS/WRITE_CONTACTS/READ_CALL_LOG/WRITE_CALL_LOG
+     * 映射为厂商私有 sub-permission，并再向厂商许可服务查询一次。
+     *
+     * 谴责：厂商用私有 per-uid sub-permission 覆盖了 Android 公开的运行时权限模型；
+     * 此处忠实复现设备行为，但不认同其信任模型。
+     */
+    public boolean checkMoMSPermission(String permission) {
+        if (!com.xtc.auth.MobileManagerUtils.isSupported() || permission == null) {
+            return true;
+        }
+        int callingUid = Binder.getCallingUid();
+        String subPermission = permission;
+        if (permission.equals(Manifest.permission.READ_SMS)) {
+            subPermission = com.xtc.auth.SubPermissions.QUERY_SMS;
+        } else if (permission.equals(Manifest.permission.READ_CONTACTS)) {
+            subPermission = com.xtc.auth.SubPermissions.QUERY_CONTACTS;
+        } else if (permission.equals(Manifest.permission.WRITE_CONTACTS)) {
+            subPermission = com.xtc.auth.SubPermissions.MODIFY_CONTACTS;
+        } else if (permission.equals(Manifest.permission.READ_CALL_LOG)) {
+            subPermission = com.xtc.auth.SubPermissions.QUERY_CALL_LOG;
+        } else if (permission.equals(Manifest.permission.WRITE_CALL_LOG)) {
+            subPermission = com.xtc.auth.SubPermissions.MODIFY_CALL_LOG;
+        }
+        if (com.xtc.auth.MobileManagerUtils.checkPermission(subPermission, callingUid)) {
+            return true;
+        }
+        Log.w(TAG, "MoMS Denied " + subPermission + " to uid: " + callingUid);
+        return false;
     }
 
     boolean checkUser(int pid, int uid, Context context) {

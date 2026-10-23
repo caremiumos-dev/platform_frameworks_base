@@ -30,6 +30,7 @@ import android.os.RemoteException;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SeempLog;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -260,6 +261,7 @@ public class SpeechRecognizer {
      *        not set explicitly, default values will be used by the recognizer.
      */
     public void startListening(final Intent recognizerIntent) {
+        SeempLog.record(72);
         if (recognizerIntent == null) {
             throw new IllegalArgumentException("intent must not be null");
         }

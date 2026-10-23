@@ -225,6 +225,10 @@ final class NativeCrashListener extends Thread {
                     pr = mAm.mPidsSelfLocked.get(pid);
                 }
                 if (pr != null) {
+                    // XTC 差异：launcher 原生崩溃单独计数（厂商对 com.xtc.i3launcher 的看护）。
+                    if (pr.processName != null && pr.processName.equals("com.xtc.i3launcher")) {
+                        mAm.launcherRepeatedCrash();
+                    }
                     // Don't attempt crash reporting for persistent apps
                     if (pr.persistent) {
                         if (DEBUG) {

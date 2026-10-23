@@ -114,6 +114,9 @@ public class GnssLocationProvider implements LocationProviderInterface {
 
     private static final String TAG = "GnssLocationProvider";
 
+    // CAF 差异：设备基座把 GNSS 开关/定位耗时打到 PwrHistorian 遥测 tag。
+    private static final String POWER_ANALYTICS_TAG = "PwrHistorian";
+
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
 
@@ -312,6 +315,11 @@ public class GnssLocationProvider implements LocationProviderInterface {
 
     // set to true if the GPS engine requested on-demand NTP time requests
     private boolean mOnDemandTimeInjection;
+
+    // CAF 差异：最近一次请求定位的调用包名与 GNSS 开关/使用起始时间（PwrHistorian 遥测）。
+    private String mPackageName;
+    private long mGnssEnableStartTime = 0;
+    private long mGnssUseStartTime = 0;
 
     // true if GPS is navigating
     private boolean mNavigating;
@@ -825,6 +833,19 @@ public class GnssLocationProvider implements LocationProviderInterface {
     }
 
     @Override
+    public void setPackageName(String name) {
+        mPackageName = name;
+    }
+
+    private void printPowerAnalyTime(String type, long startTime, long endTime) {
+        if (startTime <= 0 || endTime <= 0) {
+            return;
+        }
+        Log.d(POWER_ANALYTICS_TAG, type + " time=" + (endTime - startTime)
+                + " ms ,callingPackage=" + mPackageName);
+    }
+
+    @Override
     public ProviderProperties getProperties() {
         return PROPERTIES;
     }
@@ -1180,6 +1201,7 @@ public class GnssLocationProvider implements LocationProviderInterface {
             mGnssMeasurementsProvider.onGpsEnabledChanged();
             mGnssNavigationMessageProvider.onGpsEnabledChanged();
             enableBatching();
+            mGnssEnableStartTime = System.currentTimeMillis();
         } else {
             synchronized (mLock) {
                 mEnabled = false;
@@ -1217,6 +1239,8 @@ public class GnssLocationProvider implements LocationProviderInterface {
 
         mGnssMeasurementsProvider.onGpsEnabledChanged();
         mGnssNavigationMessageProvider.onGpsEnabledChanged();
+        printPowerAnalyTime("XtcPwrGnssOpen", mGnssEnableStartTime,
+                System.currentTimeMillis());
     }
 
     @Override
@@ -1503,6 +1527,7 @@ public class GnssLocationProvider implements LocationProviderInterface {
             // reset SV count to zero
             updateStatus(LocationProvider.TEMPORARILY_UNAVAILABLE, 0, 0, 0);
             mFixRequestTime = SystemClock.elapsedRealtime();
+            mGnssUseStartTime = System.currentTimeMillis();
             if (!hasCapability(GPS_CAPABILITY_SCHEDULING)) {
                 // set timer to give up if we do not receive a fix within NO_FIX_TIMEOUT
                 // and our fix interval is not short
@@ -1525,6 +1550,8 @@ public class GnssLocationProvider implements LocationProviderInterface {
 
             // reset SV count to zero
             updateStatus(LocationProvider.TEMPORARILY_UNAVAILABLE, 0, 0, 0);
+            printPowerAnalyTime("XtcPwrGnssLocation", mGnssUseStartTime,
+                    System.currentTimeMillis());
         }
     }
 
@@ -1567,6 +1594,9 @@ public class GnssLocationProvider implements LocationProviderInterface {
             mLocation.setExtras(mLocationExtras);
 
             try {
+                // XTC/BBK: positioning telemetry log (0x01).
+                Log.d(TAG, "XTCNetin reportLocation 0x01 uid:" + Binder.getCallingUid()
+                        + " packagename:" + mContext.getPackageName());
                 mILocationManager.reportLocation(mLocation, false);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException calling reportLocation");
@@ -1645,6 +1675,9 @@ public class GnssLocationProvider implements LocationProviderInterface {
         }
 
         if (wasNavigating != mNavigating) {
+            // XTC/BBK: positioning telemetry log (0x02).
+            Log.d(TAG, "XTCNetin reportStatus 0x02 uid:" + Binder.getCallingUid()
+                    + " packagename:" + mContext.getPackageName());
             mListenerHelper.onStatusChanged(mNavigating);
 
             // send an intent to notify that the GPS has been enabled or disabled
@@ -2356,6 +2389,9 @@ public class GnssLocationProvider implements LocationProviderInterface {
         @Override
         public void onLocationChanged(Location location) {
             // this callback happens on mHandler looper
+            // XTC/BBK: positioning telemetry log (0x00).
+            Log.d(TAG, "XTCNetin NetworkLocationListener onLocationChanged 0x00 uid:"
+                    + Binder.getCallingUid() + " packagename:" + mContext.getPackageName());
             if (LocationManager.NETWORK_PROVIDER.equals(location.getProvider())) {
                 handleUpdateLocation(location);
             }

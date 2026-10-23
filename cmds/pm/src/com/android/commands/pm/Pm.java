@@ -61,6 +61,7 @@ import android.os.SELinux;
 import android.os.ServiceManager;
 import android.os.ShellCallback;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
@@ -82,6 +83,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -101,6 +104,18 @@ public final class Pm {
     private static final String PM_NOT_RUNNING_ERR =
         "Error: Could not access the Package Manager.  Is the system running?";
 
+    // CAF/XTC 差异：user 版本下被禁止的 pm 子命令白名单（可由 log.all.dev_sw 关闭）。
+    private static final List<String> userForbiddenCmdList = new CopyOnWriteArrayList<>();
+
+    static {
+        userForbiddenCmdList.add("list");
+        userForbiddenCmdList.add("dump");
+        userForbiddenCmdList.add("uninstall");
+        userForbiddenCmdList.add("disable");
+        userForbiddenCmdList.add("enable");
+        userForbiddenCmdList.add("disable-user");
+    }
+
     public static void main(String[] args) {
         int exitCode = 1;
         try {
@@ -113,6 +128,10 @@ public final class Pm {
             }
         }
         System.exit(exitCode);
+    }
+
+    private static boolean isUserDebugBuild() {
+        return "userdebug".equals(SystemProperties.get("ro.build.type"));
     }
 
     public int run(String[] args) throws RemoteException {
@@ -134,6 +153,14 @@ public final class Pm {
         String op = args[0];
         mNextArg = 1;
 
+        // CAF/XTC 差异：user 版本禁止部分 pm 命令（可用 log.all.dev_sw 放开）——**已谴责**：
+        // 以厂商属性覆盖标准 shell 能力。
+        boolean devSwEnabled = SystemProperties.getBoolean("log.all.dev_sw", false);
+        if (Build.IS_USER && userForbiddenCmdList.contains(op) && !devSwEnabled) {
+            System.err.println("AdbSecure XTC not allow command: " + op);
+            return -1;
+        }
+
         if ("list".equals(op)) {
             return runList();
         }
@@ -147,27 +174,47 @@ public final class Pm {
         }
 
         if ("install".equals(op)) {
-            return runInstall();
+            // CAF/XTC 差异：仅 system uid / userdebug / (user 且 persist.sys.adb.apk=1) 允许
+            // shell 安装——**已谴责**：厂商开关覆盖标准 pm install 行为。
+            String adbApk = SystemProperties.get("persist.sys.adb.apk", "0");
+            if (Process.myUid() == 1000) {
+                Log.i(TAG, "install app through system app.");
+                return runInstall();
+            }
+            if ("userdebug".equals(SystemProperties.get("ro.build.type"))) {
+                Log.i(TAG, "userdebug version , install app .");
+                return runInstall();
+            }
+            if ("user".equals(SystemProperties.get("ro.build.type")) && "1".equals(adbApk)) {
+                Log.i(TAG, "install app through xtc switch.");
+                return runInstall();
+            }
+            Log.e(TAG, "user install app through shell , [INSTALL_FAILED]: pm install not allowed by XTC!");
+            System.err.println("[INSTALL_FAILED]: pm install not allowed by XTC!");
+            return -1;
         }
 
-        if ("install-create".equals(op)) {
-            return runInstallCreate();
-        }
+        // CAF/XTC 差异：session 安装类命令仅 userdebug 允许——**已谴责**。
+        if (isUserDebugBuild()) {
+            if ("install-create".equals(op)) {
+                return runInstallCreate();
+            }
 
-        if ("install-write".equals(op)) {
-            return runInstallWrite();
-        }
+            if ("install-write".equals(op)) {
+                return runInstallWrite();
+            }
 
-        if ("install-commit".equals(op)) {
-            return runInstallCommit();
-        }
+            if ("install-commit".equals(op)) {
+                return runInstallCommit();
+            }
 
-        if ("install-abandon".equals(op) || "install-destroy".equals(op)) {
-            return runInstallAbandon();
-        }
+            if ("install-abandon".equals(op) || "install-destroy".equals(op)) {
+                return runInstallAbandon();
+            }
 
-        if ("set-installer".equals(op)) {
-            return runSetInstaller();
+            if ("set-installer".equals(op)) {
+                return runSetInstaller();
+            }
         }
 
         if ("uninstall".equals(op)) {

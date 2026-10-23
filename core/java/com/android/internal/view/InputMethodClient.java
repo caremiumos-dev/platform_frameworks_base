@@ -35,6 +35,10 @@ public final class InputMethodClient {
     public static final int START_INPUT_REASON_ACTIVATED_BY_IMMS = 7;
     public static final int START_INPUT_REASON_DEACTIVATED_BY_IMMS = 8;
     public static final int START_INPUT_REASON_SESSION_CREATED_BY_IME = 9;
+    public static final int START_INPUT_REASON_BY_XTC = 10;
+
+    /** XTC: packages for which the IME should not be started automatically. */
+    public static String[] systemAPPNeedIme = {"com.xtc.weichat", "com.xtc.setting"};
 
     @Retention(SOURCE)
     @IntDef({START_INPUT_REASON_UNSPECIFIED, START_INPUT_REASON_WINDOW_FOCUS_GAIN,
@@ -66,6 +70,8 @@ public final class InputMethodClient {
                 return "DEACTIVATED_BY_IMMS";
             case START_INPUT_REASON_SESSION_CREATED_BY_IME:
                 return "SESSION_CREATED_BY_IME";
+            case START_INPUT_REASON_BY_XTC:
+                return "BY_XTC";
             default:
                 return "Unknown=" + reason;
         }

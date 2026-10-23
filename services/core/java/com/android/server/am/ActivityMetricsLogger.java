@@ -34,12 +34,16 @@ import static com.android.server.am.ActivityStack.STACK_INVISIBLE;
 import android.app.ActivityManager.StackId;
 import android.content.Context;
 import android.metrics.LogMaker;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.SystemClock;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
 import com.android.internal.logging.MetricsLogger;
+import com.android.internal.os.SomeArgs;
 
 import java.util.ArrayList;
 
@@ -59,6 +63,11 @@ class ActivityMetricsLogger {
     private static final int WINDOW_STATE_INVALID = -1;
 
     private static final long INVALID_START_TIME = -1;
+
+    // XTC 差异：过渡取消的异步可见性检查消息。
+    private static final int MSG_CHECK_VISIBILITY = 0;
+    // XTC 差异：MetricsEvent.APP_TRANSITION_CANCELLED（设备端以字面量使用）。
+    private static final int APP_TRANSITION_CANCELLED = 1144;
 
     // Preallocated strings we are sending to tron, so we don't have to allocate a new one every
     // time we log.
@@ -81,6 +90,24 @@ class ActivityMetricsLogger {
     private final SparseArray<StackTransitionInfo> mStackTransitionInfo = new SparseArray<>();
     private final SparseArray<StackTransitionInfo> mLastStackTransitionInfo = new SparseArray<>();
 
+    private final H mHandler;
+
+    private final class H extends Handler {
+        public H(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_CHECK_VISIBILITY:
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    checkVisibility((TaskRecord) args.arg1, (ActivityRecord) args.arg2);
+                    break;
+            }
+        }
+    }
+
     private final class StackTransitionInfo {
         private ActivityRecord launchedActivity;
         private int startResult;
@@ -93,10 +120,11 @@ class ActivityMetricsLogger {
         private boolean loggedStartingWindowDrawn;
     }
 
-    ActivityMetricsLogger(ActivityStackSupervisor supervisor, Context context) {
+    ActivityMetricsLogger(ActivityStackSupervisor supervisor, Context context, Looper looper) {
         mLastLogTimeSecs = SystemClock.elapsedRealtime() / 1000;
         mSupervisor = supervisor;
         mContext = context;
+        mHandler = new H(looper);
     }
 
     void logWindowState() {
@@ -292,19 +320,56 @@ class ActivityMetricsLogger {
      * Notifies the tracker that the visibility of an app is changing.
      *
      * @param activityRecord the app that is changing its visibility
-     * @param visible whether it's going to be visible or not
      */
-    void notifyVisibilityChanged(ActivityRecord activityRecord, boolean visible) {
+    void notifyVisibilityChanged(ActivityRecord activityRecord) {
         final StackTransitionInfo info = mStackTransitionInfo.get(activityRecord.getStackId());
 
-        // If we have an active transition that's waiting on a certain activity that will be
-        // invisible now, we'll never get onWindowsDrawn, so abort the transition if necessary.
-        if (info != null && !visible && info.launchedActivity == activityRecord) {
-            mStackTransitionInfo.remove(activityRecord.getStackId());
-            if (mStackTransitionInfo.size() == 0) {
-                reset(true /* abort */);
+        // XTC 差异：异步检查任务是否仍可见（此刻可见性状态可能尚未更新）。
+        if (info != null && info.launchedActivity == activityRecord) {
+            TaskRecord task = activityRecord.getTask();
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = task;
+            args.arg2 = activityRecord;
+            mHandler.obtainMessage(MSG_CHECK_VISIBILITY, args).sendToTarget();
+        }
+    }
+
+    /**
+     * XTC 差异：任务不可见时取消正在进行的过渡并记录取消事件。
+     */
+    private void checkVisibility(TaskRecord task, ActivityRecord activityRecord) {
+        synchronized (mSupervisor.mService) {
+            try {
+                ActivityManagerService.boostPriorityForLockedSection();
+                final StackTransitionInfo info =
+                        mStackTransitionInfo.get(activityRecord.getStackId());
+                if (info != null && !task.isVisible()) {
+                    if (ActivityManagerDebugConfig.DEBUG_METRICS) {
+                        Slog.i(TAG, "notifyVisibilityChanged to invisible activity="
+                                + activityRecord);
+                    }
+                    logAppTransitionCancel(info);
+                    mStackTransitionInfo.remove(activityRecord.getStackId());
+                    if (mStackTransitionInfo.size() == 0) {
+                        reset(true /* abort */);
+                    }
+                }
+            } finally {
+                ActivityManagerService.resetPriorityAfterLockedSection();
             }
         }
+    }
+
+    private void logAppTransitionCancel(StackTransitionInfo info) {
+        final int type = getTransitionType(info);
+        if (type == -1) {
+            return;
+        }
+        final LogMaker logMaker = new LogMaker(APP_TRANSITION_CANCELLED);
+        logMaker.setPackageName(info.launchedActivity.packageName);
+        logMaker.setType(type);
+        logMaker.addTaggedData(FIELD_CLASS_NAME, info.launchedActivity.info.name);
+        mMetricsLogger.write(logMaker);
     }
 
     /**

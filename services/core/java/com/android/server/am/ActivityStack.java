@@ -122,6 +122,7 @@ import android.util.SparseArray;
 import android.view.Display;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.app.ActivityTrigger;
 import com.android.internal.app.IVoiceInteractor;
 import com.android.internal.os.BatteryStatsImpl;
 import com.android.server.Watchdog;
@@ -162,6 +163,9 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
     private static final String TAG_USER_LEAVING = TAG + POSTFIX_USER_LEAVING;
     private static final String TAG_VISIBILITY = TAG + POSTFIX_VISIBILITY;
 
+    // XTC/QTI: notifies a vendor component of activity lifecycle transitions.
+    static final ActivityTrigger mActivityTrigger = new ActivityTrigger();
+
     // Ticks during which we check progress while waiting for an app to launch.
     static final int LAUNCH_TICK = 500;
 
@@ -197,6 +201,17 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
     @Override
     protected int getChildCount() {
         return mTaskHistory.size();
+    }
+
+    /**
+     * XTC device addition: the task immediately below {@code task} in this stack.
+     */
+    TaskRecord getBackTask(TaskRecord task) {
+        int index = mTaskHistory.indexOf(task);
+        if (index > 0) {
+            return mTaskHistory.get(index - 1);
+        }
+        return null;
     }
 
     @Override
@@ -1319,6 +1334,9 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
 
         if (DEBUG_STATES) Slog.v(TAG_STATES, "Moving to PAUSING: " + prev);
         else if (DEBUG_PAUSE) Slog.v(TAG_PAUSE, "Start pausing: " + prev);
+        if (mActivityTrigger != null) {
+            mActivityTrigger.activityPauseTrigger(prev.intent, prev.info, prev.appInfo);
+        }
         mResumedActivity = null;
         mPausingActivity = prev;
         mLastPausedActivity = prev;
@@ -2253,6 +2271,11 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
             // Protect against recursion.
             mStackSupervisor.inResumeTopActivity = true;
             result = resumeTopActivityInnerLocked(prev, options);
+            // XTC: notify the vendor self-start manager that the top activity resumed.
+            ActivityRecord top = topActivity();
+            if (top != null) {
+                mService.getSelfstartManager().resumeTopActivity(top.packageName);
+            }
         } finally {
             mStackSupervisor.inResumeTopActivity = false;
         }
@@ -2379,8 +2402,13 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
         mStackSupervisor.mGoingToSleepActivities.remove(next);
         next.sleeping = false;
         mStackSupervisor.mActivitiesWaitingForVisibleActivity.remove(next);
+        next.launching = true;
 
         if (DEBUG_SWITCH) Slog.v(TAG_SWITCH, "Resuming " + next);
+        if (mActivityTrigger != null) {
+            mActivityTrigger.activityResumeTrigger(next.intent, next.info, next.appInfo,
+                    next.getTask().mFullscreen);
+        }
 
         // If we are currently pausing an activity, then don't do anything until that is done.
         if (!mStackSupervisor.allPausedActivitiesComplete()) {
@@ -2930,6 +2958,10 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
             r.createWindowContainer();
         }
         task.setFrontOfTask();
+        if (mActivityTrigger != null) {
+            mActivityTrigger.activityStartTrigger(r.intent, r.info, r.appInfo,
+                    r.getTask().mFullscreen);
+        }
 
         if (!isHomeOrRecentsStack() || numActivities() > 0) {
             if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION,
@@ -3524,6 +3556,9 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
                 r.state = STOPPING;
                 if (DEBUG_VISIBILITY) Slog.v(TAG_VISIBILITY,
                         "Stopping visible=" + r.visible + " for " + r);
+                if (mActivityTrigger != null) {
+                    mActivityTrigger.activityStopTrigger(r.intent, r.info, r.appInfo);
+                }
                 if (!r.visible) {
                     r.setVisible(false);
                 }

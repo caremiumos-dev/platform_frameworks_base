@@ -81,6 +81,7 @@ import android.util.Log;
 import android.util.LongSparseLongArray;
 import android.util.Pools.SynchronizedPool;
 import android.util.Property;
+import android.util.SeempLog;
 import android.util.SparseArray;
 import android.util.StateSet;
 import android.util.SuperNotCalledException;
@@ -11757,6 +11758,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         final int actionMasked = event.getActionMasked();
         if (actionMasked == MotionEvent.ACTION_DOWN) {
+            SeempLog.record(3);
             // Defensive cleanup for new gesture
             stopNestedScroll();
         }
@@ -12404,6 +12406,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param event the KeyEvent object that defines the button action
      */
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        SeempLog.record(4);
         if (KeyEvent.isConfirmKey(keyCode)) {
             if ((mViewFlags & ENABLED_MASK) == DISABLED) {
                 return true;
@@ -12456,6 +12459,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param event   The KeyEvent object that defines the button action.
      */
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        SeempLog.record(5);
         if (KeyEvent.isConfirmKey(keyCode)) {
             if ((mViewFlags & ENABLED_MASK) == DISABLED) {
                 return true;
@@ -12970,6 +12974,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @return True if the event was handled, false otherwise.
      */
     public boolean onTouchEvent(MotionEvent event) {
+        SeempLog.record(3);
         final float x = event.getX();
         final float y = event.getY();
         final int viewFlags = mViewFlags;
@@ -16678,6 +16683,30 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
     }
 
+    /**
+     * Returns the intrinsic height of the current vertical scrollbar track, or
+     * 0 when no custom scrollbar is installed.
+     */
+    private int getVerticalScrollbarHeight() {
+        final ScrollabilityCache cache = mScrollCache;
+        final ScrollBarDrawable scrollBar = cache != null ? cache.scrollBar : null;
+        if (scrollBar == null) {
+            return 0;
+        }
+        return scrollBar.getVerticalTrackHeight();
+    }
+
+    /**
+     * Whether the view is using the default scrollbar metrics. A non-default
+     * (short) scrollbar is laid out with a fixed top padding.
+     */
+    private boolean isDefScrollbar() {
+        final ScrollabilityCache cache = mScrollCache;
+        final ScrollBarDrawable scrollBar = cache != null ? cache.scrollBar : null;
+        return scrollBar == null
+                || scrollBar.getVerticalThumbWidth() == 8;
+    }
+
     private void getRoundVerticalScrollBarBounds(Rect bounds) {
         final int width = mRight - mLeft;
         final int height = mBottom - mTop;
@@ -16695,6 +16724,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         if (bounds == null) {
             return;
         }
+        final boolean isDefScrollbar = isDefScrollbar();
         final int inside = (mViewFlags & SCROLLBARS_OUTSIDE_MASK) == 0 ? ~0 : 0;
         final int size = getVerticalScrollbarWidth();
         int verticalScrollbarPosition = mVerticalScrollbarPosition;
@@ -16703,7 +16733,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     SCROLLBAR_POSITION_LEFT : SCROLLBAR_POSITION_RIGHT;
         }
         final int width = mRight - mLeft;
-        final int height = mBottom - mTop;
+        final int bottom;
+        if (isDefScrollbar) {
+            bottom = mBottom - mTop;
+        } else {
+            bottom = getVerticalScrollbarHeight() + mScrollCache.scrollBarPaddingTop;
+        }
         switch (verticalScrollbarPosition) {
             default:
             case SCROLLBAR_POSITION_RIGHT:
@@ -16713,9 +16748,13 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 bounds.left = mScrollX + (mUserPaddingLeft & inside);
                 break;
         }
-        bounds.top = mScrollY + (mPaddingTop & inside);
+        if (isDefScrollbar) {
+            bounds.top = mScrollY + (mPaddingTop & inside);
+        } else {
+            bounds.top = mScrollY + (mPaddingTop & inside) + mScrollCache.scrollBarPaddingTop;
+        }
         bounds.right = bounds.left + size;
-        bounds.bottom = mScrollY + height - (mUserPaddingBottom & inside);
+        bounds.bottom = bottom + mScrollY - (inside & mUserPaddingBottom);
 
         if (touchBounds == null) {
             return;
@@ -16825,6 +16864,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     scrollBar.setParameters(computeVerticalScrollRange(),
                             computeVerticalScrollOffset(),
                             computeVerticalScrollExtent(), true);
+                    scrollBar.setOverScrollStatus(false,
+                            ViewConfiguration.get(mContext).getScaledOverscrollDistance());
                     final Rect bounds = cache.mScrollBarBounds;
                     getVerticalScrollBarBounds(bounds, null);
                     onDrawVerticalScrollBar(canvas, scrollBar, bounds.left, bounds.top,
@@ -25640,6 +25681,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         public ScrollBarDrawable scrollBar;
         public float[] interpolatorValues;
         public View host;
+
+        // XTC: top padding applied to a non-default (short) vertical scrollbar.
+        public final int scrollBarPaddingTop = 34;
 
         public final Paint paint;
         public final Matrix matrix;

@@ -147,8 +147,11 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.service.voice.IVoiceInteractionSession;
+import android.util.BoostFramework;
 import android.util.EventLog;
 import android.util.Log;
+
+import java.util.LinkedHashMap;
 import android.util.MergedConfiguration;
 import android.util.Slog;
 import android.util.TimeUtils;
@@ -292,6 +295,9 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
                                         // process that it is hidden.
     boolean sleeping;       // have we told the activity to sleep?
     boolean nowVisible;     // is this activity's window visible?
+    // XTC/QTI: set while the activity is being resumed but its window is not yet visible;
+    // cleared in onWindowsVisible()/onWindowsGone(). Used to defer service restarts.
+    boolean launching;
     boolean idle;           // has the activity gone idle?
     boolean hasBeenLaunched;// has this activity ever been launched?
     boolean frozenBeforeDestroy;// has been frozen but not yet destroyed.
@@ -315,6 +321,13 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
     static final int STARTING_WINDOW_REMOVED = 2;
     int mStartingWindowState = STARTING_WINDOW_NOT_SHOWN;
     boolean mTaskOverlay = false; // Task is always on-top of other activities in the task.
+
+    // XTC/QTI 性能遥测（BoostFramework）。
+    public static BoostFramework mPerfFirstDraw = null;
+    public BoostFramework mPerf_iop = null;
+    int perfActivityBoostHandler = -1;
+    public BoostFramework mUxPerf = new BoostFramework();
+    private BoostFramework mPerf;
 
     boolean mUpdateTaskThumbnailWhenHidden;
 
@@ -917,6 +930,38 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
 
         mShowWhenLocked = (aInfo.flags & FLAG_SHOW_WHEN_LOCKED) != 0;
         mTurnScreenOn = (aInfo.flags & FLAG_TURN_SCREEN_ON) != 0;
+        if (mPerf == null) {
+            mPerf = new BoostFramework();
+        }
+    }
+
+    /**
+     * XTC 差异：回到桌面时通过 BoostFramework UXEngine 触发「空应用」预加载，
+     * 由 {@link ActivityManagerService#startActivityAsUserEmpty} 拉起其进程。
+     */
+    private class PreferredAppsTask extends android.os.AsyncTask<Void, Void, Void> {
+        private PreferredAppsTask() {
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            String trigger;
+            if (mUxPerf == null || (trigger = mUxPerf.perfUXEngine_trigger(1)) == null) {
+                return null;
+            }
+            String[] split = trigger.split("/");
+            if (split.length != 0) {
+                ArrayList<String> list = new ArrayList<>(Arrays.asList(split));
+                Bundle bundle = new Bundle();
+                if (bundle == null) {
+                    return null;
+                }
+                bundle.putStringArrayList("start_empty_apps", list);
+                service.startActivityAsUserEmpty(null, null, intent, null, null, null, 0, 0,
+                        null, bundle, 0);
+            }
+            return null;
+        }
     }
 
     AppWindowContainerController getWindowContainerController() {
@@ -1585,7 +1630,7 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
 
     void setVisibility(boolean visible) {
         mWindowContainerController.setVisibility(visible, mDeferHidingClient);
-        mStackSupervisor.mActivityMetricsLogger.notifyVisibilityChanged(this, visible);
+        mStackSupervisor.mActivityMetricsLogger.notifyVisibilityChanged(this);
     }
 
     // TODO: Look into merging with #setVisibility()
@@ -1708,6 +1753,12 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
             ProcessRecord app = task.mActivities.get(0).app;
             if (app != null && app != service.mHomeProcess) {
                 service.mHomeProcess = app;
+            }
+            // XTC 差异：回到桌面时预加载「空应用」（mUxPerf 触发）。
+            try {
+                new PreferredAppsTask().execute();
+            } catch (Exception e) {
+                Log.v(TAG, "Exception: " + e);
             }
         }
 
@@ -1884,6 +1935,23 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
         fullyDrawnStartTime = 0;
     }
 
+    /**
+     * XTC/厂商扩展：把 Activity 启动耗时上报给厂商行为服务 XtcBehavior。
+     */
+    private void doActivityTimeBehavior(long timeMs) {
+        if (service == null) {
+            Log.d(TAG, "doActivityTimeBehavior but AMS is null.");
+            return;
+        }
+        LinkedHashMap<String, String> data = new LinkedHashMap<>();
+        data.put("type", "app_activity_time");
+        data.put("time", String.valueOf(timeMs));
+        data.put("packageName", packageName);
+        data.put("data", shortComponentName);
+        new com.xtc.behavior.XtcBehavior.Builder(service.mContext, "fw_time_monitor", data)
+                .build().sendData();
+    }
+
     private void reportLaunchTimeLocked(final long curTime) {
         final ActivityStack stack = getStack();
         if (stack == null) {
@@ -1907,15 +1975,44 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
                 sb.append(" (total ");
                 TimeUtils.formatDuration(totalTime, sb);
                 sb.append(")");
+                if (mUxPerf != null) {
+                    mUxPerf.perfUXEngine_events(3, 0, packageName, (int) totalTime);
+                }
+            } else if (mUxPerf != null) {
+                mUxPerf.perfUXEngine_events(3, 0, packageName, (int) thisTime);
             }
             Log.i(TAG, sb.toString());
         }
+        // XTC/QTI 性能遥测：I/O 预取、启动耗时上报、首帧提示、perf lock 释放。
+        if (mPerf_iop == null) {
+            mPerf_iop = new BoostFramework();
+        }
+        if (mPerf_iop != null && app != null) {
+            mPerf_iop.perfIOPrefetchStart(app.pid, packageName,
+                    appInfo.sourceDir.substring(0, appInfo.sourceDir.lastIndexOf(47)));
+        }
+        if (app != null && app.thread != null) {
+            try {
+                app.thread.reportActivityLaunchTimeLocked(shortComponentName, thisTime);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
         mStackSupervisor.reportActivityLaunchedLocked(false, this, thisTime, totalTime);
-        if (totalTime > 0) {
-            //service.mUsageStatsService.noteLaunchTime(realActivity, (int)totalTime);
+        doActivityTimeBehavior(thisTime);
+        if (mPerfFirstDraw == null) {
+            mPerfFirstDraw = new BoostFramework();
+        }
+        if (mPerfFirstDraw != null) {
+            mPerfFirstDraw.perfHint(4162, info.packageName, (int) thisTime, 1);
         }
         displayStartTime = 0;
         stack.mLaunchStartTime = 0;
+        if (mPerf == null || perfActivityBoostHandler <= 0) {
+            return;
+        }
+        mPerf.perfLockReleaseHandler(perfActivityBoostHandler);
+        perfActivityBoostHandler = -1;
     }
 
     @Override
@@ -1949,6 +2046,7 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
             if (DEBUG_SWITCH) Log.v(TAG_SWITCH, "windowsVisibleLocked(): " + this);
             if (!nowVisible) {
                 nowVisible = true;
+                launching = false;
                 lastVisibleTime = SystemClock.uptimeMillis();
                 if (idle || mStackSupervisor.isStoppingNoHistoryActivity()) {
                     // If this activity was already idle or there is an activity that must be
@@ -1981,6 +2079,7 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
         synchronized (service) {
             if (DEBUG_SWITCH) Log.v(TAG_SWITCH, "windowsGone(): " + this);
             nowVisible = false;
+            launching = false;
         }
     }
 

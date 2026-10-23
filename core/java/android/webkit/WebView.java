@@ -70,6 +70,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Map;
 
+import java.net.URL;
+import java.util.LinkedHashMap;
+
 /**
  * <p>A View that displays web pages. This class is the basis upon which you
  * can roll your own web browser or simply display some online content within your Activity.
@@ -931,6 +934,10 @@ public class WebView extends AbsoluteLayout
      */
     public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
         checkThread();
+        // XTC: block URLs not present in the vendor network white-list.
+        if (!checkUrl(url)) {
+            throw new RuntimeException(new Throwable("Unsupported URL"));
+        }
         mProvider.loadUrl(url, additionalHttpHeaders);
     }
 
@@ -943,6 +950,10 @@ public class WebView extends AbsoluteLayout
      */
     public void loadUrl(String url) {
         checkThread();
+        // XTC: block URLs not present in the vendor network white-list.
+        if (!checkUrl(url)) {
+            throw new RuntimeException(new Throwable("Unsupported URL"));
+        }
         mProvider.loadUrl(url);
     }
 
@@ -957,6 +968,10 @@ public class WebView extends AbsoluteLayout
      */
     public void postUrl(String url, byte[] postData) {
         checkThread();
+        // XTC: block URLs not present in the vendor network white-list.
+        if (!checkUrl(url)) {
+            throw new RuntimeException(new Throwable("Unsupported URL"));
+        }
         if (URLUtil.isNetworkUrl(url)) {
             mProvider.postUrl(url, postData);
         } else {
@@ -2548,6 +2563,80 @@ public class WebView extends AbsoluteLayout
             if (sEnforceThreadChecking) {
                 throw new RuntimeException(throwable);
             }
+        }
+    }
+
+    /**
+     * XTC/厂商扩展：URL 网络白名单校验，并（在模块开关打开时）把加载的 URL 上报给厂商行为服务。
+     *
+     * 谴责：该方法会在模块开关 3499 打开时把用户浏览的 URL 上报给厂商 XtcBehavior，
+     * 并在模块开关 3457 打开时阻断不在白名单内的域名。此处忠实复现设备行为。
+     */
+    private boolean checkUrl(String url) {
+        if (url.startsWith("http://localhost") || url.startsWith("http://127.0.0.1")) {
+            Log.d(LOGTAG, "local address " + url);
+            return true;
+        }
+        String domainName = getDomainName(url);
+        if (domainName == null) {
+            Log.d(LOGTAG, "this url is not normal");
+            return true;
+        }
+        if (url.startsWith("javascript")) {
+            Log.d(LOGTAG, "javascript  return=" + url);
+            return true;
+        }
+        String netWhite = webviewGetNetWhite();
+        if (netWhite.equals("null")) {
+            return true;
+        }
+        boolean inWhiteList = netWhite.contains(domainName);
+        boolean reportEnabled =
+                com.xtc.moduleswitch.ModuleSwitch.queryModuleSwitch(getContext(), 3499, true);
+        if (!inWhiteList && reportEnabled) {
+            saveLoadURl(url);
+        }
+        if (!com.xtc.moduleswitch.ModuleSwitch.queryModuleSwitch(getContext(), 3457, false)
+                || inWhiteList) {
+            return true;
+        }
+        Log.d(LOGTAG, "SystemSecurity unsupport url " + url);
+        return false;
+    }
+
+    private String getDomainName(String url) {
+        try {
+            String host = new URL(url).getHost();
+            return host.startsWith("www.") ? host.substring(4) : host;
+        } catch (Exception e) {
+            Log.d(LOGTAG, "SystemSecurity getDomainName url exception");
+            return null;
+        }
+    }
+
+    private void saveLoadURl(String url) {
+        Log.d(LOGTAG, "saveLoadURl");
+        LinkedHashMap<String, String> data = new LinkedHashMap<>();
+        data.put("url", url);
+        data.put("package_name", getContext().getBasePackageName());
+        new com.xtc.behavior.XtcBehavior.Builder(getContext(), "webview_load_url", data)
+                .dataCollectLevel(com.xtc.behavior.XtcBehaviorDataLevel.A)
+                .build()
+                .sendData();
+    }
+
+    /**
+     * XTC/厂商扩展：返回厂商下发的网络白名单。
+     */
+    public static String webviewGetNetWhite() {
+        IWebViewUpdateService updateService = WebViewFactory.getUpdateService();
+        if (updateService == null) {
+            return "null";
+        }
+        try {
+            return updateService.getNetWhiteList();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 

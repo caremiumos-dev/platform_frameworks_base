@@ -91,6 +91,8 @@ public class BootReceiver extends BroadcastReceiver {
     // example: fs_stat,/dev/block/platform/soc/by-name/userdata,0x5
     private static final String FS_STAT_PATTERN = "fs_stat,[^,]*/([^/,]+),(0x[0-9a-fA-F]+)";
     private static final int FS_STAT_FS_FIXED = 0x400; // should match with fs_mgr.cpp:FsStatFlags
+    // XTC 差异：fs_stat bit 0x8 表示文件系统非正常关机。
+    private static final int FS_STAT_UNCLEAN_SHUTDOWN = 8;
     private static final String FSCK_PASS_PATTERN = "Pass ([1-9]E?):";
     private static final String FSCK_TREE_OPTIMIZATION_PATTERN =
             "Inode [0-9]+ extent tree.*could be shorter";
@@ -360,6 +362,13 @@ public class BootReceiver extends BroadcastReceiver {
             } else if (line.contains("fs_stat")){
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
+                    // XTC 差异：文件系统非正常关机（fs_stat bit 0x8）也触发 dropbox 上传。
+                    int stat = Integer.decode(matcher.group(2)).intValue();
+                    if ((stat & FS_STAT_UNCLEAN_SHUTDOWN) != 0) {
+                        Slog.i(TAG, "file system unclean shutdown, fs_stat:0x"
+                                + Integer.toHexString(stat));
+                        uploadNeeded = true;
+                    }
                     handleFsckFsStat(matcher, lines, lastFsStatLineNumber, lineNumber);
                     lastFsStatLineNumber = lineNumber;
                 } else {

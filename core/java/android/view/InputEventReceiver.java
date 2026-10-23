@@ -34,6 +34,8 @@ public abstract class InputEventReceiver {
 
     private final CloseGuard mCloseGuard = CloseGuard.get();
 
+    private Choreographer mChoreographer;
+
     private long mReceiverPtr;
 
     // We keep references to the input channel and message queue objects here so that
@@ -190,6 +192,22 @@ public abstract class InputEventReceiver {
     @SuppressWarnings("unused")
     private void dispatchBatchedInputEventPending() {
         onBatchedInputEventPending();
+    }
+
+    // Called from native code. Reports the current motion event type / touch move count
+    // to the Choreographer for the QTI input-optimization frame scheduling.
+    @SuppressWarnings("unused")
+    private void dispatchMotionEventInfo(int motionEventType, int touchMoveNum) {
+        try {
+            if (mChoreographer == null) {
+                mChoreographer = Choreographer.getInstance();
+            }
+            if (mChoreographer != null) {
+                mChoreographer.setMotionEventInfo(motionEventType, touchMoveNum);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "cannot invoke setMotionEventInfo.");
+        }
     }
 
     public static interface Factory {

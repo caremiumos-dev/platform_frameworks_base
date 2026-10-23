@@ -45,6 +45,7 @@ import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.util.SeempLog;
 import android.view.View;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -1623,6 +1624,7 @@ public final class ContactsContract {
          *            {@link #CONTENT_LOOKUP_URI} to attempt refreshing.
          */
         public static Uri getLookupUri(ContentResolver resolver, Uri contactUri) {
+            SeempLog.record(86);
             final Cursor c = resolver.query(contactUri, new String[] {
                     Contacts.LOOKUP_KEY, Contacts._ID
             }, null, null, null);
@@ -1650,6 +1652,7 @@ public final class ContactsContract {
          * provided parameters.
          */
         public static Uri getLookupUri(long contactId, String lookupKey) {
+            SeempLog.record(86);
             if (TextUtils.isEmpty(lookupKey)) {
                 return null;
             }
@@ -1663,6 +1666,7 @@ public final class ContactsContract {
          * Returns null if the contact cannot be found.
          */
         public static Uri lookupContact(ContentResolver resolver, Uri lookupUri) {
+            SeempLog.record(87);
             if (lookupUri == null) {
                 return null;
             }
@@ -2132,6 +2136,7 @@ public final class ContactsContract {
          */
         public static InputStream openContactPhotoInputStream(ContentResolver cr, Uri contactUri,
                 boolean preferHighres) {
+            SeempLog.record(88);
             if (preferHighres) {
                 final Uri displayPhotoUri = Uri.withAppendedPath(contactUri,
                         Contacts.Photo.DISPLAY_PHOTO);
@@ -2180,6 +2185,7 @@ public final class ContactsContract {
          * of the thumbnail the high-res picture is preferred
          */
         public static InputStream openContactPhotoInputStream(ContentResolver cr, Uri contactUri) {
+            SeempLog.record(88);
             return openContactPhotoInputStream(cr, contactUri, false);
         }
     }
@@ -2877,6 +2883,7 @@ public final class ContactsContract {
          * entry of the given {@link RawContacts} entry.
          */
         public static Uri getContactLookupUri(ContentResolver resolver, Uri rawContactUri) {
+            SeempLog.record(89);
             // TODO: use a lighter query by joining rawcontacts with contacts in provider
             final Uri dataUri = Uri.withAppendedPath(rawContactUri, Data.CONTENT_DIRECTORY);
             final Cursor cursor = resolver.query(dataUri, new String[] {
@@ -4835,6 +4842,7 @@ public final class ContactsContract {
          * </p>
          */
         public static Uri getContactLookupUri(ContentResolver resolver, Uri dataUri) {
+            SeempLog.record(89);
             final Cursor cursor = resolver.query(dataUri, new String[] {
                     RawContacts.CONTACT_ID, Contacts.LOOKUP_KEY
             }, null, null, null);

@@ -94,6 +94,8 @@ public class MediaRecorder
     private String mPath;
     private FileDescriptor mFd;
     private File mFile;
+    // CAF/XTC 差异：记录本次是否设置了视频源，供 prepare() 子权限门禁判断。
+    private boolean mIsVideoRecord = false;
     private EventHandler mEventHandler;
     private OnErrorListener mOnErrorListener;
     private OnInfoListener mOnInfoListener;
@@ -504,7 +506,15 @@ public class MediaRecorder
      * @throws IllegalStateException if it is called after setOutputFormat()
      * @see android.media.MediaRecorder.VideoSource
      */
-    public native void setVideoSource(int video_source)
+    public void setVideoSource(int video_source)
+            throws IllegalStateException {
+        // CAF/XTC 差异：记录本次是否为视频录制，供 prepare() 的子权限门禁使用。
+        mIsVideoRecord = true;
+        Log.d(TAG, "setVideoSource");
+        _setVideoSource(video_source);
+    }
+
+    private native void _setVideoSource(int video_source)
             throws IllegalStateException;
 
     /**
@@ -641,7 +651,21 @@ public class MediaRecorder
      * @throws IllegalStateException if it is called after
      * prepare() or before setOutputFormat()
      */
-    public native void setVideoSize(int width, int height)
+    public void setVideoSize(int width, int height)
+            throws IllegalStateException {
+        // CAF/XTC 差异：对 com.cttl 强制 320x240（差别对待第三方包，已谴责）。
+        String packageName = ActivityThread.currentOpPackageName();
+        Log.i(TAG, "setVideoSize: packageName =" + packageName + ",  width=" + width
+                + ", height=" + height);
+        if (packageName == null || !packageName.startsWith("com.cttl")) {
+            _setVideoSize(width, height);
+        } else {
+            Log.i(TAG, "com.cttl video size set 320X240");
+            _setVideoSize(320, 240);
+        }
+    }
+
+    private native void _setVideoSize(int width, int height)
             throws IllegalStateException;
 
     /**
@@ -712,7 +736,22 @@ public class MediaRecorder
      * setOutputFormat() or after prepare()
      * @see android.media.MediaRecorder.VideoEncoder
      */
-    public native void setVideoEncoder(int video_encoder)
+    public void setVideoEncoder(int video_encoder)
+            throws IllegalStateException {
+        // CAF/XTC 差异：对 com.cttl/com.tsinghua 强制 H264（差别对待第三方包，已谴责）。
+        String packageName = ActivityThread.currentOpPackageName();
+        Log.i(TAG, "setVideoEncoder: packageName =" + packageName + ", video_encoder ="
+                + video_encoder);
+        if (packageName == null || !(packageName.startsWith("com.cttl")
+                || packageName.startsWith("com.tsinghua"))) {
+            _setVideoEncoder(video_encoder);
+        } else {
+            Log.i(TAG, "com.cttl video encoder set H264");
+            _setVideoEncoder(2);
+        }
+    }
+
+    private native void _setVideoEncoder(int video_encoder)
             throws IllegalStateException;
 
     /**
@@ -941,6 +980,32 @@ public class MediaRecorder
      */
     public void prepare() throws IllegalStateException, IOException
     {
+        // CAF/XTC 差异：对 com.cttl/com.tsinghua 增加 MobileManager 私有子权限门禁
+        // （OPEN_CAMERA/RECORD_MIC），拒绝则 killCallingPid——**已谴责**：绕过公开权限模型。
+        if (com.xtc.auth.MobileManagerUtils.isSupported()) {
+            Log.d(TAG, "prepare>>>: check permission");
+            int callingUid = android.os.Binder.getCallingUid();
+            int callingPid = android.os.Binder.getCallingPid();
+            String packageName = ActivityThread.currentOpPackageName();
+            Log.i(TAG, "prepare(): packageName =" + packageName + ", pid =" + callingPid
+                    + ", uid =" + callingUid);
+            if (mIsVideoRecord && packageName != null
+                    && (packageName.startsWith("com.cttl")
+                    || packageName.startsWith("com.tsinghua"))) {
+                String permission = mIsVideoRecord
+                        ? com.xtc.auth.SubPermissions.OPEN_CAMERA
+                        : com.xtc.auth.SubPermissions.RECORD_MIC;
+                if (!com.xtc.auth.MobileManagerUtils.checkPermission(permission, callingUid)) {
+                    Log.d(TAG, "prepare<<<: user denied permission " + permission
+                            + " for uid " + callingUid);
+                    com.xtc.auth.MobileManagerUtils.killCallingPid("User denied permission "
+                            + permission + " for uid " + callingUid);
+                    return;
+                }
+                Log.d(TAG, "prepare<<<: user granted permission " + permission
+                        + " for uid " + callingUid);
+            }
+        }
         if (mPath != null) {
             RandomAccessFile file = new RandomAccessFile(mPath, "rws");
             try {

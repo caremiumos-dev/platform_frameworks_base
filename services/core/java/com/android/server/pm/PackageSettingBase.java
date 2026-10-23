@@ -110,6 +110,9 @@ abstract class PackageSettingBase extends SettingBase {
 
     boolean uidError;
 
+    boolean isThirdPartyApp;
+    boolean isIFAC;
+
     PackageSignatures signatures;
 
     boolean installPermissionsFixed;
@@ -252,6 +255,8 @@ abstract class PackageSettingBase extends SettingBase {
         installStatus = orig.installStatus;
         installerPackageName = orig.installerPackageName;
         isOrphaned = orig.isOrphaned;
+        isThirdPartyApp = orig.isThirdPartyApp;
+        isIFAC = orig.isIFAC;
         keySetData = orig.keySetData;
         lastUpdateTime = orig.lastUpdateTime;
         legacyNativeLibraryPathString = orig.legacyNativeLibraryPathString;

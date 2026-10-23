@@ -28,6 +28,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.text.TextUtils;
@@ -621,6 +622,12 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     public static final String METADATA_PRELOADED_FONTS = "preloaded_fonts";
 
     /**
+     * XTC bbk_traffic: name of the meta-data holding the socket counter tag
+     * applied to traffic from this application.
+     */
+    public static final String METADATA_XTC_TRAFFIC_TAG = "com.xtc.traffic.socket.tag";
+
+    /**
      * The required smallest screen width the application can run on.  If 0,
      * nothing has been specified.  Comes from
      * {@link android.R.styleable#AndroidManifestSupportsScreens_requiresSmallestWidthDp
@@ -767,7 +774,13 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * the structure.
      */
     public String[] sharedLibraryFiles;
-    
+
+    /**
+     * Paths to all shared Java libraries this application is linked against.
+     * @hide
+     */
+    public String[] sharedJavaLibraryFiles;
+
     /**
      * Full path to the default directory assigned to the package for its
      * persistent data.
@@ -880,6 +893,37 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * @hide
      */
     public int versionCode;
+
+    /**
+     * Whether this application was installed via adb.
+     * @hide
+     */
+    public boolean isInstallFromAdb;
+
+    /**
+     * Whether this application is signed with one of the platform's system
+     * signing certificates.
+     * @hide
+     */
+    public boolean isSystemSignature;
+
+    /**
+     * Overlay resource override for this application, or 0 if none.
+     * @hide
+     */
+    public int overrideRes;
+
+    /**
+     * Density override for this application, or 0 if none.
+     * @hide
+     */
+    public int overrideDensity;
+
+    /**
+     * Whether this application is whitelisted (1) or not (0).
+     * @hide
+     */
+    public int whiteListed;
 
     /**
      * When false, indicates that all components within this application are
@@ -1095,6 +1139,10 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
             if (sharedLibraryFiles != null) {
                 pw.println(prefix + "sharedLibraryFiles=" + Arrays.toString(sharedLibraryFiles));
             }
+            if (sharedJavaLibraryFiles != null) {
+                pw.println(prefix + "sharedJavaLibraryFiles="
+                        + Arrays.toString(sharedJavaLibraryFiles));
+            }
         }
         if (classLoaderName != null) {
             pw.println(prefix + "classLoaderName=" + classLoaderName);
@@ -1173,6 +1221,11 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     }
 
     public ApplicationInfo() {
+        overrideRes = 0;
+        overrideDensity = 0;
+        whiteListed = 0;
+        isSystemSignature = true;
+        isInstallFromAdb = false;
     }
     
     public ApplicationInfo(ApplicationInfo orig) {
@@ -1227,6 +1280,12 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         targetSandboxVersion = orig.targetSandboxVersion;
         classLoaderName = orig.classLoaderName;
         splitClassLoaderNames = orig.splitClassLoaderNames;
+        overrideRes = orig.overrideRes;
+        overrideDensity = orig.overrideDensity;
+        whiteListed = orig.whiteListed;
+        isSystemSignature = orig.isSystemSignature;
+        isInstallFromAdb = orig.isInstallFromAdb;
+        sharedJavaLibraryFiles = orig.sharedJavaLibraryFiles;
     }
 
     public String toString() {
@@ -1249,6 +1308,9 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         dest.writeInt(theme);
         dest.writeInt(flags);
         dest.writeInt(privateFlags);
+        dest.writeInt(overrideRes);
+        dest.writeInt(overrideDensity);
+        dest.writeInt(whiteListed);
         dest.writeInt(requiresSmallestWidthDp);
         dest.writeInt(compatibleWidthLimitDp);
         dest.writeInt(largestWidthLimitDp);
@@ -1277,6 +1339,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         dest.writeString(seInfo);
         dest.writeString(seInfoUser);
         dest.writeStringArray(sharedLibraryFiles);
+        dest.writeStringArray(sharedJavaLibraryFiles);
         dest.writeString(dataDir);
         dest.writeString(deviceProtectedDataDir);
         dest.writeString(credentialProtectedDataDir);
@@ -1297,6 +1360,8 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         dest.writeInt(targetSandboxVersion);
         dest.writeString(classLoaderName);
         dest.writeStringArray(splitClassLoaderNames);
+        dest.writeInt(isSystemSignature ? 1 : 0);
+        dest.writeInt(isInstallFromAdb ? 1 : 0);
     }
 
     public static final Parcelable.Creator<ApplicationInfo> CREATOR
@@ -1319,6 +1384,9 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         theme = source.readInt();
         flags = source.readInt();
         privateFlags = source.readInt();
+        overrideRes = source.readInt();
+        overrideDensity = source.readInt();
+        whiteListed = source.readInt();
         requiresSmallestWidthDp = source.readInt();
         compatibleWidthLimitDp = source.readInt();
         largestWidthLimitDp = source.readInt();
@@ -1344,6 +1412,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         seInfo = source.readString();
         seInfoUser = source.readString();
         sharedLibraryFiles = source.readStringArray();
+        sharedJavaLibraryFiles = source.readStringArray();
         dataDir = source.readString();
         deviceProtectedDataDir = source.readString();
         credentialProtectedDataDir = source.readString();
@@ -1364,6 +1433,8 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         targetSandboxVersion = source.readInt();
         classLoaderName = source.readString();
         splitClassLoaderNames = source.readStringArray();
+        isSystemSignature = source.readInt() != 0;
+        isInstallFromAdb = source.readInt() != 0;
     }
 
     /**
@@ -1515,6 +1586,47 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     /** @hide */
     public boolean isEncryptionAware() {
         return isDirectBootAware() || isPartiallyDirectBootAware();
+    }
+
+    /** @hide */
+    public int canOverrideRes() {
+        return overrideRes;
+    }
+
+    /** @hide */
+    public int getOverrideDensity() {
+        return overrideDensity;
+    }
+
+    /** @hide */
+    public void setOverrideRes(int res) {
+        overrideRes = res;
+    }
+
+    /** @hide */
+    public void setOverrideDensity(int density) {
+        overrideDensity = density;
+    }
+
+    /** @hide */
+    public void setAppOverrideDensity() {
+        int density;
+        String densityStr = SystemProperties.get("persist.vendor.qti.debug.appdensity");
+        if (densityStr == null || densityStr.isEmpty()
+                || (density = Integer.parseInt(densityStr)) < 120 || density > 480) {
+            density = 0;
+        }
+        setOverrideDensity(density);
+    }
+
+    /** @hide */
+    public boolean isAppWhiteListed() {
+        return whiteListed == 1;
+    }
+
+    /** @hide */
+    public void setAppWhiteListed(int whiteListed) {
+        this.whiteListed = whiteListed;
     }
 
     /**

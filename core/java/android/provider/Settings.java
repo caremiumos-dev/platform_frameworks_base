@@ -71,6 +71,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.MemoryIntArray;
+import android.util.SeempLog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.ArrayUtils;
@@ -2233,6 +2234,7 @@ public final class Settings {
         /** @hide */
         public static String getStringForUser(ContentResolver resolver, String name,
                 int userHandle) {
+            SeempLog.record(SeempLog.getSeempGetApiIdFromValue(name));
             if (MOVED_TO_SECURE.contains(name)) {
                 Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
                         + " to android.provider.Settings.Secure, returning read-only value.");
@@ -2260,6 +2262,7 @@ public final class Settings {
         /** @hide */
         public static boolean putStringForUser(ContentResolver resolver, String name, String value,
                 int userHandle) {
+            SeempLog.record(SeempLog.getSeempPutApiIdFromValue(name));
             if (MOVED_TO_SECURE.contains(name)) {
                 Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
                         + " to android.provider.Settings.Secure, value is unchanged.");
@@ -2575,6 +2578,8 @@ public final class Settings {
             if (outConfig.fontScale < 0) {
                 outConfig.fontScale = DEFAULT_FONT_SCALE;
             }
+            outConfig.customFontPath = Settings.System.getStringForUser(
+                    cr, CUSTOM_FONT_PATH, userHandle);
 
             final String localeValue =
                     Settings.System.getStringForUser(cr, SYSTEM_LOCALES, userHandle);
@@ -3006,6 +3011,21 @@ public final class Settings {
                 } catch (NumberFormatException e) {
                     return false;
                 }
+            }
+        };
+
+        /**
+         * Path to a custom font or font-family XML file to use as the system default font.
+         * @hide
+         */
+        public static final String CUSTOM_FONT_PATH = "custom_font_path";
+
+        private static final Validator CUSTOM_FONT_PATH_VALIDATOR = new Validator() {
+            private static final int MAX_LENGTH = 1000;
+
+            @Override
+            public boolean validate(String value) {
+                return value == null || value.length() < MAX_LENGTH;
             }
         };
 
@@ -3956,6 +3976,7 @@ public final class Settings {
             BLUETOOTH_DISCOVERABILITY,
             BLUETOOTH_DISCOVERABILITY_TIMEOUT,
             FONT_SCALE,
+            CUSTOM_FONT_PATH,
             DIM_SCREEN,
             SCREEN_OFF_TIMEOUT,
             SCREEN_BRIGHTNESS,
@@ -4021,6 +4042,7 @@ public final class Settings {
             PUBLIC_SETTINGS.add(BLUETOOTH_DISCOVERABILITY_TIMEOUT);
             PUBLIC_SETTINGS.add(NEXT_ALARM_FORMATTED);
             PUBLIC_SETTINGS.add(FONT_SCALE);
+            PUBLIC_SETTINGS.add(CUSTOM_FONT_PATH);
             PUBLIC_SETTINGS.add(DIM_SCREEN);
             PUBLIC_SETTINGS.add(SCREEN_OFF_TIMEOUT);
             PUBLIC_SETTINGS.add(SCREEN_BRIGHTNESS);
@@ -4117,6 +4139,7 @@ public final class Settings {
                     BLUETOOTH_DISCOVERABILITY_TIMEOUT_VALIDATOR);
             VALIDATORS.put(NEXT_ALARM_FORMATTED, NEXT_ALARM_FORMATTED_VALIDATOR);
             VALIDATORS.put(FONT_SCALE, FONT_SCALE_VALIDATOR);
+            VALIDATORS.put(CUSTOM_FONT_PATH, CUSTOM_FONT_PATH_VALIDATOR);
             VALIDATORS.put(DIM_SCREEN, DIM_SCREEN_VALIDATOR);
             VALIDATORS.put(SCREEN_OFF_TIMEOUT, SCREEN_OFF_TIMEOUT_VALIDATOR);
             VALIDATORS.put(SCREEN_BRIGHTNESS, SCREEN_BRIGHTNESS_VALIDATOR);
@@ -4231,6 +4254,7 @@ public final class Settings {
             INSTANT_APP_SETTINGS.add(TEXT_SHOW_PASSWORD);
             INSTANT_APP_SETTINGS.add(DATE_FORMAT);
             INSTANT_APP_SETTINGS.add(FONT_SCALE);
+            INSTANT_APP_SETTINGS.add(CUSTOM_FONT_PATH);
             INSTANT_APP_SETTINGS.add(HAPTIC_FEEDBACK_ENABLED);
             INSTANT_APP_SETTINGS.add(TIME_12_24);
             INSTANT_APP_SETTINGS.add(SOUND_EFFECTS_ENABLED);

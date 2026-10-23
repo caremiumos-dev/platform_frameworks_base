@@ -457,6 +457,12 @@ final class InputMonitor implements InputManagerService.WindowManagerCallbacks {
                 whenNanos, policyFlags);
     }
 
+    // XTC 差异：委托 PhoneWindowManager 查询 monkey 是否运行。
+    @Override
+    public boolean isMonkeyRunning() {
+        return mService.mPolicy.isMonkeyRunning();
+    }
+
     /* Provides an opportunity for the window manager policy to process a key before
      * ordinary dispatch. */
     @Override

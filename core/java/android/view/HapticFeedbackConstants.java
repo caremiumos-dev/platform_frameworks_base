@@ -77,6 +77,13 @@ public class HapticFeedbackConstants {
     public static final int TEXT_HANDLE_MOVE = 9;
 
     /**
+     * The user long-pressed power to bring up the shutdown dialog.
+     * This is a private XTC constant.
+     * @hide
+     */
+    public static final int LONG_PRESS_SHUTDOWN = 16;
+
+    /**
      * The phone has booted with safe mode enabled.
      * This is a private constant.  Feel free to renumber as desired.
      * @hide

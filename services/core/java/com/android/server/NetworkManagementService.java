@@ -1748,6 +1748,70 @@ public class NetworkManagementService extends INetworkManagementService.Stub
         setUidOnMeteredNetworkList(uid, false, enable);
     }
 
+    /**
+     * XTC xses: deny all network access for a UID.
+     *
+     * <p><b>Condemnation.</b> Enables remote network isolation of a package
+     * chosen by the vendor. See
+     * {@code com.android.server.xgseserver.xss.SystemExceptionManager}.
+     */
+    @Override
+    public boolean setUidDisableNetwork(int uid) {
+        mContext.enforceCallingOrSelfPermission(
+                android.Manifest.permission.CONNECTIVITY_INTERNAL, TAG);
+        Log.d(TAG, "SystemXses setUidDisableNetwork =  " + uid);
+        if (!mBandwidthControlEnabled) {
+            return false;
+        }
+        synchronized (mQuotaLock) {
+            try {
+                NativeDaemonEvent event =
+                        mConnector.execute("bandwidth", "disableuidaccessnet", uid);
+                Log.d(TAG, "SystemXses setUidDisableNetwork event =  " + event.getCode());
+                if (event.getCode() == 200) {
+                    return true;
+                }
+                Log.d(TAG, "SystemXses setUidDisableNetwork faile event = " + event.toString());
+                return false;
+            } catch (NativeDaemonConnectorException e) {
+                Log.d(TAG, "SystemXses setUidDisableNetwork e:" + e);
+                return false;
+            }
+        }
+    }
+
+    /**
+     * XTC xses: deny network access to a specific address.
+     *
+     * <p><b>Condemnation.</b> Enables remote blocking of arbitrary network
+     * addresses chosen by the vendor. See
+     * {@code com.android.server.xgseserver.xss.SystemExceptionManager}.
+     */
+    @Override
+    public boolean setAddressDisableNetwork(String address) {
+        mContext.enforceCallingOrSelfPermission(
+                android.Manifest.permission.CONNECTIVITY_INTERNAL, TAG);
+        Log.d(TAG, "SystemXses setAddressDisableNetwork =  " + address);
+        if (!mBandwidthControlEnabled) {
+            return false;
+        }
+        synchronized (mQuotaLock) {
+            try {
+                NativeDaemonEvent event =
+                        mConnector.execute("bandwidth", "disableaddressaccessnet", address);
+                Log.d(TAG, "SystemXses setAddressDisableNetwork event =  " + event.getCode());
+                if (event.getCode() == 200) {
+                    return true;
+                }
+                Log.d(TAG, "SystemXses setAddressDisableNetwork faile event = " + event.toString());
+                return false;
+            } catch (NativeDaemonConnectorException e) {
+                Log.d(TAG, "SystemXses setAddressDisableNetwork e:" + e);
+                return false;
+            }
+        }
+    }
+
     @Override
     public boolean setDataSaverModeEnabled(boolean enable) {
         if (DBG) Log.d(TAG, "setDataSaverMode: " + enable);
@@ -2025,7 +2089,9 @@ public class NetworkManagementService extends INetworkManagementService.Stub
 
     @Override
     public void setFirewallEnabled(boolean enabled) {
-        enforceSystemUid();
+        // XTC 差异：日志 + 允许 AID_PHONE 调用（放宽权限）。
+        Log.e(TAG, "setFirewallEnabled enable=" + enabled);
+        enforcePhoneOrSystemUid();
         try {
             mConnector.execute("firewall", "enable", enabled ? "whitelist" : "blacklist");
             mFirewallEnabled = enabled;
@@ -2036,8 +2102,26 @@ public class NetworkManagementService extends INetworkManagementService.Stub
 
     @Override
     public boolean isFirewallEnabled() {
-        enforceSystemUid();
+        enforcePhoneOrSystemUid();
         return mFirewallEnabled;
+    }
+
+    // XTC 差异：IM URL 防火墙规则（厂商扩展，已注明放宽到 AID_PHONE）。
+    @Override
+    public void setFirewallImRule(String address, int port, boolean enable) {
+        Log.e(TAG, "00000setFirewallImRule ADDR = " + address + ",port =" + port
+                + ",enable=" + enable);
+        enforcePhoneOrSystemUid();
+        Log.e(TAG, "setFirewallImRule ADDR = " + address + ",port =" + port
+                + ",enable=" + enable);
+        if (!isFirewallEnabled()) {
+            setFirewallEnabled(true);
+        }
+        try {
+            mConnector.execute("firewall", "enable_imurl", address, Integer.valueOf(port));
+        } catch (NativeDaemonConnectorException e) {
+            throw e.rethrowAsParcelableException();
+        }
     }
 
     @Override
@@ -2323,6 +2407,14 @@ public class NetworkManagementService extends INetworkManagementService.Stub
         final int uid = Binder.getCallingUid();
         if (uid != Process.SYSTEM_UID) {
             throw new SecurityException("Only available to AID_SYSTEM");
+        }
+    }
+
+    // XTC 差异：允许 AID_PHONE(1001) 或 AID_SYSTEM(1000) 调用防火墙相关方法。
+    private static void enforcePhoneOrSystemUid() {
+        final int uid = Binder.getCallingUid();
+        if (uid != Process.PHONE_UID && uid != Process.SYSTEM_UID) {
+            throw new SecurityException("Only available to AID_PHONE or AID_SYSTEM");
         }
     }
 

@@ -68,6 +68,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
     private static final String NAME_USB_AUDIO = "usb_audio";
     private static final String NAME_HDMI_AUDIO = "hdmi_audio";
     private static final String NAME_HDMI = "hdmi";
+    private static final String NAME_DP_AUDIO = "soc:qcom,msm-ext-disp";
 
     private static final int MSG_NEW_DEVICE_STATE = 1;
     private static final int MSG_SYSTEM_READY = 2;
@@ -395,6 +396,14 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                 }
             }
 
+            // Monitor DisplayPort audio (QTI extcon).
+            uei = new UEventInfo(NAME_DP_AUDIO, BIT_HDMI_AUDIO, 0, 0);
+            if (uei.checkSwitchExists()) {
+                retVal.add(uei);
+            } else {
+                Slog.w(TAG, "This kernel does not have DP audio support");
+            }
+
             return retVal;
         }
 
@@ -402,21 +411,66 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         public void onUEvent(UEventObserver.UEvent event) {
             if (LOG) Slog.v(TAG, "Headset UEVENT: " + event.toString());
 
+            String devPath = event.get("DEVPATH");
+            String name = event.get("NAME");
+            String switchName = name == null ? event.get("SWITCH_NAME") : name;
+            int state = 0;
             try {
-                String devPath = event.get("DEVPATH");
-                String name = event.get("SWITCH_NAME");
-                int state = Integer.parseInt(event.get("SWITCH_STATE"));
-                synchronized (mLock) {
-                    updateStateLocked(devPath, name, state);
+                // DP audio reports its state as "STATE=<name>=<value>" instead of
+                // SWITCH_STATE.
+                if (switchName.equals(NAME_DP_AUDIO)) {
+                    String stateString = event.get("STATE");
+                    int length = stateString.length();
+                    int i = 0;
+                    while (true) {
+                        if (i >= length) {
+                            state = 0;
+                            break;
+                        }
+                        int equals = stateString.indexOf('=', i);
+                        if (equals > i && stateString.substring(i, equals).equals("DP")) {
+                            state = Integer.parseInt(
+                                    stateString.substring(equals + 1, equals + 2));
+                            break;
+                        }
+                        i = equals + 3;
+                    }
+                } else {
+                    state = Integer.parseInt(event.get("SWITCH_STATE"));
                 }
             } catch (NumberFormatException e) {
-                Slog.e(TAG, "Could not parse switch state from event " + event);
+                Slog.i(TAG, "couldn't get state from event, checking node");
+                for (int i = 0; i < mUEventInfo.size(); i++) {
+                    UEventInfo uei = mUEventInfo.get(i);
+                    if (switchName.equals(uei.getDevName())) {
+                        char[] buffer = new char[1024];
+                        try {
+                            FileReader file = new FileReader(uei.getSwitchStatePath());
+                            int len = file.read(buffer, 0, 1024);
+                            file.close();
+                            state = Integer.parseInt(new String(buffer, 0, len).trim());
+                        } catch (NumberFormatException e4) {
+                            Slog.e(TAG, "could not convert to number");
+                            break;
+                        } catch (FileNotFoundException e5) {
+                            Slog.e(TAG, "file not found");
+                            break;
+                        } catch (Exception e2) {
+                            Slog.e(TAG, "", e2);
+                        }
+                    }
+                }
+            }
+            synchronized (mLock) {
+                updateStateLocked(devPath, switchName, state);
             }
         }
 
         private void updateStateLocked(String devPath, String name, int state) {
             for (int i = 0; i < mUEventInfo.size(); ++i) {
                 UEventInfo uei = mUEventInfo.get(i);
+                Slog.w(TAG, "uei.getDevPath=" + uei.getDevPath());
+                Slog.w(TAG, "uevent.getDevPath=" + devPath);
                 if (devPath.equals(uei.getDevPath())) {
                     updateLocked(name, uei.computeNewHeadsetState(mHeadsetState, state));
                     return;
@@ -425,6 +479,8 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         }
 
         private final class UEventInfo {
+            private int mCableIndex;
+            private int mDevIndex;
             private final String mDevName;
             private final int mState1Bits;
             private final int mState2Bits;
@@ -435,16 +491,72 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                 mState1Bits = state1Bits;
                 mState2Bits = state2Bits;
                 mStateNbits = stateNbits;
+                if (mDevName.equals(NAME_DP_AUDIO)) {
+                    getDevIndex();
+                    getCableIndex();
+                }
+            }
+
+            private void getDevIndex() {
+                char[] buffer = new char[1024];
+                int i = 0;
+                while (true) {
+                    try {
+                        FileReader file = new FileReader(String.format(Locale.US,
+                                "/sys/class/switch/extcon%d/name", i));
+                        int len = file.read(buffer, 0, 1024);
+                        file.close();
+                        if (new String(buffer, 0, len).trim().equals(mDevName)) {
+                            mDevIndex = i;
+                            return;
+                        }
+                        i++;
+                    } catch (FileNotFoundException e) {
+                        return;
+                    } catch (Exception e) {
+                        Slog.e(TAG, "", e);
+                        return;
+                    }
+                }
+            }
+
+            private void getCableIndex() {
+                char[] buffer = new char[1024];
+                int i = 0;
+                while (true) {
+                    try {
+                        FileReader file = new FileReader(String.format(Locale.US,
+                                "/sys/class/switch/extcon%d/cable.%d/name", mDevIndex, i));
+                        int len = file.read(buffer, 0, 1024);
+                        file.close();
+                        if (new String(buffer, 0, len).trim().equals("DP")) {
+                            mCableIndex = i;
+                            return;
+                        }
+                        i++;
+                    } catch (FileNotFoundException e) {
+                        return;
+                    } catch (Exception e) {
+                        Slog.e(TAG, "", e);
+                        return;
+                    }
+                }
             }
 
             public String getDevName() { return mDevName; }
 
             public String getDevPath() {
-                return String.format(Locale.US, "/devices/virtual/switch/%s", mDevName);
+                return mDevName.equals(NAME_DP_AUDIO)
+                        ? String.format(Locale.US, "/devices/platform/soc/%s/extcon/extcon%d",
+                                mDevName, mDevIndex)
+                        : String.format(Locale.US, "/devices/virtual/switch/%s", mDevName);
             }
 
             public String getSwitchStatePath() {
-                return String.format(Locale.US, "/sys/class/switch/%s/state", mDevName);
+                return mDevName.equals(NAME_DP_AUDIO)
+                        ? String.format(Locale.US, "/sys/class/switch/extcon%d/cable.%d/state",
+                                mDevIndex, mCableIndex)
+                        : String.format(Locale.US, "/sys/class/switch/%s/state", mDevName);
             }
 
             public boolean checkSwitchExists() {

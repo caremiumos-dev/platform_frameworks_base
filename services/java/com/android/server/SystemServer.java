@@ -17,6 +17,7 @@
 package com.android.server;
 
 import android.app.ActivityThread;
+import android.app.AntiAddiction.IAntiAddictionManager;
 import android.app.INotificationManager;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
@@ -66,6 +67,14 @@ import com.android.server.camera.CameraServiceProxy;
 import com.android.server.car.CarServiceHelperService;
 import com.android.server.clipboard.ClipboardService;
 import com.android.server.connectivity.IpConnectivityMetrics;
+import com.android.server.performance.PerformanceManagerService;
+import com.android.server.xtcdiag.XtcDiagService;
+import com.android.server.xtcauth.MobileManagerService;
+import com.android.server.xtchealth.XtcHealthService;
+import com.android.server.addiction.AntiAddictionManagerService;
+import com.xtc.performance.PerformanceManager;
+import com.xtc.auth.MobileManagerUtils;
+import com.xtc.xtcdiag.XtcDiagMgr;
 import com.android.server.coverage.CoverageService;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
 import com.android.server.display.DisplayManagerService;
@@ -576,6 +585,12 @@ public final class SystemServer {
             mOnlyCore = true;
         }
 
+        if (com.android.internal.os.RegionalizationEnvironment.isSupported()) {
+            Slog.i(TAG, "Regionalization Service");
+            ServiceManager.addService("regionalization",
+                    new com.android.server.os.RegionalizationService());
+        }
+
         // Start the package manager.
         if (!mRuntimeRestart) {
             MetricsLogger.histogram(null, "boot_package_manager_init_start",
@@ -695,6 +710,7 @@ public final class SystemServer {
         ConsumerIrService consumerIr = null;
         MmsServiceBroker mmsService = null;
         HardwarePropertiesManagerService hardwarePropertiesService = null;
+        XtcDiagService xtcDiagService = null;
 
         boolean disableStorage = SystemProperties.getBoolean("config.disable_storage", false);
         boolean disableBluetooth = SystemProperties.getBoolean("config.disable_bluetooth", false);
@@ -758,6 +774,11 @@ public final class SystemServer {
 
             traceBeginAndSlog("StartSchedulingPolicyService");
             ServiceManager.addService("scheduling_policy", new SchedulingPolicyService());
+            traceEnd();
+
+            traceBeginAndSlog("StartXtcBehaviorService");
+            mSystemServiceManager.startService(
+                    com.android.server.xtcbehavior.XtcBehaviorService.class);
             traceEnd();
 
             traceBeginAndSlog("StartTelecomLoaderService");
@@ -876,6 +897,12 @@ public final class SystemServer {
             traceBeginAndSlog("IpConnectivityMetrics");
             mSystemServiceManager.startService(IpConnectivityMetrics.class);
             traceEnd();
+
+            if (PerformanceManager.isSurportPMS) {
+                traceBeginAndSlog("PerformanceManagerService");
+                mSystemServiceManager.startService(PerformanceManagerService.class);
+                traceEnd();
+            }
 
             traceBeginAndSlog("PinnerService");
             mSystemServiceManager.startService(PinnerService.class);
@@ -1103,6 +1130,28 @@ public final class SystemServer {
                     traceBeginAndSlog("StartLowpan");
                     mSystemServiceManager.startService(LOWPAN_SERVICE_CLASS);
                     traceEnd();
+                }
+
+                if (SystemProperties.getBoolean("persist.vendor.wigig.enable", false)) {
+                    try {
+                        Slog.i(TAG, "Wigig Service");
+                        dalvik.system.PathClassLoader pathClassLoader =
+                                new dalvik.system.PathClassLoader(
+                                        "/system/framework/wigig-service.jar",
+                                        getClass().getClassLoader());
+                        Object wigigP2p = pathClassLoader.loadClass(
+                                "com.qualcomm.qti.server.wigig.p2p.WigigP2pServiceImpl")
+                                .getConstructor(Context.class).newInstance(context);
+                        Slog.i(TAG, "Successfully loaded WigigP2pServiceImpl class");
+                        ServiceManager.addService("wigigp2p", (android.os.IBinder) wigigP2p);
+                        Object wigig = pathClassLoader.loadClass(
+                                "com.qualcomm.qti.server.wigig.WigigService")
+                                .getConstructor(Context.class).newInstance(context);
+                        Slog.i(TAG, "Successfully loaded WigigService class");
+                        ServiceManager.addService("wigig", (android.os.IBinder) wigig);
+                    } catch (Throwable th) {
+                        reportWtf("starting WigigService", th);
+                    }
                 }
 
                 if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_ETHERNET) ||
@@ -1431,6 +1480,16 @@ public final class SystemServer {
                 traceEnd();
             }
 
+            try {
+                traceBeginAndSlog("StartXtcDiagService");
+                xtcDiagService = XtcDiagMgr.isEnable()
+                        ? mSystemServiceManager.startService(XtcDiagService.class) : null;
+                traceEnd();
+            } catch (Throwable e) {
+                reportWtf("starting Xtc diag Service", e);
+                xtcDiagService = null;
+            }
+
             traceBeginAndSlog("StartRestrictionManager");
             mSystemServiceManager.startService(RestrictionsManagerService.class);
             traceEnd();
@@ -1637,6 +1696,16 @@ public final class SystemServer {
         }
         traceEnd();
 
+        traceBeginAndSlog("MakeXtcDiagServiceReady");
+        if (xtcDiagService != null) {
+            try {
+                xtcDiagService.systemReady();
+            } catch (Throwable e) {
+                reportWtf("making Xtc diag Service ready", e);
+            }
+        }
+        traceEnd();
+
         traceBeginAndSlog("MakeDisplayManagerServiceReady");
         try {
             // TODO: use boot phase and communicate these flags some other way
@@ -1645,6 +1714,16 @@ public final class SystemServer {
             reportWtf("making Display Manager Service ready", e);
         }
         traceEnd();
+
+        try {
+            IAntiAddictionManager.Stub antiAddictionManagerService =
+                    new AntiAddictionManagerService(context);
+            if (antiAddictionManagerService != null) {
+                ServiceManager.addService("anti_addiction", antiAddictionManagerService);
+            }
+        } catch (Throwable e) {
+            reportWtf("Notifying AntiAddictionManagerService running", e);
+        }
 
         mSystemServiceManager.setSafeMode(safeMode);
 
@@ -1852,12 +1931,36 @@ public final class SystemServer {
                 reportWtf("Notifying incident daemon running", e);
             }
             traceEnd();
+            if (MobileManagerUtils.isCtaVersion()) {
+                try {
+                    Slog.i(TAG, "MobileManagerService");
+                    MobileManagerService mobileManagerService =
+                            new MobileManagerService(context);
+                    ServiceManager.addService("xtcauth", mobileManagerService.asBinder());
+                    if (mobileManagerService != null) {
+                        mobileManagerService.systemReady();
+                    }
+                } catch (Throwable e) {
+                    reportWtf("Failure creating MobileManagerService", e);
+                }
+            }
+            try {
+                XtcHealthService xtcHealthService = new XtcHealthService(context);
+                if (xtcHealthService != null) {
+                    ServiceManager.addService("xtc_health", xtcHealthService);
+                    xtcHealthService.systemReady();
+                }
+            } catch (Throwable e) {
+                reportWtf("Notifying XtcHealthService running", e);
+            }
         }, BOOT_TIMINGS_TRACE_LOG);
     }
 
     static final void startSystemUi(Context context, WindowManagerService windowManager) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com.android.systemui",
+        // XTC device addition: the vendor ROM ships no standalone com.android.systemui;
+        // the SystemUI service lives inside the launcher package instead.
+        intent.setComponent(new ComponentName("com.xtc.i3launcher",
                     "com.android.systemui.SystemUIService"));
         intent.addFlags(Intent.FLAG_DEBUG_TRIAGED_MISSING);
         //Slog.d(TAG, "Starting service: " + intent);

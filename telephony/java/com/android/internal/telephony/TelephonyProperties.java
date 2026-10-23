@@ -218,4 +218,11 @@ public interface TelephonyProperties
      */
     static final String PROPERTY_VIDEOCALL_AUDIO_OUTPUT = "persist.radio.call.audio.output";
 
+    // XTC/CAF: conference URI extras used by the QTI InCall/telephony stack.
+    String ADD_PARTICIPANT_KEY = "add_participant";
+    String EXTRAS_IS_CONFERENCE_URI = "isConferenceUri";
+    String EXTRA_DIAL_CONFERENCE_URI = "org.codeaurora.extra.DIAL_CONFERENCE_URI";
+    String EXTRA_SKIP_SCHEMA_PARSING = "org.codeaurora.extra.SKIP_SCHEMA_PARSING";
+    String USSD_DIAL_TYPE = "gsm.ussd.type";
+
 }

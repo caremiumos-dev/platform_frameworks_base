@@ -24,6 +24,7 @@ import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ParceledListSlice;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
@@ -42,6 +43,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.WorkSource;
 import android.util.Log;
+import android.util.SeempLog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
@@ -87,6 +89,13 @@ import java.util.concurrent.CountDownLatch;
 public class WifiManager {
 
     private static final String TAG = "WifiManager";
+
+    // XTC location/Wi-Fi access telemetry.
+    // TRUST-MODEL CONDEMNATION: calls from a specific non-system package are broadcast to
+    // "android.network.positioning" with the caller package name, silently reporting Wi-Fi
+    // scan/location usage to a vendor receiver. Reproduced only for device compatibility.
+    private static final String NETWORK_SONAR = "android.network.positioning";
+    private static final String NETWORK_METHOD = "methodName";
     // Supplicant error codes:
     /**
      * The error code if there was a problem authenticating.
@@ -1648,6 +1657,17 @@ public class WifiManager {
      * @return the Wi-Fi information, contained in {@link WifiInfo}.
      */
     public WifiInfo getConnectionInfo() {
+        Log.d(TAG, "XTCNetin getConnectionInfo 0x01 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        if (mContext.getPackageName().equals("com.potin.systest")
+                && Binder.getCallingUid() > 1000) {
+            Log.d(TAG, "XTCNetin getConnectionInfo sendBroadcast uid:" + Binder.getCallingUid()
+                    + " packagename:" + mContext.getPackageName());
+            Intent intent = new Intent(NETWORK_SONAR);
+            intent.putExtra(NETWORK_METHOD, "getConnectionInfo");
+            intent.putExtra("packageName", mContext.getPackageName());
+            mContext.sendBroadcast(intent);
+        }
         try {
             return mService.getConnectionInfo(mContext.getOpPackageName());
         } catch (RemoteException e) {
@@ -1665,6 +1685,18 @@ public class WifiManager {
      * returned.
      */
     public List<ScanResult> getScanResults() {
+        Log.d(TAG, "XTCNetin getScanResults 0x00 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        if (mContext.getPackageName().equals("com.potin.systest")
+                && Binder.getCallingUid() > 1000) {
+            Log.d(TAG, "XTCNetin getScanResults sendBroadcast uid:" + Binder.getCallingUid()
+                    + " packagename:" + mContext.getPackageName());
+            Intent intent = new Intent(NETWORK_SONAR);
+            intent.putExtra(NETWORK_METHOD, "getScanResults");
+            intent.putExtra("packageName", mContext.getPackageName());
+            mContext.sendBroadcast(intent);
+        }
+        SeempLog.record(55);
         try {
             return mService.getScanResults(mContext.getOpPackageName());
         } catch (RemoteException e) {

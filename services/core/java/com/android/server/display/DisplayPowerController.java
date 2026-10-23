@@ -424,7 +424,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mScreenBrightnessRangeMinimum = screenBrightnessRangeMinimum;
 
 
-        mColorFadeEnabled = !ActivityManager.isLowRamDeviceStatic();
+        // XTC device addition: vendor screen-off animation is always enabled.
+        mColorFadeEnabled = true;
         mColorFadeFadesConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_animateScreenLights);
 
@@ -520,8 +521,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     private void initialize() {
         // Initialize the power state object for the default display.
         // In the future, we might manage multiple displays independently.
-        mPowerState = new DisplayPowerState(mBlanker,
-                mColorFadeEnabled ? new ColorFade(Display.DEFAULT_DISPLAY) : null);
+        // XTC device addition: DisplayPowerState now owns a ScreenOffAnimator.
+        mPowerState = new DisplayPowerState(mBlanker);
 
         if (mColorFadeEnabled) {
             mColorFadeOnAnimator = ObjectAnimator.ofFloat(

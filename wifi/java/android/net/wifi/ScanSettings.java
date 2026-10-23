@@ -34,11 +34,17 @@ public class ScanSettings implements Parcelable {
     /** channel set to scan. this can be null or empty, indicating a full scan */
     public Collection<WifiChannel> channelSet;
 
+    /** XTC: per-request channel dwell time, in milliseconds. */
+    public int chtime;
+
     /** public constructor */
-    public ScanSettings() { }
+    public ScanSettings() {
+        chtime = 0;
+    }
 
     /** copy constructor */
     public ScanSettings(ScanSettings source) {
+        chtime = source.chtime;
         if (source.channelSet != null)
             channelSet = new ArrayList<WifiChannel>(source.channelSet);
     }
@@ -59,6 +65,7 @@ public class ScanSettings implements Parcelable {
     /** implement Parcelable interface */
     @Override
     public void writeToParcel(Parcel out, int flags) {
+        out.writeInt(chtime);
         out.writeInt(channelSet == null ? 0 : channelSet.size());
         if (channelSet != null)
             for (WifiChannel channel : channelSet) channel.writeToParcel(out, flags);
@@ -70,6 +77,7 @@ public class ScanSettings implements Parcelable {
         @Override
         public ScanSettings createFromParcel(Parcel in) {
             ScanSettings settings = new ScanSettings();
+            settings.chtime = in.readInt();
             int size = in.readInt();
             if (size > 0) {
                 settings.channelSet = new ArrayList<WifiChannel>(size);

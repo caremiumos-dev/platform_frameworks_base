@@ -252,8 +252,22 @@ public class AppOpsManager {
     public static final int OP_INSTANT_APP_START_FOREGROUND = 68;
     /** @hide Answer incoming phone calls */
     public static final int OP_ANSWER_PHONE_CALLS = 69;
+    /** @hide Change Wi-Fi state. (device backport) */
+    public static final int OP_CHANGE_WIFI_STATE = 70;
+    /** @hide Administer Bluetooth. (device backport) */
+    public static final int OP_BLUETOOTH_ADMIN = 71;
+    /**
+     * @hide Auto-start of applications.
+     *
+     * 设备新增：厂商用此 op 压制第三方应用的自启动（见 sOpDefaultMode 与
+     * AppOpsService/SelfstartManager）。**谴责**：按厂商归属而非用户意愿区别对待应用，
+     * 构成对第三方应用的歧视，剥夺用户对自启的自主选择。此处按工程要求保留行为兼容。
+     */
+    public static final int OP_AUTO_START = 72;
+    /** @hide Query all installed packages. (device backport) */
+    public static final int OP_QUERY_ALL_PACKAGES = 73;
     /** @hide */
-    public static final int _NUM_OP = 70;
+    public static final int _NUM_OP = 74;
 
     /** Access to coarse location information. */
     public static final String OPSTR_COARSE_LOCATION = "android:coarse_location";
@@ -365,6 +379,28 @@ public class AppOpsManager {
     /** Answer incoming phone calls */
     public static final String OPSTR_ANSWER_PHONE_CALLS
             = "android:answer_phone_calls";
+    /** @hide Change Wi-Fi state. (device backport) */
+    public static final String OPSTR_CHANGE_WIFI_STATE
+            = "android:change_wifi_state";
+    /** @hide Administer Bluetooth. (device backport) */
+    public static final String OPSTR_BLUETOOTH_ADMIN
+            = "android:bluetooth_admin";
+    /** @hide Auto-start of applications. (device) */
+    public static final String OPSTR_AUTO_START
+            = "android:auto_start";
+    /** @hide Query all installed packages. (device backport) */
+    public static final String OPSTR_QUERY_ALL_PACKAGES
+            = "android:query_all_packages";
+
+    /**
+     * @hide
+     * 设备新增：需要在权限对话框中征询用户的操作码集合。
+     *
+     * 该列表被 AppOpsService 用来决定哪些 op 需要弹窗确认（askOperationLocked）。
+     * **谴责**：其中 OP_AUTO_START(72) 使厂商可在未获用户同意的情况下压制第三方应用自启，
+     * 属于对第三方应用的歧视与对用户自主权的侵犯。此处仅为行为兼容而保留。
+     */
+    public static final ArrayList<Integer> XtcAppOpsActions = new ArrayList<>();
 
     // Warning: If an permission is added here it also has to be added to
     // com.android.packageinstaller.permission.utils.EventLogger
@@ -492,7 +528,11 @@ public class AppOpsManager {
             OP_REQUEST_INSTALL_PACKAGES,
             OP_PICTURE_IN_PICTURE,
             OP_INSTANT_APP_START_FOREGROUND,
-            OP_ANSWER_PHONE_CALLS
+            OP_ANSWER_PHONE_CALLS,
+            OP_CHANGE_WIFI_STATE,
+            OP_BLUETOOTH_ADMIN,
+            OP_AUTO_START,
+            OP_QUERY_ALL_PACKAGES
     };
 
     /**
@@ -570,6 +610,10 @@ public class AppOpsManager {
             OPSTR_PICTURE_IN_PICTURE,
             OPSTR_INSTANT_APP_START_FOREGROUND,
             OPSTR_ANSWER_PHONE_CALLS,
+            OPSTR_CHANGE_WIFI_STATE,
+            OPSTR_BLUETOOTH_ADMIN,
+            OPSTR_AUTO_START,
+            OPSTR_QUERY_ALL_PACKAGES,
     };
 
     /**
@@ -647,6 +691,10 @@ public class AppOpsManager {
             "PICTURE_IN_PICTURE",
             "INSTANT_APP_START_FOREGROUND",
             "ANSWER_PHONE_CALLS",
+            "CHANGE_WIFI_STATE",
+            "BLUETOOTH_ADMIN",
+            "AUTO_START",
+            "QUERY_ALL_PACKAGES",
     };
 
     /**
@@ -724,6 +772,10 @@ public class AppOpsManager {
             null, // no permission for entering picture-in-picture on hide
             Manifest.permission.INSTANT_APP_FOREGROUND_SERVICE,
             Manifest.permission.ANSWER_PHONE_CALLS,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            null, // no permission for auto-start (device)
+            null, // no permission for query-all-packages (device)
     };
 
     /**
@@ -802,6 +854,10 @@ public class AppOpsManager {
             null, // ENTER_PICTURE_IN_PICTURE_ON_HIDE
             null, // INSTANT_APP_START_FOREGROUND
             null, // ANSWER_PHONE_CALLS
+            null, // CHANGE_WIFI_STATE
+            null, // BLUETOOTH_ADMIN
+            null, // AUTO_START
+            null, // QUERY_ALL_PACKAGES
     };
 
     /**
@@ -879,6 +935,10 @@ public class AppOpsManager {
             false, // ENTER_PICTURE_IN_PICTURE_ON_HIDE
             false, // INSTANT_APP_START_FOREGROUND
             false, // ANSWER_PHONE_CALLS
+            false, // CHANGE_WIFI_STATE
+            false, // BLUETOOTH_ADMIN
+            false, // AUTO_START
+            false, // QUERY_ALL_PACKAGES
     };
 
     /**
@@ -955,6 +1015,10 @@ public class AppOpsManager {
             AppOpsManager.MODE_ALLOWED,  // OP_PICTURE_IN_PICTURE
             AppOpsManager.MODE_DEFAULT,  // OP_INSTANT_APP_START_FOREGROUND
             AppOpsManager.MODE_ALLOWED, // ANSWER_PHONE_CALLS
+            AppOpsManager.MODE_ALLOWED, // CHANGE_WIFI_STATE
+            AppOpsManager.MODE_ALLOWED, // BLUETOOTH_ADMIN
+            AppOpsManager.MODE_ALLOWED, // AUTO_START
+            AppOpsManager.MODE_ALLOWED, // QUERY_ALL_PACKAGES
     };
 
     /**
@@ -1035,6 +1099,10 @@ public class AppOpsManager {
             false, // OP_PICTURE_IN_PICTURE
             false,
             false, // ANSWER_PHONE_CALLS
+            false, // CHANGE_WIFI_STATE
+            false, // BLUETOOTH_ADMIN
+            false, // AUTO_START
+            false, // QUERY_ALL_PACKAGES
     };
 
     /**
@@ -1048,6 +1116,20 @@ public class AppOpsManager {
     private static HashMap<String, Integer> sPermToOp = new HashMap<>();
 
     static {
+        // device: ops that are subject to the permission-dialog flow in AppOpsService.
+        XtcAppOpsActions.add(OP_COARSE_LOCATION);
+        XtcAppOpsActions.add(OP_FINE_LOCATION);
+        XtcAppOpsActions.add(OP_GPS);
+        XtcAppOpsActions.add(OP_READ_CONTACTS);
+        XtcAppOpsActions.add(OP_WRITE_CONTACTS);
+        XtcAppOpsActions.add(OP_READ_CALL_LOG);
+        XtcAppOpsActions.add(OP_WRITE_CALL_LOG);
+        XtcAppOpsActions.add(OP_RECEIVE_SMS);
+        XtcAppOpsActions.add(OP_CAMERA);
+        XtcAppOpsActions.add(OP_RECORD_AUDIO);
+        XtcAppOpsActions.add(OP_READ_EXTERNAL_STORAGE);
+        XtcAppOpsActions.add(OP_QUERY_ALL_PACKAGES);
+        XtcAppOpsActions.add(OP_AUTO_START);
         if (sOpToSwitch.length != _NUM_OP) {
             throw new IllegalStateException("sOpToSwitch length " + sOpToSwitch.length
                     + " should be " + _NUM_OP);
@@ -1740,7 +1822,14 @@ public class AppOpsManager {
      */
     public void checkPackage(int uid, String packageName) {
         try {
-            if (mService.checkPackage(uid, packageName) != MODE_ALLOWED) {
+            // device: a handful of vendor test packages are exempted from the
+            // uid/package ownership check.
+            if (mService.checkPackage(uid, packageName) != MODE_ALLOWED
+                    && !packageName.equals("com.cghs.stresstest")
+                    && !packageName.equals("com.xtc.i11_ota_auto_test")
+                    && !packageName.equals("com.xtc.autotestforwatch")
+                    && !packageName.equals("com.autosense")
+                    && !packageName.equals("com.qualcomm.qct.dlt")) {
                 throw new SecurityException(
                         "Package " + packageName + " does not belong to " + uid);
             }

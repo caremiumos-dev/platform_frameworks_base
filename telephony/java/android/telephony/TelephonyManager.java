@@ -36,12 +36,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkStats;
 import android.net.Uri;
 import android.os.BatteryStats;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ServiceManager;
+import android.os.Build;
 import android.os.SystemProperties;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
@@ -51,10 +53,12 @@ import android.telecom.PhoneAccountHandle;
 import android.telephony.VisualVoicemailService.VisualVoicemailTask;
 import android.telephony.ims.feature.ImsFeature;
 import android.util.Log;
+import android.util.SeempLog;
 
 import com.android.ims.internal.IImsServiceController;
 import com.android.ims.internal.IImsServiceFeatureListener;
 import com.android.internal.annotations.VisibleForTesting;
+import com.xtc.utils.IXTCUtilsManager;
 import com.android.internal.telecom.ITelecomService;
 import com.android.internal.telephony.CellNetworkScanResult;
 import com.android.internal.telephony.IPhoneSubInfo;
@@ -72,6 +76,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -185,6 +190,38 @@ public class TelephonyManager {
     }
 
     private static TelephonyManager sInstance = new TelephonyManager();
+
+    // Allow-list of packages permitted to read the real IMEI/IMSI.
+    // TRUST-MODEL CONDEMNATION: this lets a privileged vendor set read the device
+    // identifiers while returning null or a random fake value to every other caller,
+    // i.e. it hides device identifiers from third-party applications and hands them to
+    // a vendor-selected set. Reproduced only for device compatibility.
+    private static final ArrayList<String> mReadXtcImeiList = new ArrayList<>();
+
+    // XTC location-access telemetry.
+    // TRUST-MODEL CONDEMNATION: every non-system call to getAllCellInfo/getCellLocation/
+    // getNeighboringCellInfo is broadcast to "android.network.positioning" with the caller
+    // package name, i.e. third-party location usage is silently reported to a vendor
+    // receiver. Reproduced only for device compatibility.
+    private static final String NETWORK_SONAR = "android.network.positioning";
+    private static final String NETWORK_METHOD = "methodName";
+
+    // SDK package prefixes that, when found on the stack of the launcher process, cause
+    // the identifier read to be denied (vendor anti-tamper heuristic).
+    private static final String[] sdk_black = {
+            "com.loc.", "com.tencent.map.geolocation", "com.xtc.baidu.location.watch"
+    };
+
+    static {
+        mReadXtcImeiList.add("com.xtc.appupdate");
+        mReadXtcImeiList.add("com.xtc.datacenter");
+        mReadXtcImeiList.add("com.xtc.i3launcher");
+        mReadXtcImeiList.add("com.xtc.message");
+        mReadXtcImeiList.add("com.xtc.setting");
+        mReadXtcImeiList.add("com.xtc.xws");
+        mReadXtcImeiList.add("com.xtc.videochat");
+        mReadXtcImeiList.add("com.xtc.systemupdate_i11");
+    }
 
     /** @hide
     /* @deprecated - use getSystemService as described above */
@@ -875,6 +912,13 @@ public class TelephonyManager {
             "android.telephony.event.EVENT_NOTIFY_INTERNATIONAL_CALL_ON_WFC";
 
     /**
+     * CAF: broadcast when the phone account associated with a subscription changes.
+     * @hide
+     */
+    public static final String EVENT_PHONE_ACCOUNT_CHANGED =
+            "org.codeaurora.event.PHONE_ACCOUNT_CHANGED";
+
+    /**
      * {@link android.telecom.Connection} event used to indicate that an outgoing call has been
      * forwarded to another number.
      * <p>
@@ -968,6 +1012,16 @@ public class TelephonyManager {
         return getDeviceSoftwareVersion(getSlotIndex());
     }
 
+    /** @hide */
+    public String getHwVersion() {
+        return SystemProperties.get(HW_VERSION);
+    }
+
+    /** @hide */
+    public String getSoftwareVersion() {
+        return SystemProperties.get(SOFT_VERSION);
+    }
+
     /**
      * Returns the software version number for the device, for example,
      * the IMEI/SV for GSM phones. Return null if the software version is
@@ -1000,6 +1054,15 @@ public class TelephonyManager {
     @Deprecated
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public String getDeviceId() {
+        if (!mReadXtcImeiList.contains(mContext.getPackageName())
+                && Binder.getCallingUid() > 1000) {
+            Log.d(TAG, "getDeviceId was denied uid:" + Binder.getCallingUid());
+            return null;
+        }
+        Log.e(TAG, "getDeviceId ....");
+        if (!isWhiteList(mContext.getOpPackageName())) {
+            return getRandomImeiOrImsi();
+        }
         try {
             ITelephony telephony = getITelephony();
             if (telephony == null)
@@ -1025,6 +1088,15 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public String getDeviceId(int slotIndex) {
         // FIXME this assumes phoneId == slotIndex
+        if (!mReadXtcImeiList.contains(mContext.getPackageName())
+                && Binder.getCallingUid() > 1000) {
+            Log.d(TAG, "getDeviceId int was denied uid:" + Binder.getCallingUid());
+            return null;
+        }
+        SeempLog.record_str(8, "" + slotIndex);
+        if (!isWhiteList(mContext.getOpPackageName())) {
+            return getRandomImeiOrImsi();
+        }
         try {
             IPhoneSubInfo info = getSubscriberInfo();
             if (info == null)
@@ -1043,7 +1115,12 @@ public class TelephonyManager {
      */
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public String getImei() {
-        return getImei(getSlotIndex());
+        if (mReadXtcImeiList.contains(mContext.getPackageName())
+                || Binder.getCallingUid() <= 1000) {
+            return getImei(getSlotIndex());
+        }
+        Log.d(TAG, "getImei was denied uid:" + Binder.getCallingUid());
+        return null;
     }
 
     /**
@@ -1057,6 +1134,11 @@ public class TelephonyManager {
         ITelephony telephony = getITelephony();
         if (telephony == null) return null;
 
+        if (!mReadXtcImeiList.contains(mContext.getPackageName())
+                && Binder.getCallingUid() > 1000) {
+            Log.d(TAG, "getImei int was denied uid:" + Binder.getCallingUid());
+            return null;
+        }
         try {
             return telephony.getImeiForSlot(slotIndex, getOpPackageName());
         } catch (RemoteException ex) {
@@ -1143,6 +1225,17 @@ public class TelephonyManager {
             android.Manifest.permission.ACCESS_FINE_LOCATION
     })
     public CellLocation getCellLocation() {
+        Log.d(TAG, "XTCNetin getCellLocation 0x00 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        if (Binder.getCallingUid() > 1000) {
+            Log.d(TAG, "XTCNetin getCellLocation sendBroadcast uid:" + Binder.getCallingUid()
+                    + " packagename:" + mContext.getPackageName());
+            Intent intent = new Intent(NETWORK_SONAR);
+            intent.putExtra(NETWORK_METHOD, "getCellLocation");
+            intent.putExtra("packageName", mContext.getPackageName());
+            mContext.sendBroadcast(intent);
+        }
+        SeempLog.record(49);
         try {
             ITelephony telephony = getITelephony();
             if (telephony == null) {
@@ -1232,6 +1325,9 @@ public class TelephonyManager {
     @Deprecated
     @RequiresPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
     public List<NeighboringCellInfo> getNeighboringCellInfo() {
+        Log.d(TAG, "XTCNetin getNeighboringCellInfo 0x01 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(50);
         try {
             ITelephony telephony = getITelephony();
             if (telephony == null)
@@ -1445,6 +1541,116 @@ public class TelephonyManager {
 
     /** Kernel command line */
     private static final String sKernelCmdLine = getProcCmdLine();
+
+    private static final String SOFT_VERSION = "ro.product.current.softversion";
+
+    private static final String HW_VERSION = "ro.product.current.hwversion";
+
+    private static final String WIFI_ENTERPRISE_DELIMITER = ":";
+
+    /**
+     * Whether the XTC system-integrity check flagged an exception.
+     *
+     * <p><b>Strong condemnation.</b> This drives the xses "security exception"
+     * path, which can reboot the user's device and disable/isolate packages
+     * based on a vendor server policy. See
+     * {@code com.android.server.xgseserver.xss.SystemExceptionManager}.
+     */
+    private static boolean isSystemException;
+
+    /**
+     * XTC factory/debug build-variant integrity check.
+     *
+     * <p><b>Strong condemnation.</b> Used to punish mismatches between the
+     * kernel-reported build variant and the system property, feeding the
+     * reboot/deny machinery above. Users must remain in control of their own
+     * devices.
+     *
+     * @hide
+     */
+    public static int getPhoneCompileStatus() {
+        String procCmdLine = getProcCmdLine();
+        checkSystemInfo(procCmdLine);
+        if (procCmdLine.contains("buildvariant=user")
+                && !procCmdLine.contains("buildvariant=userdebug")) {
+            String type = SystemProperties.get("ro.build.type", "null");
+            Rlog.d(TAG, "pb_type " + type);
+            if (!type.equals("user")) {
+                Rlog.d(TAG, "pb_type error!!");
+                isSystemException = true;
+            }
+        }
+        if (!procCmdLine.contains("buildvariant=userdebug")) {
+            return 0;
+        }
+        String type = SystemProperties.get("ro.build.type", "null");
+        Build.setSystemType();
+        Rlog.d(TAG, "debug pb_type " + type);
+        if (!type.equals("userdebug")) {
+            Rlog.d(TAG, "debug pb_type error!!");
+            isSystemException = true;
+        }
+        return 1;
+    }
+
+    private static void checkSystemInfo(String cmdLine) {
+        int index;
+        if (!cmdLine.contains("buildsoftversion")
+                || (index = cmdLine.indexOf("buildsoftversion")) == -1) {
+            return;
+        }
+        String sub = cmdLine.substring(index);
+        String retVersion = sub.substring(sub.indexOf("=") + 1,
+                sub.indexOf(WIFI_ENTERPRISE_DELIMITER)).trim();
+        Rlog.d(TAG, "current retVersion=" + retVersion);
+        if (!retVersion.equals(SystemProperties.get(SOFT_VERSION))) {
+            isSystemException = true;
+        }
+        if (retVersion != null) {
+            int downgrade = 0;
+            try {
+                downgrade = IXTCUtilsManager.Stub.asInterface(
+                        ServiceManager.getService(Context.XTC_UTILS_SERVICE))
+                        .checkVersionDowngrade(retVersion);
+            } catch (RemoteException e) {
+                Rlog.d(TAG, "checkVersionDowngrade e = " + e);
+            }
+            if (downgrade == 1) {
+                isSystemException = true;
+            }
+        }
+    }
+
+    /**
+     * @hide
+     */
+    public static boolean getSystemExceptionStatus() {
+        return isSystemException;
+    }
+
+    private String getRandomImeiOrImsi() {
+        int value = new Random().nextInt(99);
+        String.format("%02d", value);
+        return value + "" + System.currentTimeMillis();
+    }
+
+    private boolean isWhiteList(String packageName) {
+        if (!packageName.contains("com.xtc.i3launcher")) {
+            return true;
+        }
+        StackTraceElement[] stackTrace = new Exception("this is a log").getStackTrace();
+        int count = stackTrace.length < 10 ? stackTrace.length : 10;
+        for (int i = 0; i < count; i++) {
+            String frame = stackTrace[i].toString();
+            for (int j = 0; j < sdk_black.length; j++) {
+                if (frame.contains(sdk_black[j])) {
+                    Log.e(TAG, "has black sdk=" + frame);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     /** Pattern for selecting the product type from the kernel command line */
     private static final Pattern sProductTypePattern =
@@ -2331,7 +2537,9 @@ public class TelephonyManager {
      */
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public String getSubscriberId() {
-        return getSubscriberId(getSubId());
+        Log.e(TAG, "getSubscriberId ....");
+        return !isWhiteList(mContext.getOpPackageName())
+                ? getRandomImeiOrImsi() : getSubscriberId(getSubId());
     }
 
     /**
@@ -2344,6 +2552,13 @@ public class TelephonyManager {
      */
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     public String getSubscriberId(int subId) {
+        SeempLog.record_str(
+                com.android.internal.logging.nano.MetricsProto.MetricsEvent
+                        .ACTION_WINDOW_DOCK_RESIZE,
+                "" + subId);
+        if (!isWhiteList(mContext.getOpPackageName())) {
+            return getRandomImeiOrImsi();
+        }
         try {
             IPhoneSubInfo info = getSubscriberInfo();
             if (info == null)
@@ -3720,6 +3935,16 @@ public class TelephonyManager {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
     public List<CellInfo> getAllCellInfo() {
+        Log.d(TAG, "XTCNetin getAllCellInfo 0x02 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        if (Binder.getCallingUid() > 1000) {
+            Log.d(TAG, "XTCNetin getAllCellInfo sendBroadcast uid:" + Binder.getCallingUid()
+                    + " packagename:" + mContext.getPackageName());
+            Intent intent = new Intent(NETWORK_SONAR);
+            intent.putExtra(NETWORK_METHOD, "getAllCellInfo");
+            intent.putExtra("packageName", mContext.getPackageName());
+            mContext.sendBroadcast(intent);
+        }
         try {
             ITelephony telephony = getITelephony();
             if (telephony == null)
@@ -4657,6 +4882,17 @@ public class TelephonyManager {
      * @param Registration state
      * @hide
      */
+    // XTC 差异：IM URL 防火墙规则（转发到 NetworkManagementService）。
+    public void setFirewallImRule(String address, int port, boolean enable) {
+        try {
+            android.os.INetworkManagementService.Stub.asInterface(
+                    android.os.ServiceManager.getService(
+                            Context.NETWORKMANAGEMENT_SERVICE))
+                    .setFirewallImRule(address, port, enable);
+        } catch (Exception e) {
+        }
+    }
+
     public void setImsRegistrationState(boolean registered) {
         try {
             ITelephony telephony = getITelephony();
@@ -4803,11 +5039,27 @@ public class TelephonyManager {
      * @return true on success; false on any failure.
      * @hide
      */
+    // XTC 差异：非测试模式下不允许关闭 LTE（强制网络类型）。
+    private boolean isXtcNotAllowedDisableLte() {
+        return SystemProperties.getInt("gsm.xtctest.modemtest", 0) == 0;
+    }
+
     public boolean setPreferredNetworkType(int subId, int networkType) {
         try {
             ITelephony telephony = getITelephony();
-            if (telephony != null)
-                return telephony.setPreferredNetworkType(subId, networkType);
+            if (telephony == null) {
+                return false;
+            }
+            // XTC 差异：除非是 46015 运营商，否则强制网络类型为 22（不允许关闭 LTE）。
+            if (isXtcNotAllowedDisableLte() && networkType != 11) {
+                networkType = 22;
+                if (SystemProperties.get(
+                        com.android.internal.telephony.TelephonyProperties
+                        .PROPERTY_ICC_OPERATOR_NUMERIC, "").equals("46015")) {
+                    networkType = 11;
+                }
+            }
+            return telephony.setPreferredNetworkType(subId, networkType);
         } catch (RemoteException ex) {
             Rlog.e(TAG, "setPreferredNetworkType RemoteException", ex);
         } catch (NullPointerException ex) {

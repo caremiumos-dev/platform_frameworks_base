@@ -155,4 +155,42 @@ oneway interface IApplicationThread {
     void attachAgent(String path);
     void scheduleApplicationInfoChanged(in ApplicationInfo ai);
     void setNetworkBlockSeq(long procStateSeq);
+
+    /**
+     * XTC performance: turns a pre-forked process into the real process.
+     * @hide
+     */
+    void schedPreforkStart();
+
+    /**
+     * XTC performance: stops the main-thread caton (block) stack monitor.
+     * @hide
+     */
+    void schedStopMonitor();
+
+    /**
+     * XTC back-gesture: scales/fades the content root of the window while the
+     * user swipes right to go back.
+     * @hide
+     */
+    void setBackWindowAnim(IBinder token, float anim);
+
+    /**
+     * XTC back-gesture: applies/restores the window background used during the
+     * swipe-right-to-exit animation.
+     * @hide
+     */
+    void setBackActivityBackground(IBinder token, boolean restore);
+
+    /**
+     * XTC/APM: reports the activity launch time for performance monitoring.
+     * @hide
+     */
+    void reportActivityLaunchTimeLocked(String shortComponentName, long launchTime);
+
+    /**
+     * XTC debug: enable/disable ActivityThread debug logging for a process.
+     * @hide
+     */
+    void enableActivityThreadLog(boolean enable, String flags);
 }

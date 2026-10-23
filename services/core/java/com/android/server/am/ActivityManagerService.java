@@ -229,6 +229,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
+import android.app.ProcessInfo;
 import android.app.ProfilerInfo;
 import android.app.RemoteAction;
 import android.app.WaitResult;
@@ -281,6 +282,8 @@ import android.graphics.Rect;
 import android.location.LocationManager;
 import android.media.audiofx.AudioEffect;
 import android.metrics.LogMaker;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Proxy;
 import android.net.ProxyInfo;
 import android.net.Uri;
@@ -363,6 +366,7 @@ import com.google.android.collect.Maps;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.app.ActivityTrigger;
 import com.android.internal.app.AssistUtils;
 import com.android.internal.app.DumpHeapActivity;
 import com.android.internal.app.IAppOpsCallback;
@@ -670,6 +674,9 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     final RecentTasks mRecentTasks;
 
+    /** XTC odex-restore policy: re-optimizes packages that repeatedly crash. */
+    private com.xtc.odex.OdexRestorePolicy mOdexRestorePolicy;
+
     /**
      * For addAppTask: cached of the last activity component that was added.
      */
@@ -772,6 +779,14 @@ public class ActivityManagerService extends IActivityManager.Stub
      * Process management.
      */
     final ProcessList mProcessList = new ProcessList();
+
+    // XTC device addition: self-start whitelist manager.
+    private SelfstartManager mSelfstartManager;
+
+    // XTC device addition: anti-addiction service (resolved in systemReady).
+    com.android.server.addiction.AntiAddictionManagerService mAntiService;
+    // XTC device addition: mobile-data policy helper.
+    com.android.server.net.NetworkPolicyHelper mPolicyHelper;
 
     /**
      * All of the applications we currently have running organized by name.
@@ -1154,6 +1169,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     FontScaleSettingObserver mFontScaleSettingObserver;
 
+    CustomFontPathSettingObserver mCustomFontPathSettingObserver;
+
     private final class FontScaleSettingObserver extends ContentObserver {
         private final Uri mFontScaleUri = Settings.System.getUriFor(FONT_SCALE);
 
@@ -1167,6 +1184,24 @@ public class ActivityManagerService extends IActivityManager.Stub
         public void onChange(boolean selfChange, Uri uri, @UserIdInt int userId) {
             if (mFontScaleUri.equals(uri)) {
                 updateFontScaleIfNeeded(userId);
+            }
+        }
+    }
+
+    private final class CustomFontPathSettingObserver extends ContentObserver {
+        private final Uri mFontPathUri =
+                Settings.System.getUriFor(Settings.System.CUSTOM_FONT_PATH);
+
+        public CustomFontPathSettingObserver() {
+            super(mHandler);
+            mContext.getContentResolver().registerContentObserver(
+                    mFontPathUri, false, this, UserHandle.USER_ALL);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri, @UserIdInt int userId) {
+            if (mFontPathUri.equals(uri)) {
+                updateCustomFontPathIfNeeded(userId);
             }
         }
     }
@@ -1407,11 +1442,35 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     boolean mAllowLowerMemLevel = false;
 
+    // XTC/QTI network-opts: notify ActivityTrigger of process/app transitions with the
+    // currently active network type. Disabled unless persist.vendor.qti.netopts.enable.
+    final boolean mEnableNetOpts;
+    static ActivityTrigger mActivityTrigger = new ActivityTrigger();
+    int mActiveNetType = -1;
+    final Object mNetLock = new Object();
+    ConnectivityManager mConnectivityManager;
+
     /**
      * The last computed memory level, for holding when we are in a state that
      * processes are going away for other reasons.
      */
     int mLastMemoryLevel = ProcessStats.ADJ_MEM_FACTOR_NORMAL;
+
+    // XTC 差异：PerformanceManager 单例缓存（LMK adj 调优）。
+    private com.xtc.performance.PerformanceManager mPm;
+    private boolean isFirstPerformance;
+    // XTC 差异：PackageManagerService 单例缓存（provider 权限白名单）。
+    private com.android.server.pm.PackageManagerService pms;
+    // XTC 差异：可直接授予 provider 权限的进程白名单。
+    private static final java.util.ArrayList<String> providerPermissionWhitelist =
+            new java.util.ArrayList<>();
+    private BroadcastReceiver prefReceiver;
+    // XTC 差异：dump 命令行解析辅助。
+    private String[] mArgs;
+    private int mNextArg;
+    // XTC 差异：launcher native crash 频次统计（用于触发恢复/重启）。
+    private long mLauncherLastCrashTime;
+    private int crashCounts;
 
     /**
      * The last total number of process we have, to determine if changes actually look
@@ -1691,6 +1750,22 @@ public class ActivityManagerService extends IActivityManager.Stub
     static final int DISPATCH_OOM_ADJ_OBSERVER_MSG = 70;
     static final int START_USER_SWITCH_FG_MSG = 712;
     static final int NOTIFY_VR_KEYGUARD_MSG = 74;
+    // XTC/QTI: deliver a network-opts hint to ActivityTrigger.
+    static final int NETWORK_OPTS_CHECK_MSG = 88;
+
+    // XTC 差异：OTA 状态上报与 provider 权限白名单相关常量/字段。
+    static final int UPDATE_OTA_STATUS_TO_LAUNCHER = 651;
+    static final String SERVICE_RECORD_KEY = "servicerecord";
+    private static final String CONTEXT_PACKAGE = "com.xtc.i3launcher";
+    private static final String PERMISSION_PREFERENCE = "provider_permission_list";
+    private static final String PREF_ACTION = "com.xtc.permission.PREF_CHANGE_ACTION";
+    private static String xtcOtaCacheStatusFile;
+    // XTC 差异：LMK minfree 调优。
+    private static final String XTC_MIN_MINFREE = "4096,5632,7168,8704,10240,13312";
+    private static final String XTC_NORMAL_MINFREE = "8192,11264,14336,17408,20480,26624";
+    private static boolean allowCameraAdjustADJ;
+    private static boolean hasSetMinfree = false;
+    private static String minfreePath = "/sys/module/lowmemorykiller/parameters/minfree";
 
     static final int FIRST_ACTIVITY_STACK_MSG = 100;
     static final int FIRST_BROADCAST_QUEUE_MSG = 200;
@@ -2418,6 +2493,28 @@ public class ActivityManagerService extends IActivityManager.Stub
             case NOTIFY_VR_KEYGUARD_MSG: {
                 notifyVrManagerOfKeyguardState(msg.arg1 != 0);
             } break;
+            case NETWORK_OPTS_CHECK_MSG: {
+                int type = msg.arg1;
+                String name = (String) msg.obj;
+                if (type == 0 && mActivityTrigger != null) {
+                    synchronized (mNetLock) {
+                        if (mActiveNetType >= 0) {
+                            mActivityTrigger.activityMiscTrigger(ActivityTrigger.NETWORK_OPTS,
+                                    name, mActiveNetType, 0);
+                            return;
+                        }
+                    }
+                }
+                if (mActivityTrigger != null) {
+                    mActivityTrigger.activityMiscTrigger(ActivityTrigger.NETWORK_OPTS, name, -1, 1);
+                }
+            } break;
+            case UPDATE_OTA_STATUS_TO_LAUNCHER: {
+                // XTC 差异：延迟上报 OTA 状态。
+                String otaType = msg.getData().getString("ota_type");
+                Slog.i(TAG, "delay send otaType= " + otaType);
+                OtaSend(mContext, otaType);
+            } break;
             case HANDLE_TRUST_STORAGE_UPDATE_MSG: {
                 synchronized (ActivityManagerService.this) {
                     for (int i = mLruProcesses.size() - 1 ; i >= 0 ; i--) {
@@ -2521,6 +2618,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                                 num++;
                                 recordPssSampleLocked(proc, procState, pss, tmp[0], tmp[1],
                                         SystemClock.uptimeMillis());
+                                // XTC/BBK: record PSS of large-memory apps (>60MB).
+                                if (memMonitorSwitch && pss > 61440) {
+                                    saveAPPMeminfo(proc.info.processName, pss);
+                                }
                             }
                         }
                     }
@@ -2582,6 +2683,51 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     public IAppOpsService getAppOpsService() {
         return mAppOpsService;
+    }
+
+    // XTC 差异：把 OTA 状态经 XtcBehavior 上报（遥测）。
+    public void OtaSend(Context context, String otaStatus) {
+        String time = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+        java.util.LinkedHashMap<String, String> data = new java.util.LinkedHashMap<>();
+        data.put("otastatus", otaStatus);
+        data.put("time", time);
+        new com.xtc.behavior.XtcBehavior.Builder(context, "OTASTATUS_ERROR", data)
+                .eventType(1001).build().sendData();
+    }
+
+    private static String ReadXtcOtaFile(String path) {
+        String content = "";
+        java.io.File file = new java.io.File(path);
+        if (file.isDirectory()) {
+            Slog.i(TAG, "The File doesn't not exist.");
+        } else {
+            try {
+                java.io.FileInputStream in = new java.io.FileInputStream(file);
+                if (in != null) {
+                    java.io.BufferedReader reader =
+                            new java.io.BufferedReader(new java.io.InputStreamReader(in));
+                    while (true) {
+                        String line = reader.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        content = content + line + "\n";
+                    }
+                    in.close();
+                }
+            } catch (java.io.FileNotFoundException e) {
+                Slog.i(TAG, "The File doesn't not exist.");
+            } catch (java.io.IOException e) {
+                Slog.i(TAG, e.getMessage());
+            }
+        }
+        Slog.i(TAG, "content=" + content);
+        if ("".equals(content)) {
+            return content;
+        }
+        String result = content.substring(content.indexOf(":") + 1);
+        Slog.i(TAG, "new content=" + result);
+        return result;
     }
 
     static class MemBinder extends Binder {
@@ -2696,6 +2842,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mUiHandler = injector.getUiHandler(null);
         mUserController = null;
         mVrController = null;
+        mEnableNetOpts = false;
+        fwMonitorSwitch = true;
     }
 
     // Note: This method is invoked on the main thread but may need to attach various
@@ -2719,6 +2867,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mHandlerThread.start();
         mHandler = new MainHandler(mHandlerThread.getLooper());
         mUiHandler = mInjector.getUiHandler(this);
+        // XTC device addition: mobile-data policy helper.
+        mPolicyHelper = new com.android.server.net.NetworkPolicyHelper(mContext);
 
         mConstants = new ActivityManagerConstants(this, mHandler);
 
@@ -2793,6 +2943,44 @@ public class ActivityManagerService extends IActivityManager.Stub
                 new TaskChangeNotificationController(this, mStackSupervisor, mHandler);
         mActivityStarter = new ActivityStarter(this, mStackSupervisor);
         mRecentTasks = new RecentTasks(this, mStackSupervisor);
+        mSelfstartManager = new SelfstartManager(mContext, this);
+        mOdexRestorePolicy = new com.xtc.odex.OdexRestorePolicy(systemContext, this);
+        mEnableNetOpts = SystemProperties.getBoolean(
+                "persist.vendor.qti.netopts.enable", false);
+        fwMonitorSwitch = true;
+        musicNotActiveStartTime = 0L;
+        isFirstPerformance = true;
+        allowCameraAdjustADJ = false;
+        xtcOtaCacheStatusFile = "/cache/recovery/last_install_ota_status";
+        providerPermissionWhitelist.add("com.xtc.baidu.voicesearch");
+        providerPermissionWhitelist.add("com.xtc.shakeandshake");
+        providerPermissionWhitelist.add("com.xtc.weather");
+        providerPermissionWhitelist.add("com.xtc.bleaddfriend");
+        providerPermissionWhitelist.add("com.xtc.stopclock");
+        providerPermissionWhitelist.add("com.xtc.workplan");
+        providerPermissionWhitelist.add("com.xtc.i3launcher");
+        providerPermissionWhitelist.add("com.xtc.weichat");
+        providerPermissionWhitelist.add("com.xtc.moment");
+        providerPermissionWhitelist.add("com.xtc.motion");
+        providerPermissionWhitelist.add("com.android.server.telecom");
+        providerPermissionWhitelist.add("com.android.dialer");
+        providerPermissionWhitelist.add("com.wyj.changetrafficthreshold");
+        providerPermissionWhitelist.add("com.xtc.happyword");
+        providerPermissionWhitelist.add("com.xtc.arithmeticmaster");
+        providerPermissionWhitelist.add("com.xtc.idioms");
+        providerPermissionWhitelist.add("com.xtc.virtualself");
+        prefReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (PREF_ACTION.equals(intent.getAction())) {
+                    Slog.d(TAG, "Launcher update provider permission white list");
+                    updateProviderPermissionList(context);
+                } else if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+                    Slog.d(TAG, "ACTION_BOOT_COMPLETED update provider permission white list");
+                    updateProviderPermissionList(context);
+                }
+            }
+        };
 
         mProcessCpuThread = new Thread("CpuTracker") {
             @Override
@@ -3618,6 +3806,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 || transit == TRANSIT_TASK_TO_FRONT;
     }
 
+    public boolean isOdexRestorePolicySupported() {
+        return mOdexRestorePolicy != null;
+    }
+
     int startIsolatedProcess(String entryPoint, String[] entryPointArgs,
             String processName, String abiOverride, int uid, Runnable crashHandler) {
         synchronized(this) {
@@ -3711,6 +3903,12 @@ public class ActivityManagerService extends IActivityManager.Stub
                 // come up (we have a pid but not yet its thread), so keep it.
                 if (DEBUG_PROCESSES) Slog.v(TAG_PROCESSES, "App already running: " + app);
                 // If this is a new package in the process, add the package to the list
+                if (Build.IS_USER
+                        && ((com.android.server.xgseserver.xss.xsesService.netWhiteSwitch
+                                || com.android.server.xgseserver.xss.xsesService.runCheckSwitch)
+                                && app != null && !checkProcess(app, app.pid))) {
+                    return null;
+                }
                 app.addPackage(info.packageName, info.versionCode, mProcessStats);
                 checkTime(startTime, "startProcess: done, added package to proc");
                 return app;
@@ -3744,6 +3942,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             checkTime(startTime, "startProcess: added package to existing proc");
         }
 
+        if (Build.IS_USER
+                && ((com.android.server.xgseserver.xss.xsesService.netWhiteSwitch
+                        || com.android.server.xgseserver.xss.xsesService.runCheckSwitch)
+                        && app != null && !checkProcess(app, app.pid))) {
+            return null;
+        }
+
         // If the system is not ready yet, then hold off on starting this
         // process until it is.
         if (!mProcessesReady
@@ -3769,6 +3974,67 @@ public class ActivityManagerService extends IActivityManager.Stub
         return (ai.flags&ApplicationInfo.FLAG_PERSISTENT) != 0;
     }
 
+    private static final String[] largeMemoryAPP = {
+            "com.xtc.camera.app", "com.xtc.videochat"
+    };
+
+    private boolean isShouldAdjustMinfree(String processName) {
+        for (String name : largeMemoryAPP) {
+            if (processName.contains(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // XTC: decide whether a process belongs to an "uncertified" third-party app.
+    // TRUST-MODEL CONDEMNATION: this treats any app that is not system-signed and not
+    // explicitly XTC-signed as untrusted, then lets the platform deny it network access
+    // and kill it on start. That is a vendor censorship/lock-in mechanism, not a
+    // security boundary, and it discriminates against third-party applications.
+    private boolean isUnCertifiedAppProc(ProcessRecord app) {
+        Slog.d(TAG, "isUnCertifiedAppProc  app.info.getBaseCodePath()= "
+                + app.info.getBaseCodePath() + ",app.uid = " + app.uid + " persist install ="
+                + SystemProperties.getBoolean("persist.sys.adb.install", false));
+        if (app.uid <= 10000 || app.info.isSystemSignature || app.info.isSystemApp()
+                || com.android.server.xgseserver.xss.xsesService.adbFromNetwork) {
+            return false;
+        }
+        boolean certified = new com.xtc.secure.pm.AppInstallerVerify(mContext)
+                .verify(app.info.getBaseCodePath(), 1000);
+        Slog.d(TAG, " isHasCertified= " + certified + ",app uid = " + app.uid);
+        if (certified) {
+            return false;
+        }
+        Slog.d(TAG, "app.processName= " + app.processName + " is not start !!!!!");
+        return true;
+    }
+
+    private boolean checkProcess(ProcessRecord app, int pid) {
+        boolean uncertified = isUnCertifiedAppProc(app);
+        if (uncertified && com.android.server.xgseserver.xss.xsesService.netWhiteSwitch) {
+            ((android.net.NetworkPolicyManager) mContext.getSystemService(
+                    android.net.NetworkPolicyManager.class)).setUidDenyNetworkAccess(app.uid);
+        }
+        if (!uncertified || !com.android.server.xgseserver.xss.xsesService.runCheckSwitch) {
+            return true;
+        }
+        killProcessGroup(app.uid, app.pid);
+        handleAppDiedLocked(app, true, true);
+        sendBehavior(app.info.packageName, "interceptStart");
+        forceStopPackageLocked(app.info.packageName, UserHandle.getAppId(app.uid),
+                false, false, true, false, false, app.userId, "the app is uncertified");
+        return false;
+    }
+
+    private void sendBehavior(String packageName, String result) {
+        java.util.LinkedHashMap<String, String> extend = new java.util.LinkedHashMap<>();
+        extend.put("packageName", packageName);
+        extend.put("result", result);
+        new com.xtc.behavior.XtcBehavior.Builder(mContext, "start_uncertifued_app", extend)
+                .build().sendData();
+    }
+
     private final void startProcessLocked(ProcessRecord app,
             String hostingType, String hostingNameStr) {
         startProcessLocked(app, hostingType, hostingNameStr, null /* abiOverride */,
@@ -3778,6 +4044,21 @@ public class ActivityManagerService extends IActivityManager.Stub
     private final void startProcessLocked(ProcessRecord app, String hostingType,
             String hostingNameStr, String abiOverride, String entryPoint, String[] entryPointArgs) {
         long startTime = SystemClock.elapsedRealtime();
+
+        // XTC device addition: self-start whitelist restriction.
+        // **谴责**：按厂商归属压制第三方应用自启动，剥夺用户自主选择。
+        if (!"backup".equals(hostingType)
+                && mSelfstartManager.restrictStartProcess(app.info.packageName,
+                        app.info.processName)) {
+            return;
+        }
+        // XTC device addition: AdbSecure blocks non-system callers from spawning mmitest.
+        if ("com.xtc.mmitest".equals(app.info.processName)
+                && Binder.getCallingUid() != Process.SYSTEM_UID) {
+            Slog.w(TAG_PROCESSES, "AdbSecure XTC not allow uid:" + Binder.getCallingUid()
+                    + " to call mmitest.");
+            return;
+        }
         if (app.pid > 0 && app.pid != MY_PID) {
             checkTime(startTime, "startProcess: removing from pids map");
             synchronized (mPidsSelfLocked) {
@@ -4009,6 +4290,17 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
             checkTime(startTime, "startProcess: done updating pids map");
+            // XTC/QTI: report activity/service process start to ActivityTrigger.
+            if (mActivityTrigger != null
+                    && ("activity".equals(hostingType) || "service".equals(hostingType))) {
+                mActivityTrigger.activityMiscTrigger(ActivityTrigger.START_PROCESS,
+                        app.processName, startResult.pid, 0);
+            }
+            // XTC device addition: report process start to the anti-addiction service.
+            if (mAntiService != null) {
+                mAntiService.notifyAppState(app.processName, app.info.packageName, "", app.uid,
+                        com.android.server.addiction.AntiAddictionManagerService.AppState.startProcess);
+            }
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failure starting process " + app.processName, e);
 
@@ -4899,6 +5191,49 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    /**
+     * XTC 差异：按 bundle 中的 "start_empty_apps" 列表预启动「空应用」进程
+     * （由 ActivityRecord.PreferredAppsTask 触发）。
+     */
+    final int startActivityAsUserEmpty(android.app.IApplicationThread caller, String callingPackage,
+            Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode,
+            int startFlags, ProfilerInfo profilerInfo, Bundle bOptions, int userId) {
+        ArrayList<String> startEmptyApps = bOptions.getStringArrayList("start_empty_apps");
+        if (startEmptyApps == null || startEmptyApps.size() <= 0) {
+            return 1;
+        }
+        for (String pkg : startEmptyApps) {
+            if (pkg == null) {
+                continue;
+            }
+            synchronized (this) {
+                boostPriorityForLockedSection();
+                try {
+                    Intent launchIntent =
+                            mContext.getPackageManager().getLaunchIntentForPackage(pkg);
+                    if (launchIntent != null) {
+                        ActivityInfo aInfo =
+                                mStackSupervisor.resolveActivity(launchIntent, null, 0, null, 0);
+                        if (aInfo != null) {
+                            ProcessRecord app = startProcessLocked(pkg, aInfo.applicationInfo,
+                                    false, 0, "activity", null, false, false, true);
+                            if (app != null) {
+                                updateOomAdjLocked(app, true);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    if (ActivityManagerDebugConfig.DEBUG_PROCESSES) {
+                        Slog.w(TAG, "Exception raised trying to start app as empty " + e);
+                    }
+                } finally {
+                    resetPriorityAfterLockedSection();
+                }
+            }
+        }
+        return 1;
+    }
+
     @Override
     public final int startActivityFromRecents(int taskId, Bundle bOptions) {
         if (checkCallingPermission(START_TASKS_FROM_RECENTS) != PackageManager.PERMISSION_GRANTED) {
@@ -5280,6 +5615,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     private final void handleAppDiedLocked(ProcessRecord app,
             boolean restarting, boolean allowRestart) {
         int pid = app.pid;
+        // XTC device addition: report process death to the anti-addiction service.
+        if (mAntiService != null) {
+            mAntiService.notifyAppState(app.processName, app.info.packageName, "", app.uid,
+                    com.android.server.addiction.AntiAddictionManagerService.AppState.Dead);
+        }
         boolean kept = cleanUpApplicationRecordLocked(app, restarting, allowRestart, -1,
                 false /*replacingPid*/);
         if (!kept && !restarting) {
@@ -5318,6 +5658,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         } finally {
             mWindowManager.continueSurfaceLayout();
         }
+        // XTC device addition: notify the self-start whitelist manager.
+        mSelfstartManager.handlePackageKilled(app.info.packageName);
     }
 
     private final int getLRURecordIndexForAppLocked(IApplicationThread thread) {
@@ -5460,11 +5802,20 @@ public class ActivityManagerService extends IActivityManager.Stub
                         + ProcessList.makeOomAdjString(app.setAdj)
                         + ProcessList.makeProcStateString(app.setProcState));
                 mAllowLowerMemLevel = true;
+                if (memMonitorSwitch && app.curAdj > 0 && app.curAdj < 200) {
+                    systemMemoryLack(app.curAdj, app.processName);
+                }
+                if (mEnableNetOpts) {
+                    networkOptsCheck(1, app.processName);
+                }
             } else {
                 // Note that we always want to do oom adj to update our state with the
                 // new number of procs.
                 mAllowLowerMemLevel = false;
                 doLowMem = false;
+            }
+            if (mUxPerf != null) {
+                mUxPerf.perfUXEngine_events(4, 0, app.processName, 0);
             }
             EventLog.writeEvent(EventLogTags.AM_PROC_DIED, app.userId, app.pid, app.processName,
                     app.setAdj, app.setProcState);
@@ -5814,6 +6165,35 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    // XTC 差异：launcher 原生崩溃频次统计；DEFAULT_TRIGGER_MAX_DELAY 窗口内崩溃 4 次触发恢复。
+    // 这是厂商对启动器进程的特殊看护（对 com.xtc.i3launcher 单独处理），仅记录行为。
+    public void launcherRepeatedCrash() {
+        if (SystemProperties.getBoolean("persist.sys.xtc_launcher_crash_ignore", false)) {
+            Slog.d(TAG, "xtc_launcher_crash persist.sys.xtc_launcher_ignore is true, "
+                    + "native crash return.");
+            return;
+        }
+        long now = SystemClock.uptimeMillis();
+        if (ActivityManagerDebugConfig.DEBUG_ALL) {
+            Slog.d(TAG, "xtc_launcher_crash launcherRepeatedCrash  mLauncherLastCrashTime = "
+                    + mLauncherLastCrashTime + ", now = " + now);
+        }
+        if (now > mLauncherLastCrashTime
+                + com.android.server.job.controllers.JobStatus.DEFAULT_TRIGGER_MAX_DELAY) {
+            mLauncherLastCrashTime = now;
+            crashCounts = 0;
+        }
+        crashCounts++;
+        Slog.d(TAG, "xtc_launcher_crash nativeCrashCounts = " + crashCounts);
+        if (crashCounts < 4 || now >= mLauncherLastCrashTime
+                + com.android.server.job.controllers.JobStatus.DEFAULT_TRIGGER_MAX_DELAY) {
+            return;
+        }
+        mLauncherLastCrashTime = now;
+        crashCounts = 0;
+        mAppErrors.AppRepeatedCrash("com.xtc.i3launcher", "native_crash");
+    }
+
     final void logAppTooSlow(ProcessRecord app, long startTime, String msg) {
         if (true || Build.IS_USER) {
             return;
@@ -6070,6 +6450,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
                 killPackageProcessesLocked(packageName, appId, userId,
                         ProcessList.SERVICE_ADJ, false, true, true, false, "kill background");
+                // XTC device addition: notify the self-start whitelist manager.
+                mSelfstartManager.handlePackageKilled(packageName);
             }
         } finally {
             Binder.restoreCallingIdentity(callingId);
@@ -6618,6 +7000,9 @@ public class ActivityManagerService extends IActivityManager.Stub
             } else {
                 Slog.i(TAG, "Force stopping u" + userId + ": " + reason);
             }
+            if (mUxPerf != null) {
+                mUxPerf.perfUXEngine_events(4, 0, packageName, 0);
+            }
 
             mAppErrors.resetProcessCrashTimeLocked(packageName == null, appId, userId);
         }
@@ -6736,6 +7121,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
         }
 
+        // XTC device addition: notify the self-start whitelist manager.
+        mSelfstartManager.handlePackageKilled(packageName);
         return didSomething;
     }
 
@@ -7352,6 +7739,61 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         }, dumpheapFilter);
+
+        // XTC/BBK: refresh the memory/framework monitor module switches on launcher init.
+        IntentFilter moduleFilter = new IntentFilter();
+        moduleFilter.addAction("com.xtc.launcher.moduleswitch.INIT_ACTION");
+        mContext.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                memMonitorSwitch = com.xtc.moduleswitch.ModuleSwitch.queryModuleSwitch(
+                        mContext, 2192, false);
+                fwMonitorSwitch = com.xtc.moduleswitch.ModuleSwitch.queryModuleSwitch(
+                        mContext, 2469, true);
+                Log.d(TAG, "sys_ModuleSwitch onReceive queryModuleSwitch memMonitorSwitch= "
+                        + memMonitorSwitch + " ,fwMonitorSwitch:" + fwMonitorSwitch);
+            }
+        }, moduleFilter);
+
+        // XTC/QTI network-opts: track the active network type and hint ActivityTrigger
+        // on connectivity changes when the top activity's process is in the foreground.
+        if (mEnableNetOpts) {
+            IntentFilter netFilter = new IntentFilter();
+            netFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+            mContext.registerReceiver(new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (mConnectivityManager != null) {
+                        NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+                        synchronized (mNetLock) {
+                            mActiveNetType = activeNetworkInfo != null
+                                    ? activeNetworkInfo.getType() : -1;
+                        }
+                    }
+                    ActivityStack lastStack = mStackSupervisor.getLastStack();
+                    ActivityRecord top;
+                    PowerManager powerManager;
+                    if (lastStack == null
+                            || (top = lastStack.topRunningActivityLocked()) == null
+                            || (powerManager = (PowerManager) mContext.getSystemService(
+                                    Context.POWER_SERVICE)) == null
+                            || !powerManager.isInteractive()) {
+                        return;
+                    }
+                    networkOptsCheck(0, top.processName);
+                }
+            }, netFilter);
+            mConnectivityManager = (ConnectivityManager) mContext.getSystemService(
+                    Context.CONNECTIVITY_SERVICE);
+            if (mConnectivityManager != null) {
+                NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+                if (activeNetworkInfo != null) {
+                    synchronized (mNetLock) {
+                        mActiveNetType = activeNetworkInfo.getType();
+                    }
+                }
+            }
+        }
 
         // Let system services know.
         mSystemServiceManager.startBootPhase(SystemService.PHASE_BOOT_COMPLETED);
@@ -8401,6 +8843,30 @@ public class ActivityManagerService extends IActivityManager.Stub
             return PackageManager.PERMISSION_DENIED;
         }
         return checkComponentPermission(permission, pid, uid, -1, true);
+    }
+
+    /**
+     * XTC/BBK: whether the given package was installed/updated after the current boot.
+     * Used by AppErrors' launcher repeated-crash flow to decide between wiping the
+     * launcher's data (updated this boot) and rebooting the device.
+     */
+    public boolean checkLastUpdateTime(String packageName) {
+        boolean updatedAfterBoot = false;
+        if (packageName != null && packageName.length() > 0) {
+            long bootTimeMillis = System.currentTimeMillis() - SystemClock.elapsedRealtime();
+            try {
+                android.content.pm.PackageInfo packageInfo =
+                        mContext.getPackageManager().getPackageInfo(packageName, 0);
+                updatedAfterBoot = packageInfo.lastUpdateTime < bootTimeMillis;
+                Slog.d(TAG, "xtc_launcher_crash getLastUpdateTime packageName = "
+                        + packageInfo.packageName + " ,pInfo.lastUpdateTime = "
+                        + packageInfo.lastUpdateTime + ",bootTime = " + bootTimeMillis
+                        + " ,isUpdateLauncherReboot = " + updatedAfterBoot);
+            } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return updatedAfterBoot;
     }
 
     @Override
@@ -10564,6 +11030,773 @@ public class ActivityManagerService extends IActivityManager.Stub
         Slog.e(TAG, "moveTaskBackwards not yet implemented!");
     }
 
+    /**
+     * XTC/QTI: post a network-opts hint (0 = connectivity change, 1 = process died)
+     * for the given process to ActivityTrigger.
+     */
+    private final void networkOptsCheck(int type, String processName) {
+        mHandler.sendMessage(mHandler.obtainMessage(NETWORK_OPTS_CHECK_MSG, type, 0,
+                processName));
+    }
+
+    /**
+     * XTC/BBK: classify a crash stack trace into a coarse crash type for the
+     * "fw_monitor" telemetry event.
+     */
+    private String markCrashType(String stackTrace) {
+        if (android.text.TextUtils.isEmpty(stackTrace)) {
+            return "StackTrace_NULL";
+        }
+        if (errorMap.isEmpty()) {
+            return "ErrorMap_NULL";
+        }
+        for (String key : errorMap.keySet()) {
+            if (!android.text.TextUtils.isEmpty(key) && stackTrace.contains(key)) {
+                return errorMap.get(key);
+            }
+        }
+        return "Other_ERROR";
+    }
+
+    /**
+     * XTC/BBK: record the resident PSS of a large-memory app (mem_app_meminfo).
+     */
+    public void saveAPPMeminfo(String processName, long pss) {
+        String time = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new java.util.Date());
+        try {
+            org.json.JSONObject jsonObject = new org.json.JSONObject();
+            jsonObject.put(com.android.server.performance.policy.sched.SchedAdjustment.TAG_PROCESS,
+                    processName);
+            jsonObject.put("pss", pss);
+            jsonObject.put("time", time);
+            Slog.d(TAG, "mem_monitor saveAPPMeminfo jsonObject.toString="
+                    + jsonObject.toString());
+            jsonObject.toString();
+        } catch (org.json.JSONException e) {
+            Slog.e(TAG, "saveAPPMeminfo creat failed jsonObject\n" + e);
+        }
+        java.util.LinkedHashMap<String, String> values = new java.util.LinkedHashMap<>();
+        values.put(com.android.server.performance.policy.sched.SchedAdjustment.TAG_PROCESS,
+                processName);
+        values.put("pss", String.valueOf(pss));
+        values.put("Time", time);
+        new com.xtc.behavior.XtcBehavior.Builder(mContext, "mem_app_meminfo", values)
+                .eventType(1001).build().sendData();
+    }
+
+    private void saveSwapFreeValue(long swapFreeMb) {
+        String time = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new java.util.Date());
+        if (tmpSwapFree == swapFreeMb || tmpSwapFreeTime.equals(time)) {
+            return;
+        }
+        tmpSwapFree = swapFreeMb;
+        tmpSwapFreeTime = time;
+        java.util.LinkedHashMap<String, String> values = new java.util.LinkedHashMap<>();
+        values.put("swapfree", String.valueOf(swapFreeMb));
+        values.put("time", time);
+        new com.xtc.behavior.XtcBehavior.Builder(mContext, "mem_swap_free", values)
+                .eventType(1001).build().sendData();
+    }
+
+    /**
+     * XTC/BBK: report a low-memory process kill to the "mem_lmk_record" telemetry event.
+     */
+    private void systemMemoryLack(int adj, String killedProcessName) {
+        if (adj == 0) {
+            return;
+        }
+        String time = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new java.util.Date());
+        String topProcessName = getRunningAppProcesses().get(0).processName;
+        com.android.internal.util.MemInfoReader memInfoReader =
+                new com.android.internal.util.MemInfoReader();
+        memInfoReader.readMemInfo();
+        long freeSizeKb = memInfoReader.getFreeSizeKb();
+        long onlyCachedSizeKb = memInfoReader.getOnlyCachedSizeKb();
+        try {
+            org.json.JSONObject jsonObject = new org.json.JSONObject();
+            jsonObject.put("KillProcessName", killedProcessName);
+            jsonObject.put("adj", adj);
+            jsonObject.put("TopProcessName", topProcessName);
+            jsonObject.put("CurFreeMem", freeSizeKb);
+            jsonObject.put("CurCachedKb", onlyCachedSizeKb);
+            jsonObject.put("Time", time);
+            Slog.d(TAG, "mem_monitor  systemMemoryLack jsonObject.toString="
+                    + jsonObject.toString());
+            jsonObject.toString();
+        } catch (org.json.JSONException e) {
+            Slog.e(TAG, "mem_monitor systemMemoryLack creat failed jsonObject\n" + e);
+        }
+        java.util.LinkedHashMap<String, String> values = new java.util.LinkedHashMap<>();
+        values.put("KillProcessName", killedProcessName);
+        values.put("adj", String.valueOf(adj));
+        values.put("TopProcessName", topProcessName);
+        values.put("CurFreeMem", String.valueOf(freeSizeKb));
+        values.put("CurCachedKb", String.valueOf(onlyCachedSizeKb));
+        values.put("Time", time);
+        new com.xtc.behavior.XtcBehavior.Builder(mContext, "mem_lmk_record", values)
+                .eventType(1001).build().sendData();
+    }
+
+    /**
+     * XTC/BBK: report an OutOfMemoryError crash to the "mem_app_oom" telemetry event.
+     */
+    private void writeOomData(String processName, String stackTrace) {
+        if (stackTrace == null || stackTrace.length() == 0) {
+            return;
+        }
+        String time = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new java.util.Date());
+        java.util.LinkedHashMap<String, String> values = new java.util.LinkedHashMap<>();
+        values.put("processName", processName);
+        values.put("errorMessage", stackTrace);
+        values.put("time", time);
+        new com.xtc.behavior.XtcBehavior.Builder(mContext, "mem_app_oom", values)
+                .eventType(1001).build().sendData();
+    }
+
+    public boolean getMemMonitorSwitch() {
+        return memMonitorSwitch;
+    }
+
+    /**
+     * XTC/BBK: force an OOM-adjust pass (used by the Wi-Fi sleep diagnostics path).
+     */
+    @Override
+    public void callUpdateOomAdj() {
+        synchronized (this) {
+            boostPriorityForLockedSection();
+            try {
+                updateOomAdjLocked();
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+    }
+
+    /**
+     * XTC/BBK: whether the given process currently holds audio focus / is playing music.
+     * Special-cases the workplan app, and allows a 60s grace period after music stops.
+     */
+    private boolean checkProccessPlaying(String processName) {
+        if (processName.equals("com.xtc.workplan")) {
+            return true;
+        }
+        android.media.AudioManager audioManager =
+                (android.media.AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        boolean playing = audioManager != null
+                ? audioManager.isProccessHasAudioFoucs(processName) : false;
+        if (!playing && processName.contains(":")) {
+            processName = processName.substring(0, processName.indexOf(":"));
+            playing = audioManager.isProccessHasAudioFoucs(processName);
+        }
+        if (!playing) {
+            return false;
+        }
+        if (!audioManager.isMusicActive()) {
+            if (musicNotActiveStartTime == 0) {
+                musicNotActiveStartTime = SystemClock.elapsedRealtime();
+            }
+            return SystemClock.elapsedRealtime() - musicNotActiveStartTime < 60000;
+        }
+        if (ActivityManagerDebugConfig.DEBUG_ALL) {
+            Slog.d(TAG, "bbk_third_party_app isplaying the app.processName=" + processName);
+        }
+        if (musicNotActiveStartTime != 0) {
+            musicNotActiveStartTime = 0L;
+        }
+        return true;
+    }
+
+    /**
+     * XTC/BBK: class-mode ("classmodestatus") suppresses background broadcasts entirely.
+     */
+    private boolean isDisableBroadcastToThirdAPP() {
+        return SystemProperties.getBoolean("persist.sys.classmodestatus", false);
+    }
+
+    private boolean isRuningProcesses(String processName) {
+        for (ActivityManager.RunningAppProcessInfo info : getRunningAppProcesses()) {
+            if (info.processName.equals(processName) && info.importance < 400) {
+                if (ActivityManagerDebugConfig.DEBUG_ALL) {
+                    Slog.d(TAG, "bbk_third_party_app isRuningProcesses" + info.processName
+                            + ",info.importance=" + info.importance);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isScreenOn() {
+        return ((PowerManager) mContext.getSystemService(Context.POWER_SERVICE)).isScreenOn();
+    }
+
+    // XTC 差异：调用者是否为 shell(2000)/root(0)。
+    private boolean isCallerShell() {
+        int callingUid = Binder.getCallingUid();
+        return callingUid == 2000 || callingUid == 0;
+    }
+
+    // XTC 差异：屏幕是否处于「长睡眠」状态。
+    private boolean isLongSleep() {
+        return ((PowerManager) mContext.getSystemService(Context.POWER_SERVICE)).isScreenLongSleep();
+    }
+
+    // XTC 差异：厂商自测/性能工具进程在空进程回收时打印 keep-alive 提示（不改变杀进程行为）。
+    private void logSpecialProcessKeepAlive(ProcessRecord app, String reason) {
+        if (app.processName.equals("com.xtc.selftest")
+                || app.processName.equals("com.xtc.perftool")) {
+            String special = SystemProperties.get("persist.sys.special.process", "null");
+            if (special.contains("com.xtc.selftest") || special.contains("com.xtc.perftool")) {
+                Slog.d(TAG, app.processName + " keep alive, " + reason);
+            }
+        }
+    }
+
+    // XTC 差异：是否为受保护的特殊测试进程（user 版本才生效）。
+    private boolean isSaveTestProcess(String processName) {
+        return !Build.IS_USER && processName != null && processName.length() != 0
+                && SystemProperties.get("sys.special.process", "null").contains(processName);
+    }
+
+    // XTC 差异：获取 PerformanceManager 服务（首次调用缓存）。
+    private com.xtc.performance.PerformanceManager getPerformanceManager() {
+        if (mPm == null && isFirstPerformance) {
+            mPm = (com.xtc.performance.PerformanceManager)
+                    mContext.getSystemService(Context.XTC_PERFORMANCE_SERVICE);
+            isFirstPerformance = false;
+            Slog.e(TAG, "getPerformanceManager mPm=" + mPm);
+        }
+        return mPm;
+    }
+
+    private int processLmkAdjTunningIfneeded(ProcessInfo processInfo, int expectedAdj, long pss,
+            long elapsedRealtime) {
+        try {
+            if (!mBooted || getPerformanceManager() == null) {
+                return 2;
+            }
+            return getPerformanceManager().processLmkAdjTunningIfneeded(processInfo, expectedAdj,
+                    pss, elapsedRealtime);
+        } catch (Exception e) {
+            Slog.e(TAG, "processLmkAdjTunningIfneeded e : " + e);
+            return 2;
+        }
+    }
+
+    // XTC 差异：获取 PackageManagerService（首次调用缓存）。
+    com.android.server.pm.PackageManagerService getPackageManagerServiceLocked() {
+        if (pms == null) {
+            pms = (com.android.server.pm.PackageManagerService)
+                    ServiceManager.getService("package");
+        }
+        return pms;
+    }
+
+    /**
+     * XTC 差异：对白名单进程直接授予 provider 的 com.xtc* 读写权限——**已谴责**：
+     * 绕过标准运行时权限授予流程，只惠及特定厂商包。
+     */
+    private void grantContentProviderWhitelistPermission(ProviderInfo providerInfo,
+            ProcessRecord processRecord, int userId) {
+        try {
+            if (providerInfo.readPermission != null
+                    && providerInfo.readPermission.startsWith("com.xtc")
+                    && AppGlobals.getPackageManager().checkPermission(providerInfo.readPermission,
+                            processRecord.processName, userId) != 0
+                    && providerPermissionWhitelist.contains(processRecord.processName)) {
+                Slog.d(TAG, "processName=" + processRecord.processName + ", readPermission="
+                        + providerInfo.readPermission + ", result ="
+                        + getPackageManagerServiceLocked().grantContentProviderPermission(
+                                processRecord.uid, processRecord.processName,
+                                providerInfo.readPermission, userId));
+            } else if (providerInfo.writePermission != null
+                    && providerInfo.writePermission.startsWith("com.xtc")
+                    && AppGlobals.getPackageManager().checkPermission(providerInfo.writePermission,
+                            processRecord.processName, userId) != 0
+                    && providerPermissionWhitelist.contains(processRecord.processName)) {
+                Slog.d(TAG, "processName=" + processRecord.processName + ", writePermission="
+                        + providerInfo.writePermission + ", result ="
+                        + getPackageManagerServiceLocked().grantContentProviderPermission(
+                                processRecord.uid, processRecord.processName,
+                                providerInfo.writePermission, userId));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String nextArg() {
+        if (mNextArg >= mArgs.length) {
+            return null;
+        }
+        String arg = mArgs[mNextArg];
+        mNextArg++;
+        return arg;
+    }
+
+    // XTC 差异：从 launcher 的 SharedPreferences 重建 provider 权限白名单。
+    public void updateProviderPermissionList(Context context) {
+        final Context ctx = context;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (providerPermissionWhitelist) {
+                    try {
+                        Slog.d(TAG, "update provider permission white list");
+                        java.util.Map<String, ?> all = ctx.createPackageContext(CONTEXT_PACKAGE, 2)
+                                .getSharedPreferences(PERMISSION_PREFERENCE, 4).getAll();
+                        if (all.size() > 0) {
+                            providerPermissionWhitelist.clear();
+                            for (String pkg : all.keySet()) {
+                                if (!providerPermissionWhitelist.contains(pkg)) {
+                                    providerPermissionWhitelist.add(pkg);
+                                    Log.d(TAG, "add to list pkg:" + pkg);
+                                }
+                            }
+                        }
+                    } catch (PackageManager.NameNotFoundException e) {
+                        Log.e(TAG, "updateProviderPermissionList NameNotFoundException");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void dumpProviderPermission(PrintWriter pw) {
+        String nextArg = nextArg();
+        if (nextArg == null) {
+            return;
+        }
+        if ("list".equals(nextArg)) {
+            pw.println("print ProviderPermission whitelist:");
+            for (String pkg : providerPermissionWhitelist) {
+                pw.println("packageName [" + pkg + "]");
+            }
+        } else if ("add".equals(nextArg)) {
+            String pkg = nextArg();
+            if (!providerPermissionWhitelist.contains(pkg)) {
+                providerPermissionWhitelist.add(pkg);
+            }
+        } else if ("remove".equals(nextArg)) {
+            providerPermissionWhitelist.remove(nextArg());
+        }
+    }
+
+    private static void showLogUsage(PrintWriter pw) {
+        pw.println("Activity manager log tag configuration menu:");
+        pw.println("  -d                          show the help information about -d");
+        pw.println("  -d list                     list all of the debug components");
+        pw.println("  -d enable  <component component ...>  enable the debug component");
+        pw.println("  -d disable <component component ...>  disable the debug component");
+        pw.println("  Example:");
+        pw.println("  $adb shell dumpsys activity -d list");
+        pw.println("  $adb shell dumpsys activity -d enable a");
+        pw.println("  $adb shell dumpsys activity -d disable da");
+        pw.println("  $adb shell dumpsys activity -d enable at 1,2 Launcher");
+    }
+
+    // XTC 差异：`dumpsys activity -d` 运行时调试开关（设备从更新的 AOSP 回移）。
+    private void runDebug(PrintWriter pw) {
+        String nextArg = nextArg();
+        if (nextArg == null) {
+            showLogUsage(pw);
+            return;
+        }
+        if (nextArg.equals("list")) {
+            runDebugList(pw);
+            return;
+        }
+        if (nextArg.equals("enable")) {
+            runDebugEnable(pw, true);
+            return;
+        }
+        if (nextArg.equals("disable")) {
+            runDebugEnable(pw, false);
+        } else if (nextArg.equals("at")) {
+            enableActivityThreadLog(pw);
+        } else {
+            showLogUsage(pw);
+        }
+    }
+
+    private void runDebugEnable(PrintWriter pw, boolean enable) {
+        String nextArg = nextArg();
+        if (nextArg == null) {
+            showLogUsage(pw);
+            return;
+        }
+        do {
+            int component;
+            try {
+                component = Integer.parseInt(nextArg);
+            } catch (NumberFormatException e) {
+                component = -1;
+            }
+            switch (component) {
+                case 0:
+                    ActivityManagerDebugConfig.DEBUG_ALL = enable;
+                    ActivityManagerDebugConfig.DEBUG_PROCESSES = enable;
+                    ActivityManagerDebugConfig.DEBUG_PROCESS_OBSERVERS = enable;
+                    ActivityManagerDebugConfig.DEBUG_CLEANUP = enable;
+                    ActivityManagerDebugConfig.DEBUG_MU = enable;
+                    ActivityManagerDebugConfig.DEBUG_IMMERSIVE = enable;
+                    ActivityManagerDebugConfig.DEBUG_SWITCH = enable;
+                    ActivityManagerDebugConfig.DEBUG_TASKS = enable;
+                    ActivityManagerDebugConfig.DEBUG_PAUSE = enable;
+                    ActivityManagerDebugConfig.DEBUG_THUMBNAILS = enable;
+                    ActivityManagerDebugConfig.DEBUG_TRANSITION = enable;
+                    ActivityManagerDebugConfig.DEBUG_CONFIGURATION = enable;
+                    ActivityManagerDebugConfig.DEBUG_OOM_ADJ = enable;
+                    ActivityManagerDebugConfig.DEBUG_VISIBILITY = enable;
+                    ActivityManagerDebugConfig.DEBUG_USER_LEAVING = enable;
+                    ActivityManagerDebugConfig.DEBUG_RESULTS = enable;
+                    ActivityManagerDebugConfig.DEBUG_BROADCAST = enable;
+                    ActivityManagerDebugConfig.DEBUG_BROADCAST_BACKGROUND = enable;
+                    ActivityManagerDebugConfig.DEBUG_BROADCAST_LIGHT = enable;
+                    ActivityManagerDebugConfig.DEBUG_SERVICE = enable;
+                    ActivityManagerDebugConfig.DEBUG_SERVICE_EXECUTING = enable;
+                    ActivityManagerDebugConfig.DEBUG_PROVIDER = enable;
+                    ActivityManagerDebugConfig.DEBUG_URI_PERMISSION = enable;
+                    ActivityManagerDebugConfig.DEBUG_BACKUP = enable;
+                    ActivityManagerDebugConfig.DEBUG_POWER = enable;
+                    ActivityManagerDebugConfig.DEBUG_POWER_QUICK = enable;
+                    ActivityManagerDebugConfig.DEBUG_FOCUS = enable;
+                    ActivityManagerDebugConfig.DEBUG_STACK = enable;
+                    ActivityManagerDebugConfig.DEBUG_RECENTS = enable;
+                    ActivityManagerDebugConfig.DEBUG_STATES = enable;
+                    ActivityManagerDebugConfig.DEBUG_ADD_REMOVE = enable;
+                    ActivityManagerDebugConfig.DEBUG_SAVED_STATE = enable;
+                    ActivityManagerDebugConfig.DEBUG_APP = enable;
+                    ActivityManagerDebugConfig.DEBUG_IDLE = enable;
+                    break;
+                case 1:
+                    ActivityManagerDebugConfig.DEBUG_BACKUP = enable;
+                    break;
+                case 2:
+                    ActivityManagerDebugConfig.DEBUG_BROADCAST = enable;
+                    break;
+                case 3:
+                    ActivityManagerDebugConfig.DEBUG_BROADCAST_LIGHT = enable;
+                    break;
+                case 4:
+                    ActivityManagerDebugConfig.DEBUG_BROADCAST_BACKGROUND = enable;
+                    break;
+                case 5:
+                    ActivityManagerDebugConfig.DEBUG_CLEANUP = enable;
+                    break;
+                case 6:
+                    ActivityManagerDebugConfig.DEBUG_CONFIGURATION = enable;
+                    break;
+                case 7:
+                    ActivityManagerDebugConfig.DEBUG_FOCUS = enable;
+                    break;
+                case 8:
+                    ActivityManagerDebugConfig.DEBUG_IMMERSIVE = enable;
+                    break;
+                case 9:
+                    ActivityManagerDebugConfig.DEBUG_LOCKSCREEN = enable;
+                    break;
+                case 10:
+                    ActivityManagerDebugConfig.DEBUG_LRU = enable;
+                    break;
+                case 11:
+                    ActivityManagerDebugConfig.DEBUG_MU = enable;
+                    break;
+                case 13:
+                    ActivityManagerDebugConfig.DEBUG_OOM_ADJ = enable;
+                    break;
+                case 14:
+                    ActivityManagerDebugConfig.DEBUG_PAUSE = enable;
+                    break;
+                case 15:
+                    ActivityManagerDebugConfig.DEBUG_POWER = enable;
+                    break;
+                case 16:
+                    ActivityManagerDebugConfig.DEBUG_POWER_QUICK = enable;
+                    break;
+                case 17:
+                    ActivityManagerDebugConfig.DEBUG_PROCESSES = enable;
+                    break;
+                case 18:
+                    ActivityManagerDebugConfig.DEBUG_PROCESS_OBSERVERS = enable;
+                    break;
+                case 19:
+                    ActivityManagerDebugConfig.DEBUG_PROVIDER = enable;
+                    break;
+                case 20:
+                    ActivityManagerDebugConfig.DEBUG_RESULTS = enable;
+                    break;
+                case 21:
+                    ActivityManagerDebugConfig.DEBUG_SERVICE = enable;
+                    break;
+                case 22:
+                    ActivityManagerDebugConfig.DEBUG_SERVICE_EXECUTING = enable;
+                    break;
+                case 23:
+                    ActivityManagerDebugConfig.DEBUG_STACK = enable;
+                    break;
+                case 24:
+                    ActivityManagerDebugConfig.DEBUG_SWITCH = enable;
+                    break;
+                case 25:
+                    ActivityManagerDebugConfig.DEBUG_TASKS = enable;
+                    break;
+                case 26:
+                    ActivityManagerDebugConfig.DEBUG_THUMBNAILS = enable;
+                    break;
+                case 27:
+                    ActivityManagerDebugConfig.DEBUG_TRANSITION = enable;
+                    break;
+                case 28:
+                    ActivityManagerDebugConfig.DEBUG_URI_PERMISSION = enable;
+                    break;
+                case 29:
+                    ActivityManagerDebugConfig.DEBUG_USER_LEAVING = enable;
+                    break;
+                case 30:
+                    ActivityManagerDebugConfig.DEBUG_VISIBILITY = enable;
+                    break;
+                case 31:
+                    ActivityManagerDebugConfig.DEBUG_PSS = enable;
+                    break;
+                case 32:
+                    ActivityManagerDebugConfig.DEBUG_RECENTS = enable;
+                    break;
+                case 34:
+                    ActivityManagerDebugConfig.DEBUG_ADD_REMOVE = enable;
+                    break;
+                case 35:
+                    ActivityManagerDebugConfig.DEBUG_APP = enable;
+                    break;
+                case 36:
+                    ActivityManagerDebugConfig.DEBUG_CONTAINERS = enable;
+                    break;
+                case 37:
+                    ActivityManagerDebugConfig.DEBUG_IDLE = enable;
+                    break;
+                case 38:
+                    ActivityManagerDebugConfig.DEBUG_RELEASE = enable;
+                    break;
+                case 39:
+                    ActivityManagerDebugConfig.DEBUG_SAVED_STATE = enable;
+                    break;
+                case 40:
+                    ActivityManagerDebugConfig.DEBUG_SCREENSHOTS = enable;
+                    break;
+                case 41:
+                    ActivityManagerDebugConfig.DEBUG_STATES = enable;
+                    break;
+                default:
+                    pw.println("Invalid arguments !");
+                    break;
+            }
+            nextArg = nextArg();
+        } while (nextArg != null);
+    }
+
+    private void runDebugList(PrintWriter pw) {
+        pw.print("0 . DEBUG_ALL = "); pw.println(ActivityManagerDebugConfig.DEBUG_ALL);
+        pw.print("1 . DEBUG_BACKUP = "); pw.println(ActivityManagerDebugConfig.DEBUG_BACKUP);
+        pw.print("2 . DEBUG_BROADCAST = "); pw.println(ActivityManagerDebugConfig.DEBUG_BROADCAST);
+        pw.print("3 . DEBUG_BROADCAST_LIGHT = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_BROADCAST_LIGHT);
+        pw.print("4 . DEBUG_BROADCAST_BACKGROUND = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_BROADCAST_BACKGROUND);
+        pw.print("5 . DEBUG_CLEANUP = "); pw.println(ActivityManagerDebugConfig.DEBUG_CLEANUP);
+        pw.print("6 . DEBUG_CONFIGURATION = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_CONFIGURATION);
+        pw.print("7 . DEBUG_FOCUS = "); pw.println(ActivityManagerDebugConfig.DEBUG_FOCUS);
+        pw.print("8 . DEBUG_IMMERSIVE = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_IMMERSIVE);
+        pw.print("9 . DEBUG_LOCKSCREEN = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_LOCKSCREEN);
+        pw.print("10. DEBUG_LRU = "); pw.println(ActivityManagerDebugConfig.DEBUG_LRU);
+        pw.print("11. DEBUG_MU = "); pw.println(ActivityManagerDebugConfig.DEBUG_MU);
+        pw.print("13. DEBUG_OOM_ADJ = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_OOM_ADJ);
+        pw.print("14. DEBUG_PAUSE = "); pw.println(ActivityManagerDebugConfig.DEBUG_PAUSE);
+        pw.print("15. DEBUG_POWER = "); pw.println(ActivityManagerDebugConfig.DEBUG_POWER);
+        pw.print("16. DEBUG_POWER_QUICK = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_POWER_QUICK);
+        pw.print("17. DEBUG_PROCESSES = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_PROCESSES);
+        pw.print("18. DEBUG_PROCESS_OBSERVERS = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_PROCESS_OBSERVERS);
+        pw.print("19. DEBUG_PROVIDER = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_PROVIDER);
+        pw.print("20. DEBUG_RESULTS = "); pw.println(ActivityManagerDebugConfig.DEBUG_RESULTS);
+        pw.print("21. DEBUG_SERVICE = "); pw.println(ActivityManagerDebugConfig.DEBUG_SERVICE);
+        pw.print("22. DEBUG_SERVICE_EXECUTING = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_SERVICE_EXECUTING);
+        pw.print("23. DEBUG_STACK = "); pw.println(ActivityManagerDebugConfig.DEBUG_STACK);
+        pw.print("24. DEBUG_SWITCH = "); pw.println(ActivityManagerDebugConfig.DEBUG_SWITCH);
+        pw.print("25. DEBUG_TASKS = "); pw.println(ActivityManagerDebugConfig.DEBUG_TASKS);
+        pw.print("26. DEBUG_THUMBNAILS = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_THUMBNAILS);
+        pw.print("27. DEBUG_TRANSITION = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_TRANSITION);
+        pw.print("28. DEBUG_URI_PERMISSION = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_URI_PERMISSION);
+        pw.print("29. DEBUG_USER_LEAVING = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_USER_LEAVING);
+        pw.print("30. DEBUG_VISIBILITY = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_VISIBILITY);
+        pw.print("31. DEBUG_PSS = "); pw.println(ActivityManagerDebugConfig.DEBUG_PSS);
+        pw.print("32. DEBUG_RECENTS = "); pw.println(ActivityManagerDebugConfig.DEBUG_RECENTS);
+        pw.print("34. DEBUG_ADD_REMOVE = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_ADD_REMOVE);
+        pw.print("35. DEBUG_APP = "); pw.println(ActivityManagerDebugConfig.DEBUG_APP);
+        pw.print("36. DEBUG_CONTAINERS = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_CONTAINERS);
+        pw.print("37. DEBUG_IDLE = "); pw.println(ActivityManagerDebugConfig.DEBUG_IDLE);
+        pw.print("38. DEBUG_RELEASE = "); pw.println(ActivityManagerDebugConfig.DEBUG_RELEASE);
+        pw.print("39. DEBUG_SAVED_STATE = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_SAVED_STATE);
+        pw.print("40. DEBUG_SCREENSHOTS = ");
+        pw.println(ActivityManagerDebugConfig.DEBUG_SCREENSHOTS);
+        pw.print("41. DEBUG_STATES = "); pw.println(ActivityManagerDebugConfig.DEBUG_STATES);
+    }
+
+    // XTC 差异：dumpsys 命令，动态开关某进程的 ActivityThread 调试日志。
+    private void enableActivityThreadLog(PrintWriter pw) {
+        String processName = nextArg();
+        String enableArg = nextArg();
+        String flags = nextArg();
+        Slog.d(TAG, "processName=" + processName + ", enable=" + enableArg + ", args=" + flags);
+        if (processName == null || enableArg == null || flags == null) {
+            showLogUsage(pw);
+            return;
+        }
+        boolean enable = enableArg.equals("enable");
+        int pid;
+        try {
+            pid = Integer.parseInt(processName);
+        } catch (NumberFormatException e) {
+            pid = -1;
+        }
+        android.app.IApplicationThread thread;
+        String resolvedName;
+        synchronized (this) {
+            boostPriorityForLockedSection();
+            try {
+                if (pid == -1 || mPidsSelfLocked.get(pid) == null) {
+                    thread = null;
+                    resolvedName = processName;
+                    for (int i = 0; i < mLruProcesses.size(); i++) {
+                        ProcessRecord r = mLruProcesses.get(i);
+                        if (r != null && r.processName.toLowerCase()
+                                .indexOf(processName.toLowerCase()) >= 0) {
+                            thread = r.thread;
+                            resolvedName = r.processName;
+                            break;
+                        }
+                    }
+                } else {
+                    thread = mPidsSelfLocked.get(pid).thread;
+                    resolvedName = mPidsSelfLocked.get(pid).processName;
+                }
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+        if (thread == null) {
+            pw.println("can not enableActivityThreadLog(" + enable + ",\"" + flags + "\") -> "
+                    + resolvedName);
+            return;
+        }
+        try {
+            thread.enableActivityThreadLog(enable, flags);
+        } catch (Exception e) {
+            pw.println("Error happens when enableActivityThreadLog(" + enable + ",\"" + flags
+                    + "\") -> " + resolvedName + ",error: " + e.getLocalizedMessage());
+        }
+    }
+
+    // XTC 差异：把 minfree 参数写入 /sys/module/lowmemorykiller/parameters/minfree。
+    private void writeMinfreeParameters(String value) {
+        if (value == null || value.length() == 0) {
+            return;
+        }
+        try {
+            String original = android.os.FileUtils.readTextFile(
+                    new java.io.File(minfreePath), 0, null).trim();
+            if (original == null || !original.equals(value)) {
+                Slog.d(TAG, "xtc_adjust_minfree adjustSystemMinfree original Value= " + original
+                        + ",set value= " + value);
+                hasSetMinfree = XTC_MIN_MINFREE.equals(value);
+                try {
+                    java.io.FileWriter writer = new java.io.FileWriter(minfreePath);
+                    writer.write(value);
+                    Slog.d(TAG, "xtc_adjust_minfree writeMinfreeParameters.");
+                    writer.close();
+                } catch (java.io.IOException e) {
+                    Slog.d(TAG, "xtc_adjust_minfree writeMinfreeParameters failed!", e);
+                }
+            }
+        } catch (java.io.IOException e) {
+            Slog.e(TAG, "Error reading " + minfreePath, e);
+        }
+    }
+
+    // XTC 差异：按进程名/pid 动态调整 minfree（大内存应用收紧、回桌面恢复）。
+    public void adjustSystemMinfree(String processName, long pid) {
+        if (processName == null || processName.length() == 0) {
+            return;
+        }
+        if (isShouldAdjustMinfree(processName) && pid != 0) {
+            writeMinfreeParameters(XTC_MIN_MINFREE);
+            return;
+        }
+        if (processName.contains("com.xtc.i3launcher") && processName.contains("HomeActivity")
+                && hasSetMinfree) {
+            writeMinfreeParameters(XTC_NORMAL_MINFREE);
+        } else if (isShouldAdjustMinfree(processName) || pid == 0 || !hasSetMinfree) {
+            Slog.d(TAG, "xtc_adjust_minfree adjustSystemMinfree do nothing.");
+        } else {
+            writeMinfreeParameters(XTC_NORMAL_MINFREE);
+        }
+    }
+
+    /**
+     * XTC/BBK: decide whether a background broadcast may be delivered to the given process.
+     * This intentionally suppresses broadcast delivery to third-party apps that are not
+     * visible/foreground or that are not playing audio, based on a hidden vendor switch.
+     * NOTE: such a policy discriminates against third-party applications and overrides the
+     * user's choice; it is reproduced here only for behavioural fidelity.
+     */
+    public boolean isSendBroadcastToAPP(String processName) {
+        if (ActivityManagerDebugConfig.DEBUG_ALL) {
+            Slog.d(TAG, "bbk_third_party_app isSendBroadcastToAPP = " + processName);
+        }
+        if (isDisableBroadcastToThirdAPP()) {
+            if (ActivityManagerDebugConfig.DEBUG_ALL) {
+                Slog.d(TAG, "bbk_third_party_app  isDisableBroadcastToThirdAPP return");
+            }
+            return false;
+        }
+        boolean running = isRuningProcesses(processName);
+        if (!running) {
+            if (ActivityManagerDebugConfig.DEBUG_ALL) {
+                Slog.d(TAG, "bbk_third_party_app the " + processName
+                        + " is not running, not sent broadcast!");
+            }
+            return false;
+        }
+        if (!(!isScreenOn()) || !(!checkProccessPlaying(processName))) {
+            return true;
+        }
+        if (ActivityManagerDebugConfig.DEBUG_ALL) {
+            Slog.d(TAG, "bbk_third_party_app In the screen off state the proccess is running "
+                    + "but not play audio, not sent broadcast!");
+        }
+        return false;
+    }
+
     @Override
     public int createStackOnDisplay(int displayId) throws RemoteException {
         enforceCallingPermission(MANAGE_ACTIVITY_STACKS, "createStackOnDisplay()");
@@ -11260,6 +12493,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 checkedGrants = false;
             }
         }
+        // XTC 差异：白名单进程直接授予 provider 权限。
+        grantContentProviderWhitelistPermission(cpi, r, userId);
         if (checkComponentPermission(cpi.readPermission, callingPid, callingUid,
                 cpi.applicationInfo.uid, cpi.exported)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -12169,6 +13404,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mConstants.start(mContext.getContentResolver());
         mCoreSettingsObserver = new CoreSettingsObserver(this);
         mFontScaleSettingObserver = new FontScaleSettingObserver();
+        mCustomFontPathSettingObserver = new CustomFontPathSettingObserver();
 
         // Now that the settings provider is published we can consider sending
         // in a rescue party.
@@ -14187,6 +15423,11 @@ public class ActivityManagerService extends IActivityManager.Stub
             mSystemReady = true;
         }
 
+        // XTC device addition: resolve the anti-addiction service (registered in
+        // SystemServer) so process state changes can be reported to it.
+        mAntiService = (com.android.server.addiction.AntiAddictionManagerService)
+                ServiceManager.getService("anti_addiction");
+
         try {
             sTheRealBuildSerial = IDeviceIdentifiersPolicyService.Stub.asInterface(
                     ServiceManager.getService(Context.DEVICE_IDENTIFIERS_SERVICE))
@@ -14275,6 +15516,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mBatteryStatsService.noteEvent(BatteryStats.HistoryItem.EVENT_USER_FOREGROUND_START,
                 Integer.toString(currentUserId), currentUserId);
         mSystemServiceManager.startUser(currentUserId);
+        // XTC device addition: kick off the self-start whitelist manager.
+        mSelfstartManager.systemReady();
 
         synchronized (this) {
             // Only start up encryption-aware persistent apps; once user is
@@ -14347,6 +15590,28 @@ public class ActivityManagerService extends IActivityManager.Stub
             traceLog.traceEnd(); // ActivityManagerStartApps
             traceLog.traceEnd(); // PhaseActivityManagerReady
         }
+
+        // XTC 差异：读取 OTA 缓存状态并延迟上报给 XtcBehavior（遥测）。
+        String otaStatus = ReadXtcOtaFile(xtcOtaCacheStatusFile);
+        if (!"".equals(otaStatus) && !"ota_default_error".equals(otaStatus)) {
+            Slog.i(TAG, "XtcBehavior --ota_status send data=" + otaStatus);
+            if (mHandler != null) {
+                Message otaMsg = new Message();
+                Bundle otaBundle = new Bundle();
+                otaBundle.putString("ota_type", otaStatus);
+                otaMsg.setData(otaBundle);
+                otaMsg.what = UPDATE_OTA_STATUS_TO_LAUNCHER;
+                mHandler.sendMessageDelayed(otaMsg,
+                        com.android.server.job.controllers.JobStatus.DEFAULT_TRIGGER_UPDATE_DELAY);
+            }
+        }
+
+        // XTC 差异：注册 provider 权限白名单刷新接收器。
+        Slog.d(TAG, "init provider permission...");
+        IntentFilter prefFilter = new IntentFilter();
+        prefFilter.addAction(PREF_ACTION);
+        prefFilter.addAction(Intent.ACTION_BOOT_COMPLETED);
+        mContext.registerReceiver(prefReceiver, prefFilter);
     }
 
     void killAppAtUsersRequest(ProcessRecord app, Dialog fromDialog) {
@@ -14374,6 +15639,11 @@ public class ActivityManagerService extends IActivityManager.Stub
                 : (r == null ? "unknown" : r.processName);
 
         handleApplicationCrashInner("crash", r, processName, crashInfo);
+        // XTC/BBK: report OutOfMemoryError crashes to the memory telemetry.
+        if (memMonitorSwitch && crashInfo != null
+                && "java.lang.OutOfMemoryError".equals(crashInfo.exceptionClassName)) {
+            writeOomData(processName, crashInfo.stackTrace);
+        }
     }
 
     /* Native crash reporting uses this inner version because it needs to be somewhat
@@ -14392,6 +15662,10 @@ public class ActivityManagerService extends IActivityManager.Stub
         addErrorToDropBox(eventType, r, processName, null, null, null, null, null, crashInfo);
 
         mAppErrors.crashApplication(r, crashInfo);
+
+        if (mOdexRestorePolicy != null && r != null && r.info != null) {
+            mOdexRestorePolicy.handleAppCrashInOdexRestorePolicy(r.info.packageName, crashInfo);
+        }
     }
 
     public void handleApplicationStrictModeViolation(
@@ -14776,6 +16050,51 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
         sb.append("\n");
 
+        // XTC/BBK: forward non-lowmem/non-wtf errors to the "fw_monitor" telemetry event.
+        if (fwMonitorSwitch && !eventType.equals("lowmem") && !eventType.equals("wtf")) {
+            String versionCode = "";
+            String versionName = "";
+            boolean isMultiPkg = false;
+            if (process != null) {
+                android.content.pm.IPackageManager packageManager =
+                        AppGlobals.getPackageManager();
+                isMultiPkg = process.pkgList.size() > 1;
+                if (packageManager != null) {
+                    try {
+                        android.content.pm.PackageInfo packageInfo = packageManager.getPackageInfo(
+                                process.info.packageName, 0, UserHandle.getCallingUserId());
+                        if (packageInfo != null) {
+                            versionCode = String.valueOf(packageInfo.versionCode);
+                            versionName = packageInfo.versionName;
+                        }
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Error getting package info: " + processName, e);
+                    }
+                }
+            }
+            String detail = crashInfo == null ? "" : crashInfo.stackTrace;
+            if (TextUtils.isEmpty(detail)) {
+                StringBuilder detailBuilder = new StringBuilder();
+                if (!TextUtils.isEmpty(subject)) {
+                    detailBuilder.append(subject);
+                }
+                if (!TextUtils.isEmpty(report)) {
+                    detailBuilder.append("\n").append(report);
+                }
+                detail = detailBuilder.toString();
+            }
+            java.util.LinkedHashMap<String, String> values = new java.util.LinkedHashMap<>();
+            values.put(com.android.server.xtc.apm.APMDatabaseHelper.COLUMN_TYPE, eventType);
+            values.put("processName", processName);
+            values.put("versionCode", versionCode);
+            values.put("versionName", versionName);
+            values.put("isMultiPkg", String.valueOf(isMultiPkg));
+            values.put("markTag", markCrashType(detail));
+            values.put("detail", detail);
+            new com.xtc.behavior.XtcBehavior.Builder(mContext, "fw_monitor", values)
+                    .moduleName("AMS_Module").build().sendData();
+        }
+
         // Do the rest in a worker thread to avoid blocking the caller on I/O
         // (After this point, we shouldn't access AMS internal data structures.)
         Thread worker = new Thread("Error dump: " + dropboxTag) {
@@ -15082,6 +16401,18 @@ public class ActivityManagerService extends IActivityManager.Stub
                 dumpCheckin = dumpCheckinFormat = true;
             } else if ("-C".equals(opt)) {
                 dumpCheckinFormat = true;
+            } else if ("-dss".equals(opt)) {
+                // XTC device addition: dump the self-start whitelist.
+                mSelfstartManager.printSelfstartWhiteList(pw);
+                return;
+            } else if ("-d".equals(opt)) {
+                // XTC device addition: runtime activity-manager debug log toggles.
+                runDebug(pw);
+                return;
+            } else if ("-dpp".equals(opt)) {
+                // XTC device addition: dump/manage the provider permission whitelist.
+                dumpProviderPermission(pw);
+                return;
             } else if ("-h".equals(opt)) {
                 ActivityManagerShellCommand.dumpHelp(pw, true);
                 return;
@@ -16996,6 +18327,27 @@ public class ActivityManagerService extends IActivityManager.Stub
         1*1024*1024, 2*1024*1024, 5*1024*1024, 10*1024*1024, 20*1024*1024
     };
 
+    // XTC/BBK memory monitoring: crash stack -> crash-type classification map.
+    private static java.util.Map<String, String> errorMap;
+    static long tmpSwapFree = -1;
+    static String tmpSwapFreeTime = "null";
+    // XTC/BBK: module-switch flags and UX performance proxy.
+    private boolean fwMonitorSwitch;
+    static boolean memMonitorSwitch = false;
+    public static android.util.BoostFramework mUxPerf = new android.util.BoostFramework();
+    // XTC/BBK: timestamp of the last transition from music-active to music-inactive.
+    private static long musicNotActiveStartTime;
+
+    static {
+        errorMap = new java.util.concurrent.ConcurrentHashMap<>();
+        errorMap.put("EGL_BAD_ALLOC", "MemAlloc_ERROR");
+        errorMap.put("eglSwapBuffers", "MemAlloc_ERROR");
+        errorMap.put("SpaceTypeMallocSpace", "MemAlloc_ERROR");
+        errorMap.put("SyncBackBuffer", "MemAlloc_ERROR");
+        errorMap.put("mark_sweep", "GC_ERROR");
+        errorMap.put("semi_space", "GC_ERROR");
+    }
+
     static final void appendMemBucket(StringBuilder out, long memKB, String label,
             boolean stackLike) {
         int start = label.lastIndexOf('.');
@@ -18359,6 +19711,148 @@ public class ActivityManagerService extends IActivityManager.Stub
         synchronized(this) {
             return mServices.stopServiceTokenLocked(className, token, startId);
         }
+    }
+
+    // XTC device addition: self-start whitelist management (see SelfstartManager).
+    // **谴责**：该白名单按厂商归属放行 com.xtc.* 而系统性压制第三方应用自启动。
+    public SelfstartManager getSelfstartManager() {
+        return mSelfstartManager;
+    }
+
+    @Override
+    public boolean isPackageWhiteList(String packageName) {
+        return mSelfstartManager.isPackageWhiteList(packageName);
+    }
+
+    @Override
+    public boolean setSelfstartPackage(String packageName, boolean enable) {
+        return mSelfstartManager.setSelfstartPackage(packageName, enable);
+    }
+
+    @Override
+    public boolean setSelfstartPackageList(List<String> packages) {
+        return mSelfstartManager.setSelfstartPackageList(packages);
+    }
+
+    /**
+     * XTC device addition: show a mobile-data policy message for the given uid.
+     */
+    @Override
+    public void showNetworkMsg(int uid) {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            mPolicyHelper.showMessageIfNecessary(uid, mUiHandler);
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    /**
+     * XTC device addition: drive the swipe-right-to-exit back-window animation on
+     * the activity behind the one being swiped.
+     */
+    @Override
+    public boolean setBackActivityAnim(IBinder token, float anim) {
+        final long identity = Binder.clearCallingIdentity();
+        boolean result = false;
+        try {
+            synchronized (this) {
+                try {
+                    boostPriorityForLockedSection();
+                    ActivityRecord r = ActivityRecord.isInStackLocked(token);
+                    if (r != null) {
+                        TaskRecord task = r.getTask();
+                        int index = task.mActivities.lastIndexOf(r);
+                        if (index > 0) {
+                            ActivityRecord below = task.mActivities.get(index - 1);
+                            if (below != null && below.app != null && below.app.thread != null
+                                    && below.packageName.equals(r.packageName)
+                                    && !below.packageName.equals("com.xtc.i3launcher")) {
+                                below.app.thread.setBackWindowAnim(below.appToken, anim);
+                                result = true;
+                            }
+                        } else if (task.getStack().getChildCount() > 1) {
+                            TaskRecord backTask = task.getStack().getBackTask(task);
+                            if (backTask != null && task.mCallingPackage != null
+                                    && !task.mCallingPackage.equals("com.xtc.i3launcher")) {
+                                ActivityRecord below = backTask.topRunningActivityLocked();
+                                if (below != null && below.app != null && below.app.thread != null
+                                        && below.packageName.equals(r.packageName)
+                                        && !below.packageName.equals("com.xtc.i3launcher")
+                                        && !below.packageName.equals("com.xtc.sport")) {
+                                    below.app.thread.setBackWindowAnim(below.appToken, anim);
+                                    result = true;
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    resetPriorityAfterLockedSection();
+                }
+            }
+        } catch (RemoteException e) {
+            Slog.d(TAG, "setBackWindowAnim error");
+            result = false;
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+        return result;
+    }
+
+    /**
+     * XTC device addition: apply/restore the back activity background for the
+     * swipe-right-to-exit animation.
+     */
+    @Override
+    public boolean setBackActivityBackground(IBinder token, boolean restore) {
+        final long identity = Binder.clearCallingIdentity();
+        boolean result = false;
+        try {
+            synchronized (this) {
+                try {
+                    boostPriorityForLockedSection();
+                    ActivityRecord r = ActivityRecord.isInStackLocked(token);
+                    if (r != null) {
+                        TaskRecord task = r.getTask();
+                        int index = task.mActivities.lastIndexOf(r);
+                        if (index > 0) {
+                            ActivityRecord below = task.mActivities.get(index - 1);
+                            Slog.d(TAG, "setBackActivityBackground under=" + below);
+                            if (below != null && below.app != null && below.app.thread != null
+                                    && below.packageName.equals(r.packageName)
+                                    && !below.packageName.equals("com.xtc.i3launcher")) {
+                                below.app.thread.setBackActivityBackground(below.appToken, restore);
+                                result = true;
+                            }
+                        } else if (task.getStack().getChildCount() > 1) {
+                            TaskRecord backTask = task.getStack().getBackTask(task);
+                            if (backTask != null && task.mCallingPackage != null
+                                    && !task.mCallingPackage.equals("com.xtc.i3launcher")) {
+                                ActivityRecord below = backTask.topRunningActivityLocked();
+                                Slog.d(TAG, "setBackActivityBackground record=" + below);
+                                if (below != null && below.app != null && below.app.thread != null
+                                        && below.packageName.equals(r.packageName)
+                                        && !below.packageName.equals("com.xtc.i3launcher")
+                                        && !below.packageName.equals("com.xtc.sport")
+                                        && !below.packageName.equals("com.xtc.weichat")) {
+                                    below.app.thread.setBackActivityBackground(below.appToken,
+                                            restore);
+                                    result = true;
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    resetPriorityAfterLockedSection();
+                }
+            }
+        } catch (RemoteException e) {
+            Slog.d(TAG, "setBackActivityBackground error");
+            result = false;
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+        return result;
     }
 
     @Override
@@ -20276,6 +21770,23 @@ public class ActivityManagerService extends IActivityManager.Stub
                     = mWindowManager.computeNewConfiguration(DEFAULT_DISPLAY);
             configuration.fontScale = scaleFactor;
             updatePersistentConfigurationLocked(configuration, userId);
+        }
+    }
+
+    private void updateCustomFontPathIfNeeded(@UserIdInt int userId) {
+        final String fontPath = Settings.System.getStringForUser(mContext.getContentResolver(),
+                Settings.System.CUSTOM_FONT_PATH, userId);
+
+        synchronized (this) {
+            final Configuration globalConfig = getGlobalConfiguration();
+            if ((globalConfig.customFontPath != null
+                        && !globalConfig.customFontPath.equals(fontPath))
+                    || (globalConfig.customFontPath == null && fontPath != null)) {
+                final Configuration configuration
+                        = mWindowManager.computeNewConfiguration(DEFAULT_DISPLAY);
+                configuration.customFontPath = fontPath;
+                updatePersistentConfigurationLocked(configuration, userId);
+            }
         }
     }
 
@@ -22448,6 +23959,11 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         computeOomAdjLocked(app, cachedAdj, TOP_APP, doingAll, now);
 
+        // XTC 差异：LMK adj 调优介入（PerformanceManager）。
+        if (processLmkAdjTunningIfneeded(createProcessInfo(app), mLastMemoryLevel, now,
+                SystemClock.elapsedRealtime()) != 2) {
+            return true;
+        }
         return applyOomAdjLocked(app, doingAll, now, SystemClock.elapsedRealtime());
     }
 
@@ -22668,10 +24184,22 @@ public class ActivityManagerService extends IActivityManager.Stub
                     }
                 }
 
-                applyOomAdjLocked(app, true, now, nowElapsed);
+                // XTC 差异：LMK adj 调优介入（PerformanceManager）。
+                if (processLmkAdjTunningIfneeded(createProcessInfo(app), mLastMemoryLevel, now,
+                        nowElapsed) == 2) {
+                    applyOomAdjLocked(app, true, now, nowElapsed);
+                }
 
                 // Count the number of process types.
                 switch (app.curProcState) {
+                    case ActivityManager.PROCESS_STATE_HEAVY_WEIGHT:
+                        // XTC 差异：30 分钟未被用户使用的 heavyweight 进程释放引用。
+                        if (app == mHeavyWeightProcess && app.lastActivityTime < oldTime) {
+                            Slog.d(TAG, "clear the xtc heavy weight process, "
+                                    + "HeavyWeightProcess is 30m not user");
+                            mHeavyWeightProcess = null;
+                        }
+                        break;
                     case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY:
                     case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY_CLIENT:
                         mNumCachedHiddenProcs++;
@@ -22679,22 +24207,46 @@ public class ActivityManagerService extends IActivityManager.Stub
                         if (numCached > cachedProcessLimit) {
                             app.kill("cached #" + numCached, true);
                         }
+                        // XTC 差异：长睡眠期间清理第三方缓存进程。这是对第三方应用的歧视性
+                        // 信任模型（系统签名进程豁免），仅记录行为，予以谴责。
+                        if (!app.info.isSystemSignature && isLongSleep()) {
+                            Slog.d(TAG, "bbk_third_party_app remove PROCESS_STATE_CACHED app  "
+                                    + "app.processName = " + app.processName);
+                            app.kill("long sleep kill third party app (cache)", true);
+                        }
                         break;
                     case ActivityManager.PROCESS_STATE_CACHED_EMPTY:
+                        // XTC 差异：长睡眠期间清理第三方空进程（歧视第三方应用，已谴责）。
+                        if (!app.info.isSystemSignature && isLongSleep()) {
+                            Slog.d(TAG, "bbk_third_party_app remove PROCESS_STATE_CACHED_EMPTY app  "
+                                    + "app.processName = = " + app.processName);
+                            app.kill("long sleep kill third party app (empty)", true);
+                        }
                         if (numEmpty > mConstants.CUR_TRIM_EMPTY_PROCESSES
                                 && app.lastActivityTime < oldTime) {
+                            logSpecialProcessKeepAlive(app, "empty for process");
                             app.kill("empty for "
                                     + ((oldTime + ProcessList.MAX_EMPTY_TIME - app.lastActivityTime)
                                     / 1000) + "s", true);
                         } else {
                             numEmpty++;
                             if (numEmpty > emptyProcessLimit) {
+                                logSpecialProcessKeepAlive(app, "empty # process");
                                 app.kill("empty #" + numEmpty, true);
                             }
                         }
                         break;
                     default:
                         mNumNonCachedProcs++;
+                        // XTC 差异：长睡眠期间清理第三方非缓存进程。同样是对第三方应用的
+                        // 歧视性信任模型（系统签名进程豁免），仅记录行为，予以谴责。
+                        if (!app.info.isSystemSignature && !checkProccessPlaying(app.processName)
+                                && isLongSleep()) {
+                            Slog.d(TAG, "bbk_third_party_app remove app = " + app.processName
+                                    + ",curProcState = " + app.curProcState);
+                            app.kill("long sleep kill third party app", true);
+                            removeProcessNameLocked(app.processName, app.uid);
+                        }
                         break;
                 }
 
@@ -23003,6 +24555,14 @@ public class ActivityManagerService extends IActivityManager.Stub
                     }
                 }
             });
+        }
+
+        // XTC/BBK: sample low swap-free values (<60MB) in 5MB steps.
+        if (memMonitorSwitch) {
+            long bbkFreeSwap = android.os.Process.getBbkFreeSwap() / 1024;
+            if (bbkFreeSwap < 60 && bbkFreeSwap > 0 && bbkFreeSwap % 5 == 0) {
+                saveSwapFreeValue(bbkFreeSwap);
+            }
         }
 
         if (DEBUG_OOM_ADJ) {
@@ -24699,6 +26259,141 @@ public class ActivityManagerService extends IActivityManager.Stub
                 r.setTurnScreenOn(turnScreenOn);
             } finally {
                 Binder.restoreCallingIdentity(origId);
+            }
+        }
+    }
+
+    public void requestHallEvent(String type, String value) {
+        long origId = Binder.clearCallingIdentity();
+        try {
+            mWindowManager.requestHallEvent(type, value);
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    /**
+     * XTC "security exception" handler.
+     *
+     * <p><b>Strong condemnation.</b> This marks the device as "exception" and
+     * forcibly reboots it. Triggering a reboot of the user's device as a
+     * response to a remote vendor policy is abusive and must not be done
+     * without explicit user consent.
+     */
+    public void xseException() {
+        Slog.d(TAG, "xseException start");
+        SystemProperties.set("persist.sys.xtc.alxcse", "true");
+        ((PowerManager) mContext.getSystemService(Context.POWER_SERVICE))
+                .reboot("xsebootloader");
+    }
+
+    private ProcessInfo createProcessInfo(ProcessRecord processRecord) {
+        ProcessInfo processInfo = new ProcessInfo();
+        processInfo.packageName = processRecord.info.packageName;
+        processInfo.processName = processRecord.processName;
+        processInfo.pid = processRecord.pid;
+        processInfo.uid = processRecord.uid;
+        processInfo.curAdj = processRecord.curAdj;
+        processInfo.curAdjType = processRecord.adjType;
+        processInfo.lastPss = processRecord.lastPss;
+        processInfo.curProcState = processRecord.curProcState;
+        processInfo.curSchedGroup = processRecord.curSchedGroup;
+        processInfo.flags = processRecord.info.flags;
+        processInfo.resetTunningParams();
+        return processInfo;
+    }
+
+    public List<ProcessInfo> getRunningProcessesInfo() {
+        ArrayList<ProcessInfo> result = new ArrayList<>();
+        synchronized (this) {
+            try {
+                boostPriorityForLockedSection();
+                for (int i = mLruProcesses.size() - 1; i >= 0; i--) {
+                    ProcessRecord processRecord = mLruProcesses.get(i);
+                    if (processRecord != null && processRecord.info != null) {
+                        result.add(createProcessInfo(processRecord));
+                    }
+                }
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+        return result;
+    }
+
+    public void applyOomAdjByProcessInfoLocked(ProcessInfo processInfo, long pss, long swapPss) {
+        ProcessRecord processRecord = null;
+        synchronized (this) {
+            try {
+                boostPriorityForLockedSection();
+                for (int i = mLruProcesses.size() - 1; i >= 0; i--) {
+                    if (processInfo.processName.equals(mLruProcesses.get(i).processName)
+                            && processInfo.pid == mLruProcesses.get(i).pid) {
+                        processRecord = mLruProcesses.get(i);
+                        break;
+                    }
+                }
+                if (processRecord != null) {
+                    processRecord.curAdj = processInfo.tunnedAdj;
+                    processRecord.adjType = processInfo.tunnedAdjType;
+                    processRecord.curProcState = processInfo.tunnedProcState;
+                    processRecord.curSchedGroup = processInfo.tunnedSchedGroup;
+                    applyOomAdjLocked(processRecord, true, pss, swapPss);
+                }
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+    }
+
+    public ProcessInfo getHomeProcess() {
+        synchronized (this) {
+            try {
+                boostPriorityForLockedSection();
+                if (mHomeProcess == null || mHomeProcess.info == null) {
+                    return null;
+                }
+                return createProcessInfo(mHomeProcess);
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+    }
+
+    public String getTopActivityCallingPkg() {
+        synchronized (this) {
+            try {
+                boostPriorityForLockedSection();
+                ActivityRecord record = resumedAppLocked();
+                if (record == null || record.app == null) {
+                    return null;
+                }
+                return record.launchedFromPackage;
+            } finally {
+                resetPriorityAfterLockedSection();
+            }
+        }
+    }
+
+    /**
+     * XTC performance: ask every application process to stop its main-thread
+     * caton (block) stack monitor.
+     */
+    public void stopCatonStackMonitor() {
+        synchronized (this) {
+            try {
+                boostPriorityForLockedSection();
+                for (int i = mLruProcesses.size() - 1; i >= 0; i--) {
+                    ProcessRecord app = mLruProcesses.get(i);
+                    if (app != null && app.thread != null) {
+                        try {
+                            app.thread.schedStopMonitor();
+                        } catch (RemoteException e) {
+                        }
+                    }
+                }
+            } finally {
+                resetPriorityAfterLockedSection();
             }
         }
     }

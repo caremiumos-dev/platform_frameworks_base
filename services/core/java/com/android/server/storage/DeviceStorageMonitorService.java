@@ -17,27 +17,36 @@
 package com.android.server.storage;
 
 import android.annotation.WorkerThread;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.TrafficStats;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.FileObserver;
+import android.app.ActivityManager;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.os.ShellCallback;
 import android.os.ShellCommand;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.os.storage.VolumeInfo;
+import android.provider.Settings;
+import android.view.View;
 import android.text.format.DateUtils;
 import android.util.ArrayMap;
 import android.util.Slog;
@@ -51,6 +60,7 @@ import com.android.server.IoThread;
 import com.android.server.SystemService;
 import com.android.server.pm.InstructionSets;
 import com.android.server.pm.PackageManagerService;
+import com.android.server.power.ShutdownThread;
 
 import dalvik.system.VMRuntime;
 
@@ -58,6 +68,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -87,6 +98,29 @@ public class DeviceStorageMonitorService extends SystemService {
     // hard codes 250MB in the message as the storage space required for the
     // boot image.
     private static final long BOOT_IMAGE_STORAGE_REQUIREMENT = 250 * TrafficStats.MB_IN_BYTES;
+
+    // XTC device additions: storage-space-clean prompting.
+    private static final String ACTION_CLASS_DISABLE = "com.xtc.setting.action.CLASS.ACTION";
+    private static final String ACTION_HIGHTEMP_DISABLE = "android.intent.action.KILL_APP";
+    private static final String ACTION_LONG_TIME_MODE =
+            "com.xtc.i3launcher.action.LONG_BATTERY_LIFE_CHANGE";
+    private static final String ACTION_LOSS = "com.xtc.setting.WATCH.LOSS";
+    private static final String ACTION_SLEEP_MODE = "com.xtc.i3launcher.action.SLEEP_MODE_CHANGE";
+    private static final String ACTION_VIDEO_CALL = "com.xtc.videochat.misscall";
+    private static final String INTERFACE_JUDGE =
+            "com.xtc.i3launcher.module.home.view.activity.HomeActivity";
+    private static final long DEFAULT_FULL_THRESHOLD_BYTES = 50 * TrafficStats.MB_IN_BYTES;
+    private static final long DEFAULT_THRESHOLD_MAX_BYTES = 300 * TrafficStats.MB_IN_BYTES;
+
+    private static SpaceCleanDialog scdialog;
+    private static String fullspaceButtonText = "Full_Space";
+    private static String lowspaceButtonText = "Low_Space";
+    private static long THRESHOLDTIME = 3000000;
+    private static long SAVETIME = 0;
+    private static int SETTIME = 259200;
+    private static int TIME_LOWCALIBRATION_FLAG = 0;
+    private static int TIME_FULLCALIBRATION_FLAG = 0;
+    private static boolean status_detection = false;
 
     private NotificationManager mNotifManager;
 
@@ -148,6 +182,10 @@ public class DeviceStorageMonitorService extends SystemService {
 
     private CacheFileDeletedObserver mCacheFileDeletedObserver;
 
+    // XTC device additions: broadcast receivers for launcher-start and special modes.
+    private final BroadcastReceiver mBroadcastReceiver;
+    private final BroadcastReceiver SpaceCleanReceiver;
+
     /**
      * This string is used for ServiceManager access to this class.
      */
@@ -176,6 +214,21 @@ public class DeviceStorageMonitorService extends SystemService {
     private void check() {
         final StorageManager storage = getContext().getSystemService(StorageManager.class);
         final int seq = mSeq.get();
+
+        // XTC device addition: special modes in which the clean-up prompt is paused.
+        final boolean classDisable =
+                SystemProperties.getBoolean("persist.sys.classmodestatus", false);
+        final boolean longBatteryLife =
+                SystemProperties.getBoolean("persist.sys.longbatterylife", false);
+        final boolean sleepMode =
+                SystemProperties.getBoolean("persist.sys.sleepmodestatus", false);
+        final boolean highTemp =
+                SystemProperties.getBoolean("persist.sys.bt.isHighTempe", false);
+        final boolean videoCall =
+                SystemProperties.getBoolean("persist.sys.vc.calling", false);
+        final boolean watchLoss = SystemProperties.getBoolean(
+                ShutdownThread.PROPERTY_WATCH_LOSS_STATUS, false);
+        long lastDiff = 0;
 
         // Check every mounted private volume to see if they're low on space
         for (VolumeInfo vol : storage.getWritablePrivateVolumes()) {
@@ -212,13 +265,26 @@ public class DeviceStorageMonitorService extends SystemService {
                 newLevel = mForceLevel;
             } else if (usableBytes <= fullBytes) {
                 newLevel = State.LEVEL_FULL;
+                TIME_LOWCALIBRATION_FLAG = 0;
             } else if (usableBytes <= lowBytes) {
                 newLevel = State.LEVEL_LOW;
+                TIME_FULLCALIBRATION_FLAG = 0;
             } else if (StorageManager.UUID_DEFAULT.equals(uuid) && !isBootImageOnDisk()
                     && usableBytes < BOOT_IMAGE_STORAGE_REQUIREMENT) {
                 newLevel = State.LEVEL_LOW;
             } else {
                 newLevel = State.LEVEL_NORMAL;
+                TIME_LOWCALIBRATION_FLAG = 0;
+                TIME_FULLCALIBRATION_FLAG = 0;
+            }
+
+            Slog.v(TAG, "classdisable=" + classDisable + "  longtimemode=" + longBatteryLife
+                    + "  reportloss" + watchLoss + "  sleepmode=" + sleepMode
+                    + "  hightempdisable=" + highTemp + "  videocall=" + videoCall);
+            if (classDisable || longBatteryLife || sleepMode || highTemp || videoCall
+                    || watchLoss) {
+                Slog.v(TAG, "Special mode pause prompt");
+                scheduledSpaceClean(null, false);
             }
 
             // Log whenever we notice drastic storage changes
@@ -229,10 +295,55 @@ public class DeviceStorageMonitorService extends SystemService {
                 state.lastUsableBytes = usableBytes;
             }
 
-            updateNotifications(vol, oldLevel, newLevel);
+            Slog.v(TAG, "oldLevel=" + State.levelToString(oldLevel)
+                    + ", newLevel=" + State.levelToString(newLevel));
+            if (oldLevel == State.LEVEL_FULL && newLevel == State.LEVEL_LOW) {
+                TIME_LOWCALIBRATION_FLAG = 3;
+            }
+
+            updateNotifications(vol, oldLevel, newLevel, state);
             updateBroadcasts(vol, oldLevel, newLevel, seq);
 
-            state.level = newLevel;
+            // XTC device addition: time-based clean-up prompting.
+            if (TIME_LOWCALIBRATION_FLAG != 0 || TIME_FULLCALIBRATION_FLAG != 0) {
+                status_detection = isAppRunning(getContext());
+                Slog.i(TAG, "status_detection is =" + status_detection);
+            }
+            long diff;
+            if (TIME_LOWCALIBRATION_FLAG != 0) {
+                diff = Math.abs(SAVETIME - System.currentTimeMillis()) / 1000;
+                if (diff > THRESHOLDTIME) {
+                    diff = 0;
+                }
+            } else {
+                diff = 0;
+            }
+            Slog.i(TAG, "current time :" + SAVETIME + "  difference value :" + diff);
+            if (TIME_LOWCALIBRATION_FLAG == 1) {
+                SAVETIME = System.currentTimeMillis();
+                TIME_LOWCALIBRATION_FLAG = 2;
+            }
+            if (TIME_LOWCALIBRATION_FLAG != 0 && diff >= SETTIME && status_detection
+                    && !classDisable && !watchLoss && !longBatteryLife && !sleepMode
+                    && !highTemp && !videoCall) {
+                scheduledSpaceClean(lowspaceButtonText, true);
+                SAVETIME = System.currentTimeMillis();
+                Slog.i(TAG, "Guide users to clean up ");
+            }
+            if (TIME_FULLCALIBRATION_FLAG != 0 && status_detection
+                    && !classDisable && !watchLoss && !longBatteryLife && !sleepMode
+                    && !highTemp && !videoCall) {
+                scheduledSpaceClean(fullspaceButtonText, true);
+                SAVETIME = System.currentTimeMillis();
+                Slog.i(TAG, "Force users to be reminded to clean up ");
+            }
+
+            if (oldLevel == State.LEVEL_FULL && newLevel == State.LEVEL_LOW) {
+                state.level = State.LEVEL_NORMAL;
+            } else {
+                state.level = newLevel;
+            }
+            lastDiff = diff;
         }
 
         // Loop around to check again in future; we don't remove messages since
@@ -245,6 +356,41 @@ public class DeviceStorageMonitorService extends SystemService {
 
     public DeviceStorageMonitorService(Context context) {
         super(context);
+
+        // XTC device addition: re-run the storage check when the launcher starts.
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(
+                        "com.xtc.i3launcher.action.ACTION_LAUNCHER_START")) {
+                    Slog.d(TAG, "SERVICES_READY>>>>>>>>>>>>");
+                    mHandler.removeMessages(MSG_CHECK);
+                    mHandler.obtainMessage(MSG_CHECK).sendToTarget();
+                }
+            }
+        };
+        // XTC device addition: pause the space-clean prompt in special modes.
+        SpaceCleanReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent == null) {
+                    return;
+                }
+                String action = intent.getAction();
+                if (action == null) {
+                    return;
+                }
+                if (action.equals(ACTION_CLASS_DISABLE)
+                        || action.equals(ACTION_LONG_TIME_MODE)
+                        || action.equals(ACTION_LOSS)
+                        || action.equals(ACTION_SLEEP_MODE)
+                        || action.equals(ACTION_HIGHTEMP_DISABLE)
+                        || action.equals(ACTION_VIDEO_CALL)) {
+                    Slog.d(TAG, "Special mode pause prompt,the action is " + action);
+                    scheduledSpaceClean(null, false);
+                }
+            }
+        };
 
         mHandlerThread = new HandlerThread(TAG, android.os.Process.THREAD_PRIORITY_BACKGROUND);
         mHandlerThread.start();
@@ -270,6 +416,83 @@ public class DeviceStorageMonitorService extends SystemService {
         return true;
     }
 
+    /**
+     * XTC device addition: whether the launcher's home activity is in the foreground.
+     */
+    public static boolean isAppRunning(Context context) {
+        List<ActivityManager.RunningTaskInfo> runningTasks =
+                ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
+                        .getRunningTasks(1);
+        if (runningTasks.size() <= 0) {
+            return false;
+        }
+        Slog.i(TAG, "classname is " + runningTasks.get(0).topActivity.getClassName());
+        return runningTasks.get(0).topActivity.getClassName().equals(INTERFACE_JUDGE);
+    }
+
+    /**
+     * XTC device addition: listen for special-mode broadcasts that pause the prompt.
+     */
+    private void registerReceive() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_CLASS_DISABLE);
+        filter.addAction(ACTION_LONG_TIME_MODE);
+        filter.addAction(ACTION_SLEEP_MODE);
+        filter.addAction(ACTION_HIGHTEMP_DISABLE);
+        filter.addAction(ACTION_VIDEO_CALL);
+        filter.addAction(ACTION_LOSS);
+        getContext().registerReceiver(SpaceCleanReceiver, filter);
+    }
+
+    /**
+     * XTC device addition: show (or dismiss) the storage clean-up dialog.
+     */
+    private void scheduledSpaceClean(final String text, final boolean show) {
+        final StorageManager storage = getContext().getSystemService(StorageManager.class);
+        final CloseDialogReceiver closeDialogReceiver = new CloseDialogReceiver(getContext());
+        // Dialog UI must be created/shown on the main looper; callers may run on
+        // the storage-check handler thread.
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                for (VolumeInfo vol : storage.getWritablePrivateVolumes()) {
+                    if (scdialog != null) {
+                        scdialog.dismiss();
+                    }
+                    final State state = findOrCreateState(
+                            StorageManager.convert(vol.getFsUuid()));
+                    SpaceCleanDialog dialog = new SpaceCleanDialog(getContext(), text) {
+                        @Override
+                        public void clickCallBack(View view) {
+                            Slog.v(TAG, "go to clean up>>>>>>>>>>");
+                            Intent intent = new Intent("android.intent.action.fullMem.xtc");
+                            intent.putExtra("memory", state.lastUsableBytes);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            getContext().startActivity(intent);
+                            dismiss();
+                        }
+
+                        @Override
+                        public void dismissCallBack(View view) {
+                            Slog.v(TAG, "dismissCallBack");
+                        }
+                    };
+                    closeDialogReceiver.dialog = dialog;
+                    dialog.getWindow().addFlags(
+                            android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+                    dialog.getWindow().setDimAmount(100.0f);
+                    if (show) {
+                        dialog.show();
+                        scdialog = dialog;
+                    } else {
+                        dialog.dismiss();
+                        closeDialogReceiver.unRegister();
+                    }
+                }
+            }
+        });
+    }
+
     @Override
     public void onStart() {
         final Context context = getContext();
@@ -292,10 +515,24 @@ public class DeviceStorageMonitorService extends SystemService {
 
         publishBinderService(SERVICE, mRemoteService);
         publishLocalService(DeviceStorageMonitorInternal.class, mLocalService);
+        // XTC device addition: register the special-mode receiver.
+        registerReceive();
 
         // Kick off pass to examine storage state
         mHandler.removeMessages(MSG_CHECK);
         mHandler.obtainMessage(MSG_CHECK).sendToTarget();
+    }
+
+    @Override
+    public void onBootPhase(int phase) {
+        // XTC device addition: re-check storage when the launcher starts.
+        Slog.d(TAG, "onBootPhase: " + phase);
+        if (phase == SystemService.PHASE_BOOT_COMPLETED) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("com.xtc.i3launcher.action.ACTION_LAUNCHER_START");
+            getContext().registerReceiverAsUser(mBroadcastReceiver, UserHandle.ALL,
+                    filter, null, null);
+        }
     }
 
     private final DeviceStorageMonitorInternal mLocalService = new DeviceStorageMonitorInternal() {
@@ -455,53 +692,78 @@ public class DeviceStorageMonitorService extends SystemService {
         }
     }
 
-    private void updateNotifications(VolumeInfo vol, int oldLevel, int newLevel) {
+    private void updateNotifications(VolumeInfo vol, int oldLevel, int newLevel, State state) {
         final Context context = getContext();
         final UUID uuid = StorageManager.convert(vol.getFsUuid());
 
-        if (State.isEntering(State.LEVEL_LOW, oldLevel, newLevel)) {
-            Intent lowMemIntent = new Intent(StorageManager.ACTION_MANAGE_STORAGE);
-            lowMemIntent.putExtra(StorageManager.EXTRA_UUID, uuid);
-            lowMemIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            final CharSequence title = context.getText(
-                    com.android.internal.R.string.low_internal_storage_view_title);
-
-            final CharSequence details;
-            if (StorageManager.UUID_DEFAULT.equals(uuid)) {
-                details = context.getText(isBootImageOnDisk()
-                        ? com.android.internal.R.string.low_internal_storage_view_text
-                        : com.android.internal.R.string.low_internal_storage_view_text_no_boot);
-            } else {
-                details = context.getText(
-                        com.android.internal.R.string.low_internal_storage_view_text);
+        if (State.isEntering(State.LEVEL_FULL, oldLevel, newLevel)) {
+            Slog.i(TAG, "Sending memory full notification");
+            if (TIME_FULLCALIBRATION_FLAG == 0) {
+                scheduledSpaceClean(fullspaceButtonText, true);
+                TIME_FULLCALIBRATION_FLAG = 1;
+                TIME_LOWCALIBRATION_FLAG = 0;
             }
-
-            PendingIntent intent = PendingIntent.getActivityAsUser(context, 0, lowMemIntent, 0,
-                    null, UserHandle.CURRENT);
-            Notification notification =
-                    new Notification.Builder(context, SystemNotificationChannels.ALERTS)
-                            .setSmallIcon(com.android.internal.R.drawable.stat_notify_disk_full)
-                            .setTicker(title)
-                            .setColor(context.getColor(
-                                com.android.internal.R.color.system_notification_accent_color))
-                            .setContentTitle(title)
-                            .setContentText(details)
-                            .setContentIntent(intent)
-                            .setStyle(new Notification.BigTextStyle()
-                                  .bigText(details))
-                            .setVisibility(Notification.VISIBILITY_PUBLIC)
-                            .setCategory(Notification.CATEGORY_SYSTEM)
-                            .extend(new Notification.TvExtender()
-                                    .setChannelId(TV_NOTIFICATION_CHANNEL_ID))
-                            .build();
-            notification.flags |= Notification.FLAG_NO_CLEAR;
-            mNotifManager.notifyAsUser(uuid.toString(), SystemMessage.NOTE_LOW_STORAGE,
-                    notification, UserHandle.ALL);
-        } else if (State.isLeaving(State.LEVEL_LOW, oldLevel, newLevel)) {
+            showStorageNotification(context, uuid, state);
+            return;
+        }
+        if (State.isEntering(State.LEVEL_LOW, oldLevel, newLevel)) {
+            Slog.i(TAG, "Running low on memory. Sending notification");
+            if (TIME_LOWCALIBRATION_FLAG == 0) {
+                scheduledSpaceClean(lowspaceButtonText, true);
+                TIME_LOWCALIBRATION_FLAG = 1;
+                TIME_FULLCALIBRATION_FLAG = 0;
+            }
+            showStorageNotification(context, uuid, state);
+            return;
+        }
+        if (State.isLeaving(State.LEVEL_LOW, oldLevel, newLevel)
+                || State.isLeaving(State.LEVEL_FULL, oldLevel, newLevel)) {
+            Slog.i(TAG, "cancel storage monitor notification");
             mNotifManager.cancelAsUser(uuid.toString(), SystemMessage.NOTE_LOW_STORAGE,
                     UserHandle.ALL);
         }
+    }
+
+    private void showStorageNotification(Context context, UUID uuid, State state) {
+        Intent lowMemIntent = new Intent(StorageManager.ACTION_MANAGE_STORAGE);
+        lowMemIntent.putExtra(StorageManager.EXTRA_UUID, uuid);
+        lowMemIntent.putExtra("memory", state.lastUsableBytes);
+        lowMemIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        final CharSequence title = context.getText(
+                com.android.internal.R.string.low_internal_storage_view_title);
+
+        final CharSequence details;
+        if (StorageManager.UUID_DEFAULT.equals(uuid)) {
+            details = context.getText(isBootImageOnDisk()
+                    ? com.android.internal.R.string.low_internal_storage_view_text
+                    : com.android.internal.R.string.low_internal_storage_view_text_no_boot);
+        } else {
+            details = context.getText(
+                    com.android.internal.R.string.low_internal_storage_view_text);
+        }
+
+        PendingIntent intent = PendingIntent.getActivityAsUser(context, 0, lowMemIntent, 0,
+                null, UserHandle.CURRENT);
+        Notification notification =
+                new Notification.Builder(context, SystemNotificationChannels.ALERTS)
+                        .setSmallIcon(com.android.internal.R.drawable.stat_notify_disk_full)
+                        .setTicker(title)
+                        .setColor(context.getColor(
+                            com.android.internal.R.color.system_notification_accent_color))
+                        .setContentTitle(title)
+                        .setContentText(details)
+                        .setContentIntent(intent)
+                        .setStyle(new Notification.BigTextStyle()
+                              .bigText(details))
+                        .setVisibility(Notification.VISIBILITY_PUBLIC)
+                        .setCategory(Notification.CATEGORY_SYSTEM)
+                        .extend(new Notification.TvExtender()
+                                .setChannelId(TV_NOTIFICATION_CHANNEL_ID))
+                        .build();
+        notification.flags |= Notification.FLAG_NO_CLEAR;
+        mNotifManager.notifyAsUser(uuid.toString(), SystemMessage.NOTE_LOW_STORAGE,
+                notification, UserHandle.ALL);
     }
 
     private void updateBroadcasts(VolumeInfo vol, int oldLevel, int newLevel, int seq) {
@@ -540,6 +802,35 @@ public class DeviceStorageMonitorService extends SystemService {
         } else if (State.isLeaving(State.LEVEL_FULL, oldLevel, newLevel)) {
             getContext().removeStickyBroadcastAsUser(fullIntent, UserHandle.ALL);
             getContext().sendBroadcastAsUser(notFullIntent, UserHandle.ALL);
+        }
+    }
+
+    /**
+     * XTC device addition: closes a shown dialog when the system dialogs are closed.
+     */
+    private static class CloseDialogReceiver extends BroadcastReceiver
+            implements DialogInterface.OnDismissListener {
+        public Dialog dialog;
+        private Context mContext;
+
+        CloseDialogReceiver(Context context) {
+            mContext = context;
+            context.registerReceiver(this,
+                    new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+        }
+
+        @Override
+        public void onDismiss(DialogInterface dialog) {
+            mContext.unregisterReceiver(this);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            dialog.cancel();
+        }
+
+        public void unRegister() {
+            mContext.unregisterReceiver(this);
         }
     }
 

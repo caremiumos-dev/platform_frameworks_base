@@ -33,6 +33,8 @@ public class BatteryProperties implements Parcelable {
     public int batteryFullCharge;
     public int batteryChargeCounter;
     public String batteryTechnology;
+    /** XTC device addition: wifi is being resumed while charging. */
+    public boolean wifiResumeDevice;
 
     public BatteryProperties() {
     }
@@ -41,6 +43,7 @@ public class BatteryProperties implements Parcelable {
         chargerAcOnline = other.chargerAcOnline;
         chargerUsbOnline = other.chargerUsbOnline;
         chargerWirelessOnline = other.chargerWirelessOnline;
+        wifiResumeDevice = other.wifiResumeDevice;
         maxChargingCurrent = other.maxChargingCurrent;
         maxChargingVoltage = other.maxChargingVoltage;
         batteryStatus = other.batteryStatus;
@@ -63,6 +66,7 @@ public class BatteryProperties implements Parcelable {
         chargerAcOnline = p.readInt() == 1 ? true : false;
         chargerUsbOnline = p.readInt() == 1 ? true : false;
         chargerWirelessOnline = p.readInt() == 1 ? true : false;
+        wifiResumeDevice = p.readInt() == 1 ? true : false;
         maxChargingCurrent = p.readInt();
         maxChargingVoltage = p.readInt();
         batteryStatus = p.readInt();
@@ -80,6 +84,7 @@ public class BatteryProperties implements Parcelable {
         p.writeInt(chargerAcOnline ? 1 : 0);
         p.writeInt(chargerUsbOnline ? 1 : 0);
         p.writeInt(chargerWirelessOnline ? 1 : 0);
+        p.writeInt(wifiResumeDevice ? 1 : 0);
         p.writeInt(maxChargingCurrent);
         p.writeInt(maxChargingVoltage);
         p.writeInt(batteryStatus);

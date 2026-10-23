@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.StrictMode;
+import android.os.SystemProperties;
 import android.os.Trace;
 import android.text.Editable;
 import android.text.InputType;
@@ -618,6 +619,17 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
     private int mTouchSlop;
     private float mDensityScale;
 
+    // QTI/CAF vendor extension: input optimization.
+    private static final boolean OPTS_INPUT = SystemProperties.getBoolean(
+            "persist.vendor.qti.inputopts.enable", false);
+    private static final String MOVE_TOUCH_SLOP = SystemProperties.get(
+            "persist.vendor.qti.inputopts.movetouchslop", "0.6");
+    private static final double TOUCH_SLOP_MIN = 0.6d;
+    private static final double TOUCH_SLOP_MAX = 1.0d;
+    private boolean mIsFirstTouchMoveEvent;
+    private int mNumTouchMoveEvent;
+    private int mMoveAcceleration;
+
     private float mVerticalScrollFactor;
 
     private InputConnection mDefInputConnection;
@@ -877,6 +889,19 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
         final ViewConfiguration configuration = ViewConfiguration.get(mContext);
         mTouchSlop = configuration.getScaledTouchSlop();
+        // QTI/CAF vendor extension: scale the first-move touch slop if input optimization is on.
+        if (OPTS_INPUT) {
+            double moveTouchSlop = Double.parseDouble(MOVE_TOUCH_SLOP);
+            if (moveTouchSlop <= 0.0d) {
+                mMoveAcceleration = mTouchSlop;
+            } else if (moveTouchSlop < TOUCH_SLOP_MIN) {
+                mMoveAcceleration = (int) (mTouchSlop * TOUCH_SLOP_MIN);
+            } else if (moveTouchSlop < TOUCH_SLOP_MIN || moveTouchSlop >= TOUCH_SLOP_MAX) {
+                mMoveAcceleration = mTouchSlop;
+            } else {
+                mMoveAcceleration = (int) (moveTouchSlop * mTouchSlop);
+            }
+        }
         mVerticalScrollFactor = configuration.getScaledVerticalScrollFactor();
         mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
@@ -3476,7 +3501,15 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
         final int deltaY = y - mMotionY;
         final int distance = Math.abs(deltaY);
         final boolean overscroll = mScrollY != 0;
-        if ((overscroll || distance > mTouchSlop) &&
+        final boolean exceedsSlop;
+        if (!OPTS_INPUT) {
+            exceedsSlop = distance > mTouchSlop;
+        } else if (mIsFirstTouchMoveEvent) {
+            exceedsSlop = distance > mMoveAcceleration;
+        } else {
+            exceedsSlop = distance > mTouchSlop;
+        }
+        if ((overscroll || exceedsSlop) &&
                 (getNestedScrollAxes() & SCROLL_AXIS_VERTICAL) == 0) {
             createScrollingCache();
             if (overscroll) {
@@ -3484,7 +3517,11 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                 mMotionCorrection = 0;
             } else {
                 mTouchMode = TOUCH_MODE_SCROLL;
-                mMotionCorrection = deltaY > 0 ? mTouchSlop : -mTouchSlop;
+                if (OPTS_INPUT && mIsFirstTouchMoveEvent) {
+                    mMotionCorrection = deltaY > 0 ? mMoveAcceleration : -mMoveAcceleration;
+                } else {
+                    mMotionCorrection = deltaY > 0 ? mTouchSlop : -mTouchSlop;
+                }
             }
             removeCallbacks(mPendingCheckForLongPress);
             setPressed(false);
@@ -3821,6 +3858,9 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
             case MotionEvent.ACTION_POINTER_UP: {
                 onSecondaryPointerUp(ev);
+                if (OPTS_INPUT) {
+                    mNumTouchMoveEvent = 0;
+                }
                 final int x = mMotionX;
                 final int y = mMotionY;
                 final int motionPosition = pointToPosition(x, y);
@@ -3852,6 +3892,9 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                     mMotionPosition = motionPosition;
                 }
                 mLastY = y;
+                if (OPTS_INPUT) {
+                    mNumTouchMoveEvent = 0;
+                }
                 break;
             }
         }
@@ -3865,6 +3908,9 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
     private void onTouchDown(MotionEvent ev) {
         mHasPerformedLongPress = false;
+        if (OPTS_INPUT) {
+            mNumTouchMoveEvent = 0;
+        }
         mActivePointerId = ev.getPointerId(0);
 
         if (mTouchMode == TOUCH_MODE_OVERFLING) {
@@ -3933,6 +3979,11 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
             return;
         }
 
+        if (OPTS_INPUT) {
+            mNumTouchMoveEvent++;
+            mIsFirstTouchMoveEvent = mNumTouchMoveEvent == 1;
+        }
+
         int pointerIndex = ev.findPointerIndex(mActivePointerId);
         if (pointerIndex == -1) {
             pointerIndex = 0;
@@ -3986,6 +4037,9 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
     }
 
     private void onTouchUp(MotionEvent ev) {
+        if (OPTS_INPUT) {
+            mNumTouchMoveEvent = 0;
+        }
         switch (mTouchMode) {
         case TOUCH_MODE_DOWN:
         case TOUCH_MODE_TAP:
@@ -4163,6 +4217,9 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
     }
 
     private void onTouchCancel() {
+        if (OPTS_INPUT) {
+            mNumTouchMoveEvent = 0;
+        }
         switch (mTouchMode) {
         case TOUCH_MODE_OVERSCROLL:
             if (mFlingRunnable == null) {
@@ -4429,6 +4486,9 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
         switch (actionMasked) {
         case MotionEvent.ACTION_DOWN: {
+            if (OPTS_INPUT) {
+                mNumTouchMoveEvent = 0;
+            }
             int touchMode = mTouchMode;
             if (touchMode == TOUCH_MODE_OVERFLING || touchMode == TOUCH_MODE_OVERSCROLL) {
                 mMotionCorrection = 0;

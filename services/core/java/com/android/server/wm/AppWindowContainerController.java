@@ -62,7 +62,8 @@ public class AppWindowContainerController
     private static final int STARTING_WINDOW_TYPE_SNAPSHOT = 1;
     private static final int STARTING_WINDOW_TYPE_SPLASH_SCREEN = 2;
 
-    private final IApplicationToken mToken;
+    // XTC 差异：由 final 改为可变，以允许 field 初始化 lambda 在 DEBUG_VISIBILITY 非常量时引用。
+    private IApplicationToken mToken;
     private final Handler mHandler;
 
     private final class H extends Handler {

@@ -3200,6 +3200,81 @@ public abstract class Context {
     public static final String WINDOW_SERVICE = "window";
 
     /**
+     * Use with {@link #getSystemService} to retrieve the XTC health manager.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTCHEALTH_SERVICE = "xtc_health";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the XTC app performance
+     * monitor service.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTC_APM_SERVICE = "APMService";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the XTC authentication
+     * (mobile manager) service.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTC_AUTH_SERVICE = "xtcauth";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the XTC behavior manager.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTC_BEHAVIOR_SERVICE = "xtcbehavior";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the XTC diag service.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTC_DIAG_SERVICE = "xtcdiag";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the XTC NFC manager.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTC_NFC_SERVICE = "xtcnfc";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the XTC performance
+     * manager.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTC_PERFORMANCE_SERVICE = "xtcperformance";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the XTC utils manager.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String XTC_UTILS_SERVICE = "XTCUtilsService";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve the anti-addiction manager.
+     *
+     * @see #getSystemService
+     * @hide
+     */
+    public static final String ANTIADDICTION_SERVICE = "anti_addiction";
+
+    /**
      * Use with {@link #getSystemService} to retrieve a
      * {@link android.view.LayoutInflater} for inflating layout resources in this
      * context.

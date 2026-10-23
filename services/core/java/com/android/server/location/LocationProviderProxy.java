@@ -198,6 +198,9 @@ public class LocationProviderProxy implements LocationProviderInterface {
     }
 
     @Override
+    public void setPackageName(String name) { }
+
+    @Override
     public void setRequest(ProviderRequest request, WorkSource source) {
         synchronized (mLock) {
             mRequest = request;

@@ -53,6 +53,9 @@ import android.provider.Settings;
 import android.service.battery.BatteryServiceDumpProto;
 import android.util.EventLog;
 import android.util.Slog;
+import android.view.View;
+
+import com.android.server.power.BatteryTemperatureWarningDialog;
 import android.util.proto.ProtoOutputStream;
 
 import java.io.File;
@@ -60,6 +63,7 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedHashMap;
 
 
 /**
@@ -99,6 +103,9 @@ public final class BatteryService extends SystemService {
 
     private static final int BATTERY_SCALE = 100;    // battery capacity is a percentage
 
+    // XTC device addition: minimum interval between battery-temperature warning popovers.
+    private static final long TRIGGER_TIME_INTERVAL = 2592000;
+
     // Used locally for determining when to make a last ditch effort to log
     // discharge stats before the device dies.
     private int mCriticalBatteryLevel;
@@ -130,6 +137,17 @@ public final class BatteryService extends SystemService {
     private int mLastMaxChargingCurrent;
     private int mLastMaxChargingVoltage;
     private int mLastChargeCounter;
+
+    // XTC device addition: battery-temperature anomaly tracking.
+    private int mAllowPopoverFlag;
+    private int mTempAbnormalCount;
+    private int mTempInvariantAbnormalCount;
+
+    // XTC device addition: battery full/empty charge-counter recording.
+    private int recordStatus = 0;
+    private int full_cc;
+    private int empty_cc;
+    private int battery_res_id = -1;
 
     private int mSequence = 1;
 
@@ -281,6 +299,84 @@ public final class BatteryService extends SystemService {
                 && (oldPlugged || mLastBatteryLevel > mLowBatteryWarningLevel);
     }
 
+    /**
+     * XTC device addition: track the charge counter at full/empty to later
+     * upload a capacity estimate via {@code XtcBehavior}.
+     */
+    private void recordBatteryCapacity() {
+        if (recordStatus == 0) {
+            if (100 <= mBatteryProps.batteryLevel && 2 == mBatteryProps.batteryStatus) {
+                recordStatus = 1;
+                full_cc = mBatteryProps.batteryChargeCounter;
+                Slog.i(TAG, "record full cc_soc: " + full_cc);
+                return;
+            } else {
+                if (mBatteryProps.batteryLevel > 5 || 2 != mBatteryProps.batteryStatus) {
+                    return;
+                }
+                recordStatus = 2;
+                empty_cc = mBatteryProps.batteryChargeCounter;
+                Slog.i(TAG, "record empty cc_soc: " + empty_cc);
+                return;
+            }
+        }
+        if (1 == recordStatus) {
+            if (2 == mBatteryProps.batteryStatus && mBatteryProps.batteryLevel < 100) {
+                recordStatus = 0;
+                Slog.i(TAG, "quit recording discharging cc");
+                return;
+            } else {
+                if (mBatteryProps.batteryLevel <= 5) {
+                    empty_cc = mBatteryProps.batteryChargeCounter;
+                    uploadBatteryCapacity();
+                    Slog.i(TAG, "record discharging cc_soc.full:" + full_cc
+                            + "empty:" + empty_cc + "soc:" + mBatteryProps.batteryLevel
+                            + "id:" + battery_res_id);
+                    recordStatus = 0;
+                    return;
+                }
+                return;
+            }
+        }
+        if (2 == recordStatus) {
+            if (3 == mBatteryProps.batteryStatus) {
+                recordStatus = 0;
+                Slog.i(TAG, "quit recording charging cc");
+            } else if (100 <= mBatteryProps.batteryLevel) {
+                full_cc = mBatteryProps.batteryChargeCounter;
+                uploadBatteryCapacity();
+                Slog.i(TAG, "record charging cc_soc.full:" + full_cc
+                        + "empty:" + empty_cc + "soc:" + mBatteryProps.batteryLevel
+                        + "id:" + battery_res_id);
+                recordStatus = 0;
+            }
+        }
+    }
+
+    /**
+     * XTC device addition: upload the recorded battery capacity estimate via
+     * {@code XtcBehavior}.
+     */
+    private void uploadBatteryCapacity() {
+        if (battery_res_id < 0) {
+            try {
+                battery_res_id = Integer.valueOf(FileUtils.readTextFile(
+                        new File("/sys/class/power_supply/bms/resistance_id"), 10, null)
+                        .replaceAll("\r|\n", "")).intValue();
+            } catch (Exception e) {
+                Slog.e("TAG", "read battery id failed");
+                e.printStackTrace();
+            }
+        }
+        LinkedHashMap<String, String> data = new LinkedHashMap<>();
+        data.put("full_cc", String.valueOf(full_cc));
+        data.put("empty_cc", String.valueOf(empty_cc));
+        data.put("soc", String.valueOf(mBatteryProps.batteryLevel));
+        data.put("id", String.valueOf(battery_res_id));
+        new com.xtc.behavior.XtcBehavior.Builder(mContext, "battery_cc", data)
+                .packageName("com.android.server").build().sendData();
+    }
+
     private void shutdownIfNoPowerLocked() {
         // shut down gracefully if our battery is critically low and we are not powered.
         // wait until the system has booted before attempting to display the shutdown dialog.
@@ -316,6 +412,65 @@ public final class BatteryService extends SystemService {
                 }
             });
         }
+    }
+
+    /**
+     * XTC device addition: count abnormal battery-temperature readings and, once
+     * the thresholds are crossed, show a warning popover (rate-limited by
+     * {@link #TRIGGER_TIME_INTERVAL}).
+     */
+    private void abnormalTempCheck(int oldTemp, int newTemp) {
+        if (oldTemp - newTemp > 10 && newTemp < 10) {
+            mTempAbnormalCount++;
+        }
+        if (oldTemp == newTemp && newTemp < -290) {
+            mTempInvariantAbnormalCount++;
+        }
+        Slog.v(TAG, "abnormalTempCheck: mTempInvariantAbnormalCount:"
+                + mTempInvariantAbnormalCount + "mTempAbnormalCount:" + mTempAbnormalCount
+                + "mAllowPopoverFlag" + mAllowPopoverFlag);
+        if ((mTempAbnormalCount <= 30 || mAllowPopoverFlag != 0)
+                && (mTempInvariantAbnormalCount <= 30 || mAllowPopoverFlag != 0)) {
+            return;
+        }
+        mAllowPopoverFlag = 1;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (setGlobalAbnormalCurrentTime(System.currentTimeMillis() / 1000)) {
+                    dialogBatteryTemperatureWarning();
+                }
+            }
+        });
+    }
+
+    private void dialogBatteryTemperatureWarning() {
+        Slog.v(TAG, " do dialogBatteryTemperatureWarning !!!");
+        new BatteryTemperatureWarningDialog(getContext()) {
+            @Override
+            public void dismissCallBack(View view) {
+                mTempAbnormalCount = 0;
+                mTempInvariantAbnormalCount = 0;
+                mAllowPopoverFlag = 0;
+            }
+        }.show();
+    }
+
+    private boolean setGlobalAbnormalCurrentTime(long currentTime) {
+        ContentResolver cr = mContext.getContentResolver();
+        long lastTime = Settings.Global.getLong(cr, "CurrentTime", 0L);
+        Slog.v(TAG, "setGlobalmAbnormalCurrentTime: lastTime: " + lastTime
+                + "currentTime: " + currentTime);
+        if (lastTime == 0) {
+            Settings.Global.putLong(cr, "CurrentTime", currentTime);
+            return true;
+        }
+        if (currentTime - lastTime > TRIGGER_TIME_INTERVAL) {
+            Settings.Global.putLong(cr, "CurrentTime", currentTime);
+            return true;
+        }
+        mAllowPopoverFlag = 0;
+        return false;
     }
 
     private void update(BatteryProperties props) {
@@ -377,6 +532,22 @@ public final class BatteryService extends SystemService {
 
         shutdownIfNoPowerLocked();
         shutdownIfOverTempLocked();
+        // XTC device addition: detect abnormal battery-temperature readings.
+        abnormalTempCheck(mLastBatteryTemperature, mBatteryProps.batteryTemperature);
+        // XTC device addition: record battery full/empty charge-counter.
+        recordBatteryCapacity();
+        if (mBatteryProps.wifiResumeDevice) {
+            mBatteryProps.wifiResumeDevice = false;
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Slog.d(TAG, "Vader send wifi over resume broadcast");
+                    Intent intent = new Intent("xtc.intent.action.WIFI_OVER_RESUME");
+                    intent.putExtra("wifi_disconnect", true);
+                    mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
+                }
+            });
+        }
 
         if (force || (mBatteryProps.batteryStatus != mLastBatteryStatus ||
                 mBatteryProps.batteryHealth != mLastBatteryHealth ||

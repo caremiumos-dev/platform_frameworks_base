@@ -1139,7 +1139,8 @@ class UsbProfileGroupSettingsManager {
                 if (uri != null && uri.length() > 0) {
                     // display URI to user
                     Intent dialogIntent = new Intent();
-                    dialogIntent.setClassName("com.android.systemui",
+                    // XTC device addition: USB dialogs live in the launcher package.
+                    dialogIntent.setClassName("com.xtc.i3launcher",
                             "com.android.systemui.usb.UsbAccessoryUriActivity");
                     dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     dialogIntent.putExtra(UsbManager.EXTRA_ACCESSORY, accessory);
@@ -1188,7 +1189,8 @@ class UsbProfileGroupSettingsManager {
                 ResolveInfo rInfo = matches.get(0);
 
                 // start UsbConfirmActivity if there is only one choice
-                resolverIntent.setClassName("com.android.systemui",
+                // XTC device addition: USB dialogs live in the launcher package.
+                resolverIntent.setClassName("com.xtc.i3launcher",
                         "com.android.systemui.usb.UsbConfirmActivity");
                 resolverIntent.putExtra("rinfo", rInfo);
                 user = UserHandle.getUserHandleForUid(rInfo.activityInfo.applicationInfo.uid);
@@ -1202,7 +1204,8 @@ class UsbProfileGroupSettingsManager {
                 user = mParentUser;
 
                 // start UsbResolverActivity so user can choose an activity
-                resolverIntent.setClassName("com.android.systemui",
+                // XTC device addition: USB dialogs live in the launcher package.
+                resolverIntent.setClassName("com.xtc.i3launcher",
                         "com.android.systemui.usb.UsbResolverActivity");
                 resolverIntent.putParcelableArrayListExtra("rlist", matches);
                 resolverIntent.putExtra(Intent.EXTRA_INTENT, intent);

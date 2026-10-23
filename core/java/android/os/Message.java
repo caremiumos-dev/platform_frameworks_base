@@ -359,6 +359,34 @@ public final class Message implements Parcelable {
     }
 
     /**
+     * Returns a short human readable summary of the dispatch source of this
+     * message (handler callback class name, message code, or barrier
+     * identifier). Used by the application performance monitor when
+     * reporting main thread dispatch cost time.
+     *
+     * @hide
+     */
+    public String getMainInfo() {
+        StringBuilder sb = new StringBuilder();
+        if (target != null) {
+            if (callback != null) {
+                sb.append(" callback=");
+                sb.append(callback.getClass().getName());
+            } else {
+                sb.append(" what=");
+                sb.append(what);
+            }
+            sb.append(" target=");
+            sb.append(target.getClass().getName());
+        } else {
+            sb.append(" barrier=");
+            sb.append(arg1);
+        }
+        sb.append(" }");
+        return sb.toString();
+    }
+
+    /**
      * Retrieve callback object that will execute when this message is handled.
      * This object must implement Runnable. This is called by
      * the <em>target</em> {@link Handler} that is receiving this Message to

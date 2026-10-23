@@ -216,6 +216,10 @@ public class NotificationManagerService extends SystemService {
             = SystemProperties.getBoolean("debug.child_notifs", true);
 
     static final int MAX_PACKAGE_NOTIFICATIONS = 50;
+    // XTC: cap on concurrently queued toasts per non-system package. The vendor
+    // build allows more than one toast per package (deduplicated by callback)
+    // but refuses to enqueue more than this many.
+    static final int MAX_PACKAGE_TOASTS = 10;
     static final float DEFAULT_MAX_NOTIFICATION_ENQUEUE_RATE = 5f;
 
     // message codes
@@ -224,6 +228,8 @@ public class NotificationManagerService extends SystemService {
     static final int MESSAGE_SEND_RANKING_UPDATE = 4;
     static final int MESSAGE_LISTENER_HINTS_CHANGED = 5;
     static final int MESSAGE_LISTENER_NOTIFICATION_FILTER_CHANGED = 6;
+    // XTC: deferred removal of a toast window token.
+    static final int MESSAGE_FINISH_TOKEN_TIMEOUT = 7;
 
     // ranking thread messages
     private static final int MESSAGE_RECONSIDER_RANKING = 1000;
@@ -1654,7 +1660,7 @@ public class NotificationManagerService extends SystemService {
                     int index;
                     // All packages aside from the android package can enqueue one toast at a time
                     if (!isSystemToast) {
-                        index = indexOfToastPackageLocked(pkg);
+                        index = indexOfToastPackageLocked(pkg, callback);
                     } else {
                         index = indexOfToastLocked(pkg, callback);
                     }
@@ -1666,6 +1672,12 @@ public class NotificationManagerService extends SystemService {
                         record.update(duration);
                         record.update(callback);
                     } else {
+                        // XTC: refuse to queue more than MAX_PACKAGE_TOASTS toasts
+                        // from a single non-system package.
+                        if (tooMuchToast(isSystemToast, pkg)) {
+                            Binder.restoreCallingIdentity(callingId);
+                            return;
+                        }
                         Binder token = new Binder();
                         mWindowManagerInternal.addWindowToken(token, TYPE_TOAST, DEFAULT_DISPLAY);
                         record = new ToastRecord(callingPid, pkg, callback, duration, token);
@@ -1703,6 +1715,24 @@ public class NotificationManagerService extends SystemService {
                         cancelToastLocked(index);
                     } else {
                         Slog.w(TAG, "Toast already cancelled. pkg=" + pkg
+                                + " callback=" + callback);
+                    }
+                } finally {
+                    Binder.restoreCallingIdentity(callingId);
+                }
+            }
+        }
+
+        @Override
+        public void finishToken(String pkg, ITransientNotification callback) {
+            synchronized (mToastQueue) {
+                long callingId = Binder.clearCallingIdentity();
+                try {
+                    int index = indexOfToastLocked(pkg, callback);
+                    if (index >= 0) {
+                        finishTokenLocked(mToastQueue.get(index).token);
+                    } else {
+                        Slog.w(TAG, "Toast already killed. pkg=" + pkg
                                 + " callback=" + callback);
                     }
                 } finally {
@@ -3175,6 +3205,12 @@ public class NotificationManagerService extends SystemService {
     }
 
     private String disableNotificationEffects(NotificationRecord record) {
+        // XTC/BBK: special-case the bundled WeChat app, which always has notification
+        // effects disabled at this layer.
+        if (record != null && record.sbn.getOpPkg() != null
+                && record.sbn.getOpPkg().equals("com.xtc.weichat")) {
+            return "booleanState";
+        }
         if (mDisableNotificationEffects) {
             return "booleanState";
         }
@@ -4298,7 +4334,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         ToastRecord lastToast = mToastQueue.remove(index);
-        mWindowManagerInternal.removeWindowToken(lastToast.token, true, DEFAULT_DISPLAY);
+        mWindowManagerInternal.removeWindowToken(lastToast.token, false, 0);
+        scheduleKillTokenTimeout(lastToast.token);
 
         keepProcessAliveIfNeededLocked(record.pid);
         if (mToastQueue.size() > 0) {
@@ -4307,6 +4344,11 @@ public class NotificationManagerService extends SystemService {
             // after this point.
             showNextToastLocked();
         }
+    }
+
+    void finishTokenLocked(IBinder token) {
+        mHandler.removeCallbacksAndMessages(token);
+        mWindowManagerInternal.removeWindowToken(token, true, 0);
     }
 
     @GuardedBy("mToastQueue")
@@ -4318,6 +4360,14 @@ public class NotificationManagerService extends SystemService {
         mHandler.sendMessageDelayed(m, delay);
     }
 
+    @GuardedBy("mToastQueue")
+    private void scheduleKillTokenTimeout(IBinder token)
+    {
+        mHandler.removeCallbacksAndMessages(token);
+        mHandler.sendMessageDelayed(
+                Message.obtain(mHandler, MESSAGE_FINISH_TOKEN_TIMEOUT, token), 5L);
+    }
+
     private void handleTimeout(ToastRecord record)
     {
         if (DBG) Slog.d(TAG, "Timeout pkg=" + record.pkg + " callback=" + record.callback);
@@ -4326,6 +4376,14 @@ public class NotificationManagerService extends SystemService {
             if (index >= 0) {
                 cancelToastLocked(index);
             }
+        }
+    }
+
+    private void handleKillTokenTimeout(IBinder token)
+    {
+        if (DBG) Slog.d(TAG, "Kill Token Timeout token=" + token);
+        synchronized (mToastQueue) {
+            finishTokenLocked(token);
         }
     }
 
@@ -4345,17 +4403,42 @@ public class NotificationManagerService extends SystemService {
     }
 
     @GuardedBy("mToastQueue")
-    int indexOfToastPackageLocked(String pkg)
+    int indexOfToastPackageLocked(String pkg, ITransientNotification callback)
     {
+        IBinder cbak = callback.asBinder();
         ArrayList<ToastRecord> list = mToastQueue;
         int len = list.size();
         for (int i=0; i<len; i++) {
             ToastRecord r = list.get(i);
-            if (r.pkg.equals(pkg)) {
+            if (r.pkg.equals(pkg) && r.callback.asBinder().equals(cbak)) {
                 return i;
             }
         }
         return -1;
+    }
+
+    /**
+     * XTC: returns whether the given (non-system) package already has
+     * {@link #MAX_PACKAGE_TOASTS} toasts queued.
+     */
+    @GuardedBy("mToastQueue")
+    private boolean tooMuchToast(boolean isSystemToast, String pkg)
+    {
+        if (!isSystemToast) {
+            final int size = mToastQueue.size();
+            int count = 0;
+            for (int i = 0; i < size; i++) {
+                if (mToastQueue.get(i).pkg.equals(pkg)) {
+                    count++;
+                    if (count >= MAX_PACKAGE_TOASTS) {
+                        Slog.e(TAG, "++++ Package has already posted " + count
+                                + " toasts. Not showing more. Package=" + pkg);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @GuardedBy("mToastQueue")
@@ -4533,6 +4616,9 @@ public class NotificationManagerService extends SystemService {
                     break;
                 case MESSAGE_LISTENER_NOTIFICATION_FILTER_CHANGED:
                     handleListenerInterruptionFilterChanged(msg.arg1);
+                    break;
+                case MESSAGE_FINISH_TOKEN_TIMEOUT:
+                    handleKillTokenTimeout((IBinder) msg.obj);
                     break;
             }
         }

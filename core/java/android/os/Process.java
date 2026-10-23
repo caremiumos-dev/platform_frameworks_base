@@ -152,6 +152,19 @@ public class Process {
     public static final int OTA_UPDATE_UID = 1061;
 
     /**
+     * Defines the UID/GID for the IORAP prefetch daemon.
+     * @hide
+     */
+    public static final int IORAPD_UID = 1071;
+
+    /**
+     * Defines the UID/GID for the "nobody" user, used for processes that must
+     * not own any files.
+     * @hide
+     */
+    public static final int NOBODY_UID = 9999;
+
+    /**
      * Defines the start of a range of UIDs (and GIDs), going from this
      * number to {@link #LAST_APPLICATION_UID} that are reserved for assigning
      * to applications.
@@ -962,6 +975,36 @@ public class Process {
      * @hide
      */
     public static final native long getPss(int pid);
+
+    /**
+     * Reclaims memory of the given process.
+     *
+     * <p><b>Condemnation.</b> Used by the XTC RAM policy to reclaim memory from
+     * user applications without their consent.
+     *
+     * @param pid the target process
+     * @param typeId the reclaim type (0 anon, 1 file, 2 all)
+     * @return the number of pages reclaimed
+     * @hide
+     */
+    public static final native long reclaimProcess(int pid, int typeId);
+
+    /**
+     * @hide
+     */
+    public static final native void setCgroupProcsProcessGroup(int pid, int uid, int group)
+            throws SecurityException, IllegalArgumentException;
+
+    /**
+     * Returns the amount of free swap, in bytes.
+     *
+     * <p><b>Condemnation.</b> Vendor addition used by the XTC memory policy to
+     * read device swap state. Native implementation lives in the vendor
+     * libandroid_runtime.
+     *
+     * @hide
+     */
+    public static final native long getBbkFreeSwap();
 
     /**
      * Specifies the outcome of having started a process.

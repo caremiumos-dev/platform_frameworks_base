@@ -2172,6 +2172,28 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
         return mKeyguardManager != null && mKeyguardManager.isKeyguardLocked();
     }
 
+    private boolean isNeedIme(String packageName) {
+        return java.util.Arrays.asList(
+                com.android.internal.view.InputMethodClient.systemAPPNeedIme).contains(packageName);
+    }
+
+    private boolean isStartInputMethod(String packageName, int reason) {
+        return !(isNeedIme(packageName) || reason
+                == com.android.internal.view.InputMethodClient.START_INPUT_REASON_BY_XTC);
+    }
+
+    private boolean isXTCLuncher() {
+        java.util.List<android.app.ActivityManager.RunningTaskInfo> runningTasks =
+                ((android.app.ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE))
+                        .getRunningTasks(1);
+        if (runningTasks.isEmpty() || runningTasks.get(0) == null
+                || runningTasks.get(0).topActivity == null) {
+            return false;
+        }
+        return runningTasks.get(0).topActivity.getClassName().equals(
+                "com.xtc.i3launcher.module.home.view.activity.HomeActivity");
+    }
+
     @BinderThread
     @SuppressWarnings("deprecation")
     @Override
@@ -3517,6 +3539,19 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                 final ServiceInfo si = allInputMethodServices.get(i).serviceInfo;
                 if (android.Manifest.permission.BIND_INPUT_METHOD.equals(si.permission)) {
                     mMyPackageMonitor.addKnownImePackageNameLocked(si.packageName);
+                    try {
+                        ApplicationInfo applicationInfo =
+                                pm.getApplicationInfo(si.packageName, 0);
+                        if (!applicationInfo.isSystemSignature
+                                && si.packageName.equals("com.sogou.ime.wear")) {
+                            applicationInfo.isSystemSignature = true;
+                            Slog.d(TAG, "The xtc_ime is " + si.packageName
+                                    + " system signature state is "
+                                    + applicationInfo.isSystemSignature);
+                        }
+                    } catch (PackageManager.NameNotFoundException e) {
+                        // Ignore.
+                    }
                 }
             }
         }

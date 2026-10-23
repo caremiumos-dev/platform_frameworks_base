@@ -18,6 +18,7 @@ package android.app;
 
 import android.app.ActivityManager;
 import android.app.ApplicationErrorReport;
+import android.app.ProcessInfo;
 import android.app.ContentProviderHolder;
 import android.app.IApplicationThread;
 import android.app.IActivityController;
@@ -639,6 +640,95 @@ interface IActivityManager {
     // If a transaction which will also be used on the native side is being inserted, add it
     // alongside with other transactions of this kind at the top of this file.
 
-     void setShowWhenLocked(in IBinder token, boolean showWhenLocked);
-     void setTurnScreenOn(in IBinder token, boolean turnScreenOn);
+void setShowWhenLocked(in IBinder token, boolean showWhenLocked);
+    void setTurnScreenOn(in IBinder token, boolean turnScreenOn);
+
+    /**
+     * Request an event for the XTC hall switch (for example persisting the
+     * flip cover menu order).
+     *
+     * @hide
+     */
+    void requestHallEvent(in String type, in String value);
+
+    /**
+     * Triggers the XTC "security exception" handling, which reboots the
+     * device. See {@link android.app.ActivityManager#logSeException()}.
+     *
+     * @hide
+     */
+    void xseException();
+
+    /**
+     * XTC performance: apply an OOM adj tuning to a process.
+     * @hide
+     */
+    void applyOomAdjByProcessInfoLocked(in ProcessInfo processInfo, long pss, long swapPss);
+
+    /**
+     * XTC performance: returns the home process info.
+     * @hide
+     */
+    ProcessInfo getHomeProcess();
+
+    /**
+     * XTC performance: returns the list of running process infos.
+     * @hide
+     */
+    List<ProcessInfo> getRunningProcessesInfo();
+
+    /**
+     * XTC performance: returns the package that launched the top activity.
+     * @hide
+     */
+    String getTopActivityCallingPkg();
+
+    /**
+     * XTC performance: asks every application process to stop the caton
+     * (main-thread block) stack monitor.
+     * @hide
+     */
+    void stopCatonStackMonitor();
+
+    /**
+     * XTC self-start: returns whether a package is on the self-start whitelist.
+     * @hide
+     */
+    boolean isPackageWhiteList(String packageName);
+
+    /**
+     * XTC self-start: add/remove a package from the self-start whitelist.
+     * @hide
+     */
+    boolean setSelfstartPackage(String packageName, boolean enable);
+
+    /**
+     * XTC self-start: replace the whole self-start whitelist.
+     * @hide
+     */
+    boolean setSelfstartPackageList(in List<String> packages);
+
+    /**
+     * XTC mobile-data policy: show a policy message for the given uid.
+     * @hide
+     */
+    void showNetworkMsg(int uid);
+
+    /**
+     * XTC back-gesture: apply the back-window animation for the activity's window.
+     * @hide
+     */
+    boolean setBackActivityAnim(IBinder token, float anim);
+
+    /**
+     * XTC back-gesture: apply/restore the back activity background.
+     * @hide
+     */
+    boolean setBackActivityBackground(IBinder token, boolean restore);
+
+    /**
+     * XTC/BBK: force an OOM-adjust pass.
+     * @hide
+     */
+    void callUpdateOomAdj();
 }

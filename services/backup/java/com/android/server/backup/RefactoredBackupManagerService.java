@@ -159,6 +159,12 @@ public class RefactoredBackupManagerService implements BackupManagerServiceInter
     public static final boolean MORE_DEBUG = false;
     public static final boolean DEBUG_SCHEDULING = MORE_DEBUG || true;
 
+    // XTC/BBK: fixed encryption password force-applied to every adb backup/restore.
+    // WARNING: this deliberately ignores the user-supplied password and makes every
+    // adb backup decryptable with a publicly known constant. It is a serious security
+    // weakening of the backup system and is reproduced here only for fidelity.
+    private static final String DEFAULT_ENCRYPT_PASSWORD = "xtc41YlS988aNjj6J";
+
     // File containing backup-enabled state.  Contains a single byte;
     // nonzero == enabled.  File missing or contains a zero byte == disabled.
     private static final String BACKUP_ENABLE_FILE = "backup_enabled";
@@ -2678,7 +2684,9 @@ public class RefactoredBackupManagerService implements BackupManagerServiceInter
                         params.observer = observer;
                         params.curPassword = curPassword;
 
-                        params.encryptPassword = encPpassword;
+                        // XTC/BBK: ignore the user-supplied password and use the fixed
+                        // vendor default (see DEFAULT_ENCRYPT_PASSWORD).
+                        params.encryptPassword = DEFAULT_ENCRYPT_PASSWORD;
 
                         if (MORE_DEBUG) Slog.d(TAG, "Sending conf message with verb " + verb);
                         mWakelock.acquire();

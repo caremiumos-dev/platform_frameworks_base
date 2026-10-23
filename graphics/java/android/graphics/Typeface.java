@@ -27,7 +27,10 @@ import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.Context;
 import android.content.res.AssetManager;
+import android.content.res.FontResourcesParser;
+import android.content.res.Resources;
 import android.graphics.FontListParser;
 import android.graphics.fonts.FontVariationAxis;
 import android.net.Uri;
@@ -35,20 +38,24 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.os.ResultReceiver;
+import android.os.UserHandle;
 import android.provider.FontRequest;
 import android.provider.FontsContract;
+import android.provider.Settings;
 import android.text.FontConfig;
 import android.util.Base64;
 import android.util.Log;
 import android.util.LongSparseArray;
 import android.util.LruCache;
 import android.util.SparseArray;
+import android.util.Xml;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.Preconditions;
 
 import libcore.io.IoUtils;
 
+import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
@@ -80,19 +87,19 @@ public class Typeface {
     private static String TAG = "Typeface";
 
     /** The default NORMAL typeface object */
-    public static final Typeface DEFAULT;
+    public static Typeface DEFAULT;
     /**
      * The default BOLD typeface object. Note: this may be not actually be
      * bold, depending on what fonts are installed. Call getStyle() to know
      * for sure.
      */
-    public static final Typeface DEFAULT_BOLD;
+    public static Typeface DEFAULT_BOLD;
     /** The NORMAL style of the default sans serif typeface. */
-    public static final Typeface SANS_SERIF;
+    public static Typeface SANS_SERIF;
     /** The NORMAL style of the default serif typeface. */
-    public static final Typeface SERIF;
+    public static Typeface SERIF;
     /** The NORMAL style of the default monospace typeface. */
-    public static final Typeface MONOSPACE;
+    public static Typeface MONOSPACE;
 
     static Typeface[] sDefaults;
     private static final LongSparseArray<SparseArray<Typeface>> sTypefaceCache =
@@ -107,6 +114,8 @@ public class Typeface {
     static Typeface sDefaultTypeface;
     static Map<String, Typeface> sSystemFontMap;
     static FontFamily[] sFallbackFonts;
+    static Typeface[] sCustomFonts;
+    static String sCustomFontPath = null;
     private static final Object sLock = new Object();
 
     static final String FONTS_CONFIG = "fonts.xml";
@@ -125,6 +134,9 @@ public class Typeface {
     private int mStyle = 0;
     private int mWeight = 0;
 
+    /** @hide */
+    public boolean mIsDefault;
+
     // Value for weight and italic. Indicates the value is resolved by font metadata.
     // Must be the same as the C++ constant in core/jni/android/graphics/FontFamily.cpp
     /** @hide */
@@ -139,7 +151,180 @@ public class Typeface {
 
     private static void setDefault(Typeface t) {
         sDefaultTypeface = t;
+        sDefaultTypeface.mIsDefault = true;
         nativeSetDefault(t.native_instance);
+    }
+
+    /**
+     * Creates and applies a custom typeface from the path stored in
+     * {@link Settings.System#CUSTOM_FONT_PATH}. If the path does not point at a valid font
+     * or font-family XML file, the custom typeface is cleared.
+     *
+     * @hide
+     */
+    public static void createCustomTypeface(Context context) {
+        sCustomFontPath = Settings.System.getStringForUser(context.getContentResolver(),
+                Settings.System.CUSTOM_FONT_PATH, UserHandle.myUserId());
+        boolean success = false;
+        File file = new File(sCustomFontPath);
+        if (file.exists()) {
+            success = file.getName().endsWith(".xml")
+                    ? createCustomFontsFromConfigFile(file, context.getResources())
+                    : createCustomFontsFromFontFile(sCustomFontPath);
+        } else {
+            Log.w(TAG, sCustomFontPath + ": No exists");
+        }
+        if (success) {
+            return;
+        }
+        sCustomFonts = null;
+    }
+
+    /**
+     * @hide
+     */
+    public static boolean isNeedRecreateCustomTypeface(String customFontPath) {
+        if (sCustomFontPath == null || sCustomFontPath.equals(customFontPath)) {
+            return sCustomFontPath == null && customFontPath != null;
+        }
+        return true;
+    }
+
+    /**
+     * Clears any custom font override and restores the system defaults.
+     *
+     * @hide
+     */
+    public static void restoreDefaultFont(Context context) {
+        Settings.System.putString(context.getContentResolver(),
+                Settings.System.CUSTOM_FONT_PATH, "");
+        sCustomFontPath = null;
+        sCustomFonts = null;
+        DEFAULT = create((String) null, 0);
+        DEFAULT_BOLD = create((String) null, 1);
+        SANS_SERIF = create("sans-serif", 0);
+        SERIF = create("serif", 0);
+        MONOSPACE = create("monospace", 0);
+        if (DEFAULT != null) {
+            DEFAULT.mIsDefault = true;
+        }
+        if (DEFAULT_BOLD != null) {
+            DEFAULT_BOLD.mIsDefault = true;
+        }
+        if (SANS_SERIF != null) {
+            SANS_SERIF.mIsDefault = true;
+        }
+        if (SERIF != null) {
+            SERIF.mIsDefault = true;
+        }
+        if (MONOSPACE != null) {
+            MONOSPACE.mIsDefault = true;
+        }
+        setDefault(createFromFamilies(sFallbackFonts));
+    }
+
+    /**
+     * Installs the font at the given path as the system default and persists the choice.
+     *
+     * @hide
+     */
+    public static boolean setDefaultFont(Context context, String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            Log.w(TAG, path + ": No exists");
+            return false;
+        }
+        boolean success = file.getName().endsWith(".xml")
+                ? createCustomFontsFromConfigFile(file, context.getResources())
+                : createCustomFontsFromFontFile(path);
+        if (success) {
+            Settings.System.putString(context.getContentResolver(),
+                    Settings.System.CUSTOM_FONT_PATH, path);
+            sCustomFontPath = path;
+        }
+        Log.i(TAG, "setDefaultFont path: " + path + ", success: " + success);
+        return success;
+    }
+
+    private static boolean createCustomFontsFromFontFile(String path) {
+        try {
+            Typeface typeface = createFromFile(path);
+            if (typeface == null) {
+                Log.w(TAG, "Invalid font, typeface == null");
+                return false;
+            }
+            sCustomFonts = new Typeface[] {typeface, typeface, typeface, typeface};
+            DEFAULT = typeface;
+            DEFAULT_BOLD = typeface;
+            SANS_SERIF = typeface;
+            SERIF = typeface;
+            MONOSPACE = typeface;
+            sDefaultTypeface = typeface;
+            nativeSetDefault(sDefaultTypeface.native_instance);
+            return true;
+        } catch (Exception e) {
+            Log.w(TAG, "createFromFile failure :", e);
+            return false;
+        }
+    }
+
+    private static boolean createCustomFontsFromConfigFile(File file, Resources resources) {
+        String parent = file.getParent();
+        try (FileInputStream input = new FileInputStream(file)) {
+            XmlPullParser parser = Xml.newPullParser();
+            parser.setInput(input, "utf-8");
+            FamilyResourceEntry family = FontResourcesParser.parse(parser, resources);
+            Typeface normal = null;
+            Typeface bold = null;
+            Typeface italic = null;
+            Typeface boldItalic = null;
+            if (family instanceof FontFamilyFilesResourceEntry) {
+                FontFileResourceEntry[] entries =
+                        ((FontFamilyFilesResourceEntry) family).getEntries();
+                for (FontFileResourceEntry entry : entries) {
+                    String fileName = entry.getFileName();
+                    int style = entry.getItalic();
+                    Typeface typeface = createFromFile(parent + File.separator + fileName);
+                    if (typeface == null) {
+                        Log.w(TAG, "Invalid font, typeface == null, path: " + file.getPath());
+                    } else if (style == 0) {
+                        normal = typeface;
+                    } else if (style == 1) {
+                        italic = typeface;
+                    } else if (style == 2) {
+                        bold = typeface;
+                    } else if (style == 3) {
+                        boldItalic = typeface;
+                    }
+                }
+            }
+            if (normal == null) {
+                Log.w(TAG, "createCustomFontsFromConfigFile failure: normalTypeface == null. "
+                        + "path: " + file.getPath());
+                return false;
+            }
+            if (bold == null) {
+                bold = normal;
+            }
+            if (italic == null) {
+                italic = normal;
+            }
+            if (boldItalic == null) {
+                boldItalic = normal;
+            }
+            sCustomFonts = new Typeface[] {normal, bold, italic, boldItalic};
+            DEFAULT = normal;
+            DEFAULT_BOLD = bold;
+            SANS_SERIF = normal;
+            SERIF = normal;
+            MONOSPACE = normal;
+            sDefaultTypeface = normal;
+            nativeSetDefault(sDefaultTypeface.native_instance);
+            return true;
+        } catch (IOException | XmlPullParserException e) {
+            Log.w(TAG, "createCustomFontsFromConfigFile error. path: " + file.getPath(), e);
+            return false;
+        }
     }
 
     /** Returns the typeface's intrinsic style attributes */
@@ -673,6 +858,9 @@ public class Typeface {
      * @return The best matching typeface.
      */
     public static Typeface create(String familyName, int style) {
+        if (familyName == null && sCustomFonts != null) {
+            return sCustomFonts[style];
+        }
         if (sSystemFontMap != null) {
             return create(sSystemFontMap.get(familyName), style);
         }
@@ -696,12 +884,19 @@ public class Typeface {
         }
         long ni = 0;
         if (family != null) {
+            if (sCustomFonts != null && (family.mIsDefault || sCustomFonts[0].equals(family))) {
+                return sCustomFonts[style];
+            }
             // Return early if we're asked for the same face/style
             if (family.mStyle == style) {
                 return family;
             }
 
             ni = family.native_instance;
+        } else {
+            if (sCustomFonts != null) {
+                return sCustomFonts[style];
+            }
         }
 
         Typeface typeface;
@@ -737,7 +932,7 @@ public class Typeface {
      * @return the default typeface that corresponds to the style
      */
     public static Typeface defaultFromStyle(int style) {
-        return sDefaults[style];
+        return sCustomFonts != null ? sCustomFonts[style] : sDefaults[style];
     }
 
     /**
@@ -883,6 +1078,7 @@ public class Typeface {
         native_instance = ni;
         mStyle = nativeGetStyle(ni);
         mWeight = nativeGetWeight(ni);
+        mIsDefault = false;
     }
 
     private static FontFamily makeFamilyFromParsed(FontConfig.Family family,
@@ -964,6 +1160,10 @@ public class Typeface {
                         typeface = Typeface.createFromFamiliesWithDefault(families,
                                 RESOLVE_BY_FONT_TABLE, RESOLVE_BY_FONT_TABLE);
                     }
+                    if ("sans-serif".equals(f.getName()) || "serif".equals(f.getName())
+                            || "monospace".equals(f.getName())) {
+                        typeface.mIsDefault = true;
+                    }
                     systemFonts.put(f.getName(), typeface);
                 }
             }
@@ -973,6 +1173,9 @@ public class Typeface {
                 int weight = alias.getWeight();
                 if (weight != 400) {
                     newFace = new Typeface(nativeCreateWeightAlias(base.native_instance, weight));
+                }
+                if (newFace != null) {
+                    newFace.mIsDefault = base == null ? false : base.mIsDefault;
                 }
                 systemFonts.put(alias.getName(), newFace);
             }
@@ -1006,6 +1209,27 @@ public class Typeface {
             create((String) null, Typeface.BOLD_ITALIC),
         };
 
+        if (DEFAULT != null) {
+            DEFAULT.mIsDefault = true;
+        }
+        if (DEFAULT_BOLD != null) {
+            DEFAULT_BOLD.mIsDefault = true;
+        }
+        if (SANS_SERIF != null) {
+            SANS_SERIF.mIsDefault = true;
+        }
+        if (SERIF != null) {
+            SERIF.mIsDefault = true;
+        }
+        if (MONOSPACE != null) {
+            MONOSPACE.mIsDefault = true;
+        }
+        if (sDefaults[2] != null) {
+            sDefaults[2].mIsDefault = true;
+        }
+        if (sDefaults[3] != null) {
+            sDefaults[3].mIsDefault = true;
+        }
     }
 
     private static File getSystemFontConfigLocation() {
@@ -1072,4 +1296,9 @@ public class Typeface {
     private static native long nativeCreateFromArray(long[] familyArray, int weight, int italic);
     private static native void nativeSetDefault(long native_instance);
     private static native int[] nativeGetSupportedAxes(long native_instance);
+
+    @Override
+    public String toString() {
+        return super.toString() + " mIsDefault=" + mIsDefault;
+    }
 }

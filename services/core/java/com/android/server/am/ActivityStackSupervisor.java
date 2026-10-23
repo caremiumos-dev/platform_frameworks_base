@@ -606,7 +606,7 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
     public ActivityStackSupervisor(ActivityManagerService service, Looper looper) {
         mService = service;
         mHandler = new ActivityStackSupervisorHandler(looper);
-        mActivityMetricsLogger = new ActivityMetricsLogger(this, mService.mContext);
+        mActivityMetricsLogger = new ActivityMetricsLogger(this, mService.mContext, looper);
         mKeyguardController = new KeyguardController(service, this);
     }
 
@@ -1310,6 +1310,23 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
         return resolveActivity(intent, rInfo, startFlags, profilerInfo);
     }
 
+    /**
+     * XTC 差异：二次启动失败时，仅当目标 activity 仍属于同一进程才结束它，
+     * 避免误杀已被复用的进程。
+     */
+    private void finishActivityIfInStack(ActivityStack stack, ActivityRecord r,
+            ProcessRecord app) {
+        final ActivityRecord inStack = ActivityRecord.isInStackLocked(r.appToken);
+        if (inStack == null || inStack.app == null || app == null) {
+            return;
+        }
+        Slog.e(TAG, "realStartActivityLocked RemoteException newR.app.pid=" + inStack.app.pid
+                + ",app.pid=" + app.pid);
+        if (inStack.app.pid == app.pid) {
+            stack.requestFinishActivityLocked(r.appToken, 0, null, "2nd-crash", false);
+        }
+    }
+
     final boolean realStartActivityLocked(ActivityRecord r, ProcessRecord app,
             boolean andResume, boolean checkConfig) throws RemoteException {
 
@@ -1485,23 +1502,23 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
                 }
 
             } catch (RemoteException e) {
-                if (r.launchFailed) {
-                    // This is the second time we failed -- finish activity
-                    // and give up.
-                    Slog.e(TAG, "Second failure launching "
-                            + r.intent.getComponent().flattenToShortString()
-                            + ", giving up", e);
-                    mService.appDiedLocked(app);
-                    stack.requestFinishActivityLocked(r.appToken, Activity.RESULT_CANCELED, null,
-                            "2nd-crash", false);
-                    return false;
+                // XTC 差异：仅当非低内存设备且首次失败时才重试，否则直接放弃。
+                if (!r.launchFailed && !ActivityManager.isLowRamDeviceStatic()) {
+                    // This is the first time we failed -- restart process and
+                    // retry.
+                    r.launchFailed = true;
+                    app.activities.remove(r);
+                    throw e;
                 }
 
-                // This is the first time we failed -- restart process and
-                // retry.
-                r.launchFailed = true;
-                app.activities.remove(r);
-                throw e;
+                // This is the second time we failed -- finish activity
+                // and give up.
+                Slog.e(TAG, "Second failure launching "
+                        + r.intent.getComponent().flattenToShortString()
+                        + ", giving up", e);
+                mService.appDiedLocked(app);
+                finishActivityIfInStack(stack, r, app);
+                return false;
             }
         } finally {
             endDeferResume();
@@ -3310,6 +3327,14 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
         final ActivityStack stack = r.getStack();
         if (isFocusedStack(stack)) {
             mService.updateUsageStats(r, true);
+        }
+        // XTC: report resumed app state to the vendor anti-addiction service.
+        if (mService.mAntiService != null) {
+            mService.mAntiService.notifyAppState(r.processName, r.packageName,
+                    r.intent.getComponent() != null
+                            ? r.intent.getComponent().getClassName() : null,
+                    -1,
+                    com.android.server.addiction.AntiAddictionManagerService.AppState.Resumed);
         }
         if (allResumedActivitiesComplete()) {
             ensureActivitiesVisibleLocked(null, 0, !PRESERVE_WINDOWS);

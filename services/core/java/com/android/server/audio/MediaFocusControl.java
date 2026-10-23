@@ -606,6 +606,16 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
         }
     }
 
+    /** @hide */
+    public boolean isProccessHasAudioFoucs(String packageName) {
+        synchronized (mAudioFocusLock) {
+            if (mFocusStack.empty()) {
+                return false;
+            }
+            return mFocusStack.peek().hasSamePackage(packageName);
+        }
+    }
+
     /**
      * Delay after entering ringing or call mode after which the framework will mute streams
      * that are still playing.

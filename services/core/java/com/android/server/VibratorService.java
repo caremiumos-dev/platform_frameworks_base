@@ -353,6 +353,9 @@ public class VibratorService extends IVibratorService.Stub
                 != PackageManager.PERMISSION_GRANTED) {
             throw new SecurityException("Requires VIBRATE permission");
         }
+        // XTC 差异：振动调用日志。
+        Slog.d(TAG, "call uid=" + uid + ", packageName=" + opPkg + ", repeat="
+                + isRepeatingVibration(effect) + ", usageHint=" + usageHint);
         if (token == null) {
             Slog.e(TAG, "token must not be null");
             return;

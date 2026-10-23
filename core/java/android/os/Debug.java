@@ -89,6 +89,90 @@ public final class Debug
 
     private Debug() {}
 
+    // XTC 差异：把堆转储写入 /xtcdata/Logs_Collector（或外置存储）并压缩为 zip。
+    public static void bbkDumpHprof(String tag) throws Throwable {
+        String hprofDir = "/xtcdata/Logs_Collector/";
+        File dir = new File("/xtcdata/Logs_Collector/");
+        Log.d(TAG, "bbkDumpHprof HPROFILE_PATH: /xtcdata/Logs_Collector/,dir.exists()="
+                + dir.exists());
+        if (!dir.exists()) {
+            hprofDir = "/storage/emulated/0/Logs_Collector/";
+            dir = new File("/storage/emulated/0/Logs_Collector/");
+        }
+        Log.d(TAG, "bbkDumpHprof HPROFILE_PATH: " + hprofDir);
+        if (!dir.exists() || !dir.isDirectory() || !dir.canWrite()) {
+            Log.w(TAG, "Fail to dump hprofile :  - " + dir.exists() + ", " + dir.canWrite());
+            return;
+        }
+        File[] files = dir.listFiles();
+        for (File f : files) {
+            String path = f.getPath();
+            if (f.isFile() && path.contains(tag)
+                    && (path.endsWith("hprof") || path.endsWith("zip"))) {
+                Log.d(TAG, "Delete old hprofile: " + path);
+                f.delete();
+            }
+        }
+        String outPath = hprofDir + tag
+                + android.telecom.Logging.Session.SESSION_SEPARATION_CHAR_CHILD
+                + new java.text.SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new java.util.Date())
+                + ".hprof";
+        try {
+            Log.d(TAG, "bbkDumpHprof new Dump hprofile: " + outPath);
+            dumpHprofData(outPath);
+            if (outPath != null) {
+                zipCompress(hprofDir, outPath, tag);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.w(TAG, "Fail to dump hprofile - " + outPath, e);
+        }
+    }
+
+    private static boolean isFile(String path) {
+        return new File(path).exists();
+    }
+
+    private static String zipCompress(String dir, String filename, String tag) throws Throwable {
+        byte[] buffer = new byte[262144];
+        String zipFilePath = String.format("%shprof-%s.zip", dir, tag);
+        Log.d(TAG, "zipCompress filename=" + filename + "\t,zipfilePath" + zipFilePath);
+        java.util.zip.ZipOutputStream zos = null;
+        java.io.BufferedInputStream bis = null;
+        try {
+            zos = new java.util.zip.ZipOutputStream(
+                    new java.io.BufferedOutputStream(new java.io.FileOutputStream(zipFilePath)));
+            bis = new java.io.BufferedInputStream(new java.io.FileInputStream(filename));
+            zos.putNextEntry(new java.util.zip.ZipEntry(filename));
+            int len;
+            while ((len = bis.read(buffer, 0, 262144)) > 0) {
+                zos.write(buffer, 0, len);
+            }
+            zos.closeEntry();
+            bis.close();
+            bis = null;
+            zos.close();
+            zos = null;
+            Log.d(TAG, "zipCompress end  zipfilePath" + zipFilePath);
+            if (isFile(zipFilePath)) {
+                Log.d(TAG, "zipfilePath is file");
+                android.os.FileUtils.setPermissions(zipFilePath,
+                        android.util.DisplayMetrics.DENSITY_420, -1, -1);
+                if (isFile(filename)) {
+                    new File(filename).delete();
+                }
+            }
+            return zipFilePath;
+        } finally {
+            if (bis != null) {
+                bis.close();
+            }
+            if (zos != null) {
+                zos.close();
+            }
+        }
+    }
+
     /*
      * How long to wait for the debugger to finish sending requests.  I've
      * seen this hit 800msec on the device while waiting for a response

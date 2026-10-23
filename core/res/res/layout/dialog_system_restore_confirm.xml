@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="13.0sp" android:textColor="#fffafafa" android:id="@id/tv_confirm_title1" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="5.0dip" android:text="@string/system_restore_confirm" android:textAlignment="viewStart" android:layout_marginStart="5.0dip" android:layout_marginEnd="1.0dip" />
+    <LinearLayout android:layout_gravity="bottom" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginBottom="1.0dip">
+        <TextView android:textSize="16.0sp" android:textColor="#fffffefe" android:gravity="center" android:id="@id/tv_confirm_negative" android:background="@drawable/bg_dialog_text_recovery_confirm_grep" android:focusable="true" android:clickable="true" android:layout_width="160.0dip" android:layout_height="40.0dip" android:text="@string/shutdown_reboot_cancel" android:layout_weight="1.0" />
+        <TextView android:textSize="16.0sp" android:textColor="#ffffffff" android:gravity="center" android:id="@id/tv_confirm_positive" android:background="@drawable/bg_dialog_text_recovery_confirm_green" android:focusable="true" android:clickable="true" android:layout_width="160.0dip" android:layout_height="40.0dip" android:text="@string/shutdown_reboot_confirm" android:layout_weight="1.0" android:layout_marginStart="2.0dip" />
+    </LinearLayout>
+</FrameLayout>

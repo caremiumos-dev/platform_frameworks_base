@@ -94,6 +94,10 @@ public class Application extends ContextWrapper implements ComponentCallbacks2 {
      */
     @CallSuper
     public void onCreate() {
+        if (android.graphics.Typeface.isNeedRecreateCustomTypeface(
+                getResources().getConfiguration().customFontPath)) {
+            android.graphics.Typeface.createCustomTypeface(getApplicationContext());
+        }
     }
 
     /**

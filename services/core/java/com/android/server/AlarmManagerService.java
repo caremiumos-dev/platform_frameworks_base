@@ -96,6 +96,17 @@ class AlarmManagerService extends SystemService {
     static final int TIME_CHANGED_MASK = 1 << 16;
     static final int IS_WAKEUP_MASK = RTC_WAKEUP_MASK|ELAPSED_REALTIME_WAKEUP_MASK;
 
+    // XTC/CAF: QTI power-off alarm support. RTC_POWEROFF_WAKEUP is a vendor alarm type
+    // used to schedule a wakeup from the powered-off state.
+    static final int RTC_POWEROFF_WAKEUP = 5;
+    private static final int RTC_POWEROFF_WAKEUP_MASK = 32;
+    private static final String ACTION_CANCEL_POWEROFF_ALARM =
+            "org.codeaurora.poweroffalarm.action.CANCEL_ALARM";
+    private static final String ACTION_SET_POWEROFF_ALARM =
+            "org.codeaurora.poweroffalarm.action.SET_ALARM";
+    private static final String POWER_OFF_ALARM_PACKAGE = "com.qualcomm.qti.poweroffalarm";
+    private static final String TIME = "time";
+
     // Mask for testing whether a given alarm type is wakeup vs non-wakeup
     static final int TYPE_NONWAKEUP_MASK = 0x1; // low bit => non-wakeup
 
@@ -136,6 +147,8 @@ class AlarmManagerService extends SystemService {
     private long mLastWakeup;
     int mBroadcastRefCount = 0;
     PowerManager.WakeLock mWakeLock;
+    // XTC device addition: vendor extension that can block alarms for specific uids.
+    QCNsrmAlarmExtension qcNsrmExt;
     boolean mLastWakeLockUnimportantForLogging;
     ArrayList<Alarm> mPendingNonWakeupAlarms = new ArrayList<>();
     ArrayList<InFlight> mInFlight = new ArrayList<>();
@@ -714,6 +727,7 @@ class AlarmManagerService extends SystemService {
     public AlarmManagerService(Context context) {
         super(context);
         mConstants = new Constants(mHandler);
+        qcNsrmExt = new QCNsrmAlarmExtension(this);
     }
 
     static long convertToElapsed(long when, int type) {
@@ -1137,8 +1151,10 @@ class AlarmManagerService extends SystemService {
             interval = minInterval;
         }
 
-        if (type < RTC_WAKEUP || type > ELAPSED_REALTIME) {
-            throw new IllegalArgumentException("Invalid alarm type " + type);
+        // XTC/CAF: accept the vendor RTC_POWEROFF_WAKEUP type as well.
+        if (type < RTC_WAKEUP || type > RTC_POWEROFF_WAKEUP) {
+            Slog.w(TAG, "Invalid alarm type ,need support" + type);
+            return;
         }
 
         if (triggerAtTime < 0) {
@@ -1175,6 +1191,15 @@ class AlarmManagerService extends SystemService {
             setImplLocked(type, triggerAtTime, triggerElapsed, windowLength, maxElapsed,
                     interval, operation, directReceiver, listenerTag, flags, true, workSource,
                     alarmClock, callingUid, callingPackage);
+        }
+        // XTC/CAF: notify the QTI power-off alarm app of a newly set power-off alarm.
+        if (type == RTC_POWEROFF_WAKEUP) {
+            Slog.d(TAG, "Set the PowerOff alarm");
+            Intent intent = new Intent(ACTION_SET_POWEROFF_ALARM);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setPackage(POWER_OFF_ALARM_PACKAGE);
+            intent.putExtra(TIME, triggerAtTime);
+            getContext().sendBroadcast(intent);
         }
     }
 
@@ -1413,6 +1438,13 @@ class AlarmManagerService extends SystemService {
                 setTimeZoneImpl(tz);
             } finally {
                 Binder.restoreCallingIdentity(oldId);
+            }
+        }
+
+        @Override
+        public void updateBlockedUids(int uid, boolean blocked) {
+            synchronized (mLock) {
+                qcNsrmExt.processBlockedUids(uid, blocked, mWakeLock);
             }
         }
 
@@ -1968,6 +2000,19 @@ class AlarmManagerService extends SystemService {
         boolean didRemove = false;
         for (int i = mAlarmBatches.size() - 1; i >= 0; i--) {
             Batch b = mAlarmBatches.get(i);
+            // XTC/CAF: tell the QTI power-off alarm app when its alarm is cleared.
+            ArrayList<Alarm> alarms = b.alarms;
+            for (int j = alarms.size() - 1; j >= 0; j--) {
+                Alarm alarm = alarms.get(j);
+                if (alarm.type == RTC_POWEROFF_WAKEUP && alarm.operation.equals(operation)) {
+                    Slog.d(TAG, "Clear the PowerOff alarm when = " + alarm.when);
+                    Intent intent = new Intent(ACTION_CANCEL_POWEROFF_ALARM);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra(TIME, alarm.when);
+                    intent.setPackage(POWER_OFF_ALARM_PACKAGE);
+                    getContext().sendBroadcast(intent);
+                }
+            }
             didRemove |= b.remove(operation, directReceiver);
             if (b.size() == 0) {
                 mAlarmBatches.remove(i);
@@ -2167,6 +2212,7 @@ class AlarmManagerService extends SystemService {
         case RTC_WAKEUP : return "RTC_WAKEUP";
         case ELAPSED_REALTIME : return "ELAPSED";
         case ELAPSED_REALTIME_WAKEUP: return "ELAPSED_WAKEUP";
+        case RTC_POWEROFF_WAKEUP: return "RTC_POWEROFF_WAKEUP";
         default:
             break;
         }
@@ -3014,6 +3060,9 @@ class AlarmManagerService extends SystemService {
                 updateStatsLocked(inflight);
             }
             mBroadcastRefCount--;
+            if (inflight != null) {
+                qcNsrmExt.removeTriggeredUid(inflight.mUid);
+            }
             if (DEBUG_WAKELOCK) {
                 Slog.d(TAG, "mBroadcastRefCount -> " + mBroadcastRefCount);
             }
@@ -3180,6 +3229,8 @@ class AlarmManagerService extends SystemService {
                     alarm.packageName, alarm.type, alarm.statsTag, nowELAPSED);
             mInFlight.add(inflight);
             mBroadcastRefCount++;
+            qcNsrmExt.addTriggeredUid(alarm.operation != null
+                    ? alarm.operation.getCreatorUid() : alarm.uid);
 
             if (allowWhileIdle) {
                 // Record the last time this uid handled an ALLOW_WHILE_IDLE alarm.

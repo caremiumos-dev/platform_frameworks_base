@@ -19,6 +19,8 @@ package com.android.server.power;
 import android.Manifest;
 import android.annotation.IntDef;
 import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -33,6 +35,9 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.DisplayManagerInternal.DisplayPowerRequest;
 import android.hardware.power.V1_0.PowerHint;
 import android.metrics.LogMaker;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
@@ -98,6 +103,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import libcore.util.Objects;
 
 import java.io.FileDescriptor;
@@ -131,6 +137,17 @@ public final class PowerManagerService extends SystemService
     private static final int MSG_SCREEN_BRIGHTNESS_BOOST_TIMEOUT = 3;
     // Message: Polling to look for long held wake locks.
     private static final int MSG_CHECK_FOR_LONG_WAKELOCKS = 4;
+    // XTC/BBK: notify listeners of the first user activity after screen-on.
+    private static final int MSG_FIRST_USER_ACTIVITY = 5;
+
+    // XTC/BBK Wi-Fi sleep diagnostics.
+    private static final String ACTION_FIRST_USER_ACTIVITY_SCREEN_ON =
+            "com.xtc.power.FIRST_USER_ACTIVITY_SCREEN_ON";
+    private static final String ACTION_UPDATEAPP_STATUS = "com.xtc.action.UPDATE_APP_STATUS";
+    private static final String XTC_WIFI_SLEEP_POLICY_CHANGE = "xtc.wifi.sleep.policy.change";
+    private static final String COM_CHARGE_COUNTER_Z6DFB =
+            "cat /sys/class/power_supply/bms/charge_counter";
+    private static final int AVERAGE_CURRENT = 3000;
 
     // Dirty bit: mWakeLocks changed
     private static final int DIRTY_WAKE_LOCKS = 1 << 0;
@@ -245,7 +262,7 @@ public final class PowerManagerService extends SystemService
 
     // A bitfield that indicates what parts of the power state have
     // changed and need to be recalculated.
-    private int mDirty;
+    int mDirty;
 
     // Indicates whether the device is awake or asleep or somewhere in between.
     // This is distinct from the screen power state, which is managed separately.
@@ -265,9 +282,14 @@ public final class PowerManagerService extends SystemService
 
     // Table of all wake locks acquired by applications.
     private final ArrayList<WakeLock> mWakeLocks = new ArrayList<WakeLock>();
+    // XTC device addition: vendor extension that can disable wake locks for blocked uids.
+    private QCNsrmPowerExtension qcNsrmPowExt;
 
     // A bitfield that summarizes the state of all active wakelocks.
     private int mWakeLockSummary;
+
+    private static boolean isLongSleep = false;
+    private static long sleepStartTime;
 
     // Have we scheduled a message to check for long wake locks?  This is when we will check.
     private long mNotifyLongScheduled;
@@ -285,6 +307,12 @@ public final class PowerManagerService extends SystemService
     // Timestamp of the last time the device was awoken or put to sleep.
     private long mLastWakeTime;
     private long mLastSleepTime;
+
+    // XTC/BBK Wi-Fi sleep diagnostics and first-user-activity notification.
+    private boolean mNotifyFirstUserActivity;
+    private int xtcCurrent;
+    private android.app.AlarmManager mAlarmManager;
+    private final ScreenOnOffReceiver mScreenOnOffReceiver = new ScreenOnOffReceiver();
 
     // Timestamp of the last call to user activity.
     private long mLastUserActivityTime;
@@ -646,6 +674,7 @@ public final class PowerManagerService extends SystemService
         mConstants = new Constants(mHandler);
         mAmbientDisplayConfiguration = new AmbientDisplayConfiguration(mContext);
         mBatterySaverPolicy = new BatterySaverPolicy(mHandler);
+        qcNsrmPowExt = new QCNsrmPowerExtension(this);
 
         synchronized (mLock) {
             mWakeLockSuspendBlocker = createSuspendBlockerLocked("PowerManagerService.WakeLocks");
@@ -663,6 +692,7 @@ public final class PowerManagerService extends SystemService
             nativeSetAutoSuspend(false);
             nativeSetInteractive(true);
             nativeSetFeature(POWER_FEATURE_DOUBLE_TAP_TO_WAKE, 0);
+            PowerManager.invalidateIsInteractiveCaches();
         }
     }
 
@@ -680,10 +710,13 @@ public final class PowerManagerService extends SystemService
         mAmbientDisplayConfiguration = new AmbientDisplayConfiguration(mContext);
         mDisplaySuspendBlocker = null;
         mWakeLockSuspendBlocker = null;
+        xtcCurrent = 0;
+        mNotifyFirstUserActivity = false;
     }
 
     @Override
     public void onStart() {
+        PowerManager.invalidatePowerSaveModeCaches();
         publishBinderService(Context.POWER_SERVICE, new BinderService());
         publishLocalService(PowerManagerInternal.class, new LocalService());
 
@@ -839,6 +872,13 @@ public final class PowerManagerService extends SystemService
         filter = new IntentFilter();
         filter.addAction(Intent.ACTION_DOCK_EVENT);
         mContext.registerReceiver(new DockReceiver(), filter, null, mHandler);
+
+        // XTC/BBK: Wi-Fi sleep diagnostics receiver and alarm manager.
+        mAlarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        filter = new IntentFilter(ACTION_UPDATEAPP_STATUS);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        mContext.registerReceiver(mScreenOnOffReceiver, filter);
     }
 
     private void readConfigurationLocked() {
@@ -996,6 +1036,7 @@ public final class PowerManagerService extends SystemService
 
         if (mLowPowerModeEnabled != lowPowerModeEnabled) {
             mLowPowerModeEnabled = lowPowerModeEnabled;
+            PowerManager.invalidatePowerSaveModeCaches();
             powerHintInternal(PowerHint.LOW_POWER, lowPowerModeEnabled ? 1 : 0);
             postAfterBootCompleted(new Runnable() {
                 @Override
@@ -1072,6 +1113,7 @@ public final class PowerManagerService extends SystemService
                 }
                 mWakeLocks.add(wakeLock);
                 setWakeLockDisabledStateLocked(wakeLock);
+                qcNsrmPowExt.checkPmsBlockedWakelocks(uid, flags, uid, tag, wakeLock);
                 notifyAcquire = true;
             }
 
@@ -1224,7 +1266,7 @@ public final class PowerManagerService extends SystemService
         return -1;
     }
 
-    private void notifyWakeLockAcquiredLocked(WakeLock wakeLock) {
+    void notifyWakeLockAcquiredLocked(WakeLock wakeLock) {
         if (mSystemReady && !wakeLock.mDisabled) {
             wakeLock.mNotifiedAcquired = true;
             mNotifier.onWakeLockAcquired(wakeLock.mFlags, wakeLock.mTag, wakeLock.mPackageName,
@@ -1280,7 +1322,7 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    private void notifyWakeLockReleasedLocked(WakeLock wakeLock) {
+    void notifyWakeLockReleasedLocked(WakeLock wakeLock) {
         if (mSystemReady && wakeLock.mNotifiedAcquired) {
             wakeLock.mNotifiedAcquired = false;
             wakeLock.mAcquireTime = 0;
@@ -1315,6 +1357,17 @@ public final class PowerManagerService extends SystemService
     // Called from native code.
     private void userActivityFromNative(long eventTime, int event, int flags) {
         userActivityInternal(eventTime, event, flags, Process.SYSTEM_UID);
+        // XTC/BBK: after wake-up, delay the first-user-activity broadcast until a touch
+        // event arrives (and cancel it on any other event).
+        synchronized (mLock) {
+            if (mNotifyFirstUserActivity) {
+                if (event != PowerManager.USER_ACTIVITY_EVENT_TOUCH) {
+                    mHandler.removeMessages(MSG_FIRST_USER_ACTIVITY);
+                } else if (!mHandler.hasMessages(MSG_FIRST_USER_ACTIVITY)) {
+                    mHandler.sendEmptyMessageDelayed(MSG_FIRST_USER_ACTIVITY, 200L);
+                }
+            }
+        }
     }
 
     private void userActivityInternal(long eventTime, int event, int flags, int uid) {
@@ -1429,6 +1482,8 @@ public final class PowerManagerService extends SystemService
             mNotifier.onWakeUp(reason, reasonUid, opPackageName, opUid);
             userActivityNoUpdateLocked(
                     eventTime, PowerManager.USER_ACTIVITY_EVENT_OTHER, 0, reasonUid);
+            // XTC/BBK: arm the first-user-activity notification.
+            mNotifyFirstUserActivity = true;
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_POWER);
         }
@@ -1572,6 +1627,7 @@ public final class PowerManagerService extends SystemService
     @VisibleForTesting
     void setWakefulnessLocked(int wakefulness, int reason) {
         if (mWakefulness != wakefulness) {
+            PowerManager.invalidateIsInteractiveCaches();
             mWakefulness = wakefulness;
             mWakefulnessChanging = true;
             mDirty |= DIRTY_WAKEFULNESS;
@@ -1636,7 +1692,7 @@ public final class PowerManagerService extends SystemService
      * each time something important changes, and ensure that we do it the same
      * way each time.  The point is to gather all of the transition logic here.
      */
-    private void updatePowerStateLocked() {
+    void updatePowerStateLocked() {
         if (!mSystemReady || mDirty == 0) {
             return;
         }
@@ -1881,7 +1937,26 @@ public final class PowerManagerService extends SystemService
                         + PowerManagerInternal.wakefulnessToString(mWakefulness)
                         + ", mWakeLockSummary=0x" + Integer.toHexString(mWakeLockSummary));
             }
+
+            if (mWakefulness == WAKEFULNESS_ASLEEP) {
+                if (sleepStartTime == 0) {
+                    sleepStartTime = SystemClock.elapsedRealtime();
+                }
+                if (!isLongSleep
+                        && SystemClock.elapsedRealtime() - sleepStartTime > 180000) {
+                    Slog.d(TAG, "bbk_third_party_app sleep 3 minute");
+                    isLongSleep = true;
+                }
+            }
+            if (mWakefulness == WAKEFULNESS_AWAKE) {
+                sleepStartTime = 0;
+                isLongSleep = false;
+            }
         }
+    }
+
+    private boolean isPowerLongSleep() {
+        return isLongSleep;
     }
 
     void checkForLongWakeLocks() {
@@ -2849,6 +2924,119 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    /**
+     * XTC/BBK: whether Wi-Fi is currently the connected network type.
+     */
+    private boolean isWifiNetworkType() {
+        boolean isWifi = false;
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        for (Network network : connectivityManager.getAllNetworks()) {
+            NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+            if (networkInfo.getState().equals(NetworkInfo.State.CONNECTED)
+                    && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                isWifi = true;
+            }
+        }
+        return isWifi;
+    }
+
+    /**
+     * XTC/BBK: compare the charge counter before/after screen-off to detect a Wi-Fi
+     * wakeup current drain and switch the Wi-Fi sleep policy accordingly.
+     */
+    public void changeWiFiSleepMode() {
+        int current;
+        if (isWifiNetworkType() && (current = getCurrent()) > 0 && xtcCurrent > 0) {
+            Slog.d(TAG, "WiFiSleep sxtcCurrent=" + xtcCurrent + " currentNow=" + current);
+            if (xtcCurrent - current > AVERAGE_CURRENT) {
+                setWifiDormancy(1);
+                java.util.LinkedHashMap<String, String> values = new java.util.LinkedHashMap<>();
+                values.put("wifisleepmode", "1");
+                new com.xtc.behavior.XtcBehavior.Builder(mContext, "wifi_wifisleepmode", values)
+                        .build().sendData();
+            } else {
+                setWifiDormancy(2);
+            }
+        }
+        xtcCurrent = 0;
+    }
+
+    public void setWifiDormancy(int mode) {
+        try {
+            ContentResolver contentResolver = mContext.getContentResolver();
+            if (Settings.Global.getInt(contentResolver, "wifi_sleep_policy", 0) != mode) {
+                Settings.Global.putInt(contentResolver, "wifi_sleep_policy", mode);
+                Slog.d(TAG, "setWifiDormancy_xtc =="
+                        + Settings.Global.getInt(contentResolver, "wifi_sleep_policy", 0));
+            }
+        } catch (Exception e) {
+            Slog.d(TAG, "setWifiDormancy->exception: %s" + e.getMessage());
+        }
+    }
+
+    public int getCurrent() {
+        if (!isWifiNetworkType()) {
+            return 0;
+        }
+        try {
+            String result = exec(COM_CHARGE_COUNTER_Z6DFB).trim();
+            if (result == null || result.equals("")) {
+                return 0;
+            }
+            return Integer.valueOf(result).intValue();
+        } catch (IOException e) {
+            Slog.e(TAG, "fail to read current", e);
+            return 0;
+        }
+    }
+
+    public static String exec(String command) throws IOException {
+        java.lang.Process process = java.lang.Runtime.getRuntime().exec(command);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder output = new StringBuilder("");
+        while (true) {
+            String line = reader.readLine();
+            if (line == null) {
+                break;
+            }
+            output.append(line);
+            output.append("\n");
+        }
+        try {
+            if (process.waitFor() != 0) {
+                Slog.e(TAG, "exec (" + command + ") error, exit = " + process.exitValue());
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return output.toString();
+    }
+
+    private PendingIntent updataStatusIntent() {
+        return PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_UPDATEAPP_STATUS),
+                PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private void setUpdataStatusAlarm() {
+        mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + 180000, updataStatusIntent());
+    }
+
+    private void cancelUpdataStatusAlarm() {
+        mAlarmManager.cancel(updataStatusIntent());
+    }
+
+    public void sendFirstUserActivityBroadcast() {
+        synchronized (mLock) {
+            Slog.d(TAG, "sendFirstUserActivityBroadcast");
+            mNotifyFirstUserActivity = false;
+        }
+        Intent intent = new Intent(ACTION_FIRST_USER_ACTIVITY_SCREEN_ON);
+        intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+        mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
+    }
+
     void startUidChangesInternal() {
         synchronized (mLock) {
             mUidsChanging = true;
@@ -3778,6 +3966,30 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    /**
+     * XTC/BBK: samples the charge counter across a screen-off period and triggers the
+     * Wi-Fi sleep-policy decision when the app-status alarm fires.
+     */
+    private final class ScreenOnOffReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Slog.d(TAG, "ScreenOnOffReceiver intent.getAction() = " + intent.getAction());
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                setUpdataStatusAlarm();
+                xtcCurrent = getCurrent();
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                cancelUpdataStatusAlarm();
+                xtcCurrent = 0;
+            } else if (ACTION_UPDATEAPP_STATUS.equals(intent.getAction())) {
+                ActivityManager activityManager =
+                        (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+                Slog.d(TAG, "bbk_third_party_app updateOomAdjLockedq");
+                activityManager.callUpdateOom();
+                changeWiFiSleepMode();
+            }
+        }
+    }
+
     private final class UserSwitchedReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -3853,6 +4065,9 @@ public final class PowerManagerService extends SystemService
                 case MSG_CHECK_FOR_LONG_WAKELOCKS:
                     checkForLongWakeLocks();
                     break;
+                case MSG_FIRST_USER_ACTIVITY:
+                    sendFirstUserActivityBroadcast();
+                    break;
             }
         }
     }
@@ -3860,7 +4075,7 @@ public final class PowerManagerService extends SystemService
     /**
      * Represents a wake lock that has been acquired by an application.
      */
-    private final class WakeLock implements IBinder.DeathRecipient {
+    final class WakeLock implements IBinder.DeathRecipient {
         public final IBinder mLock;
         public int mFlags;
         public String mTag;
@@ -4186,6 +4401,13 @@ public final class PowerManagerService extends SystemService
         }
 
         @Override // Binder call
+        public void updateBlockedUids(int uid, boolean blocked) {
+            synchronized (mLock) {
+                qcNsrmPowExt.processPmsBlockedUid(uid, blocked, mWakeLocks);
+            }
+        }
+
+        @Override // Binder call
         public void updateWakeLockUids(IBinder lock, int[] uids) {
             WorkSource ws = null;
 
@@ -4228,6 +4450,16 @@ public final class PowerManagerService extends SystemService
             final long ident = Binder.clearCallingIdentity();
             try {
                 return isWakeLockLevelSupportedInternal(level);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
+        @Override // Binder call
+        public boolean isScreenLongSleep() {
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                return PowerManagerService.this.isPowerLongSleep();
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }

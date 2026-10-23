@@ -387,6 +387,13 @@ public final class BluetoothDevice implements Parcelable {
     public static final String ACTION_PAIRING_CANCEL =
             "android.bluetooth.device.action.PAIRING_CANCEL";
 
+    /**
+     * CAF/QTI vendor extension: broadcast when a remote device issue occurs.
+     * @hide
+     */
+    public static final String ACTION_REMOTE_ISSUE_OCCURRED =
+            "org.codeaurora.intent.bluetooth.action.REMOTE_ISSUE_OCCURRED";
+
     /** @hide */
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_CONNECTION_ACCESS_REQUEST =

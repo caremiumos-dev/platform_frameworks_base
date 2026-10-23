@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.net.LinkProperties;
 import android.net.NetworkCapabilities;
 import android.os.Binder;
+import android.util.Log;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -81,6 +82,10 @@ import java.util.List;
  */
 class TelephonyRegistry extends ITelephonyRegistry.Stub {
     private static final String TAG = "TelephonyRegistry";
+
+    // XTC/BBK: network-positioning telemetry event emitted on cell location/info changes.
+    private static final String NETWORK_SONAR = "android.network.positioning";
+    private static final String NETWORK_METHOD = "methodName";
     private static final boolean DBG = false; // STOPSHIP if true
     private static final boolean DBG_LOC = false; // STOPSHIP if true
     private static final boolean VDBG = false; // STOPSHIP if true
@@ -453,6 +458,8 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
     @Override
     public void listen(String pkgForDebug, IPhoneStateListener callback, int events,
             boolean notifyNow) {
+        Log.d(TAG, "XTCNetin listen! 0x00 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         listenForSubscriber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, pkgForDebug, callback,
                 events, notifyNow);
     }
@@ -460,12 +467,16 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
     @Override
     public void listenForSubscriber(int subId, String pkgForDebug, IPhoneStateListener callback,
             int events, boolean notifyNow) {
+        Log.d(TAG, "XTCNetin listenForSubscriber! 0x01 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         listen(pkgForDebug, callback, events, notifyNow, subId);
     }
 
     private void listen(String callingPackage, IPhoneStateListener callback, int events,
             boolean notifyNow, int subId) {
         int callerUserId = UserHandle.getCallingUserId();
+        Log.d(TAG, "XTCNetin listen 0x02 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
         if (VDBG) {
             log("listen: E pkg=" + callingPackage + " events=0x" + Integer.toHexString(events)
                 + " notifyNow=" + notifyNow + " subId=" + subId + " myUserId="
@@ -568,6 +579,20 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
                         try {
                             if (DBG_LOC) log("listen: mCellLocation = "
                                     + mCellLocation[phoneId]);
+                            // XTC/BBK: log and broadcast a positioning telemetry event for
+                            // non-system callers. NOTE: leaks the calling package and an
+                            // implicit network-positioning signal to any registered listener.
+                            Log.d(TAG, "XTCNetin mCellInfo 0x03 uid:" + Binder.getCallingUid()
+                                    + " packagename:" + mContext.getPackageName());
+                            if (Binder.getCallingUid() > 1000) {
+                                Log.d(TAG, "XTCNetin onCellLocationChanged sendBroadcast uid:"
+                                        + Binder.getCallingUid() + " packagename:"
+                                        + mContext.getPackageName());
+                                Intent intent = new Intent(NETWORK_SONAR);
+                                intent.putExtra(NETWORK_METHOD, "onCellLocationChanged");
+                                intent.putExtra("packageName", mContext.getPackageName());
+                                mContext.sendBroadcast(intent);
+                            }
                             r.callback.onCellLocationChanged(
                                     new Bundle(mCellLocation[phoneId]));
                         } catch (RemoteException ex) {
@@ -613,8 +638,20 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
                     }
                     if (validateEventsAndUserLocked(r, PhoneStateListener.LISTEN_CELL_INFO)) {
                         try {
+                            // XTC/BBK: log and broadcast positioning telemetry (see above).
+                            Log.d(TAG, "XTCNetin mCellInfo 0x04 uid:" + Binder.getCallingUid()
+                                    + " packagename:" + mContext.getPackageName());
                             if (DBG_LOC) log("listen: mCellInfo[" + phoneId + "] = "
                                     + mCellInfo.get(phoneId));
+                            if (Binder.getCallingUid() > 1000) {
+                                Log.d(TAG, "XTCNetin onCellInfoChanged sendBroadcast uid:"
+                                        + Binder.getCallingUid() + " packagename:"
+                                        + mContext.getPackageName());
+                                Intent intent2 = new Intent(NETWORK_SONAR);
+                                intent2.putExtra(NETWORK_METHOD, "onCellInfoChanged");
+                                intent2.putExtra("packageName", mContext.getPackageName());
+                                mContext.sendBroadcast(intent2);
+                            }
                             r.callback.onCellInfoChanged(mCellInfo.get(phoneId));
                         } catch (RemoteException ex) {
                             remove(r.binder);

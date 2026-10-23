@@ -43,6 +43,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Represents an ongoing phone call that the in-call app should present to the user.
  */
 public final class Call {
+    // CAF/XTC 差异：设备基座新增的呼叫状态常量。
+    /** @hide */
+    public static final int STATE_IDLE = -2;
+    /** @hide */
+    public static final int STATE_INVALID = -1;
+
     /**
      * The state of a {@code Call} when newly created.
      */
@@ -352,8 +358,12 @@ public final class Call {
          */
         public static final int CAPABILITY_CAN_PULL_CALL = 0x00800000;
 
+        // CAF/XTC 差异：设备基座新增能力位。
+        /** @hide */
+        public static final int CAPABILITY_ADD_PARTICIPANT = 0x01000000;
+
         //******************************************************************************************
-        // Next CAPABILITY value: 0x01000000
+        // Next CAPABILITY value: 0x02000000
         //******************************************************************************************
 
         /**
@@ -416,8 +426,12 @@ public final class Call {
          */
         public static final int PROPERTY_SELF_MANAGED = 0x00000100;
 
+        // CAF/XTC 差异：设备基座新增属性位。
+        /** @hide */
+        public static final int PROPERTY_ASSISTED_DIALING_USED = 0x00000200;
+
         //******************************************************************************************
-        // Next PROPERTY value: 0x00000200
+        // Next PROPERTY value: 0x00000400
         //******************************************************************************************
 
         private final String mTelecomCallId;
@@ -431,6 +445,16 @@ public final class Call {
         private final int mSupportedAudioRoutes = CallAudioState.ROUTE_ALL;
         private final DisconnectCause mDisconnectCause;
         private final long mConnectTimeMillis;
+        // CAF/XTC 差异：设备基座新增的联系人/短号白名单信息与连接时长。
+        private final long mConnectElapsedTimeMillis;
+        private String mCallerInfoName;
+        private String mCallerInfoNumber;
+        private String mCallerInfoAutoCall;
+        private String mCallerInfoMobileID;
+        private String mCallerInfoType;
+        private String mCallerInfoPhotoPath;
+        private String mCallerInfoCountryCode;
+        private String mCallerInfoInShortNumWhiteList;
         private final GatewayInfo mGatewayInfo;
         private final int mVideoState;
         private final StatusHints mStatusHints;
@@ -522,6 +546,9 @@ public final class Call {
             if (can(capabilities, CAPABILITY_CAN_PULL_CALL)) {
                 builder.append(" CAPABILITY_CAN_PULL_CALL");
             }
+            if (can(capabilities, CAPABILITY_ADD_PARTICIPANT)) {
+                builder.append(" CAPABILITY_ADD_PARTICIPANT");
+            }
             builder.append("]");
             return builder.toString();
         }
@@ -577,6 +604,9 @@ public final class Call {
             if(hasProperty(properties, PROPERTY_HAS_CDMA_VOICE_PRIVACY)) {
                 builder.append(" PROPERTY_HAS_CDMA_VOICE_PRIVACY");
             }
+            if (hasProperty(properties, PROPERTY_ASSISTED_DIALING_USED)) {
+                builder.append(" PROPERTY_ASSISTED_DIALING_USED");
+            }
             builder.append("]");
             return builder.toString();
         }
@@ -615,6 +645,75 @@ public final class Call {
          */
         public int getCallerDisplayNamePresentation() {
             return mCallerDisplayNamePresentation;
+        }
+
+        // CAF/XTC 差异：联系人/短号白名单信息与连接时长访问器。
+        public String getCallerInfoName() {
+            return mCallerInfoName;
+        }
+
+        public void setCallerInfoName(String callerInfoName) {
+            mCallerInfoName = callerInfoName;
+        }
+
+        public String getCallerInfoNumber() {
+            return mCallerInfoNumber;
+        }
+
+        public void setCallerInfoNumber(String callerInfoNumber) {
+            mCallerInfoNumber = callerInfoNumber;
+        }
+
+        public String getCallerInfoAutoCall() {
+            return mCallerInfoAutoCall;
+        }
+
+        public void setCallerInfoAutoCall(String callerInfoAutoCall) {
+            mCallerInfoAutoCall = callerInfoAutoCall;
+        }
+
+        public String getCallerInfoMobileID() {
+            return mCallerInfoMobileID;
+        }
+
+        public void setCallerInfoMobileID(String callerInfoMobileID) {
+            mCallerInfoMobileID = callerInfoMobileID;
+        }
+
+        public String getCallerInfoType() {
+            return mCallerInfoType;
+        }
+
+        public void setCallerInfoType(String callerInfoType) {
+            mCallerInfoType = callerInfoType;
+        }
+
+        public String getCallerInfoPhotoPath() {
+            return mCallerInfoPhotoPath;
+        }
+
+        public void setCallerInfoPhotoPath(String callerInfoPhotoPath) {
+            mCallerInfoPhotoPath = callerInfoPhotoPath;
+        }
+
+        public String getCallerInfoCountryCode() {
+            return mCallerInfoCountryCode;
+        }
+
+        public void setCallerInfoCountryCode(String callerInfoCountryCode) {
+            mCallerInfoCountryCode = callerInfoCountryCode;
+        }
+
+        public String getCallerInfoInShortNumWhiteList() {
+            return mCallerInfoInShortNumWhiteList;
+        }
+
+        public void setCallerInfoInShortNumWhiteList(String callerInfoInShortNumWhiteList) {
+            mCallerInfoInShortNumWhiteList = callerInfoInShortNumWhiteList;
+        }
+
+        public long getConnectElapsedTimeMillis() {
+            return mConnectElapsedTimeMillis;
         }
 
         /**
@@ -726,6 +825,15 @@ public final class Call {
                         Objects.equals(mHandle, d.mHandle) &&
                         Objects.equals(mHandlePresentation, d.mHandlePresentation) &&
                         Objects.equals(mCallerDisplayName, d.mCallerDisplayName) &&
+                        Objects.equals(mCallerInfoName, d.mCallerInfoName) &&
+                        Objects.equals(mCallerInfoNumber, d.mCallerInfoNumber) &&
+                        Objects.equals(mCallerInfoAutoCall, d.mCallerInfoAutoCall) &&
+                        Objects.equals(mCallerInfoMobileID, d.mCallerInfoMobileID) &&
+                        Objects.equals(mCallerInfoType, d.mCallerInfoType) &&
+                        Objects.equals(mCallerInfoPhotoPath, d.mCallerInfoPhotoPath) &&
+                        Objects.equals(mCallerInfoCountryCode, d.mCallerInfoCountryCode) &&
+                        Objects.equals(mCallerInfoInShortNumWhiteList,
+                                d.mCallerInfoInShortNumWhiteList) &&
                         Objects.equals(mCallerDisplayNamePresentation,
                                 d.mCallerDisplayNamePresentation) &&
                         Objects.equals(mAccountHandle, d.mAccountHandle) &&
@@ -733,12 +841,12 @@ public final class Call {
                         Objects.equals(mCallProperties, d.mCallProperties) &&
                         Objects.equals(mDisconnectCause, d.mDisconnectCause) &&
                         Objects.equals(mConnectTimeMillis, d.mConnectTimeMillis) &&
+                        Objects.equals(mConnectElapsedTimeMillis, d.mConnectElapsedTimeMillis) &&
                         Objects.equals(mGatewayInfo, d.mGatewayInfo) &&
                         Objects.equals(mVideoState, d.mVideoState) &&
                         Objects.equals(mStatusHints, d.mStatusHints) &&
                         areBundlesEqual(mExtras, d.mExtras) &&
-                        areBundlesEqual(mIntentExtras, d.mIntentExtras) &&
-                        Objects.equals(mCreationTimeMillis, d.mCreationTimeMillis);
+                        areBundlesEqual(mIntentExtras, d.mIntentExtras);
             }
             return false;
         }
@@ -748,12 +856,21 @@ public final class Call {
             return Objects.hash(mHandle,
                             mHandlePresentation,
                             mCallerDisplayName,
+                            mCallerInfoName,
+                            mCallerInfoNumber,
+                            mCallerInfoAutoCall,
+                            mCallerInfoMobileID,
+                            mCallerInfoType,
+                            mCallerInfoPhotoPath,
+                            mCallerInfoCountryCode,
+                            mCallerInfoInShortNumWhiteList,
                             mCallerDisplayNamePresentation,
                             mAccountHandle,
                             mCallCapabilities,
                             mCallProperties,
                             mDisconnectCause,
                             mConnectTimeMillis,
+                            mConnectElapsedTimeMillis,
                             mGatewayInfo,
                             mVideoState,
                             mStatusHints,
@@ -768,12 +885,21 @@ public final class Call {
                 Uri handle,
                 int handlePresentation,
                 String callerDisplayName,
+                String callerInfoName,
+                String callerInfoNumber,
+                String callerInfoAutoCall,
+                String callerInfoMobileID,
+                String callerInfoType,
+                String callerInfoPhotoPath,
+                String callerInfoCountryCode,
+                String callerInfoInShortNumWhiteList,
                 int callerDisplayNamePresentation,
                 PhoneAccountHandle accountHandle,
                 int capabilities,
                 int properties,
                 DisconnectCause disconnectCause,
                 long connectTimeMillis,
+                long connectElapsedTimeMillis,
                 GatewayInfo gatewayInfo,
                 int videoState,
                 StatusHints statusHints,
@@ -784,12 +910,21 @@ public final class Call {
             mHandle = handle;
             mHandlePresentation = handlePresentation;
             mCallerDisplayName = callerDisplayName;
+            mCallerInfoName = callerInfoName;
+            mCallerInfoNumber = callerInfoNumber;
+            mCallerInfoAutoCall = callerInfoAutoCall;
+            mCallerInfoMobileID = callerInfoMobileID;
+            mCallerInfoType = callerInfoType;
+            mCallerInfoPhotoPath = callerInfoPhotoPath;
+            mCallerInfoCountryCode = callerInfoCountryCode;
+            mCallerInfoInShortNumWhiteList = callerInfoInShortNumWhiteList;
             mCallerDisplayNamePresentation = callerDisplayNamePresentation;
             mAccountHandle = accountHandle;
             mCallCapabilities = capabilities;
             mCallProperties = properties;
             mDisconnectCause = disconnectCause;
             mConnectTimeMillis = connectTimeMillis;
+            mConnectElapsedTimeMillis = connectElapsedTimeMillis;
             mGatewayInfo = gatewayInfo;
             mVideoState = videoState;
             mStatusHints = statusHints;
@@ -805,12 +940,21 @@ public final class Call {
                     parcelableCall.getHandle(),
                     parcelableCall.getHandlePresentation(),
                     parcelableCall.getCallerDisplayName(),
+                    parcelableCall.getCallerInfoNamePC(),
+                    parcelableCall.getCallerInfoNumberPC(),
+                    parcelableCall.getCallerInfoAutoCallPC(),
+                    parcelableCall.getCallerInfoMobileIDPC(),
+                    parcelableCall.getCallerInfoTypePC(),
+                    parcelableCall.getCallerInfoPhothPathPC(),
+                    parcelableCall.getCallerInfoCountryCodePC(),
+                    parcelableCall.getCallerInfoInShortNumWhiteListPC(),
                     parcelableCall.getCallerDisplayNamePresentation(),
                     parcelableCall.getAccountHandle(),
                     parcelableCall.getCapabilities(),
                     parcelableCall.getProperties(),
                     parcelableCall.getDisconnectCause(),
                     parcelableCall.getConnectTimeMillis(),
+                    parcelableCall.getConnectElapsedTimeMillis(),
                     parcelableCall.getGatewayInfo(),
                     parcelableCall.getVideoState(),
                     parcelableCall.getStatusHints(),
@@ -830,6 +974,14 @@ public final class Call {
             sb.append(capabilitiesToString(mCallCapabilities));
             sb.append(", props: ");
             sb.append(propertiesToString(mCallProperties));
+            sb.append(", name: ");
+            sb.append(XtcSecurePii.encrypt(mCallerInfoName));
+            sb.append(", number: ");
+            sb.append(XtcSecurePii.encrypt(mCallerInfoNumber));
+            sb.append(", name: ");
+            sb.append(XtcSecurePii.encrypt(mCallerDisplayName));
+            sb.append(", mInShortNumWhiteList: ");
+            sb.append(mCallerInfoInShortNumWhiteList);
             sb.append("]");
             return sb.toString();
         }
@@ -1353,6 +1505,16 @@ public final class Call {
      */
     public void sendRttRequest() {
         mInCallAdapter.sendRttRequest(mTelecomCallId);
+    }
+
+    // CAF/XTC 差异：请求 Telecom 播放来电铃声。
+    public void playIncomingCallRingtone() {
+        mInCallAdapter.playIncomingCallRingtone();
+    }
+
+    // CAF/XTC 差异：允许直接设置呼叫状态。
+    public void setState(int state) {
+        mState = state;
     }
 
     /**

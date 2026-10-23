@@ -125,6 +125,10 @@
   <java-symbol type="id" name="prefs" />
   <java-symbol type="id" name="prefs_container" />
   <java-symbol type="id" name="prefs_frame" />
+  <java-symbol type="id" name="preinstalled" />
+  <java-symbol type="id" name="notouch" />
+  <java-symbol type="id" name="notification_progress_end_icon" />
+  <java-symbol type="id" name="notification_progress_start_icon" />
   <java-symbol type="id" name="prev" />
   <java-symbol type="id" name="progress" />
   <java-symbol type="id" name="progress_circular" />
@@ -253,6 +257,8 @@
   <java-symbol type="bool" name="config_duplicate_port_omadm_wappush" />
   <java-symbol type="bool" name="config_enableAutoPowerModes" />
   <java-symbol type="integer" name="config_autoPowerModeThresholdAngle" />
+  <java-symbol type="integer" name="phoneNumber_length" />
+  <java-symbol type="integer" name="config_sms_authorization_timeout_ms" />
   <java-symbol type="integer" name="config_autoPowerModeAnyMotionSensor" />
   <java-symbol type="bool" name="config_autoPowerModePreferWristTilt" />
   <java-symbol type="bool" name="config_autoPowerModePrefetchLocation" />
@@ -1371,6 +1377,7 @@
   <java-symbol type="layout" name="permissions_package_list_item" />
   <java-symbol type="layout" name="popup_menu_item_layout" />
   <java-symbol type="layout" name="popup_menu_header_item_layout" />
+  <java-symbol type="layout" name="platlogo_layout" />
   <java-symbol type="layout" name="remote_views_adapter_default_loading_view" />
   <java-symbol type="layout" name="search_bar" />
   <java-symbol type="layout" name="search_dropdown_item_icons_2line" />
@@ -1480,6 +1487,7 @@
   <java-symbol type="style" name="Animation.DropDownUp" />
   <java-symbol type="style" name="Animation.DropDownDown" />
   <java-symbol type="style" name="Animation.PopupWindow" />
+  <java-symbol type="style" name="NotificationEmphasizedAction" />
   <java-symbol type="style" name="Animation.Tooltip" />
   <java-symbol type="style" name="Animation.TypingFilter" />
   <java-symbol type="style" name="Animation.TypingFilterRestore" />
@@ -1765,6 +1773,8 @@
   <java-symbol type="bool" name="config_supportLongPressPowerWhenNonInteractive" />
   <java-symbol type="bool" name="config_wifi_background_scan_support" />
   <java-symbol type="bool" name="config_wifi_dual_band_support" />
+  <java-symbol type="bool" name="config_wifi_dual_sap_mode_enabled" />
+  <java-symbol type="array" name="config_wifi_dual_sap_interfaces" />
   <java-symbol type="bool" name="config_wifi_fast_bss_transition_enabled" />
   <java-symbol type="bool" name="config_wimaxEnabled" />
   <java-symbol type="bool" name="show_ongoing_ime_switcher" />
@@ -3078,4 +3088,170 @@
 
   <java-symbol type="integer" name="config_stableDeviceDisplayWidth" />
   <java-symbol type="integer" name="config_stableDeviceDisplayHeight" />
+
+  <!-- XTC diag self-test dialog. -->
+  <java-symbol type="string" name="xtc_diag_test_fail" />
+  <java-symbol type="string" name="xtc_diag_test_ok" />
+  <java-symbol type="string" name="xtc_diag_test_result" />
+  <java-symbol type="string" name="metered_network_disabled_tip" />
+  <java-symbol type="layout" name="layout_op_dialog" />
+  <java-symbol type="id" name="tv_dialog_title" />
+  <java-symbol type="id" name="tv_dialog_content" />
+  <java-symbol type="id" name="btn_dialog_positive" />
+  <java-symbol type="id" name="btn_dialog_negative" />
+
+  <!-- XTC battery temperature warning dialog. -->
+  <java-symbol type="layout" name="dialog_battery_temperature_warning" />
+  <java-symbol type="id" name="dialog_battery_imageView" />
+  <java-symbol type="id" name="dialog_battery_warning_confirm_button" />
+  <java-symbol type="id" name="dialog_battery_warning_content" />
+
+  <!-- XTC space-clean dialog. -->
+  <java-symbol type="layout" name="dialog_spaceclean" />
+  <java-symbol type="id" name="rl_dialog_parent" />
+  <java-symbol type="id" name="tv_low_tip" />
+  <java-symbol type="id" name="tv_spaceclean_full" />
+  <java-symbol type="id" name="tv_spaceclean_low" />
+  <java-symbol type="id" name="tv_spaceclean_low_tipone" />
+  <java-symbol type="id" name="tv_spaceclean_low_tiptwo" />
+  <java-symbol type="id" name="dialog_btn_cancel" />
+  <java-symbol type="id" name="dialog_btn_spaceclean" />
+
+  <!-- XTC shutdown/reboot confirm dialog. -->
+  <java-symbol type="layout" name="shutdown_reboot_confirm" />
+  <java-symbol type="id" name="tv_confirm_negative" />
+  <java-symbol type="id" name="tv_confirm_positive" />
+  <java-symbol type="id" name="tv_confirm_title1" />
+  <java-symbol type="id" name="tv_confirm_title2" />
+
+  <!-- XTC shutdown / system-restore dialogs. -->
+  <java-symbol type="layout" name="dialog_tip" />
+  <java-symbol type="layout" name="dialog_tip_repair" />
+  <java-symbol type="layout" name="dialog_system_restore" />
+  <java-symbol type="layout" name="dialog_system_restore_confirm" />
+  <java-symbol type="layout" name="dialog_system_restore_forbidden" />
+  <java-symbol type="layout" name="dialog_system_restore_quit_forbidden" />
+  <java-symbol type="layout" name="restore_dialog" />
+  <java-symbol type="style" name="restoreingDialogStyle" />
+  <java-symbol type="id" name="dialog_toast" />
+  <java-symbol type="id" name="rl_dialog_default" />
+  <java-symbol type="id" name="rl_dialog_default_left" />
+  <java-symbol type="id" name="rl_dialog_default_right" />
+  <java-symbol type="id" name="tv_dialog_negative" />
+  <java-symbol type="id" name="tv_dialog_positive" />
+  <java-symbol type="id" name="tv_dialog_reboot" />
+  <java-symbol type="id" name="tv_dialog_positive_repair" />
+  <java-symbol type="id" name="tv_reboot_title" />
+  <java-symbol type="id" name="tv_reboot_title2" />
+  <java-symbol type="id" name="tv_more_action" />
+  <java-symbol type="id" name="dialog_view" />
+  <java-symbol type="id" name="tv_forbidden_title" />
+  <java-symbol type="id" name="tv_forbidden_details" />
+  <java-symbol type="id" name="tv_forbidden_hint" />
+  <java-symbol type="id" name="tv_forbidden_know" />
+  <java-symbol type="id" name="tv_quit_forbidden_title" />
+  <java-symbol type="id" name="tv_quit_forbidden_details" />
+  <java-symbol type="string" name="reboot_to_restore" />
+  <java-symbol type="string" name="power_off" />
+  <java-symbol type="drawable" name="ic_lockscreen_decline_normal" />
+
+  <!-- XTC xses system-exception dialogs. -->
+  <java-symbol type="layout" name="system_exception_dialog" />
+  <java-symbol type="layout" name="system_exception_overlay" />
+  <java-symbol type="layout" name="system_root_dialog" />
+  <java-symbol type="id" name="system_exception_message" />
+  <java-symbol type="id" name="system_exception_ok_btn" />
+  <java-symbol type="id" name="system_exception_overylay_message_body" />
+  <java-symbol type="id" name="system_root_ok_btn" />
+  <java-symbol type="string" name="exception_default_message" />
+  <java-symbol type="string" name="exception_uninstall_message" />
+  <java-symbol type="string" name="exception_disable_net_message" />
+  <java-symbol type="string" name="exception_disable_app_message" />
+
+  <!-- XTC permission-confirmation dialog. -->
+  <java-symbol type="layout" name="permission_confirmation_dialog" />
+  <java-symbol type="id" name="permission_text" />
+  <java-symbol type="array" name="app_ops_labels" />
+  <java-symbol type="string" name="allow" />
+  <java-symbol type="string" name="deny" />
+
+  <!-- XTC camera menu. -->
+  <java-symbol type="layout" name="camera_menu_item_layout" />
+  <java-symbol type="id" name="menu_container" />
+  <java-symbol type="id" name="menu_icon" />
+  <java-symbol type="id" name="menu_title" />
+  <java-symbol type="color" name="colorMenuBackground" />
+  <java-symbol type="color" name="colorMenuSelected" />
+  <java-symbol type="color" name="colorMenuTitle" />
+  <java-symbol type="dimen" name="itemImageHeight" />
+  <java-symbol type="dimen" name="itemImageWidth" />
+  <java-symbol type="dimen" name="itemMenuHeight" />
+  <java-symbol type="dimen" name="itemMenuWidth" />
+  <java-symbol type="dimen" name="menuImagePaddingL" />
+  <java-symbol type="dimen" name="menuImagePaddingR" />
+  <java-symbol type="dimen" name="menuTextSize" />
+  <java-symbol type="dimen" name="menuItemPaddingVer" />
+  <java-symbol type="dimen" name="menuItemRadius" />
+  <java-symbol type="dimen" name="menuItemSelectedWidth" />
+  <java-symbol type="drawable" name="ic_selfie_menu_bg" />
+  <java-symbol type="drawable" name="camera_menu_item_bg" />
+  <java-symbol type="raw" name="scroll_sound" />
+  <java-symbol type="string" name="menu_function_disable" />
+  <java-symbol type="string" name="menu_period_disable" />
+  <java-symbol type="style" name="ScrollbarRecyclerView" />
+
+  <!-- XTC hall flip-restriction tip. -->
+  <java-symbol type="layout" name="flip_restrict_tip_layout" />
+  <java-symbol type="id" name="tv_flip_msg" />
+  <java-symbol type="id" name="tv_flip_ok" />
+  <java-symbol type="string" name="flip_restrict_msg" />
+
+  <!-- XTC soft-AP connected-device notification (wifi-service). -->
+  <java-symbol type="bool" name="config_softap_extension" />
+  <java-symbol type="bool" name="config_sim_phonebook_batch_operation" />
+  <java-symbol type="string" name="tethered_notification_title" />
+  <java-symbol type="string" name="notification_channel_hotspot" />
+  <java-symbol type="string" name="tethered_notification_no_device_message" />
+  <java-symbol type="string" name="tethered_notification_one_device_message" />
+  <java-symbol type="string" name="tethered_notification_multi_device_message" />
+  <java-symbol type="color" name="black" />
+
+  <java-symbol type="layout" name="bind_number_dialog" />
+  <java-symbol type="layout" name="activity_custom_font_loading" />
+  <java-symbol type="layout" name="activity_more_action" />
+  <java-symbol type="drawable" name="btn_i_know" />
+  <java-symbol type="drawable" name="bg_more_action_item" />
+  <java-symbol type="drawable" name="ic_bingding" />
+  <java-symbol type="drawable" name="ic_test" />
+  <java-symbol type="drawable" name="ic_adb" />
+  <java-symbol type="id" name="btn_i_know" />
+  <java-symbol type="id" name="ll_adb_switch" />
+  <java-symbol type="id" name="ll_bind_number" />
+  <java-symbol type="id" name="ll_selftest_mode" />
+  <java-symbol type="id" name="tv_bind_number" />
+  <java-symbol type="id" name="text" />
+  <java-symbol type="id" name="btn_next" />
+  <java-symbol type="id" name="tv_check_code" />
+  <java-symbol type="string" name="adb_switch" />
+  <java-symbol type="string" name="bind_number" />
+  <java-symbol type="string" name="selftest_mode" />
+  <java-symbol type="string" name="title_bind_number" />
+  <java-symbol type="style" name="BlackDialogStyle" />
+  <java-symbol type="style" name="CustomFontLoadingStyle" />
+
+  <java-symbol type="layout" name="activity_selftest_mode" />
+  <java-symbol type="layout" name="activity_selftest_verify_mode" />
+  <java-symbol type="drawable" name="bg_et_check_code" />
+  <java-symbol type="drawable" name="cursor_et_check_code" />
+  <java-symbol type="drawable" name="bg_dialog_text_recovery_green" />
+  <java-symbol type="id" name="btn_ok" />
+  <java-symbol type="id" name="et_check_code" />
+  <java-symbol type="id" name="fl_show_check_code" />
+  <java-symbol type="id" name="fl_input_check_code" />
+  <java-symbol type="string" name="check_code_error" />
+  <java-symbol type="string" name="check_code_error_too_many_times" />
+  <java-symbol type="string" name="code_verifying" />
+  <java-symbol type="string" name="get_check_code" />
+  <java-symbol type="string" name="input_check_code" />
+  <java-symbol type="string" name="show_check_code" />
 </resources>

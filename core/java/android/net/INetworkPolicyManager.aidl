@@ -74,4 +74,16 @@ interface INetworkPolicyManager {
     void factoryReset(String subscriber);
 
     boolean isUidNetworkingBlocked(int uid, boolean meteredNetwork);
+
+    /**
+     * XTC xses: deny all network access for a UID.
+     * @hide
+     */
+    boolean setUidDenyNetworkAccess(int uid);
+
+    /**
+     * XTC xses: deny network access to a specific address.
+     * @hide
+     */
+    boolean setAddressDenyNetworkAccess(String address);
 }

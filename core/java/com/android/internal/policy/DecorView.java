@@ -210,6 +210,9 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
     final boolean mForceWindowDrawsStatusBarBackground;
     private final int mSemiTransparentStatusBarColor;
 
+    /** XTC camera menu hosted by this decor view, if any. */
+    private com.xtc.widget.CameraMenuView mCameraMenuView;
+
     private final BackgroundFallback mBackgroundFallback = new BackgroundFallback();
 
     private int mLastTopInset = 0;
@@ -457,7 +460,27 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
     }
 
     @Override
+    public void addView(View view) {
+        if ((view instanceof com.xtc.widget.CameraMenuView) && mCameraMenuView == null) {
+            mCameraMenuView = (com.xtc.widget.CameraMenuView) view;
+            mCameraMenuView.setEdgePainter(new com.xtc.widget.EdgePainter(getContext(), this));
+        }
+        super.addView(view);
+    }
+
+    @Override
+    public void onDrawForeground(Canvas canvas) {
+        super.onDrawForeground(canvas);
+        if (mCameraMenuView != null) {
+            mCameraMenuView.getEdgePainter().onDraw(canvas);
+        }
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (mCameraMenuView != null) {
+            mCameraMenuView.onEdgeEvent(event);
+        }
         return onInterceptTouchEvent(event);
     }
 
@@ -472,6 +495,9 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
+        if (mCameraMenuView != null && mCameraMenuView.interceptEdgeEvent(event)) {
+            return true;
+        }
         int action = event.getAction();
         if (mHasCaption && isShowingCaption()) {
             // Don't dispatch ACTION_DOWN to the captionr if the window is resizable and the event

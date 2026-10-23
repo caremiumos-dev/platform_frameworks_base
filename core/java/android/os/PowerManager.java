@@ -21,6 +21,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.app.PropertyInvalidatedCache;
 import android.content.Context;
 import android.util.Log;
 
@@ -105,6 +106,11 @@ import java.lang.annotation.RetentionPolicy;
 @SystemService(Context.POWER_SERVICE)
 public final class PowerManager {
     private static final String TAG = "PowerManager";
+
+    private static final int MAX_CACHE_ENTRIES = 1;
+    private static final String CACHE_KEY_IS_INTERACTIVE_PROPERTY = "cache_key.is_interactive";
+    private static final String CACHE_KEY_IS_POWER_SAVE_MODE_PROPERTY =
+            "cache_key.is_power_save_mode";
 
     /* NOTE: Wake lock levels were previously defined as a bit field, except that only a few
      * combinations were actually supported so the bit field was removed.  This explains
@@ -407,6 +413,13 @@ public final class PowerManager {
 
     /**
      * The value to pass as the 'reason' argument to reboot() to reboot into
+     * recovery mode for applying OTA updates.
+     * @hide
+     */
+    public static final String REBOOT_RECOVERY_ENCRYPT = "ota-update";
+
+    /**
+     * The value to pass as the 'reason' argument to reboot() to reboot into
      * recovery mode for applying system updates.
      * <p>
      * Requires the {@link android.Manifest.permission#RECOVERY}
@@ -489,15 +502,50 @@ public final class PowerManager {
     final IPowerManager mService;
     final Handler mHandler;
 
+    private PropertyInvalidatedCache<Void, Boolean> mInteractiveCache;
+    private PropertyInvalidatedCache<Void, Boolean> mPowerSaveModeCache;
+
     IDeviceIdleController mIDeviceIdleController;
 
     /**
      * {@hide}
      */
     public PowerManager(Context context, IPowerManager service, Handler handler) {
+        mPowerSaveModeCache = new PropertyInvalidatedCache<Void, Boolean>(
+                MAX_CACHE_ENTRIES, CACHE_KEY_IS_POWER_SAVE_MODE_PROPERTY) {
+            @Override
+            protected Boolean recompute(Void query) {
+                try {
+                    return mService.isPowerSaveMode();
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        };
+        mInteractiveCache = new PropertyInvalidatedCache<Void, Boolean>(
+                MAX_CACHE_ENTRIES, CACHE_KEY_IS_INTERACTIVE_PROPERTY) {
+            @Override
+            protected Boolean recompute(Void query) {
+                try {
+                    return mService.isInteractive();
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        };
         mContext = context;
         mService = service;
         mHandler = handler;
+    }
+
+    /** @hide */
+    public static void invalidateIsInteractiveCaches() {
+        PropertyInvalidatedCache.invalidateCache(CACHE_KEY_IS_INTERACTIVE_PROPERTY);
+    }
+
+    /** @hide */
+    public static void invalidatePowerSaveModeCaches() {
+        PropertyInvalidatedCache.invalidateCache(CACHE_KEY_IS_POWER_SAVE_MODE_PROPERTY);
     }
 
     /**
@@ -953,8 +1001,13 @@ public final class PowerManager {
      * @see android.content.Intent#ACTION_SCREEN_OFF
      */
     public boolean isInteractive() {
+        return mInteractiveCache.query(null);
+    }
+
+    /** @hide */
+    public boolean isScreenLongSleep() {
         try {
-            return mService.isInteractive();
+            return mService.isScreenLongSleep();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1001,11 +1054,7 @@ public final class PowerManager {
      * @return Returns true if currently in low power mode, else false.
      */
     public boolean isPowerSaveMode() {
-        try {
-            return mService.isPowerSaveMode();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mPowerSaveModeCache.query(null);
     }
 
     /**

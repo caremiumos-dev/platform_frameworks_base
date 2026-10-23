@@ -3445,7 +3445,10 @@
     <!-- Shown when the device is tethered -->
     <string name="tethered_notification_title">Tethering or hotspot active</string>
     <string name="tethered_notification_message">Tap to set up.</string>
-
+    <string name="tethered_notification_no_device_message">No connected device</string>
+    <string name="tethered_notification_one_device_message">%1$s connected device</string>
+    <string name="tethered_notification_multi_device_message">%1$s connected devices</string>
+    <string name="notification_channel_hotspot">Wi-Fi Hotspot notification</string>
     <!--  Strings for possible PreferenceActivity Back/Next buttons -->
     <string name="back_button_label">Back</string>
     <string name="next_button_label">Next</string>
@@ -4665,4 +4668,80 @@
 
     <!-- Popup window default title to be read by a screen reader-->
     <string name="popup_window_default_title">Popup Window</string>
+
+    <!-- XTC diag self-test dialog. -->
+    <string name="xtc_diag_test_fail">Fail</string>
+    <string name="xtc_diag_test_ok">OK</string>
+    <string name="xtc_diag_test_result">Test is success ?</string>
+
+    <!-- XTC network policy hint shown when mobile data is blocked. -->
+    <string name="metered_network_disabled_tip">Not in the WiFi environment, allow to use the flow in APP</string>
+
+    <!-- XTC battery temperature warning dialog. -->
+    <string name="battery_warning_content">There may be problems with the current watch, please go to the after-sales inspection</string>
+    <string name="battery_warning_confirm_button">I know</string>
+
+    <!-- XTC space-clean dialog. -->
+    <string name="space_clean_full">Space to clean up full</string>
+    <string name="space_clean_low">Space to clean up low</string>
+    <string name="space_clean_low_one">Space to clean up low one</string>
+    <string name="space_clean_low_two">Space to clean up low two</string>
+    <string name="space_goto_clean">Space go to clean</string>
+    <string name="space_low_tips">warm tips cards</string>
+    <string name="space_nexttime">next time to say</string>
+
+    <!-- XTC shutdown/reboot confirm dialog. -->
+    <string name="shutdown_reboot_cancel">Cancel</string>
+    <string name="shutdown_reboot_confirm">Confirm</string>
+    <string name="shutdown_reboot_title1">The system recovery will clear all</string>
+    <string name="shutdown_reboot_title2">the local data. Are you sure you want to clear it?</string>
+
+    <!-- XTC shutdown / system-restore dialogs. -->
+    <string name="not_allow_shutdown_tips">Parents do not allow the watch to be automatically shut down</string>
+    <string name="reboot_title">Restart</string>
+    <string name="reboot_to_restore">Restore</string>
+    <string name="reboot_to_restore_title2">Clear the local data</string>
+    <string name="reboot_to_restore_title3">after restoring</string>
+    <string name="reboot_to_restoreing">System to be reset</string>
+    <string name="more_action">More actions</string>
+    <string name="not_need">No need for now</string>
+    <string name="system_restore_title2">Restore</string>
+    <string name="system_restore_title3">After the system is restored, the watch settings and other data will be restored. Please handle it with caution</string>
+    <string name="system_restore_confirm">After the system is restored, the watch settings will be restored, but the local data such as photo albums and videos will not be cleared. If the watch cannot be used normally, you can try to restore the system</string>
+    <string name="system_restore_forbidden_details">"“System Repair” is disabled \n and cannot be used"</string>
+    <string name="system_restore_forbidden_hint">How do I disable the function?</string>
+    <string name="system_restore_forbidden_title">Function disable</string>
+    <string name="system_restore_quit_forbidden_title">How do I exit app disable?</string>
+    <string name="system_restore_quit_forbidden_details"><font fgcolor="#999999"> In the latest version </font><font fgcolor="#fafafa">" Little genius APP- more \n - application disabled "</font><font fgcolor="#999999">", select the watch \n setting, Adjust function "</font><font fgcolor="#fafafa"> Disable </font><font fgcolor="#999999">" On \n off, you can use normally. "</font></string>
+    <string name="flip_ok_msg">I see</string>
+
+    <!-- XTC xses system-exception dialogs. -->
+    <string name="exception_default_message">this device has security risks.</string>
+    <string name="exception_default_title">WARNING</string>
+    <string name="exception_disable_app_message">the watch phone a unauthorized application,the application will be frozen.</string>
+    <string name="exception_disable_net_message">the watch phone a unauthorized application,the application will be blocked from accessing the network.</string>
+    <string name="exception_ok_btn_str">ok</string>
+    <string name="exception_root_message">the watch phone has security risks, please upgrade the new system or contact after-sales service.</string>
+    <string name="exception_root_title">THIS DEVICE IS ROOT</string>
+    <string name="exception_uninstall_message">the watch phone has a unauthorized application,the application will uninstall.</string>
+    <string name="exception_overlay_default_message">The watch system is abnormal. To avoid possible security problems, please upgrade to the latest system or contact after-sales service.</string>
+    <string name="exception_overlay_default_title">WARNING</string>
+
+    <!-- XTC camera menu. -->
+    <string name="menu_function_disable">This feature has been disabled by parents</string>
+    <string name="menu_period_disable">The function has been disabled for the current period of time</string>
+
+    <!-- XTC hall flip-restriction tip. -->
+    <string name="flip_restrict_tip">Please do not flip up the watch frequently.</string>
+    <string name="flip_restrict_msg">Disable the feature of flipping within %d minutes</string>
+    <string name="adb_switch">ADB</string>
+    <string name="bind_number">Binding Number</string>
+    <string name="selftest_mode">Selftest mode</string>
+    <string name="title_bind_number">The binding number of your watch is</string>
+    <string name="check_code_error">Verification failed</string>
+    <string name="check_code_error_too_many_times">Mistyping check code too many times. Please verifying again with the new check code.</string>
+    <string name="code_verifying">Verifying</string>
+    <string name="get_check_code">The dynamic check code can be obtained on the after-sales platform</string>
+    <string name="input_check_code">Please enter the dynamic check code</string>
+    <string name="show_check_code">Please enter the following verification code on the after-sales platform</string>
 </resources>

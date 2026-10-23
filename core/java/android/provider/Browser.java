@@ -31,6 +31,7 @@ import android.provider.BrowserContract.Combined;
 import android.provider.BrowserContract.History;
 import android.provider.BrowserContract.Searches;
 import android.util.Log;
+import android.util.SeempLog;
 import android.webkit.WebIconDatabase;
 
 public class Browser {
@@ -244,6 +245,7 @@ public class Browser {
      */
     public static final Cursor getAllBookmarks(ContentResolver cr) throws
             IllegalStateException {
+        SeempLog.record(32);
         return new MatrixCursor(new String[]{Bookmarks.URL}, 0);
     }
 
@@ -256,6 +258,7 @@ public class Browser {
      */
     public static final Cursor getAllVisitedUrls(ContentResolver cr) throws
             IllegalStateException {
+        SeempLog.record(33);
         return new MatrixCursor(new String[]{Combined.URL}, 0);
     }
 
@@ -264,6 +267,7 @@ public class Browser {
     }
 
     private static final Cursor getVisitedLike(ContentResolver cr, String url) {
+        SeempLog.record(34);
         boolean secure = false;
         String compareString = url;
         if (compareString.startsWith("http://")) {
@@ -324,6 +328,7 @@ public class Browser {
      */
     @Deprecated
     public static final String[] getVisitedHistory(ContentResolver cr) {
+        SeempLog.record(35);
         return new String[0];
     }
 
@@ -359,7 +364,7 @@ public class Browser {
      *  @removed
      */
     public static final void clearHistory(ContentResolver cr) {
-
+        SeempLog.record(37);
     }
 
     /**
@@ -420,6 +425,7 @@ public class Browser {
      */
     public static final void requestAllIcons(ContentResolver cr, String where,
             WebIconDatabase.IconListener listener) {
+        SeempLog.record(36);
         // Do nothing: this is no longer used.
     }
 

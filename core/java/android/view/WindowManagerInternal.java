@@ -351,4 +351,14 @@ public abstract class WindowManagerInternal {
      * {@param vr2dDisplayId}.
      */
     public abstract void setVr2dDisplayId(int vr2dDisplayId);
+
+    /**
+     * Returns the window directly behind the currently focused window.
+     */
+    public abstract WindowManagerPolicy.WindowState getWindowBehindFocused();
+
+    /**
+     * Returns the current top window.
+     */
+    public abstract WindowManagerPolicy.WindowState getTopWindow();
 }

@@ -160,6 +160,8 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
     boolean mIsFloating;
     private boolean mIsTranslucent;
+    // XTC device addition: whether swipe-to-dismiss is allowed for this window.
+    private boolean mUseSwipeDismiss = true;
 
     private LayoutInflater mLayoutInflater;
 
@@ -398,6 +400,15 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
     @Override
     public Scene getContentScene() {
         return mContentScene;
+    }
+
+    /**
+     * XTC device addition: content root used by the swipe-right-to-exit animation.
+     * @hide
+     */
+    @Override
+    public final ViewGroup getContentRoot() {
+        return mContentParent;
     }
 
     @Override
@@ -1460,6 +1471,17 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         return mElevation;
     }
 
+    /**
+     * XTC device addition: decor-view background used by the swipe-right-to-exit
+     * animation.
+     * @hide
+     */
+    @Override
+    public final Drawable getDecorViewBackgroundDrawable() {
+        return mBackgroundResource != 0
+                ? getContext().getDrawable(mBackgroundResource) : mBackgroundDrawable;
+    }
+
     @Override
     public final void setClipToOutline(boolean clipToOutline) {
         mClipToOutline = clipToOutline;
@@ -2336,6 +2358,8 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         } else if (a.getBoolean(R.styleable.Window_windowActionBar, false)) {
             // Don't allow an action bar if there is no title.
             requestFeature(FEATURE_ACTION_BAR);
+            // XTC device addition: an action bar disables swipe-to-dismiss.
+            mUseSwipeDismiss = false;
         }
 
         if (a.getBoolean(R.styleable.Window_windowActionBarOverlay, false)) {
@@ -2346,7 +2370,8 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
             requestFeature(FEATURE_ACTION_MODE_OVERLAY);
         }
 
-        if (a.getBoolean(R.styleable.Window_windowSwipeToDismiss, false)) {
+        // XTC device addition: swipe-to-dismiss defaults on unless disabled.
+        if (a.getBoolean(R.styleable.Window_windowSwipeToDismiss, true) && mUseSwipeDismiss) {
             requestFeature(FEATURE_SWIPE_TO_DISMISS);
         }
 
@@ -3023,6 +3048,14 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
             public void onDismissed(SwipeDismissLayout layout) {
                 dispatchOnWindowSwipeDismissed();
                 dispatchOnWindowDismissed(false /*finishTask*/, true /*suppressWindowTransition*/);
+                // XTC/CAF: 除 snapcam 相机外，恢复窗口位置并复位过渡 flag。
+                WindowManager.LayoutParams attributes = getAttributes();
+                if (!attributes.getTitle().toString().contains("org.codeaurora.snapcam")) {
+                    attributes.alpha = 1.0f;
+                    attributes.x = mDecor.getWidth() + 15;
+                    setFlags(attributes.x == 0 ? 1024 : 512, 1536);
+                }
+                setAttributes(attributes);
             }
         });
         swipeDismiss.setOnSwipeProgressChangedListener(

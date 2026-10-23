@@ -92,6 +92,9 @@ public class PassiveProvider implements LocationProviderInterface {
     }
 
     @Override
+    public void setPackageName(String name) { }
+
+    @Override
     public void setRequest(ProviderRequest request, WorkSource source) {
         mReportLocation = request.reportLocation;
     }

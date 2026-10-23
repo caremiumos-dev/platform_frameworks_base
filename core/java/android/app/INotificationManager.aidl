@@ -148,4 +148,8 @@ interface INotificationManager
     void applyRestore(in byte[] payload, int user);
 
     ParceledListSlice getAppActiveNotifications(String callingPkg, int userId);
+
+    // XTC: backported token lifetime handling. Appended at the end so the
+    // transaction numbers of all existing methods are preserved.
+    void finishToken(String pkg, ITransientNotification callback);
 }

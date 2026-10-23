@@ -2171,35 +2171,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub {
     }
 
     private void updateFingerprintGestureHandling(UserState userState) {
-        final List<Service> services;
-        synchronized (mLock) {
-            services = userState.mBoundServices;
-            if ((mFingerprintGestureDispatcher == null)
-                    &&  mPackageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)) {
-                // Only create the controller when a service wants to use the feature
-                int numServices = services.size();
-                for (int i = 0; i < numServices; i++) {
-                    if (services.get(i).isCapturingFingerprintGestures()) {
-                        final long identity = Binder.clearCallingIdentity();
-                        IFingerprintService service = null;
-                        try {
-                            service = IFingerprintService.Stub.asInterface(
-                                    ServiceManager.getService(Context.FINGERPRINT_SERVICE));
-                        } finally {
-                            Binder.restoreCallingIdentity(identity);
-                        }
-                        if (service != null) {
-                            mFingerprintGestureDispatcher = new FingerprintGestureDispatcher(
-                                    service, mLock);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        if (mFingerprintGestureDispatcher != null) {
-            mFingerprintGestureDispatcher.updateClientList(services);
-        }
+        // XTC device has no fingerprint gesture support.
+        Slog.d(LOG_TAG, "XTC unsupport Fingerprint.");
     }
 
     private void updateAccessibilityButtonTargetsLocked(UserState userState) {

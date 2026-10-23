@@ -452,4 +452,24 @@ interface INetworkManagementService
     void setAllowOnlyVpnForUids(boolean enable, in UidRange[] uidRanges);
 
     boolean isNetworkRestricted(int uid);
+
+    /**
+     * Denies all network access for a UID via the vendor netd bandwidth
+     * control. XTC xses extension.
+     * @hide
+     */
+    boolean setUidDisableNetwork(int uid);
+
+    /**
+     * Denies network access to a specific address via the vendor netd
+     * bandwidth control. XTC xses extension.
+     * @hide
+     */
+    boolean setAddressDisableNetwork(String address);
+
+    /**
+     * IM URL firewall rule (vendor extension). XTC extension.
+     * @hide
+     */
+    void setFirewallImRule(String address, int port, boolean enable);
 }

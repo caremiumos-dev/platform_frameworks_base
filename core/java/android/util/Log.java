@@ -364,6 +364,14 @@ public final class Log {
         return println_native(LOG_ID_MAIN, priority, tag, msg);
     }
 
+    /**
+     * Log to the vendor frame-collection buffer (buffer id 5).
+     * @hide
+     */
+    public static int println_collect(int priority, String tag, String msg) {
+        return println_native(5, priority, tag, msg);
+    }
+
     /** @hide */ public static final int LOG_ID_MAIN = 0;
     /** @hide */ public static final int LOG_ID_RADIO = 1;
     /** @hide */ public static final int LOG_ID_EVENTS = 2;

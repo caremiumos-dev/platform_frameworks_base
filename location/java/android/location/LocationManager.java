@@ -27,6 +27,7 @@ import android.annotation.TestApi;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,6 +35,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
+import android.util.SeempLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -462,6 +464,9 @@ public class LocationManager {
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestLocationUpdates(String provider, long minTime, float minDistance,
             LocationListener listener) {
+        Log.d(TAG, "XTCNetin requestLocationUpdates uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(47);
         checkProvider(provider);
         checkListener(listener);
 
@@ -494,6 +499,9 @@ public class LocationManager {
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestLocationUpdates(String provider, long minTime, float minDistance,
             LocationListener listener, Looper looper) {
+        Log.d(TAG, "XTCNetin requestLocationUpdates 0x00 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(47);
         checkProvider(provider);
         checkListener(listener);
 
@@ -527,6 +535,9 @@ public class LocationManager {
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestLocationUpdates(long minTime, float minDistance, Criteria criteria,
             LocationListener listener, Looper looper) {
+        Log.d(TAG, "XTCNetin requestLocationUpdates 0x01 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(47);
         checkCriteria(criteria);
         checkListener(listener);
 
@@ -555,6 +566,9 @@ public class LocationManager {
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestLocationUpdates(String provider, long minTime, float minDistance,
             PendingIntent intent) {
+        Log.d(TAG, "XTCNetin requestLocationUpdates 0x02 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(47);
         checkProvider(provider);
         checkPendingIntent(intent);
 
@@ -657,6 +671,9 @@ public class LocationManager {
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestLocationUpdates(long minTime, float minDistance, Criteria criteria,
             PendingIntent intent) {
+        Log.d(TAG, "XTCNetin requestLocationUpdates 0x03 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(47);
         checkCriteria(criteria);
         checkPendingIntent(intent);
 
@@ -686,6 +703,9 @@ public class LocationManager {
      */
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestSingleUpdate(String provider, LocationListener listener, Looper looper) {
+        Log.d(TAG, "XTCNetin requestSingleUpdate 0x04 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(64);
         checkProvider(provider);
         checkListener(listener);
 
@@ -716,6 +736,9 @@ public class LocationManager {
      */
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestSingleUpdate(Criteria criteria, LocationListener listener, Looper looper) {
+        Log.d(TAG, "XTCNetin requestSingleUpdate 0x05 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(64);
         checkCriteria(criteria);
         checkListener(listener);
 
@@ -739,6 +762,9 @@ public class LocationManager {
      */
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestSingleUpdate(String provider, PendingIntent intent) {
+        Log.d(TAG, "XTCNetin requestSingleUpdate 0x06 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(64);
         checkProvider(provider);
         checkPendingIntent(intent);
 
@@ -763,6 +789,9 @@ public class LocationManager {
      */
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestSingleUpdate(Criteria criteria, PendingIntent intent) {
+        Log.d(TAG, "XTCNetin requestSingleUpdate 0x07 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(64);
         checkCriteria(criteria);
         checkPendingIntent(intent);
 
@@ -832,6 +861,9 @@ public class LocationManager {
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestLocationUpdates(LocationRequest request, LocationListener listener,
             Looper looper) {
+        Log.d(TAG, "XTCNetin requestLocationUpdates 0x08 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(47);
         checkListener(listener);
         requestLocationUpdates(request, listener, looper, null);
     }
@@ -860,6 +892,9 @@ public class LocationManager {
     @SystemApi
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void requestLocationUpdates(LocationRequest request, PendingIntent intent) {
+        Log.d(TAG, "XTCNetin requestLocationUpdates 0x09 uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(47);
         checkPendingIntent(intent);
         requestLocationUpdates(request, null, null, intent);
     }
@@ -878,7 +913,7 @@ public class LocationManager {
 
     private void requestLocationUpdates(LocationRequest request, LocationListener listener,
             Looper looper, PendingIntent intent) {
-
+        SeempLog.record(47);
         String packageName = mContext.getPackageName();
 
         // wrap the listener class
@@ -986,6 +1021,9 @@ public class LocationManager {
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public void addProximityAlert(double latitude, double longitude, float radius, long expiration,
             PendingIntent intent) {
+        Log.d(TAG, "XTCNetin addProximityAlert 0x0A uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(45);
         checkPendingIntent(intent);
         if (expiration < 0) expiration = Long.MAX_VALUE;
 
@@ -1197,6 +1235,9 @@ public class LocationManager {
      */
     @RequiresPermission(anyOf = {ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     public Location getLastKnownLocation(String provider) {
+        Log.d(TAG, "XTCNetin getLastKnownLocation 0x0C uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(46);
         checkProvider(provider);
         String packageName = mContext.getPackageName();
         LocationRequest request = LocationRequest.createFromDeprecatedProvider(
@@ -1602,6 +1643,9 @@ public class LocationManager {
     @Deprecated
     @RequiresPermission(ACCESS_FINE_LOCATION)
     public boolean addGpsStatusListener(GpsStatus.Listener listener) {
+        Log.d(TAG, "XTCNetin addGpsStatusListener 0x0D uid:" + Binder.getCallingUid()
+                + " packagename:" + mContext.getPackageName());
+        SeempLog.record(43);
         boolean result;
 
         if (mGpsStatusListeners.get(listener) != null) {
@@ -1713,6 +1757,7 @@ public class LocationManager {
     @Deprecated
     @RequiresPermission(ACCESS_FINE_LOCATION)
     public boolean addNmeaListener(GpsStatus.NmeaListener listener) {
+        SeempLog.record(44);
         boolean result;
 
         if (mGpsNmeaListeners.get(listener) != null) {
@@ -2073,6 +2118,7 @@ public class LocationManager {
      * @return true if the command succeeds.
      */
     public boolean sendExtraCommand(String provider, String command, Bundle extras) {
+        SeempLog.record(48);
         try {
             return mService.sendExtraCommand(provider, command, extras);
         } catch (RemoteException e) {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@id/rl_dialog_parent" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="16.0sp" android:textColor="#ffffffff" android:gravity="center" android:id="@id/tv_confirm_title1" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/shutdown_reboot_title1" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" />
+    <TextView android:textSize="16.0sp" android:textColor="#ffffffff" android:gravity="center" android:id="@id/tv_confirm_title2" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/shutdown_reboot_title2" android:layout_below="@id/tv_confirm_title1" android:layout_alignParentStart="true" />
+    <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginBottom="5.0dip" android:layout_alignParentBottom="true">
+        <TextView android:textSize="16.0sp" android:textColor="@drawable/text_color_white" android:gravity="center" android:id="@id/tv_confirm_negative" android:background="@drawable/bg_dialog_text_recovery_confirm_grep" android:focusable="true" android:clickable="true" android:layout_width="160.0dip" android:layout_height="40.0dip" android:text="@string/shutdown_reboot_cancel" android:layout_weight="1.0" />
+        <TextView android:textSize="16.0sp" android:textColor="@drawable/text_color_white" android:gravity="center" android:id="@id/tv_confirm_positive" android:background="@drawable/bg_dialog_text_recovery_confirm_green" android:focusable="true" android:clickable="true" android:layout_width="160.0dip" android:layout_height="40.0dip" android:layout_marginLeft="2.0dip" android:text="@string/shutdown_reboot_confirm" android:layout_weight="1.0" />
+    </LinearLayout>
+</RelativeLayout>

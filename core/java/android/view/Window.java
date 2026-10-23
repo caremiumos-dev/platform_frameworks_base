@@ -1529,6 +1529,20 @@ public abstract class Window {
     public abstract void setBackgroundDrawable(Drawable drawable);
 
     /**
+     * XTC device addition: the content root view of this window, used by the
+     * swipe-right-to-exit back-gesture animation.
+     * @hide
+     */
+    public abstract ViewGroup getContentRoot();
+
+    /**
+     * XTC device addition: the background drawable of the decor view, used by the
+     * swipe-right-to-exit back-gesture animation.
+     * @hide
+     */
+    public abstract Drawable getDecorViewBackgroundDrawable();
+
+    /**
      * Set the value for a drawable feature of this window, from a resource
      * identifier.  You must have called requestFeature(featureId) before
      * calling this function.

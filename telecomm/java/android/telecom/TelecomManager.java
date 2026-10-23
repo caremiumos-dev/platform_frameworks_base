@@ -157,6 +157,20 @@ public class TelecomManager {
             "android.telecom.action.CHANGE_DEFAULT_DIALER";
 
     /**
+     * CAF/QTI vendor extension: intent action carrying the current call type.
+     * @hide
+     */
+    public static final String ACTION_CALL_TYPE =
+            "codeaurora.telecom.action.CALL_TYPE";
+
+    /**
+     * CAF/QTI vendor extension: extra indicating a CS call type.
+     * @hide
+     */
+    public static final String EXTRA_CALL_TYPE_CS =
+            "codeaurora.telecom.extra.CALL_TYPE_CS";
+
+    /**
      * Broadcast intent action indicating that the current default dialer has changed.
      * The string extra {@link #EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME} will contain the
      * name of the package that the default dialer was changed to.

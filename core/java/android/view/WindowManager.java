@@ -1258,6 +1258,13 @@ public interface WindowManager extends ViewManager {
         public int flags;
 
         /**
+         * Extended window flags controlled by the OEM window manager.
+         *
+         * @hide
+         */
+        public int flagsEx;
+
+        /**
          * If the window has requested hardware acceleration, but this is not
          * allowed in the process it is in, then still render it as if it is
          * hardware accelerated.  This is used for the starting preview windows
@@ -2105,6 +2112,7 @@ public interface WindowManager extends ViewManager {
             out.writeInt(y);
             out.writeInt(type);
             out.writeInt(flags);
+            out.writeInt(flagsEx);
             out.writeInt(privateFlags);
             out.writeInt(softInputMode);
             out.writeInt(gravity);
@@ -2160,6 +2168,7 @@ public interface WindowManager extends ViewManager {
             y = in.readInt();
             type = in.readInt();
             flags = in.readInt();
+            flagsEx = in.readInt();
             privateFlags = in.readInt();
             softInputMode = in.readInt();
             gravity = in.readInt();

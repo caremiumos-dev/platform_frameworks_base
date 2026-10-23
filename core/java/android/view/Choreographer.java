@@ -21,11 +21,14 @@ import static android.view.DisplayEventReceiver.VSYNC_SOURCE_SURFACE_FLINGER;
 
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Process;
 import android.os.Message;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
+import android.util.BoostFramework;
 import android.util.Log;
 import android.util.TimeUtils;
 import android.view.animation.AnimationUtils;
@@ -135,6 +138,22 @@ public final class Choreographer {
     private static final int SKIPPED_FRAME_WARNING_LIMIT = SystemProperties.getInt(
             "debug.choreographer.skipwarning", 30);
 
+    private static final int SKIPPED_FRAME_WARNING_PERSIST_LIMIT = SystemProperties.getInt(
+            "persist.chore.skipwarning", 0);
+    private static final int COLLECT_FRAME_LIMIT = SystemProperties.getInt(
+            "persist.sys.collect.xtc_frames", 60);
+    private static final boolean isBoost = SystemProperties.getBoolean(
+            "persist.chore.boost", true);
+    private static final boolean OPTS_INPUT = SystemProperties.getBoolean(
+            "persist.vendor.qti.inputopts.enable", false);
+
+    private static BoostFramework mPerf = null;
+    private static int mPerfLockDuration = 800;
+    private static int mTimeDropThreshold = 308;
+    private static int[] mPerfLockParam = {
+            1082130432, WindowManager.LayoutParams.TYPE_DRAG
+    };
+
     private static final int MSG_DO_FRAME = 0;
     private static final int MSG_DO_SCHEDULE_VSYNC = 1;
     private static final int MSG_DO_SCHEDULE_CALLBACK = 2;
@@ -163,6 +182,14 @@ public final class Choreographer {
     private long mLastFrameTimeNanos;
     private long mFrameIntervalNanos;
     private boolean mDebugPrintNextFrameTimeDelta;
+    private com.android.internal.apm.FrameTracerCallback mFrameTracerCallback;
+
+    private final Handler mFPSHandler;
+    private final HandlerThread handlerThread;
+    private boolean mConsumedDown;
+    private boolean mConsumedMove;
+    private int mMotionEventType;
+    private int mTouchMoveNum;
 
     /**
      * Contains information about the current frame for jank-tracking,
@@ -231,6 +258,19 @@ public final class Choreographer {
         mCallbackQueues = new CallbackQueue[CALLBACK_LAST + 1];
         for (int i = 0; i <= CALLBACK_LAST; i++) {
             mCallbackQueues[i] = new CallbackQueue();
+        }
+
+        mTouchMoveNum = -1;
+        mMotionEventType = -1;
+        mConsumedMove = false;
+        mConsumedDown = false;
+        handlerThread = new HandlerThread("boost_fps");
+        handlerThread.start();
+        if (!isBoost) {
+            mFPSHandler = null;
+        } else {
+            mFPSHandler = new FPSHandler(handlerThread.getLooper());
+            mFPSHandler.sendEmptyMessage(3);
         }
     }
 
@@ -508,6 +548,25 @@ public final class Choreographer {
     }
 
     /**
+     * Registers a callback invoked after each frame is produced with the
+     * number of skipped frames and the current frame rate. Used by the
+     * application performance monitor for drop frame statistics.
+     *
+     * @hide
+     */
+    public void setFrameTracerCallback(com.android.internal.apm.FrameTracerCallback callback) {
+        mFrameTracerCallback = callback;
+    }
+
+    /** @hide */
+    public void setMotionEventInfo(int motionEventType, int touchMoveNum) {
+        synchronized (this) {
+            mTouchMoveNum = touchMoveNum;
+            mMotionEventType = motionEventType;
+        }
+    }
+
+    /**
      * Gets the time when the current frame started.
      * <p>
      * This method provides the time in milliseconds when the frame started being rendered.
@@ -567,33 +626,71 @@ public final class Choreographer {
     }
 
     private void scheduleFrameLocked(long now) {
-        if (!mFrameScheduled) {
-            mFrameScheduled = true;
-            if (USE_VSYNC) {
-                if (DEBUG_FRAMES) {
-                    Log.d(TAG, "Scheduling next frame on vsync.");
+        if (mFrameScheduled) {
+            return;
+        }
+        mFrameScheduled = true;
+        if (OPTS_INPUT) {
+            Trace.traceBegin(Trace.TRACE_TAG_VIEW, "scheduleFrameLocked-mMotionEventType:"
+                    + mMotionEventType + " mTouchMoveNum:" + mTouchMoveNum
+                    + " mConsumedDown:" + mConsumedDown + " mConsumedMove:" + mConsumedMove);
+            Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+            synchronized (this) {
+                switch (mMotionEventType) {
+                    case 0:
+                        mConsumedMove = false;
+                        if (!mConsumedDown) {
+                            Message msg = mHandler.obtainMessage(MSG_DO_FRAME);
+                            msg.setAsynchronous(true);
+                            mHandler.sendMessageAtFrontOfQueue(msg);
+                            mConsumedDown = true;
+                            return;
+                        }
+                        break;
+                    case 1:
+                    case 3:
+                        mConsumedMove = false;
+                        mConsumedDown = false;
+                        break;
+                    case 2:
+                        mConsumedDown = false;
+                        if (mTouchMoveNum == 1 && !mConsumedMove) {
+                            Message msg = mHandler.obtainMessage(MSG_DO_FRAME);
+                            msg.setAsynchronous(true);
+                            mHandler.sendMessageAtFrontOfQueue(msg);
+                            mConsumedMove = true;
+                            return;
+                        }
+                        break;
+                    default:
+                        break;
                 }
-
-                // If running on the Looper thread, then schedule the vsync immediately,
-                // otherwise post a message to schedule the vsync from the UI thread
-                // as soon as possible.
-                if (isRunningOnLooperThreadLocked()) {
-                    scheduleVsyncLocked();
-                } else {
-                    Message msg = mHandler.obtainMessage(MSG_DO_SCHEDULE_VSYNC);
-                    msg.setAsynchronous(true);
-                    mHandler.sendMessageAtFrontOfQueue(msg);
-                }
-            } else {
-                final long nextFrameTime = Math.max(
-                        mLastFrameTimeNanos / TimeUtils.NANOS_PER_MS + sFrameDelay, now);
-                if (DEBUG_FRAMES) {
-                    Log.d(TAG, "Scheduling next frame in " + (nextFrameTime - now) + " ms.");
-                }
-                Message msg = mHandler.obtainMessage(MSG_DO_FRAME);
-                msg.setAsynchronous(true);
-                mHandler.sendMessageAtTime(msg, nextFrameTime);
             }
+        }
+        if (!USE_VSYNC) {
+            final long nextFrameTime = Math.max(
+                    mLastFrameTimeNanos / TimeUtils.NANOS_PER_MS + sFrameDelay, now);
+            if (DEBUG_FRAMES) {
+                Log.d(TAG, "Scheduling next frame in " + (nextFrameTime - now) + " ms.");
+            }
+            Message msg = mHandler.obtainMessage(MSG_DO_FRAME);
+            msg.setAsynchronous(true);
+            mHandler.sendMessageAtTime(msg, nextFrameTime);
+            return;
+        }
+        if (DEBUG_FRAMES) {
+            Log.d(TAG, "Scheduling next frame on vsync.");
+        }
+
+        // If running on the Looper thread, then schedule the vsync immediately,
+        // otherwise post a message to schedule the vsync from the UI thread
+        // as soon as possible.
+        if (isRunningOnLooperThreadLocked()) {
+            scheduleVsyncLocked();
+        } else {
+            Message msg = mHandler.obtainMessage(MSG_DO_SCHEDULE_VSYNC);
+            msg.setAsynchronous(true);
+            mHandler.sendMessageAtFrontOfQueue(msg);
         }
     }
 
@@ -615,9 +712,15 @@ public final class Choreographer {
             final long jitterNanos = startNanos - frameTimeNanos;
             if (jitterNanos >= mFrameIntervalNanos) {
                 final long skippedFrames = jitterNanos / mFrameIntervalNanos;
-                if (skippedFrames >= SKIPPED_FRAME_WARNING_LIMIT) {
+                if (skippedFrames >= COLLECT_FRAME_LIMIT) {
+                    Log.println_collect(Log.ERROR, TAG, "\"f\":" + skippedFrames + ",\"m\":"
+                            + (Process.getPss(Process.myPid()) / 1048576) + "}");
+                }
+                if (skippedFrames >= (SKIPPED_FRAME_WARNING_PERSIST_LIMIT <= 0
+                        ? SKIPPED_FRAME_WARNING_LIMIT : SKIPPED_FRAME_WARNING_PERSIST_LIMIT)) {
                     Log.i(TAG, "Skipped " + skippedFrames + " frames!  "
-                            + "The application may be doing too much work on its main thread.");
+                            + "The application may be doing too much work on its main thread."
+                            + " frame=" + frame);
                 }
                 final long lastFrameOffset = jitterNanos % mFrameIntervalNanos;
                 if (DEBUG_JANK) {
@@ -661,6 +764,14 @@ public final class Choreographer {
         } finally {
             AnimationUtils.unlockAnimationClock();
             Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+        }
+
+        if (mFrameTracerCallback != null) {
+            final long frameDelta = frameTimeNanos - mLastFrameTimeNanos;
+            final int fps = frameDelta > 0 ? (int) (1.0E9f / frameDelta) : -1;
+            final long skipped = frameTimeNanos > mLastFrameTimeNanos
+                    ? (startNanos - frameTimeNanos) / mFrameIntervalNanos : -1;
+            mFrameTracerCallback.doFrame((int) skipped, fps);
         }
 
         if (DEBUG_FRAMES) {
@@ -814,6 +925,26 @@ public final class Choreographer {
         public void doFrame(long frameTimeNanos);
     }
 
+    private final class FPSHandler extends Handler {
+        public FPSHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 3:
+                    mPerf = new BoostFramework();
+                    break;
+                case 4:
+                    if (mPerf != null) {
+                        mPerf.perfLockAcquire(mPerfLockDuration, mPerfLockParam);
+                    }
+                    break;
+            }
+        }
+    }
+
     private final class FrameHandler extends Handler {
         public FrameHandler(Looper looper) {
             super(looper);
@@ -889,12 +1020,27 @@ public final class Choreographer {
             Message msg = Message.obtain(mHandler, this);
             msg.setAsynchronous(true);
             mHandler.sendMessageAtTime(msg, timestampNanos / TimeUtils.NANOS_PER_MS);
+
+            if (isBoost && mFPSHandler != null && !mFPSHandler.hasMessages(4)) {
+                mFPSHandler.sendEmptyMessageDelayed(4, mTimeDropThreshold);
+            }
         }
 
         @Override
         public void run() {
             mHavePendingVsync = false;
+            long startNanos = System.nanoTime();
             doFrame(mTimestampNanos, mFrame);
+            if (isBoost && mFPSHandler != null) {
+                mFPSHandler.removeMessages(4);
+            }
+            long endNanos = System.nanoTime();
+            float took = (endNanos - mTimestampNanos) * 0.000001f;
+            if (took > 500.0f) {
+                Log.d(TAG, "skipped Frame=" + mFrame + " took: " + took
+                        + " ms,onVsync-run took: " + ((startNanos - mTimestampNanos) * 0.000001f)
+                        + " ms,doFrame took: " + ((endNanos - startNanos) * 0.000001f) + " ms");
+            }
         }
     }
 

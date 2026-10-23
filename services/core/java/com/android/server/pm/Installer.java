@@ -36,6 +36,9 @@ import dalvik.system.VMRuntime;
 public class Installer extends SystemService {
     private static final String TAG = "Installer";
 
+    // XTC/BBK: broadcast action used by the device to (re)start installd.
+    private static final String ACTION_START_INSTALLD = "xtc.intent.action.START_INSTALLD";
+
     /* ***************************************************************************
      * IMPORTANT: These values are passed to native code. Keep them in sync with
      * frameworks/native/cmds/installd/installd.h

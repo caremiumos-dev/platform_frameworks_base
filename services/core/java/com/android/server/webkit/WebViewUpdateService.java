@@ -56,6 +56,16 @@ public class WebViewUpdateService extends SystemService {
     static final int PACKAGE_ADDED_REPLACED = 2;
     static final int PACKAGE_REMOVED = 3;
 
+    /**
+     * XTC network white-list pushed by the vendor server.
+     *
+     * <p><b>Condemnation.</b> This list is used to inject the vendor's network
+     * white-list into the WebView engine, i.e. remote control over what
+     * content the browser is allowed to reach. Such remote content control
+     * restricts the user's freedom and is only reproduced for compatibility.
+     */
+    private static String sNetWhiteList;
+
     public WebViewUpdateService(Context context) {
         super(context);
         mImpl = new WebViewUpdateServiceImpl(context, SystemImpl.getInstance());
@@ -238,6 +248,24 @@ public class WebViewUpdateService extends SystemService {
         @Override // Binder call
         public PackageInfo getCurrentWebViewPackage() {
             return WebViewUpdateService.this.mImpl.getCurrentWebViewPackage();
+        }
+
+        @Override // Binder call
+        public String getNetWhiteList() {
+            return sNetWhiteList;
+        }
+
+        @Override // Binder call
+        public void setNetWhiteList(String list) {
+            if (Binder.getCallingUid() != Process.SYSTEM_UID
+                    || list == null || list.length() == 0) {
+                return;
+            }
+            Slog.d(TAG, "SystemSecurity set net white list from server.");
+            if (list.startsWith("[") && list.endsWith("]")) {
+                list = list.substring(1, list.length() - 1);
+            }
+            sNetWhiteList = list;
         }
 
         @Override // Binder call

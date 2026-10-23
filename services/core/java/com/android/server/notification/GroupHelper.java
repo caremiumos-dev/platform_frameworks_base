@@ -53,6 +53,12 @@ public class GroupHelper {
                 // Not grouped by the app, add to the list of notifications for the app;
                 // send grouping update if app exceeds the autogrouping limit.
                 synchronized (mUngroupedNotifications) {
+                    // XTC/BBK: disable automatic notification grouping for vendor apps.
+                    if (sbn.getPackageName() != null
+                            && sbn.getPackageName().startsWith("com.xtc")) {
+                        Log.d(TAG, "Remove automatic group notification function");
+                        return;
+                    }
                     Map<String, LinkedHashSet<String>> ungroupedNotificationsByUser
                             = mUngroupedNotifications.get(sbn.getUserId());
                     if (ungroupedNotificationsByUser == null) {

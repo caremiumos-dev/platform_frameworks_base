@@ -21,6 +21,7 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemService;
+import android.app.PropertyInvalidatedCache;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -53,6 +54,19 @@ public class SubscriptionManager {
     private static final String LOG_TAG = "SubscriptionManager";
     private static final boolean DBG = false;
     private static final boolean VDBG = false;
+
+    /** CAF 差异：默认数据/短信/语音/槽位缓存失效键。 @hide */
+    public static final String CACHE_KEY_DEFAULT_DATA_SUB_ID_PROPERTY =
+            "cache_key.telephony.get_default_data_sub_id";
+    /** @hide */
+    public static final String CACHE_KEY_DEFAULT_SMS_SUB_ID_PROPERTY =
+            "cache_key.telephony.get_default_sms_sub_id";
+    /** @hide */
+    public static final String CACHE_KEY_DEFAULT_SUB_ID_PROPERTY =
+            "cache_key.telephony.get_default_sub_id";
+    /** @hide */
+    public static final String CACHE_KEY_SLOT_INDEX_PROPERTY =
+            "cache_key.telephony.get_slot_index";
 
     /** An invalid subscription identifier */
     public static final int INVALID_SUBSCRIPTION_ID = -1;
@@ -1312,6 +1326,26 @@ public class SubscriptionManager {
      */
     public static boolean isUsableSubIdValue(int subId) {
         return subId >= MIN_SUBSCRIPTION_ID_VALUE && subId <= MAX_SUBSCRIPTION_ID_VALUE;
+    }
+
+    /** CAF 差异：失效默认数据子缓存。 @hide */
+    public static void invalidateDefaultDataSubIdCaches() {
+        PropertyInvalidatedCache.invalidateCache(CACHE_KEY_DEFAULT_DATA_SUB_ID_PROPERTY);
+    }
+
+    /** CAF 差异：失效默认短信子缓存。 @hide */
+    public static void invalidateDefaultSmsSubIdCaches() {
+        PropertyInvalidatedCache.invalidateCache(CACHE_KEY_DEFAULT_SMS_SUB_ID_PROPERTY);
+    }
+
+    /** CAF 差异：失效默认子缓存。 @hide */
+    public static void invalidateDefaultSubIdCaches() {
+        PropertyInvalidatedCache.invalidateCache(CACHE_KEY_DEFAULT_SUB_ID_PROPERTY);
+    }
+
+    /** CAF 差异：失效槽位索引缓存。 @hide */
+    public static void invalidateSlotIndexCaches() {
+        PropertyInvalidatedCache.invalidateCache(CACHE_KEY_SLOT_INDEX_PROPERTY);
     }
 
     /** @hide */

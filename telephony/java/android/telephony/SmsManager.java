@@ -32,6 +32,7 @@ import android.os.ServiceManager;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.util.SeempLog;
 
 import com.android.internal.telephony.IMms;
 import com.android.internal.telephony.ISms;
@@ -309,6 +310,7 @@ public final class SmsManager {
     public void sendTextMessage(
             String destinationAddress, String scAddress, String text,
             PendingIntent sentIntent, PendingIntent deliveryIntent) {
+        SeempLog.record_str(75, destinationAddress);
         sendTextMessageInternal(destinationAddress, scAddress, text, sentIntent, deliveryIntent,
                 true /* persistMessage*/);
     }
@@ -367,6 +369,7 @@ public final class SmsManager {
     public void sendTextMessageWithSelfPermissions(
             String destinationAddress, String scAddress, String text,
             PendingIntent sentIntent, PendingIntent deliveryIntent, boolean persistMessage) {
+        SeempLog.record_str(75, destinationAddress);
         if (TextUtils.isEmpty(destinationAddress)) {
             throw new IllegalArgumentException("Invalid destinationAddress");
         }
@@ -573,6 +576,7 @@ public final class SmsManager {
     public void sendDataMessage(
             String destinationAddress, String scAddress, short destinationPort,
             byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+        SeempLog.record_str(73, destinationAddress);
         if (TextUtils.isEmpty(destinationAddress)) {
             throw new IllegalArgumentException("Invalid destinationAddress");
         }
@@ -600,6 +604,7 @@ public final class SmsManager {
     public void sendDataMessageWithSelfPermissions(
             String destinationAddress, String scAddress, short destinationPort,
             byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+        SeempLog.record_str(73, destinationAddress);
         if (TextUtils.isEmpty(destinationAddress)) {
             throw new IllegalArgumentException("Invalid destinationAddress");
         }
@@ -686,10 +691,11 @@ public final class SmsManager {
             Log.d(TAG, "getSubscriptionId isSmsSimPickActivityNeeded is true");
             // ask the user for a default SMS SIM.
             Intent intent = new Intent();
-            intent.setClassName("com.android.settings",
-                    "com.android.settings.sim.SimDialogActivity");
+            // XTC/CAF: the vendor SimDialogActivity lives in the simsettings package.
+            intent.setClassName("com.qualcomm.qti.simsettings",
+                    "com.qualcomm.qti.simsettings.SimDialogActivity");
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(DIALOG_TYPE_KEY, SMS_PICK);
+            intent.putExtra(DIALOG_TYPE_KEY, 2);
             try {
                 context.startActivity(intent);
             } catch (ActivityNotFoundException anfe) {
@@ -733,6 +739,7 @@ public final class SmsManager {
      * {@hide}
      */
     public boolean copyMessageToIcc(byte[] smsc, byte[] pdu,int status) {
+        SeempLog.record(79);
         boolean success = false;
 
         if (null == pdu) {
@@ -764,6 +771,7 @@ public final class SmsManager {
      */
     public boolean
     deleteMessageFromIcc(int messageIndex) {
+        SeempLog.record(80);
         boolean success = false;
         byte[] pdu = new byte[SMS_RECORD_LENGTH-1];
         Arrays.fill(pdu, (byte)0xff);
@@ -797,6 +805,7 @@ public final class SmsManager {
      * {@hide}
      */
     public boolean updateMessageOnIcc(int messageIndex, int newStatus, byte[] pdu) {
+        SeempLog.record(81);
         boolean success = false;
 
         try {

@@ -144,6 +144,40 @@ public class NetworkPolicyManager {
     }
 
     /**
+     * XTC xses: deny all network access for a UID.
+     *
+     * <p><b>Condemnation.</b> Enables remote network isolation of a package
+     * chosen by the vendor. See
+     * {@code com.android.server.xgseserver.xss.SystemExceptionManager}.
+     *
+     * @hide
+     */
+    public boolean setUidDenyNetworkAccess(int uid) {
+        try {
+            return mService.setUidDenyNetworkAccess(uid);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * XTC xses: deny network access to a specific address.
+     *
+     * <p><b>Condemnation.</b> Enables remote blocking of arbitrary network
+     * addresses chosen by the vendor. See
+     * {@code com.android.server.xgseserver.xss.SystemExceptionManager}.
+     *
+     * @hide
+     */
+    public boolean setAddressDenyNetworkAccess(String address) {
+        try {
+            return mService.setAddressDenyNetworkAccess(address);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Add policy flags for specific UID.
      *
      * <p>The given policy bits will be set for the uid.

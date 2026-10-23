@@ -36,6 +36,8 @@ abstract class DisplayDevice {
     private final DisplayAdapter mDisplayAdapter;
     private final IBinder mDisplayToken;
     private final String mUniqueId;
+    // XTC 差异：显示设备的物理 id。
+    private int mPhysicalId = -1;
 
     // The display device does not manage these properties itself, they are set by
     // the display manager service.  The display device shouldn't really be looking at these.
@@ -56,6 +58,13 @@ abstract class DisplayDevice {
         mDisplayAdapter = displayAdapter;
         mDisplayToken = displayToken;
         mUniqueId = uniqueId;
+    }
+
+    // XTC 差异：带物理 id 的构造器。
+    public DisplayDevice(DisplayAdapter displayAdapter, IBinder displayToken, String uniqueId,
+            int physicalId) {
+        this(displayAdapter, displayToken, uniqueId);
+        mPhysicalId = physicalId;
     }
 
     /**
@@ -89,6 +98,11 @@ abstract class DisplayDevice {
     /**
      * Returns the unique id of the display device.
      */
+    // XTC 差异：物理 id getter。
+    public final int getPhysicalId() {
+        return mPhysicalId;
+    }
+
     public final String getUniqueId() {
         return mUniqueId;
     }
@@ -230,6 +244,7 @@ abstract class DisplayDevice {
     public void dumpLocked(PrintWriter pw) {
         pw.println("mAdapter=" + mDisplayAdapter.getName());
         pw.println("mUniqueId=" + mUniqueId);
+        pw.println("mPhysicalId=" + mPhysicalId);
         pw.println("mDisplayToken=" + mDisplayToken);
         pw.println("mCurrentLayerStack=" + mCurrentLayerStack);
         pw.println("mCurrentOrientation=" + mCurrentOrientation);

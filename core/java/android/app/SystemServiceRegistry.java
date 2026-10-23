@@ -151,6 +151,25 @@ import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.policy.PhoneLayoutInflater;
 
+import com.xtc.behavior.IXtcBehavior;
+import com.xtc.behavior.XtcBehaviorManager;
+import com.xtc.nfc.IXtcNfc;
+import com.xtc.nfc.XtcNfcMgr;
+import com.xtc.xtcdiag.IXtcDiag;
+import com.xtc.xtcdiag.XtcDiagMgr;
+import com.xtc.utils.IXTCUtilsManager;
+import com.xtc.utils.XTCUtilsManager;
+import com.xtc.auth.IMobileManagerService;
+import com.xtc.auth.MobileManager;
+import com.xtc.auth.MobileManagerUtils;
+import com.xtc.health.IXtcHealthManager;
+import com.xtc.health.XtcHealthManager;
+import com.xtc.performance.IPerformance;
+import com.xtc.performance.PerformanceManager;
+
+import android.app.AntiAddiction.AntiAddictionManager;
+import android.app.AntiAddiction.IAntiAddictionManager;
+
 import java.util.HashMap;
 
 /**
@@ -873,6 +892,42 @@ final class SystemServiceRegistry {
                 return new IncidentManager(ctx);
             }});
 
+        registerService(Context.XTC_BEHAVIOR_SERVICE, XtcBehaviorManager.class,
+                new CachedServiceFetcher<XtcBehaviorManager>() {
+            @Override
+            public XtcBehaviorManager createService(ContextImpl ctx) {
+                IBinder b = ServiceManager.getService(Context.XTC_BEHAVIOR_SERVICE);
+                IXtcBehavior service = IXtcBehavior.Stub.asInterface(b);
+                return new XtcBehaviorManager(ctx.getOuterContext(), service);
+            }});
+
+        registerService(Context.XTC_NFC_SERVICE, XtcNfcMgr.class,
+                new CachedServiceFetcher<XtcNfcMgr>() {
+            @Override
+            public XtcNfcMgr createService(ContextImpl ctx) {
+                IBinder b = ServiceManager.getService(Context.XTC_NFC_SERVICE);
+                IXtcNfc service = IXtcNfc.Stub.asInterface(b);
+                return new XtcNfcMgr(ctx.getOuterContext(), service);
+            }});
+
+        registerService(Context.XTC_DIAG_SERVICE, XtcDiagMgr.class,
+                new CachedServiceFetcher<XtcDiagMgr>() {
+            @Override
+            public XtcDiagMgr createService(ContextImpl ctx) {
+                IBinder b = ServiceManager.getService(Context.XTC_DIAG_SERVICE);
+                IXtcDiag service = IXtcDiag.Stub.asInterface(b);
+                return new XtcDiagMgr(ctx.getOuterContext(), service);
+            }});
+
+        registerService(Context.XTC_UTILS_SERVICE, XTCUtilsManager.class,
+                new CachedServiceFetcher<XTCUtilsManager>() {
+            @Override
+            public XTCUtilsManager createService(ContextImpl ctx) {
+                IBinder b = ServiceManager.getService(Context.XTC_UTILS_SERVICE);
+                IXTCUtilsManager service = IXTCUtilsManager.Stub.asInterface(b);
+                return new XTCUtilsManager(ctx.getOuterContext(), service);
+            }});
+
         registerService(Context.AUTOFILL_MANAGER_SERVICE, AutofillManager.class,
                 new CachedServiceFetcher<AutofillManager>() {
             @Override
@@ -897,6 +952,61 @@ final class SystemServiceRegistry {
             public RulesManager createService(ContextImpl ctx) {
                 return new RulesManager(ctx.getOuterContext());
             }});
+
+        if (MobileManagerUtils.isCtaVersion()) {
+            registerService(Context.XTC_AUTH_SERVICE, MobileManager.class,
+                    new CachedServiceFetcher<MobileManager>() {
+                @Override
+                public MobileManager createService(ContextImpl ctx) {
+                    try {
+                        return new MobileManager(ctx,
+                                IMobileManagerService.Stub.asInterface(
+                                        ServiceManager.getService(Context.XTC_AUTH_SERVICE)));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }});
+        }
+
+        registerService(Context.ANTIADDICTION_SERVICE, AntiAddictionManager.class,
+                new CachedServiceFetcher<AntiAddictionManager>() {
+            @Override
+            public AntiAddictionManager createService(ContextImpl ctx) {
+                try {
+                    return new AntiAddictionManager(ctx,
+                            IAntiAddictionManager.Stub.asInterface(
+                                    ServiceManager.getService(Context.ANTIADDICTION_SERVICE)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }});
+
+        registerService(Context.XTCHEALTH_SERVICE, XtcHealthManager.class,
+                new CachedServiceFetcher<XtcHealthManager>() {
+            @Override
+            public XtcHealthManager createService(ContextImpl ctx) {
+                try {
+                    return new XtcHealthManager(ctx,
+                            IXtcHealthManager.Stub.asInterface(
+                                    ServiceManager.getService(Context.XTCHEALTH_SERVICE)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }});
+
+        if (PerformanceManager.isSurportPMS) {
+            registerService(Context.XTC_PERFORMANCE_SERVICE, PerformanceManager.class,
+                    new CachedServiceFetcher<PerformanceManager>() {
+                @Override
+                public PerformanceManager createService(ContextImpl ctx) {
+                    return new PerformanceManager(ctx.getOuterContext(),
+                            IPerformance.Stub.asInterface(
+                                    ServiceManager.getService(Context.XTC_PERFORMANCE_SERVICE)));
+                }});
+        }
     }
 
     /**

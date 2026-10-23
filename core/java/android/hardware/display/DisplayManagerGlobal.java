@@ -259,6 +259,24 @@ public final class DisplayManagerGlobal {
         }
     }
 
+    /**
+     * XTC: invalidate the process-local {@link DisplayInfo} caches. Used by the
+     * system server when a {@link android.view.DisplayInfo} is mutated in place.
+     * @hide
+     */
+    public static void invalidateLocalDisplayInfoCaches() {
+        DisplayManagerGlobal instance = sInstance;
+        if (instance == null) {
+            return;
+        }
+        synchronized (instance.mLock) {
+            if (USE_CACHE) {
+                instance.mDisplayInfoCache.clear();
+                instance.mDisplayIdCache = null;
+            }
+        }
+    }
+
     private void handleDisplayEvent(int displayId, int event) {
         synchronized (mLock) {
             if (USE_CACHE) {

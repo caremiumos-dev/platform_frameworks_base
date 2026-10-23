@@ -771,6 +771,13 @@ public final class Configuration implements Parcelable, Comparable<Configuration
      */
     public int seq;
 
+    /**
+     * Path of a custom font to use for this configuration, or {@code null} to use the
+     * default system font.
+     * @hide
+     */
+    public String customFontPath;
+
     /** @hide */
     @IntDef(flag = true,
             value = {
@@ -898,6 +905,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         setAppBounds(o.appBounds);
         assetsSeq = o.assetsSeq;
         seq = o.seq;
+        customFontPath = o.customFontPath;
     }
 
     public String toString() {
@@ -1055,6 +1063,9 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         if (seq != 0) {
             sb.append(" s.").append(seq);
         }
+        if (customFontPath != null) {
+            sb.append(" cf.").append(customFontPath);
+        }
         sb.append('}');
         return sb.toString();
     }
@@ -1085,6 +1096,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         assetsSeq = ASSETS_SEQ_UNDEFINED;
         appBounds = null;
         seq = 0;
+        customFontPath = null;
     }
 
     /**
@@ -1282,6 +1294,10 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         if (delta.seq != 0) {
             seq = delta.seq;
         }
+        if (delta.customFontPath != null && !delta.customFontPath.equals(customFontPath)) {
+            changed |= 0x20000000;
+            customFontPath = delta.customFontPath;
+        }
 
         return changed;
     }
@@ -1442,6 +1458,11 @@ public final class Configuration implements Parcelable, Comparable<Configuration
             changed |= ActivityInfo.CONFIG_SCREEN_SIZE;
         }
 
+        if ((delta.customFontPath != null && !delta.customFontPath.equals(customFontPath))
+                || (delta.customFontPath == null && customFontPath != null)) {
+            changed |= 0x20000000;
+        }
+
         return changed;
     }
 
@@ -1462,7 +1483,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         // CONFIG_ASSETS_PATHS and CONFIG_FONT_SCALE are higher level configuration changes that
         // all resources are subject to change with.
         interestingChanges = interestingChanges | ActivityInfo.CONFIG_ASSETS_PATHS
-                | ActivityInfo.CONFIG_FONT_SCALE;
+                | ActivityInfo.CONFIG_FONT_SCALE | 0x20000000;
         return (configChanges & interestingChanges) != 0;
     }
 
@@ -1540,6 +1561,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         dest.writeValue(appBounds);
         dest.writeInt(assetsSeq);
         dest.writeInt(seq);
+        dest.writeString(customFontPath);
     }
 
     public void readFromParcel(Parcel source) {
@@ -1576,6 +1598,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         appBounds = (Rect) source.readValue(null);
         assetsSeq = source.readInt();
         seq = source.readInt();
+        customFontPath = source.readString();
     }
 
     public static final Parcelable.Creator<Configuration> CREATOR
@@ -1679,8 +1702,12 @@ public final class Configuration implements Parcelable, Comparable<Configuration
             if (n != 0) return n;
         }
 
-        // if (n != 0) return n;
-        return n;
+        if (this.customFontPath == null) {
+            if (that.customFontPath != null) return 1;
+            return n;
+        }
+        if (that.customFontPath == null) return -1;
+        return this.customFontPath.compareTo(that.customFontPath);
     }
 
     public boolean equals(Configuration that) {
@@ -1718,6 +1745,9 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         result = 31 * result + smallestScreenWidthDp;
         result = 31 * result + densityDpi;
         result = 31 * result + assetsSeq;
+        if (customFontPath != null) {
+            result = 31 * result + customFontPath.hashCode();
+        }
         return result;
     }
 
@@ -2305,6 +2335,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
     private static final String XML_ATTR_SMALLEST_WIDTH = "sw";
     private static final String XML_ATTR_DENSITY = "density";
     private static final String XML_ATTR_APP_BOUNDS = "app_bounds";
+    private static final String XML_ATTR_CUSTOM_FONT_PATH = "cfp";
 
     /**
      * Reads the attributes corresponding to Configuration member fields from the Xml parser.
@@ -2356,6 +2387,8 @@ public final class Configuration implements Parcelable, Comparable<Configuration
                 DENSITY_DPI_UNDEFINED);
         configOut.appBounds =
             Rect.unflattenFromString(XmlUtils.readStringAttribute(parser, XML_ATTR_APP_BOUNDS));
+        configOut.customFontPath =
+                XmlUtils.readStringAttribute(parser, XML_ATTR_CUSTOM_FONT_PATH);
 
         // For persistence, we don't care about assetsSeq, so do not read it out.
     }
@@ -2430,6 +2463,10 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         if (config.appBounds != null) {
             XmlUtils.writeStringAttribute(xml, XML_ATTR_APP_BOUNDS,
                 config.appBounds.flattenToString());
+        }
+
+        if (config.customFontPath != null) {
+            XmlUtils.writeStringAttribute(xml, XML_ATTR_CUSTOM_FONT_PATH, config.customFontPath);
         }
 
         // For persistence, we do not care about assetsSeq, so do not write it out.

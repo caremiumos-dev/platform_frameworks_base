@@ -327,8 +327,12 @@ public abstract class Connection extends Conferenceable {
      */
     public static final int CAPABILITY_CAN_PULL_CALL = 0x01000000;
 
+    // CAF/XTC 差异：设备基座新增能力位。
+    /** @hide */
+    public static final int CAPABILITY_ADD_PARTICIPANT = 0x02000000;
+
     //**********************************************************************************************
-    // Next CAPABILITY value: 0x02000000
+    // Next CAPABILITY value: 0x04000000
     //**********************************************************************************************
 
     /**
@@ -401,8 +405,12 @@ public abstract class Connection extends Conferenceable {
     @TestApi
     public static final int PROPERTY_IS_RTT = 1 << 8;
 
+    // CAF/XTC 差异：设备基座新增属性位。
+    /** @hide */
+    public static final int PROPERTY_ASSISTED_DIALING_USED = 1 << 9;
+
     //**********************************************************************************************
-    // Next PROPERTY value: 1<<9
+    // Next PROPERTY value: 1<<10
     //**********************************************************************************************
 
     /**
@@ -808,6 +816,8 @@ public abstract class Connection extends Conferenceable {
         public void onStatusHintsChanged(Connection c, StatusHints statusHints) {}
         public void onConferenceablesChanged(
                 Connection c, List<Conferenceable> conferenceables) {}
+        // CAF/XTC 差异：CDMA 通话计时重置回调。
+        public void onCdmaConnectionTimeReset(Connection c) {}
         public void onConferenceChanged(Connection c, Conference conference) {}
         /** @hide */
         public void onConferenceParticipantsChanged(Connection c,
@@ -2413,6 +2423,13 @@ public abstract class Connection extends Conferenceable {
             Log.d(this, "Conference reset");
             mConference = null;
             fireConferenceChanged();
+        }
+    }
+
+    // CAF/XTC 差异：通知监听者重置 CDMA 通话计时。
+    public final void resetCdmaConnectionTime() {
+        for (Listener l : mListeners) {
+            l.onCdmaConnectionTimeReset(this);
         }
     }
 

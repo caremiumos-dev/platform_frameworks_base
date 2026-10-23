@@ -24,6 +24,7 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
@@ -33,6 +34,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -90,9 +92,15 @@ public class AppOpsService extends IAppOpsService.Stub {
     // Write at most every 30 minutes.
     static final long WRITE_DELAY = DEBUG ? 1000 : 30*60*1000;
 
+    // XTC device addition: minimum interval between two recorded access events.
+    private static final long RECORD_EVENT_INTERVAL = 2000;
+
     Context mContext;
     final AtomicFile mFile;
     final Handler mHandler;
+    // XTC device addition: looper captured at construction, used to decide whether
+    // a permission prompt may be shown synchronously.
+    private final Looper mLooper;
 
     boolean mWriteScheduled;
     boolean mFastWriteScheduled;
@@ -163,11 +171,64 @@ public class AppOpsService extends IAppOpsService.Stub {
         public long rejectTime;
         public int nesting;
 
+        // XTC device additions: rolling history of access events (up to 1000) and
+        // the package version active at each event. Purely additive; the AOSP
+        // single `time` field above is retained for compatibility.
+        public int timesIndex = 0;
+        public List<Long> times = new ArrayList<Long>();
+        public List<String> appVersionNames = new ArrayList<String>();
+        public List<Long> appVersionTimes = new ArrayList<Long>();
+        public int versionIndex = 0;
+
+        // XTC: pending user prompts for this op. See AskRunnable/askOperationLocked.
+        public final PermissionDialogReqQueue dialogReqQueue = new PermissionDialogReqQueue();
+
         public Op(int _uid, String _packageName, int _op) {
             uid = _uid;
             packageName = _packageName;
             op = _op;
             mode = AppOpsManager.opToDefaultMode(op);
+        }
+    }
+
+    /**
+     * XTC device addition: posts a {@link PermissionDialog} for an operation that
+     * requires explicit user confirmation.
+     *
+     * **谴责**：该机制配合 {@code XtcAppOpsActions} 使用，使厂商得以在用户不知情/未经同意时
+     * 对第三方应用的自启、查询已安装应用等行为进行拦截，属于对第三方应用的歧视。
+     * 此处仅为行为兼容而重写。
+     */
+    final class AskRunnable implements Runnable {
+        final int code;
+        final int uid;
+        final String packageName;
+        final Op op;
+        final PermissionDialogReqQueue.PermissionDialogReq request;
+
+        public AskRunnable(int _code, int _uid, String _packageName, Op _op,
+                PermissionDialogReqQueue.PermissionDialogReq _request) {
+            code = _code;
+            uid = _uid;
+            packageName = _packageName;
+            op = _op;
+            request = _request;
+        }
+
+        @Override
+        public void run() {
+            PermissionDialog dialog = null;
+            synchronized (AppOpsService.this) {
+                op.dialogReqQueue.register(request);
+                if (op.dialogReqQueue.getDialog() == null) {
+                    dialog = new PermissionDialog(AppOpsService.this.mContext,
+                            AppOpsService.this, code, uid, packageName);
+                    op.dialogReqQueue.setDialog(dialog);
+                }
+            }
+            if (dialog != null) {
+                dialog.show();
+            }
         }
     }
 
@@ -242,6 +303,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         LockGuard.installLock(this, LockGuard.INDEX_APP_OPS);
         mFile = new AtomicFile(storagePath);
         mHandler = handler;
+        mLooper = Looper.myLooper();
         readState();
     }
 
@@ -521,7 +583,8 @@ public class AppOpsService extends IAppOpsService.Stub {
     }
 
     private void pruneOp(Op op, int uid, String packageName) {
-        if (op.time == 0 && op.rejectTime == 0) {
+        // XTC device addition: history is tracked in op.times, so consider that too.
+        if (op.times.size() == 0 && op.rejectTime == 0) {
             Ops ops = getOpsRawLocked(uid, packageName, false);
             if (ops != null) {
                 ops.remove(op.op);
@@ -705,6 +768,28 @@ public class AppOpsService extends IAppOpsService.Stub {
                 }
             } finally {
                 Binder.restoreCallingIdentity(identity);
+            }
+        }
+    }
+
+    /**
+     * XTC: invoked by the vendor {@link PermissionDialog} once the user has
+     * answered an operation prompt. Records the decision and applies the mode.
+     */
+    public void notifyOperation(int op, int uid, String packageName, int mode) {
+        verifyIncomingUid(uid);
+        verifyIncomingOp(op);
+        final int switchCode = AppOpsManager.opToSwitch(op);
+        // XTC device addition: only ops tracked in XtcAppOpsActions are recorded
+        // and have a pending dialog woken up.
+        if (AppOpsManager.XtcAppOpsActions.contains(op)) {
+            synchronized (this) {
+                recordOperationLocked(op, uid, packageName, mode);
+                Op o = getOpLocked(switchCode, uid, packageName, true);
+                if (o != null && o.dialogReqQueue.getDialog() != null) {
+                    o.dialogReqQueue.notifyAll(mode);
+                    o.dialogReqQueue.setDialog(null);
+                }
             }
         }
     }
@@ -941,6 +1026,17 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (resolvedPackageName == null) {
             return AppOpsManager.MODE_IGNORED;
         }
+        // XTC device addition: only ops listed in XtcAppOpsActions are actually
+        // checked; everything else is unconditionally allowed.
+        if (isFilterPackageName(packageName, uid)) {
+            if (DEBUG) {
+                Log.d(TAG, "isFilterPackageName: packageName=" + packageName);
+            }
+            return AppOpsManager.MODE_ALLOWED;
+        }
+        if (!AppOpsManager.XtcAppOpsActions.contains(code)) {
+            return AppOpsManager.MODE_ALLOWED;
+        }
         synchronized (this) {
             if (isOpRestrictedLocked(uid, code, resolvedPackageName)) {
                 return AppOpsManager.MODE_IGNORED;
@@ -992,6 +1088,39 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
     }
 
+    /**
+     * XTC device addition: packages matching these prefixes bypass the app-op
+     * checks entirely.
+     *
+     * **谴责**：该白名单按厂商归属（com.xtc.* 等）而非用户意愿区别对待应用，
+     * 让预置/厂商应用免于受限，构成对第三方应用的歧视。此处仅为行为兼容而重写。
+     */
+    private boolean isFilterPackageName(String packageName, int uid) {
+        if (packageName == null) {
+            return false;
+        }
+        return packageName.startsWith("android")
+                || packageName.startsWith("com.android")
+                || packageName.startsWith("com.qualcomm")
+                || packageName.startsWith("com.qti")
+                || packageName.startsWith("org.")
+                || packageName.startsWith("com.xtc.xws")
+                || packageName.startsWith("com.xtc.datacenter")
+                || packageName.startsWith("com.xtc.i3launcher")
+                || packageName.startsWith("com.xtc.setting")
+                || packageName.startsWith("com.xtc.systemupdate_i11")
+                || packageName.startsWith("com.xtc.systemagent")
+                || packageName.startsWith("audioserver");
+    }
+
+    /**
+     * XTC device addition: when this property is set, ops 70/71
+     * (CHANGE_WIFI_STATE/BLUETOOTH_ADMIN) are routed through the permission dialog.
+     */
+    private boolean isStrictOpEnable() {
+        return android.os.SystemProperties.getBoolean("persist.vendor.strict_op_enable", false);
+    }
+
     private int checkRestrictionLocked(int code, int usage, int uid, String packageName) {
         final SparseArray<Restriction> usageRestrictions = mAudioRestrictions.get(code);
         if (usageRestrictions != null) {
@@ -1040,9 +1169,10 @@ public class AppOpsService extends IAppOpsService.Stub {
         synchronized (this) {
             if (getOpsRawLocked(uid, packageName, true) != null) {
                 return AppOpsManager.MODE_ALLOWED;
-            } else {
-                return AppOpsManager.MODE_ERRORED;
             }
+            // XTC device addition: whitelisted packages always pass the ownership check.
+            return isFilterPackageName(packageName, uid)
+                    ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_ERRORED;
         }
     }
 
@@ -1070,7 +1200,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     @Override
     public int noteOperation(int code, int uid, String packageName) {
-        verifyIncomingUid(uid);
+        verifyIncomingUidByMedia(uid, code);
         verifyIncomingOp(code);
         String resolvedPackageName = resolvePackageName(uid, packageName);
         if (resolvedPackageName == null) {
@@ -1081,12 +1211,17 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     private int noteOperationUnchecked(int code, int uid, String packageName,
             int proxyUid, String proxyPackageName) {
+        // XTC device addition: only ops listed in XtcAppOpsActions are tracked.
+        if (!AppOpsManager.XtcAppOpsActions.contains(code)) {
+            return AppOpsManager.MODE_ALLOWED;
+        }
         synchronized (this) {
             Ops ops = getOpsRawLocked(uid, packageName, true);
             if (ops == null) {
                 if (DEBUG) Log.d(TAG, "noteOperation: no op for code " + code + " uid " + uid
                         + " package " + packageName);
-                return AppOpsManager.MODE_ERRORED;
+                // device returns allowed for filtered/unknown packages.
+                return AppOpsManager.MODE_ALLOWED;
             }
             Op op = getOpLocked(ops, code, true);
             if (isOpRestrictedLocked(uid, code, packageName)) {
@@ -1099,6 +1234,19 @@ public class AppOpsService extends IAppOpsService.Stub {
             op.duration = 0;
             final int switchCode = AppOpsManager.opToSwitch(code);
             UidState uidState = ops.uidState;
+            // XTC device addition: when the strict-op property is set, ops 70/71
+            // (CHANGE_WIFI_STATE / BLUETOOTH_ADMIN) are confirmed via a user prompt.
+            if (isStrictOpEnable()
+                    && (code == AppOpsManager.OP_CHANGE_WIFI_STATE
+                            || code == AppOpsManager.OP_BLUETOOTH_ADMIN)) {
+                if (switchCode != code) {
+                    op = getOpLocked(ops, switchCode, true);
+                }
+                if (Looper.myLooper() == mLooper) {
+                    return op.mode;
+                }
+                return askOperationLocked(code, uid, packageName, op).get();
+            }
             // If there is a non-default per UID policy (we set UID op mode only if
             // non-default) it takes over, otherwise use the per package policy.
             if (uidState.opModes != null && uidState.opModes.indexOfKey(switchCode) >= 0) {
@@ -1123,6 +1271,8 @@ public class AppOpsService extends IAppOpsService.Stub {
             if (DEBUG) Log.d(TAG, "noteOperation: allowing code " + code + " uid " + uid
                     + " package " + packageName);
             op.time = System.currentTimeMillis();
+            // XTC device addition: append a rolling access-event history entry.
+            recordOperationTimesLocked(op, packageName, uid);
             op.rejectTime = 0;
             op.proxyUid = proxyUid;
             op.proxyPackageName = proxyPackageName;
@@ -1138,13 +1288,18 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (resolvedPackageName == null) {
             return  AppOpsManager.MODE_IGNORED;
         }
+        // XTC device addition: only ops listed in XtcAppOpsActions are tracked.
+        if (!AppOpsManager.XtcAppOpsActions.contains(code)) {
+            return AppOpsManager.MODE_ALLOWED;
+        }
         ClientState client = (ClientState)token;
         synchronized (this) {
             Ops ops = getOpsRawLocked(uid, resolvedPackageName, true);
             if (ops == null) {
                 if (DEBUG) Log.d(TAG, "startOperation: no op for code " + code + " uid " + uid
                         + " package " + resolvedPackageName);
-                return AppOpsManager.MODE_ERRORED;
+                // device returns allowed for filtered/unknown packages.
+                return AppOpsManager.MODE_ALLOWED;
             }
             Op op = getOpLocked(ops, code, true);
             if (isOpRestrictedLocked(uid, code, resolvedPackageName)) {
@@ -1174,6 +1329,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                     + " package " + resolvedPackageName);
             if (op.nesting == 0) {
                 op.time = System.currentTimeMillis();
+                // XTC device addition: record the access event history.
+                recordOperationTimesLocked(op, packageName, uid);
                 op.rejectTime = 0;
                 op.duration = -1;
             }
@@ -1236,11 +1393,123 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
     }
 
+    /**
+     * XTC device addition: append an access event timestamp to {@code op.times}
+     * (a rolling buffer of up to 1000 entries), subject to
+     * {@link #RECORD_EVENT_INTERVAL}, and remember the current package version.
+     */
+    private void recordOperationTimesLocked(Op op, String packageName, int uid) {
+        long last = 0;
+        if (op.timesIndex > 0) {
+            last = op.times.get(op.timesIndex - 1);
+        } else if (op.times.size() > 0) {
+            last = op.times.get(op.times.size() - 1);
+        }
+        long now = System.currentTimeMillis();
+        if (now - last > RECORD_EVENT_INTERVAL) {
+            if (op.times.size() == 1000) {
+                op.times.set(op.timesIndex, now);
+                op.timesIndex++;
+                if (op.timesIndex == 1000) {
+                    op.timesIndex = 0;
+                }
+            } else {
+                op.times.add(now);
+            }
+            recordPackageVersion(op, packageName, uid);
+        }
+    }
+
+    /**
+     * XTC device addition: record the version name of {@code packageName} into
+     * {@code op.appVersionNames}/{@code op.appVersionTimes}.
+     */
+    private void recordPackageVersion(Op op, String packageName, int uid) {
+        String currentVersion = null;
+        try {
+            IPackageManager pm = ActivityThread.getPackageManager();
+            if (pm != null) {
+                PackageInfo pi = pm.getPackageInfo(packageName, 0, UserHandle.getUserId(uid));
+                if (pi != null && pi.versionName != null) {
+                    currentVersion = pi.versionName;
+                }
+                if (DEBUG) {
+                    Log.d(TAG, "recordPackageVersion: currentVersion=" + currentVersion);
+                }
+                if (currentVersion == null || op.appVersionNames.contains(currentVersion)) {
+                    return;
+                }
+                op.appVersionNames.add(currentVersion);
+                op.appVersionTimes.add(System.currentTimeMillis());
+            }
+        } catch (RemoteException e) {
+            if (DEBUG) {
+                Log.d(TAG, "recordPackageVersion: Could not contact PackageManager", e);
+            }
+        }
+    }
+
+    /**
+     * XTC device addition: used by {@link #notifyOperation} to record the user's
+     * decision for an op.
+     */
+    private void printOperationLocked(Op op, int mode, String tag) {
+        if (op != null) {
+            int switchCode = AppOpsManager.opToSwitch(op.op);
+            if (mode == AppOpsManager.MODE_IGNORED) {
+                if (DEBUG) {
+                    Log.d(TAG, tag + ": reject #" + mode + " for code " + switchCode
+                            + " (" + op.op + ") uid " + op.uid + " package " + op.packageName);
+                }
+            } else if (mode == AppOpsManager.MODE_ALLOWED && DEBUG) {
+                Log.d(TAG, tag + ": allowing code " + op.op + " uid " + op.uid
+                        + " package " + op.packageName);
+            }
+        }
+    }
+
+    private void recordOperationLocked(int code, int uid, String packageName, int mode) {
+        if (DEBUG) {
+            Log.d(TAG, "recordOperationLocked: code=" + code + ", uid=" + uid
+                    + ", packageName=" + packageName + ", mode=" + mode);
+        }
+        Op op = getOpLocked(code, uid, packageName, false);
+        if (op != null) {
+            printOperationLocked(op, mode, "noteOperartion");
+            if (mode == AppOpsManager.MODE_IGNORED) {
+                op.rejectTime = System.currentTimeMillis();
+                return;
+            }
+            if (mode == AppOpsManager.MODE_ALLOWED) {
+                recordOperationTimesLocked(op, packageName, uid);
+                op.rejectTime = 0;
+            }
+        }
+    }
+
     private void verifyIncomingUid(int uid) {
         if (uid == Binder.getCallingUid()) {
             return;
         }
         if (Binder.getCallingPid() == Process.myPid()) {
+            return;
+        }
+        mContext.enforcePermission(android.Manifest.permission.UPDATE_APP_OPS_STATS,
+                Binder.getCallingPid(), Binder.getCallingUid(), null);
+    }
+
+    /**
+     * XTC device addition: like {@link #verifyIncomingUid} but additionally lets
+     * callers note OP_READ_EXTERNAL_STORAGE (59) without the stats permission.
+     */
+    private void verifyIncomingUidByMedia(int uid, int op) {
+        if (uid == Binder.getCallingUid()) {
+            return;
+        }
+        if (Binder.getCallingPid() == Process.myPid()) {
+            return;
+        }
+        if (op == AppOpsManager.OP_READ_EXTERNAL_STORAGE) {
             return;
         }
         mContext.enforcePermission(android.Manifest.permission.UPDATE_APP_OPS_STATS,
@@ -1267,6 +1536,14 @@ public class AppOpsService extends IAppOpsService.Stub {
     }
 
     private Ops getOpsRawLocked(int uid, String packageName, boolean edit) {
+        // XTC device addition: whitelisted (vendor/system) packages get no app-op
+        // state at all, so they are never tracked or restricted.
+        if (isFilterPackageName(packageName, uid)) {
+            if (DEBUG) {
+                Log.d(TAG, "isFilterPackageName: packageName=" + packageName);
+            }
+            return null;
+        }
         UidState uidState = getUidStateLocked(uid, edit);
         if (uidState == null) {
             return null;
@@ -1359,6 +1636,20 @@ public class AppOpsService extends IAppOpsService.Stub {
     }
 
     private Op getOpLocked(Ops ops, int code, boolean edit) {
+        // XTC device addition: collapse several low-level ops onto a single
+        // representative op so that one prompt/record covers the whole group.
+        if (code == AppOpsManager.OP_GPS || code == AppOpsManager.OP_COARSE_LOCATION
+                || code == AppOpsManager.OP_FINE_LOCATION) {
+            code = AppOpsManager.OP_FINE_LOCATION;
+        } else if (code == AppOpsManager.OP_READ_SMS
+                || code == AppOpsManager.OP_RECEIVE_SMS) {
+            code = AppOpsManager.OP_READ_SMS;
+        } else if (code == AppOpsManager.OP_READ_CONTACTS
+                || code == AppOpsManager.OP_READ_CALL_LOG
+                || code == AppOpsManager.OP_WRITE_CONTACTS
+                || code == AppOpsManager.OP_WRITE_CALL_LOG) {
+            code = AppOpsManager.OP_READ_CONTACTS;
+        }
         Op op = ops.get(code);
         if (op == null) {
             if (!edit) {
@@ -1371,6 +1662,19 @@ public class AppOpsService extends IAppOpsService.Stub {
             scheduleWriteLocked();
         }
         return op;
+    }
+
+    /**
+     * XTC device addition: queue a permission dialog request for {@code op}.
+     * The returned request can be blocked on via {@link
+     * PermissionDialogReqQueue.PermissionDialogReq#get()}.
+     */
+    private PermissionDialogReqQueue.PermissionDialogReq askOperationLocked(
+            int code, int uid, String packageName, Op op) {
+        PermissionDialogReqQueue.PermissionDialogReq request =
+                new PermissionDialogReqQueue.PermissionDialogReq();
+        mHandler.post(new AskRunnable(code, uid, packageName, op, request));
+        return request;
     }
 
     private boolean isOpRestrictedLocked(int uid, int code, String packageName) {

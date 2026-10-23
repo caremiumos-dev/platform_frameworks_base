@@ -185,4 +185,13 @@
         <item>@string/app_info</item>
     </string-array>
 
+    <!-- XTC vendor app-op labels shown by the permission-confirmation dialog. -->
+    <string-array name="app_ops_labels">
+        <item>Trying to enable WLAN</item>
+        <item>Trying to enable BT</item>
+    </string-array>
+
+    <!-- CAF/QTI: the two interface names used for dual soft-AP mode. -->
+    <array name="config_wifi_dual_sap_interfaces" />
+
 </resources>

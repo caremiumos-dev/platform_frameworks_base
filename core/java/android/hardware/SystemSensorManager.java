@@ -25,6 +25,7 @@ import android.os.Looper;
 import android.os.MemoryFile;
 import android.os.MessageQueue;
 import android.util.Log;
+import android.util.SeempLog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
@@ -143,6 +144,9 @@ public class SystemSensorManager extends SensorManager {
     @Override
     protected boolean registerListenerImpl(SensorEventListener listener, Sensor sensor,
             int delayUs, Handler handler, int maxBatchReportLatencyUs, int reservedFlags) {
+        // XTC SEEMP: 381 is the record-sensor-rate API id (JADX rendered it as
+        // MetricsEvent.SETTINGS_CONDITION_DND).
+        SeempLog.record_sensor_rate(381, sensor, delayUs);
         if (listener == null || sensor == null) {
             Log.e(TAG, "sensor or listener is null");
             return false;
@@ -189,6 +193,9 @@ public class SystemSensorManager extends SensorManager {
     /** @hide */
     @Override
     protected void unregisterListenerImpl(SensorEventListener listener, Sensor sensor) {
+        // XTC SEEMP: 382 is the record-sensor API id (JADX rendered it as
+        // MetricsEvent.SETTINGS_CONDITION_HOTSPOT).
+        SeempLog.record_sensor(382, sensor);
         // Trigger Sensors should use the cancelTriggerSensor call.
         if (sensor != null && sensor.getReportingMode() == Sensor.REPORTING_MODE_ONE_SHOT) {
             return;

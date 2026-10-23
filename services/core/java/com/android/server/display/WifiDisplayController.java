@@ -140,6 +140,9 @@ final class WifiDisplayController implements DumpUtils.Dump {
     // The remote display that is listening on the connection.
     // Created after the Wifi P2P network is connected.
     private RemoteDisplay mRemoteDisplay;
+    // XTC device addition: optional vendor extended remote display (see
+    // ExtendedRemoteDisplayHelper). Null when the extension is unavailable.
+    private Object mExtRemoteDisplay;
 
     // The remote display interface.
     private String mRemoteDisplayInterface;
@@ -565,11 +568,18 @@ final class WifiDisplayController implements DumpUtils.Dump {
 
         // Step 1. Before we try to connect to a new device, tell the system we
         // have disconnected from the old one.
-        if (mRemoteDisplay != null && mConnectedDevice != mDesiredDevice) {
+        // XTC device addition: also account for the vendor extended remote display.
+        if (((mRemoteDisplay != null || mExtRemoteDisplay != null) && mConnectedDevice != mDesiredDevice)
+                || (mRemoteDisplayInterface != null && mConnectedDevice == null)) {
             Slog.i(TAG, "Stopped listening for RTSP connection on " + mRemoteDisplayInterface
                     + " from Wifi display: " + mConnectedDevice.deviceName);
 
-            mRemoteDisplay.dispose();
+            if (mRemoteDisplay != null) {
+                mRemoteDisplay.dispose();
+            } else if (mExtRemoteDisplay != null) {
+                ExtendedRemoteDisplayHelper.dispose(mExtRemoteDisplay);
+            }
+            mExtRemoteDisplay = null;
             mRemoteDisplay = null;
             mRemoteDisplayInterface = null;
             mRemoteDisplayConnected = false;
@@ -666,6 +676,52 @@ final class WifiDisplayController implements DumpUtils.Dump {
             return; // done
         }
 
+        // XTC device addition: a single listener shared by the vendor extended remote
+// display and the AOSP RemoteDisplay. `listenerDevice` is captured before the
+// connection attempt (device behavior).
+        final WifiP2pDevice listenerDevice = mDesiredDevice;
+        final RemoteDisplay.Listener listener = new RemoteDisplay.Listener() {
+            @Override
+            public void onDisplayConnected(Surface surface,
+                    int width, int height, int flags, int session) {
+                if (mConnectedDevice == listenerDevice && !mRemoteDisplayConnected) {
+                    Slog.i(TAG, "Opened RTSP connection with Wifi display: "
+                            + mConnectedDevice.deviceName);
+                    mRemoteDisplayConnected = true;
+                    mHandler.removeCallbacks(mRtspTimeout);
+
+                    if (mWifiDisplayCertMode) {
+                        mListener.onDisplaySessionInfo(
+                                getSessionInfo(mConnectedDeviceGroupInfo, session));
+                    }
+
+                    final WifiDisplay display = createWifiDisplay(mConnectedDevice);
+                    advertiseDisplay(display, surface, width, height, flags);
+                }
+            }
+
+            @Override
+            public void onDisplayDisconnected() {
+                if (mConnectedDevice == listenerDevice) {
+                    Slog.i(TAG, "Closed RTSP connection with Wifi display: "
+                            + mConnectedDevice.deviceName);
+                    mHandler.removeCallbacks(mRtspTimeout);
+                    mRemoteDisplayConnected = false;
+                    disconnect();
+                }
+            }
+
+            @Override
+            public void onDisplayError(int error) {
+                if (mConnectedDevice == listenerDevice) {
+                    Slog.i(TAG, "Lost RTSP connection with Wifi display due to error "
+                            + error + ": " + mConnectedDevice.deviceName);
+                    mHandler.removeCallbacks(mRtspTimeout);
+                    handleConnectionFailure(false);
+                }
+            }
+        };
+
         // Step 5. Try to connect.
         if (mConnectedDevice == null && mConnectingDevice == null) {
             Slog.i(TAG, "Connecting to Wifi display: " + mDesiredDevice.deviceName);
@@ -690,6 +746,17 @@ final class WifiDisplayController implements DumpUtils.Dump {
 
             WifiDisplay display = createWifiDisplay(mConnectingDevice);
             advertiseDisplay(display, null, 0, 0, 0);
+
+            // XTC device addition: if the vendor extension is available, listen via
+            // the wildcard address instead of the AOSP RemoteDisplay path.
+            if (ExtendedRemoteDisplayHelper.isAvailable() && mExtRemoteDisplay == null) {
+                final String iface = "255.255.255.255:" + getPortNumber(mDesiredDevice);
+                mRemoteDisplayInterface = iface;
+                Slog.i(TAG, "Listening for RTSP connection on " + iface
+                        + " from Wifi display: " + mDesiredDevice.deviceName);
+                mExtRemoteDisplay = ExtendedRemoteDisplayHelper.listen(
+                        iface, listener, mHandler, mContext);
+            }
 
             final WifiP2pDevice newDevice = mDesiredDevice;
             mWifiP2pManager.connect(mWifiP2pChannel, config, new ActionListener() {
@@ -728,54 +795,18 @@ final class WifiDisplayController implements DumpUtils.Dump {
 
             mWifiP2pManager.setMiracastMode(WifiP2pManager.MIRACAST_SOURCE);
 
-            final WifiP2pDevice oldDevice = mConnectedDevice;
             final int port = getPortNumber(mConnectedDevice);
             final String iface = addr.getHostAddress() + ":" + port;
             mRemoteDisplayInterface = iface;
 
-            Slog.i(TAG, "Listening for RTSP connection on " + iface
-                    + " from Wifi display: " + mConnectedDevice.deviceName);
-
-            mRemoteDisplay = RemoteDisplay.listen(iface, new RemoteDisplay.Listener() {
-                @Override
-                public void onDisplayConnected(Surface surface,
-                        int width, int height, int flags, int session) {
-                    if (mConnectedDevice == oldDevice && !mRemoteDisplayConnected) {
-                        Slog.i(TAG, "Opened RTSP connection with Wifi display: "
-                                + mConnectedDevice.deviceName);
-                        mRemoteDisplayConnected = true;
-                        mHandler.removeCallbacks(mRtspTimeout);
-
-                        if (mWifiDisplayCertMode) {
-                            mListener.onDisplaySessionInfo(
-                                    getSessionInfo(mConnectedDeviceGroupInfo, session));
-                        }
-
-                        final WifiDisplay display = createWifiDisplay(mConnectedDevice);
-                        advertiseDisplay(display, surface, width, height, flags);
-                    }
-                }
-
-                @Override
-                public void onDisplayDisconnected() {
-                    if (mConnectedDevice == oldDevice) {
-                        Slog.i(TAG, "Closed RTSP connection with Wifi display: "
-                                + mConnectedDevice.deviceName);
-                        mHandler.removeCallbacks(mRtspTimeout);
-                        disconnect();
-                    }
-                }
-
-                @Override
-                public void onDisplayError(int error) {
-                    if (mConnectedDevice == oldDevice) {
-                        Slog.i(TAG, "Lost RTSP connection with Wifi display due to error "
-                                + error + ": " + mConnectedDevice.deviceName);
-                        mHandler.removeCallbacks(mRtspTimeout);
-                        handleConnectionFailure(false);
-                    }
-                }
-            }, mHandler, mContext.getOpPackageName());
+            // XTC device addition: when the vendor extension is available it owns
+            // the RTSP listener (started in step 5), so skip the AOSP path.
+            if (!ExtendedRemoteDisplayHelper.isAvailable()) {
+                Slog.i(TAG, "Listening for RTSP connection on " + iface
+                        + " from Wifi display: " + mConnectedDevice.deviceName);
+                mRemoteDisplay = RemoteDisplay.listen(iface, listener, mHandler,
+                        mContext.getOpPackageName());
+            }
 
             // Use extended timeout value for certification, as some tests require user inputs
             int rtspTimeout = mWifiDisplayCertMode ?
@@ -910,7 +941,8 @@ final class WifiDisplayController implements DumpUtils.Dump {
         @Override
         public void run() {
             if (mConnectedDevice != null
-                    && mRemoteDisplay != null && !mRemoteDisplayConnected) {
+                    && (mRemoteDisplay != null || mExtRemoteDisplay != null)
+                    && !mRemoteDisplayConnected) {
                 Slog.i(TAG, "Timed out waiting for Wifi display RTSP connection after "
                         + RTSP_TIMEOUT_SECONDS + " seconds: "
                         + mConnectedDevice.deviceName);

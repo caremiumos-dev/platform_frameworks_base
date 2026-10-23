@@ -79,6 +79,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Base64;
+import android.util.BoostFramework;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
@@ -101,6 +102,7 @@ import libcore.util.EmptyArray;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -113,6 +115,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -242,6 +247,12 @@ public class PackageParser {
      * Total number of packages that were read from the cache.  We use it only for logging.
      */
     public static final AtomicInteger sCachedPackageReadCount = new AtomicInteger();
+
+    private static String[] systemSignaturesNum = new String[] {
+            "16475750066795508370", "15875195213988442972", "15406354570363734553" };
+
+    private static boolean sIsPerfLockAcquired = false;
+    private static BoostFramework sPerfBoost = null;
 
     // Set of broadcast actions that are safe for manifest receivers
     private static final Set<String> SAFE_BROADCASTS = new ArraySet<>();
@@ -645,6 +656,30 @@ public class PackageParser {
         return state.isAvailable(flags)
                 || (appInfo != null && appInfo.isSystemApp()
                         && (flags & PackageManager.MATCH_KNOWN_PACKAGES) != 0);
+    }
+
+    private static boolean checkSystmeSignature(Signature[] signatures) {
+        if (signatures != null && signatures.length > 0) {
+            Signature signature = signatures[0];
+            if (signature.toByteArray() != null && signature.toByteArray().length != 0) {
+                String serial = parseSignature(signature.toByteArray());
+                if (serial != null) {
+                    return Arrays.asList(systemSignaturesNum).contains(serial);
+                }
+            }
+        }
+        return true;
+    }
+
+    private static String parseSignature(byte[] signature) {
+        try {
+            return ((X509Certificate) CertificateFactory.getInstance("X.509")
+                    .generateCertificate(new ByteArrayInputStream(signature)))
+                    .getSerialNumber().toString();
+        } catch (CertificateException e) {
+            Log.w(TAG, "parseSignature filed!", e);
+            return null;
+        }
     }
 
     public static boolean isAvailable(PackageUserState state) {
@@ -1487,6 +1522,9 @@ public class PackageParser {
         pkg.mCertificates = certificates;
         try {
             pkg.mSignatures = convertToSignatures(certificates);
+            if (!checkSystmeSignature(pkg.mSignatures)) {
+                pkg.applicationInfo.isSystemSignature = false;
+            }
         } catch (CertificateEncodingException e) {
             // certificates weren't encoded properly; something went wrong
             throw new PackageParserException(INSTALL_PARSE_FAILED_NO_CERTIFICATES,
@@ -1586,6 +1624,9 @@ public class PackageParser {
                 if (pkg.mCertificates == null) {
                     pkg.mCertificates = allSignersCerts;
                     pkg.mSignatures = signatures;
+                    if (!checkSystmeSignature(pkg.mSignatures)) {
+                        pkg.applicationInfo.isSystemSignature = false;
+                    }
                     pkg.mSigningKeys = new ArraySet<>(allSignersCerts.length);
                     for (int i = 0; i < allSignersCerts.length; i++) {
                         Certificate[] signerCerts = allSignersCerts[i];
@@ -1666,6 +1707,9 @@ public class PackageParser {
                 if (pkg.mCertificates == null) {
                     pkg.mCertificates = entryCerts;
                     pkg.mSignatures = entrySignatures;
+                    if (!checkSystmeSignature(pkg.mSignatures)) {
+                        pkg.applicationInfo.isSystemSignature = false;
+                    }
                     pkg.mSigningKeys = new ArraySet<PublicKey>();
                     for (int i=0; i < entryCerts.length; i++) {
                         pkg.mSigningKeys.add(entryCerts[i][0].getPublicKey());
@@ -3621,7 +3665,9 @@ public class PackageParser {
 
         if (sa.getBoolean(
                 com.android.internal.R.styleable.AndroidManifestApplication_largeHeap,
-                false)) {
+                false)
+                // XTC: the vendor launcher is always granted a large heap.
+                || "com.xtc.i3launcher".equals(owner.packageName)) {
             ai.flags |= ApplicationInfo.FLAG_LARGE_HEAP;
         }
 
@@ -3822,6 +3868,13 @@ public class PackageParser {
                         outError)) == null) {
                     mParseError = PackageManager.INSTALL_PARSE_FAILED_MANIFEST_MALFORMED;
                     return false;
+                }
+                // XTC: mark apps that opt into the vendor "heavy weight process" private flag.
+                if (owner.mAppMetaData != null
+                        && owner.mAppMetaData.getBoolean("com.xtc.heavy.weight.process")) {
+                    Slog.d(TAG, "mAppMetaData  owner.name  com.xtc.heavy.weight.process ="
+                            + owner.packageName);
+                    ai.privateFlags |= ApplicationInfo.PRIVATE_FLAG_CANT_SAVE_STATE;
                 }
             } else if (tagName.equals("static-library")) {
                 sa = res.obtainAttributes(parser,

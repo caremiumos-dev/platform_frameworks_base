@@ -661,15 +661,15 @@ android_media_MediaRecorder_native_getMetrics(JNIEnv *env, jobject thiz)
 
 static const JNINativeMethod gMethods[] = {
     {"setCamera",            "(Landroid/hardware/Camera;)V",    (void *)android_media_MediaRecorder_setCamera},
-    {"setVideoSource",       "(I)V",                            (void *)android_media_MediaRecorder_setVideoSource},
+    {"_setVideoSource",      "(I)V",                            (void *)android_media_MediaRecorder_setVideoSource},
     {"setAudioSource",       "(I)V",                            (void *)android_media_MediaRecorder_setAudioSource},
     {"setOutputFormat",      "(I)V",                            (void *)android_media_MediaRecorder_setOutputFormat},
-    {"setVideoEncoder",      "(I)V",                            (void *)android_media_MediaRecorder_setVideoEncoder},
+    {"_setVideoEncoder",     "(I)V",                            (void *)android_media_MediaRecorder_setVideoEncoder},
     {"setAudioEncoder",      "(I)V",                            (void *)android_media_MediaRecorder_setAudioEncoder},
     {"setParameter",         "(Ljava/lang/String;)V",           (void *)android_media_MediaRecorder_setParameter},
     {"_setOutputFile",       "(Ljava/io/FileDescriptor;)V",     (void *)android_media_MediaRecorder_setOutputFileFD},
     {"_setNextOutputFile",   "(Ljava/io/FileDescriptor;)V",     (void *)android_media_MediaRecorder_setNextOutputFileFD},
-    {"setVideoSize",         "(II)V",                           (void *)android_media_MediaRecorder_setVideoSize},
+    {"_setVideoSize",        "(II)V",                           (void *)android_media_MediaRecorder_setVideoSize},
     {"setVideoFrameRate",    "(I)V",                            (void *)android_media_MediaRecorder_setVideoFrameRate},
     {"setMaxDuration",       "(I)V",                            (void *)android_media_MediaRecorder_setMaxDuration},
     {"setMaxFileSize",       "(J)V",                            (void *)android_media_MediaRecorder_setMaxFileSize},

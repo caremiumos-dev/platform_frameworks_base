@@ -75,6 +75,7 @@ public final class Looper {
     final Thread mThread;
 
     private Printer mLogging;
+    private com.android.internal.apm.LooperMonitorCallback mLooperMonitorCallback;
     private long mTraceTag;
 
     /* If set, the looper will show a warning log if a message dispatch takes longer than time. */
@@ -181,6 +182,14 @@ public final class Looper {
                 logging.println("<<<<< Finished to " + msg.target + " " + msg.callback);
             }
 
+            if (me.mLooperMonitorCallback != null) {
+                if (slowDispatchThresholdMs == 0) {
+                    me.mLooperMonitorCallback.onDispatchFinished(msg, 0);
+                } else {
+                    me.mLooperMonitorCallback.onDispatchFinished(msg, end - start);
+                }
+            }
+
             // Make sure that during the course of dispatching the
             // identity of the thread wasn't corrupted.
             final long newIdent = Binder.clearCallingIdentity();
@@ -246,6 +255,18 @@ public final class Looper {
     /** {@hide} */
     public void setSlowDispatchThresholdMs(long slowDispatchThresholdMs) {
         mSlowDispatchThresholdMs = slowDispatchThresholdMs;
+    }
+
+    /**
+     * Registers a callback invoked after each message dispatch completes on
+     * this looper. Used by the application performance monitor to track main
+     * thread method cost time.
+     *
+     * @hide
+     */
+    public void setLooperMonitorCallback(
+            com.android.internal.apm.LooperMonitorCallback looperMonitorCallback) {
+        mLooperMonitorCallback = looperMonitorCallback;
     }
 
     /**

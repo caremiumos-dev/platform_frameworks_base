@@ -95,6 +95,13 @@ public final class MemInfoReader {
                 + mInfos[Debug.MEMINFO_KERNEL_STACK];
     }
 
+    /**
+     * XTC/BBK: raw "Cached" value from /proc/meminfo, without subtracting mapped pages.
+     */
+    public long getOnlyCachedSizeKb() {
+        return mInfos[Debug.MEMINFO_CACHED];
+    }
+
     public long getSwapTotalSizeKb() {
         return mInfos[Debug.MEMINFO_SWAP_TOTAL];
     }

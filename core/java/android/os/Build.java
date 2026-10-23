@@ -156,6 +156,14 @@ public class Build {
     public static final String[] SUPPORTED_64_BIT_ABIS =
             getStringList("ro.product.cpu.abilist64", ",");
 
+    /**
+     * True if this device exhibits the hardware hall switch.
+     *
+     * @hide
+     */
+    public static final boolean SUPPORT_HALL =
+            SystemProperties.getBoolean("ro.product.support.hall", false);
+
 
     static {
         /*
@@ -830,6 +838,44 @@ public class Build {
         SystemProperties.getBoolean("ro.treble.enabled", false);
 
     /**
+     * The authentication type used on this build, read from
+     * {@code ro.build.version.auth}. Possible values include
+     * {@code none}, {@code cta}, {@code cmcc}, {@code cu} and
+     * {@code ct}.
+     *
+     * @hide
+     */
+    public static final String XTC_AUTH_TYPE = getString("ro.build.version.auth");
+
+    /**
+     * True if this build is a CTA (China Type Approval) build.
+     *
+     * @hide
+     */
+    public static final boolean IS_CTA = "cta".equals(XTC_AUTH_TYPE);
+
+    /**
+     * True if this build is a China Telecom (CT) build.
+     *
+     * @hide
+     */
+    public static final boolean IS_CT = "ct".equals(XTC_AUTH_TYPE);
+
+    /**
+     * True if this build is a China Unicom (CU) build.
+     *
+     * @hide
+     */
+    public static final boolean IS_CU = "cu".equals(XTC_AUTH_TYPE);
+
+    /**
+     * True if this build is a China Mobile (CMCC) build.
+     *
+     * @hide
+     */
+    public static final boolean IS_CMCC = "cmcc".equals(XTC_AUTH_TYPE);
+
+    /**
      * Verifies the current flash of the device is consistent with what
      * was expected at build time.
      *
@@ -954,6 +1000,63 @@ public class Build {
     @SystemApi
     public static final boolean PERMISSIONS_REVIEW_REQUIRED =
             SystemProperties.getInt("ro.permission_review_required", 0) == 1;
+
+    /**
+     * Internal flag to mark that the current process is running as the debug
+     * system. This is set by the runtime and consulted by various debugging
+     * helpers.
+     *
+     * @hide
+     */
+    public static boolean isDebugSystem = false;
+
+    /**
+     * Whether OEM "de" permissions are currently enabled. Toggled by the xses
+     * service depending on the vendor network policy.
+     *
+     * @hide
+     */
+    private static boolean sHasDePermissions = false;
+
+    /**
+     * @hide
+     */
+    public static boolean isHasDePermissions() {
+        return sHasDePermissions;
+    }
+
+    /**
+     * XTC: whether the power key should be treated as a home key, gated by the
+     * product support flag and the user setting.
+     *
+     * @hide
+     */
+    public static boolean pressToHome() {
+        if (SystemProperties.getBoolean("ro.product.support.home_key", false)) {
+            return SystemProperties.getBoolean("sys.powerkey.setting", true);
+        }
+        return false;
+    }
+
+    /**
+     * @hide
+     */
+    public static void setDePermissions(boolean value) {
+        if (Binder.getCallingUid() == Process.SYSTEM_UID) {
+            Slog.d(TAG, "build setDePermissions, value=" + value);
+            sHasDePermissions = value;
+        }
+    }
+
+    /**
+     * @hide
+     */
+    public static void setSystemType() {
+        if (Binder.getCallingUid() == Process.SYSTEM_UID) {
+            Slog.d(TAG, "build setSystemType debug");
+            isDebugSystem = true;
+        }
+    }
 
     /**
      * Returns the version string for the radio firmware.  May return

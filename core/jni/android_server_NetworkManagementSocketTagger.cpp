@@ -47,6 +47,22 @@ static jint QTagUid_tagSocketFd(JNIEnv* env, jclass,
   return (jint)res;
 }
 
+/*
+ * Vendor addition: same as native_tagSocketFd but takes a raw fd so callers
+ * that already hold one (e.g. the bbk_traffic socket tagger) avoid the
+ * FileDescriptor round-trip. Reverse-engineered from the device
+ * libandroid_runtime; it is a direct qtaguid_tagSocket() call returning
+ * -errno on failure.
+ */
+static jint QTagUid_tagSocketFdInt(JNIEnv* env, jclass,
+                                   jint fd, jint tagNum, jint uid) {
+  int res = qtaguid_tagSocket(fd, tagNum, uid);
+  if (res < 0) {
+    return (jint)-errno;
+  }
+  return (jint)res;
+}
+
 static jint QTagUid_untagSocketFd(JNIEnv* env, jclass,
                                   jobject fileDescriptor) {
   int userFd = jniGetFDFromFileDescriptor(env, fileDescriptor);
@@ -85,6 +101,7 @@ static jint QTagUid_deleteTagData(JNIEnv* env, jclass,
 
 static const JNINativeMethod gQTagUidMethods[] = {
   { "native_tagSocketFd", "(Ljava/io/FileDescriptor;II)I", (void*)QTagUid_tagSocketFd},
+  { "native_tagSocketFdInt", "(III)I", (void*)QTagUid_tagSocketFdInt},
   { "native_untagSocketFd", "(Ljava/io/FileDescriptor;)I", (void*)QTagUid_untagSocketFd},
   { "native_setCounterSet", "(II)I", (void*)QTagUid_setCounterSet},
   { "native_deleteTagData", "(II)I", (void*)QTagUid_deleteTagData},

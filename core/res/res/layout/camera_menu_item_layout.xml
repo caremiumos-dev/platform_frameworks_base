@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xtc.widget.AppLinearLayout android:gravity="center_horizontal" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.xtc.widget.StrokeLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/menu_container" android:background="@drawable/camera_menu_item_bg" android:layout_width="@dimen/itemMenuWidth" android:layout_height="@dimen/itemMenuHeight">
+        <ImageView android:id="@id/menu_icon" android:layout_width="@dimen/itemImageWidth" android:layout_height="@dimen/itemImageHeight" android:layout_marginLeft="@dimen/menuImagePaddingL" android:layout_marginRight="@dimen/menuImagePaddingR" android:scaleType="centerCrop" />
+        <TextView android:textSize="@dimen/menuTextSize" android:textColor="@color/colorMenuTitle" android:gravity="center_vertical" android:id="@id/menu_title" android:layout_width="wrap_content" android:layout_height="fill_parent" android:maxLines="2" />
+    </com.xtc.widget.StrokeLayout>
+</com.xtc.widget.AppLinearLayout>

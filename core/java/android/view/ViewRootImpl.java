@@ -862,6 +862,43 @@ public final class ViewRootImpl implements ViewParent,
         return mWindowAttributes.flags;
     }
 
+    /**
+     * Returns a short description of the top-level view hierarchy rooted at
+     * this window's content view. Used by the application performance monitor
+     * to attribute drop frame statistics.
+     *
+     * @hide
+     */
+    public String getViewHierarchy() {
+        synchronized (this) {
+            if (mView == null) {
+                return null;
+            }
+            StringBuilder sb = new StringBuilder();
+            getViewHierarchy(mView, sb);
+            return sb.toString();
+        }
+    }
+
+    private void getViewHierarchy(View view, StringBuilder sb) {
+        if (view == null) {
+            return;
+        }
+        sb.append(view.getClass().getName());
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            int childCount = viewGroup.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View child = viewGroup.getChildAt(i);
+                if (child != null) {
+                    sb.append("+");
+                    sb.append(child.getClass().getName());
+                    return;
+                }
+            }
+        }
+    }
+
     public int getDisplayId() {
         return mDisplay.getDisplayId();
     }

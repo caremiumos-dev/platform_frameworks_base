@@ -37,4 +37,6 @@ interface IAlarmManager {
     void remove(in PendingIntent operation, in IAlarmListener listener);
     long getNextWakeFromIdleTime();
     AlarmManager.AlarmClockInfo getNextAlarmClock(int userId);
+    // XTC device addition: block/unblock alarm delivery for a uid.
+    void updateBlockedUids(int uid, boolean blocked);
 }

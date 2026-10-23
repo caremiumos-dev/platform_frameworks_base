@@ -326,6 +326,22 @@ class ActivityStarter {
                     + "} from uid " + callingUid);
         }
 
+        // XTC/BBK: only system-signed apps may handle HOME/HOME_MAIN.
+        if ((intent.hasCategory(Intent.CATEGORY_HOME)
+                || intent.hasCategory(Intent.CATEGORY_HOME_MAIN))
+                && aInfo != null && aInfo.applicationInfo != null
+                && !aInfo.applicationInfo.isSystemSignature) {
+            Slog.d(TAG, "ApplicationInfo not found");
+            return -92;
+        }
+        // XTC/BBK: block starting the vendor launcher from anyone but the system uid.
+        if (aInfo != null && aInfo.applicationInfo != null
+                && aInfo.applicationInfo.packageName.contains("xtc.i3launcher")
+                && aInfo.applicationInfo.uid != 1000) {
+            Slog.d(TAG, "launcher exception");
+            return 102;
+        }
+
         ActivityRecord sourceRecord = null;
         ActivityRecord resultRecord = null;
         if (resultTo != null) {

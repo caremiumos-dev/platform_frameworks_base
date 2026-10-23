@@ -70,4 +70,9 @@ interface IPowerManager
 
     // sets the attention light (used by phone app only)
     void setAttentionLight(boolean on, int color);
+
+    // XTC device addition: block/unblock wake locks for a uid.
+    void updateBlockedUids(int uid, boolean blocked);
+
+    boolean isScreenLongSleep();
 }

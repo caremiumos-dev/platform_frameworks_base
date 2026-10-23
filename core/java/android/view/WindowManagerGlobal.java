@@ -602,6 +602,33 @@ public final class WindowManagerGlobal {
                 root.getClass().getName() + '@' + Integer.toHexString(root.hashCode());
     }
 
+    private static String getWindowNameWithoutHashCode(ViewRootImpl root) {
+        return root.mWindowAttributes.getTitle() + "/" + root.getClass().getName();
+    }
+
+    /**
+     * Returns a short description of the focused window: the window title and
+     * the top-level view hierarchy. Used by the application performance
+     * monitor to attribute drop frame statistics.
+     *
+     * @hide
+     */
+    public String getFocusedWindowInfo() {
+        StringBuilder sb = new StringBuilder();
+        synchronized (mLock) {
+            int size = mRoots.size();
+            if (size > 0) {
+                ViewRootImpl root = mRoots.get(size - 1);
+                if (root != null) {
+                    sb.append(getWindowNameWithoutHashCode(root));
+                    sb.append("+");
+                    sb.append(root.getViewHierarchy());
+                }
+            }
+        }
+        return sb.toString();
+    }
+
     public void setStoppedState(IBinder token, boolean stopped) {
         synchronized (mLock) {
             int count = mViews.size();

@@ -527,6 +527,10 @@ public class Toast {
                     if (localLOGV) Log.v(TAG, "REMOVE! " + mView + " in " + this);
                     mWM.removeViewImmediate(mView);
                 }
+                try {
+                    getService().finishToken(mPackageName, this);
+                } catch (RemoteException e) {
+                }
 
                 mView = null;
             }

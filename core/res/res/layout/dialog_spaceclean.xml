@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:id="@id/rl_dialog_parent" android:background="#ff000000" android:scrollbars="none" android:layout_width="fill_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent">
+        <TextView android:textSize="17.0sp" android:textColor="#ff55dd7b" android:gravity="center" android:id="@id/tv_low_tip" android:layout_width="fill_parent" android:layout_height="21.0dip" android:layout_marginTop="8.0dip" android:text="@string/space_low_tips" />
+        <TextView android:textSize="14.0sp" android:textColor="#ffffffff" android:id="@id/tv_spaceclean_low" android:visibility="visible" android:layout_width="152.0dip" android:layout_height="55.0dip" android:layout_marginLeft="11.0dip" android:layout_marginTop="9.0dip" android:text="@string/space_clean_low" />
+        <TextView android:textSize="11.0sp" android:textColor="#ffcccccc" android:id="@id/tv_spaceclean_low_tipone" android:visibility="visible" android:layout_width="152.0dip" android:layout_height="30.0dip" android:layout_marginLeft="11.0dip" android:layout_marginTop="2.0dip" android:text="@string/space_clean_low_one" />
+        <TextView android:textSize="11.0sp" android:textColor="#ffcccccc" android:id="@id/tv_spaceclean_low_tiptwo" android:visibility="visible" android:layout_width="152.0dip" android:layout_height="30.0dip" android:layout_marginLeft="11.0dip" android:text="@string/space_clean_low_two" />
+        <TextView android:textSize="14.0sp" android:textColor="#ffffffff" android:gravity="left" android:id="@id/tv_spaceclean_full" android:visibility="gone" android:layout_width="153.0dip" android:layout_height="85.0dip" android:layout_marginLeft="10.0dip" android:layout_marginTop="9.0dip" android:text="@string/space_clean_full" />
+        <Button android:textSize="15.0sp" android:id="@id/dialog_btn_spaceclean" android:background="@drawable/bg_dialog_spaceclean" android:layout_width="150.0dip" android:layout_height="40.0dip" android:layout_marginLeft="5.0dip" android:layout_marginTop="5.0dip" android:text="@string/space_goto_clean" />
+        <Button android:textSize="12.0sp" android:textColor="#ff888888" android:id="@id/dialog_btn_cancel" android:background="#00000000" android:visibility="visible" android:layout_width="150.0dip" android:layout_height="40.0dip" android:layout_marginLeft="5.0dip" android:layout_marginTop="2.0dip" android:text="@string/space_nexttime" />
+    </LinearLayout>
+</ScrollView>

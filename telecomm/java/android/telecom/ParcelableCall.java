@@ -41,9 +41,19 @@ public final class ParcelableCall implements Parcelable {
     private final int mProperties;
     private final int mSupportedAudioRoutes;
     private final long mConnectTimeMillis;
+    // CAF/XTC 差异：设备基座新增的字段。
+    private final long mConnectElapsedTimeMillis;
     private final Uri mHandle;
     private final int mHandlePresentation;
     private final String mCallerDisplayName;
+    private final String mCallerInfoName;
+    private final String mCallerInfoNumber;
+    private final String mCallerInfoAutoCall;
+    private final String mCallerInfoMobileID;
+    private final String mCallerInfoType;
+    private final String mCallerInfoPhotoPath;
+    private final String mCallerInfoCountryCode;
+    private final String mCallerInfoInShortNumWhiteList;
     private final int mCallerDisplayNamePresentation;
     private final GatewayInfo mGatewayInfo;
     private final PhoneAccountHandle mAccountHandle;
@@ -70,9 +80,18 @@ public final class ParcelableCall implements Parcelable {
             int properties,
             int supportedAudioRoutes,
             long connectTimeMillis,
+            long connectElapsedTimeMillis,
             Uri handle,
             int handlePresentation,
             String callerDisplayName,
+            String callerInfoName,
+            String callerInfoNumber,
+            String callerInfoAutoCall,
+            String callerInfoMobileID,
+            String callerInfoType,
+            String callerInfoPhotoPath,
+            String callerInfoCountryCode,
+            String callerInfoInShortNumWhiteList,
             int callerDisplayNamePresentation,
             GatewayInfo gatewayInfo,
             PhoneAccountHandle accountHandle,
@@ -96,9 +115,18 @@ public final class ParcelableCall implements Parcelable {
         mProperties = properties;
         mSupportedAudioRoutes = supportedAudioRoutes;
         mConnectTimeMillis = connectTimeMillis;
+        mConnectElapsedTimeMillis = connectElapsedTimeMillis;
         mHandle = handle;
         mHandlePresentation = handlePresentation;
         mCallerDisplayName = callerDisplayName;
+        mCallerInfoName = callerInfoName;
+        mCallerInfoNumber = callerInfoNumber;
+        mCallerInfoAutoCall = callerInfoAutoCall;
+        mCallerInfoMobileID = callerInfoMobileID;
+        mCallerInfoType = callerInfoType;
+        mCallerInfoPhotoPath = callerInfoPhotoPath;
+        mCallerInfoCountryCode = callerInfoCountryCode;
+        mCallerInfoInShortNumWhiteList = callerInfoInShortNumWhiteList;
         mCallerDisplayNamePresentation = callerDisplayNamePresentation;
         mGatewayInfo = gatewayInfo;
         mAccountHandle = accountHandle;
@@ -159,6 +187,11 @@ public final class ParcelableCall implements Parcelable {
         return mConnectTimeMillis;
     }
 
+    /** CAF/XTC 差异：呼叫已连接持续时长（毫秒）。 */
+    public long getConnectElapsedTimeMillis() {
+        return mConnectElapsedTimeMillis;
+    }
+
     /** The endpoint to which the call is connected. */
     public Uri getHandle() {
         return mHandle;
@@ -174,6 +207,39 @@ public final class ParcelableCall implements Parcelable {
     /** The endpoint to which the call is connected. */
     public String getCallerDisplayName() {
         return mCallerDisplayName;
+    }
+
+    // CAF/XTC 差异：设备基座在 ParcelableCall 中透传联系人/短号白名单信息。
+    public String getCallerInfoNamePC() {
+        return mCallerInfoName;
+    }
+
+    public String getCallerInfoNumberPC() {
+        return mCallerInfoNumber;
+    }
+
+    public String getCallerInfoAutoCallPC() {
+        return mCallerInfoAutoCall;
+    }
+
+    public String getCallerInfoMobileIDPC() {
+        return mCallerInfoMobileID;
+    }
+
+    public String getCallerInfoTypePC() {
+        return mCallerInfoType;
+    }
+
+    public String getCallerInfoPhothPathPC() {
+        return mCallerInfoPhotoPath;
+    }
+
+    public String getCallerInfoCountryCodePC() {
+        return mCallerInfoCountryCode;
+    }
+
+    public String getCallerInfoInShortNumWhiteListPC() {
+        return mCallerInfoInShortNumWhiteList;
     }
 
     /**
@@ -313,9 +379,18 @@ public final class ParcelableCall implements Parcelable {
             int capabilities = source.readInt();
             int properties = source.readInt();
             long connectTimeMillis = source.readLong();
+            long connectElapsedTimeMillis = source.readLong();
             Uri handle = source.readParcelable(classLoader);
             int handlePresentation = source.readInt();
             String callerDisplayName = source.readString();
+            String callerInfoName = source.readString();
+            String callerInfoNumber = source.readString();
+            String callerInfoAutoCall = source.readString();
+            String callerInfoMobileID = source.readString();
+            String callerInfoType = source.readString();
+            String callerInfoPhotoPath = source.readString();
+            String callerInfoCountryCode = source.readString();
+            String callerInfoInShortNumWhiteList = source.readString();
             int callerDisplayNamePresentation = source.readInt();
             GatewayInfo gatewayInfo = source.readParcelable(classLoader);
             PhoneAccountHandle accountHandle = source.readParcelable(classLoader);
@@ -344,9 +419,18 @@ public final class ParcelableCall implements Parcelable {
                     properties,
                     supportedAudioRoutes,
                     connectTimeMillis,
+                    connectElapsedTimeMillis,
                     handle,
                     handlePresentation,
                     callerDisplayName,
+                    callerInfoName,
+                    callerInfoNumber,
+                    callerInfoAutoCall,
+                    callerInfoMobileID,
+                    callerInfoType,
+                    callerInfoPhotoPath,
+                    callerInfoCountryCode,
+                    callerInfoInShortNumWhiteList,
                     callerDisplayNamePresentation,
                     gatewayInfo,
                     accountHandle,
@@ -386,9 +470,18 @@ public final class ParcelableCall implements Parcelable {
         destination.writeInt(mCapabilities);
         destination.writeInt(mProperties);
         destination.writeLong(mConnectTimeMillis);
+        destination.writeLong(mConnectElapsedTimeMillis);
         destination.writeParcelable(mHandle, 0);
         destination.writeInt(mHandlePresentation);
         destination.writeString(mCallerDisplayName);
+        destination.writeString(mCallerInfoName);
+        destination.writeString(mCallerInfoNumber);
+        destination.writeString(mCallerInfoAutoCall);
+        destination.writeString(mCallerInfoMobileID);
+        destination.writeString(mCallerInfoType);
+        destination.writeString(mCallerInfoPhotoPath);
+        destination.writeString(mCallerInfoCountryCode);
+        destination.writeString(mCallerInfoInShortNumWhiteList);
         destination.writeInt(mCallerDisplayNamePresentation);
         destination.writeParcelable(mGatewayInfo, 0);
         destination.writeParcelable(mAccountHandle, 0);

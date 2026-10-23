@@ -359,6 +359,18 @@ public class RuntimeInit {
     }
 
     /**
+     * XTC bbk_traffic: set the socket counter tag (or a raw udp socket fd tag)
+     * on the current application process.
+     */
+    public static void setNetworkSCTag(int tag, int udpFd) {
+        if (tag != 0) {
+            com.android.server.NetworkManagementSocketTagger.setSCTag(tag);
+        } else {
+            com.android.server.NetworkManagementSocketTagger.setUDPSocketTag(udpFd);
+        }
+    }
+
+    /**
      * Enable DDMS.
      */
     static final void enableDdms() {

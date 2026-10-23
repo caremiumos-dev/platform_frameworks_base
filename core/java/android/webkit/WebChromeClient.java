@@ -22,6 +22,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Message;
+import android.util.SeempLog;
 import android.view.View;
 
 public class WebChromeClient {
@@ -297,7 +298,9 @@ public class WebChromeClient {
      *                 origin.
      */
     public void onGeolocationPermissionsShowPrompt(String origin,
-            GeolocationPermissions.Callback callback) {}
+            GeolocationPermissions.Callback callback) {
+        SeempLog.record(54);
+    }
 
     /**
      * Notify the host application that a request for Geolocation permissions,

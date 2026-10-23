@@ -34,6 +34,7 @@ import android.telephony.Rlog;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SeempLog;
 
 import com.android.i18n.phonenumbers.geocoding.PhoneNumberOfflineGeocoder;
 import com.android.i18n.phonenumbers.NumberParseException;
@@ -171,6 +172,7 @@ public class CallerInfo {
      * number. The returned CallerInfo is null if no number is supplied.
      */
     public static CallerInfo getCallerInfo(Context context, Uri contactRef, Cursor cursor) {
+        SeempLog.record_uri(12, contactRef);
         CallerInfo info = new CallerInfo();
         info.photoResource = 0;
         info.phoneLabel = null;
@@ -343,7 +345,7 @@ public class CallerInfo {
      * with all relevant fields empty or null.
      */
     public static CallerInfo getCallerInfo(Context context, String number, int subId) {
-
+        SeempLog.record_str(12, "number=" + number + ",subId=" + subId);
         if (TextUtils.isEmpty(number)) {
             return null;
         }

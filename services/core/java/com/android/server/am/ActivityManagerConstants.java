@@ -67,7 +67,20 @@ final class ActivityManagerConstants extends ContentObserver {
     static final String KEY_BOUND_SERVICE_CRASH_RESTART_DURATION = "service_crash_restart_duration";
     static final String KEY_BOUND_SERVICE_CRASH_MAX_RETRY = "service_crash_max_retry";
 
-    private static final int DEFAULT_MAX_CACHED_PROCESSES = 32;
+    private static final int DEFAULT_MAX_CACHED_PROCESSES =
+            android.os.SystemProperties.getInt("ro.vendor.qti.sys.fw.bg_apps_limit", 32);
+
+    // XTC/QTI lowmemorykiller trim tuning.
+    static final boolean USE_TRIM_SETTINGS = android.os.SystemProperties.getBoolean(
+            "ro.vendor.qti.sys.fw.use_trim_settings", true);
+    static final int EMPTY_APP_PERCENT = android.os.SystemProperties.getInt(
+            "ro.vendor.qti.sys.fw.empty_app_percent", 50);
+    static final int TRIM_EMPTY_PERCENT = android.os.SystemProperties.getInt(
+            "ro.vendor.qti.sys.fw.trim_empty_percent", 100);
+    static final int TRIM_CACHE_PERCENT = android.os.SystemProperties.getInt(
+            "ro.vendor.qti.sys.fw.trim_cache_percent", 100);
+    static final long TRIM_ENABLE_MEMORY = android.os.SystemProperties.getLong(
+            "ro.vendor.qti.sys.fw.trim_enable_memory", 1073741824L);
     private static final long DEFAULT_BACKGROUND_SETTLE_TIME = 60*1000;
     private static final long DEFAULT_FGSERVICE_MIN_SHOWN_TIME = 2*1000;
     private static final long DEFAULT_FGSERVICE_MIN_REPORT_TIME = 3*1000;
@@ -252,8 +265,24 @@ final class ActivityManagerConstants extends ContentObserver {
         return mOverrideMaxCachedProcesses;
     }
 
+    public static boolean allowTrim() {
+        return android.os.Process.getTotalMemory() < TRIM_ENABLE_MEMORY;
+    }
+
     public static int computeEmptyProcessLimit(int totalProcessLimit) {
-        return totalProcessLimit/2;
+        return (USE_TRIM_SETTINGS && allowTrim())
+                ? (EMPTY_APP_PERCENT * totalProcessLimit) / 100 : totalProcessLimit / 2;
+    }
+
+    public static int computeTrimCachedApps(int emptyProcesses, int maxCachedProcesses) {
+        return (USE_TRIM_SETTINGS && allowTrim())
+                ? (TRIM_CACHE_PERCENT * maxCachedProcesses) / 100
+                : (maxCachedProcesses - emptyProcesses) / 3;
+    }
+
+    public static int computeTrimEmptyApps(int emptyProcesses) {
+        return (USE_TRIM_SETTINGS && allowTrim())
+                ? (TRIM_EMPTY_PERCENT * emptyProcesses) / 100 : emptyProcesses / 2;
     }
 
     @Override
@@ -339,11 +368,17 @@ final class ActivityManagerConstants extends ContentObserver {
         // to consider the same level the point where we do trimming regardless of any
         // additional enforced limit.
         final int rawMaxEmptyProcesses = computeEmptyProcessLimit(MAX_CACHED_PROCESSES);
-        CUR_TRIM_EMPTY_PROCESSES = rawMaxEmptyProcesses/2;
-        CUR_TRIM_CACHED_PROCESSES = (MAX_CACHED_PROCESSES-rawMaxEmptyProcesses)/3;
+        CUR_TRIM_EMPTY_PROCESSES = computeTrimEmptyApps(rawMaxEmptyProcesses);
+        CUR_TRIM_CACHED_PROCESSES = computeTrimCachedApps(rawMaxEmptyProcesses,
+                MAX_CACHED_PROCESSES);
     }
 
     void dump(PrintWriter pw) {
+        // XTC/BBK: hide activity-manager settings from non-privileged user builds.
+        if (android.os.Build.IS_USER && !android.os.Build.isHasDePermissions()) {
+            pw.println("XTC not allow dump activity settings.");
+            return;
+        }
         pw.println("ACTIVITY MANAGER SETTINGS (dumpsys activity settings) "
                 + Settings.Global.ACTIVITY_MANAGER_CONSTANTS + ":");
 

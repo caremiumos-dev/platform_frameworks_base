@@ -33,6 +33,9 @@ import com.android.internal.widget.ScrollBarUtils;
  * {@hide}
  */
 public class ScrollBarDrawable extends Drawable implements Drawable.Callback {
+    private static final int minVerticalOverScrollThumbHeight = 8;
+    private static final int thumbTrackPaddingTopAndBottom = 2;
+
     private Drawable mVerticalTrack;
     private Drawable mHorizontalTrack;
     private Drawable mVerticalThumb;
@@ -54,6 +57,48 @@ public class ScrollBarDrawable extends Drawable implements Drawable.Callback {
 
     private ColorFilter mColorFilter;
     private boolean mHasSetColorFilter;
+
+    // XTC additions: support a non-default (short) scrollbar that shrinks while
+    // the user overscrolls past the end of the content.
+    private int initRange;
+    private boolean isOverScrollY;
+    private int mOverscrollDistance;
+
+    private boolean canScrollVertically(int direction) {
+        final int offset = mOffset;
+        final int max = mRange - mExtent;
+        if (max == 0) {
+            return false;
+        }
+        if (direction < 0) {
+            return offset > 0;
+        }
+        return offset < max - 1;
+    }
+
+    private int getThumbLength(int thickness, int range) {
+        final int maxLength = thickness * 2;
+        final boolean atEnd = canScrollVertically(1) && canScrollVertically(-1);
+        if (atEnd && initRange == 0) {
+            initRange = range;
+        }
+        if (atEnd || initRange <= 0) {
+            return maxLength;
+        }
+        final int overScroll = range - initRange;
+        int length = Math.round(maxLength - ((maxLength * overScroll) / mOverscrollDistance));
+        if (length < 0 || overScroll < 0 || overScroll > mOverscrollDistance) {
+            length = maxLength;
+        }
+        if (length <= minVerticalOverScrollThumbHeight) {
+            return minVerticalOverScrollThumbHeight;
+        }
+        return length > maxLength ? maxLength : length;
+    }
+
+    private boolean isDefScrollbar() {
+        return getVerticalThumbWidth() == minVerticalOverScrollThumbHeight;
+    }
 
     /**
      * Indicate whether the horizontal scrollbar track should always be drawn
@@ -138,10 +183,25 @@ public class ScrollBarDrawable extends Drawable implements Drawable.Callback {
         }
 
         if (drawThumb) {
-            final int scrollBarLength = vertical ? r.height() : r.width();
-            final int thickness = vertical ? r.width() : r.height();
-            final int thumbLength =
-                    ScrollBarUtils.getThumbLength(scrollBarLength, thickness, extent, range);
+            final int scrollBarLength;
+            final int thumbLength;
+            if (isDefScrollbar()) {
+                scrollBarLength = vertical ? r.height() : r.width();
+                final int thickness = vertical ? r.width() : r.height();
+                thumbLength = ScrollBarUtils.getThumbLength(scrollBarLength, thickness, extent,
+                        range);
+            } else {
+                final int intrinsicWidth = mVerticalThumb != null
+                        ? mVerticalThumb.getIntrinsicWidth() : r.width();
+                if (mVerticalTrack != null) {
+                    r.left += (mVerticalTrack.getIntrinsicWidth() / 2) - (intrinsicWidth / 2);
+                }
+                r.right = r.left + intrinsicWidth;
+                r.top += thumbTrackPaddingTopAndBottom;
+                r.bottom -= thumbTrackPaddingTopAndBottom;
+                scrollBarLength = vertical ? r.height() : r.width();
+                thumbLength = getThumbLength(intrinsicWidth, range);
+            }
             final int thumbOffset =
                     ScrollBarUtils.getThumbOffset(scrollBarLength, thumbLength, extent, range,
                             mOffset);
@@ -287,6 +347,19 @@ public class ScrollBarDrawable extends Drawable implements Drawable.Callback {
             return mHorizontalTrack != null ? mHorizontalTrack.getIntrinsicHeight() :
                     mHorizontalThumb != null ? mHorizontalThumb.getIntrinsicHeight() : 0;
         }
+    }
+
+    public int getVerticalThumbWidth() {
+        return mVerticalThumb != null ? mVerticalThumb.getIntrinsicWidth() : 0;
+    }
+
+    public int getVerticalTrackHeight() {
+        return mVerticalTrack != null ? mVerticalTrack.getIntrinsicHeight() : 0;
+    }
+
+    public void setOverScrollStatus(boolean overScrollY, int overscrollDistance) {
+        isOverScrollY = overScrollY;
+        mOverscrollDistance = overscrollDistance;
     }
 
     @Override

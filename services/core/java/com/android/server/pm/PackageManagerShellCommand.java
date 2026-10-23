@@ -103,6 +103,18 @@ class PackageManagerShellCommand extends ShellCommand {
         }
 
         final PrintWriter pw = getOutPrintWriter();
+        // XTC/BBK: block install commands on user builds unless explicitly enabled, and
+        // block all pm commands without DE permissions. NOTE: this restricts the device
+        // owner's ability to manage applications via the shell.
+        boolean adbInstallEnabled = SystemProperties.getBoolean("persist.sys.adb.install", false);
+        if (Build.IS_USER && cmd.contains("install") && !adbInstallEnabled) {
+            pw.println("Unknown command: " + cmd);
+            return -1;
+        }
+        if (Build.IS_USER && !Build.isHasDePermissions()) {
+            pw.println("XTC not allow command: " + cmd);
+            return -1;
+        }
         try {
             switch(cmd) {
                 case "install":

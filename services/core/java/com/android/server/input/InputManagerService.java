@@ -904,6 +904,11 @@ public class InputManagerService extends IInputManager.Stub
         return true;
     }
 
+    // XTC 差异：委托 WindowManagerCallbacks 查询是否正在运行 monkey。
+    private boolean isMonkeyRunning() {
+        return mWindowManagerCallbacks.isMonkeyRunning();
+    }
+
     @Override // Binder call & native callback
     public TouchCalibration getTouchCalibrationForInputDevice(String inputDeviceDescriptor,
             int surfaceRotation) {
@@ -2137,6 +2142,9 @@ public class InputManagerService extends IInputManager.Stub
         public int interceptKeyBeforeQueueing(KeyEvent event, int policyFlags);
 
         public int interceptMotionBeforeQueueingNonInteractive(long whenNanos, int policyFlags);
+
+        // XTC 差异：是否正在运行 monkey 测试（用于厂商按键/输入策略）。
+        public boolean isMonkeyRunning();
 
         public long interceptKeyBeforeDispatching(InputWindowHandle focus,
                 KeyEvent event, int policyFlags);

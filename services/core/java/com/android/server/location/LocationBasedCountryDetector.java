@@ -25,6 +25,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Slog;
 
 import java.io.IOException;
@@ -176,6 +177,10 @@ public class LocationBasedCountryDetector extends CountryDetectorBase {
                     LocationListener listener = new LocationListener () {
                         @Override
                         public void onLocationChanged(Location location) {
+                            // XTC/BBK: positioning telemetry log (0x02).
+                            Log.d(TAG, "XTCNetin LocationBaseCountry onLocationChanged 0x02 uid:"
+                                    + Binder.getCallingUid() + " packagename:"
+                                    + LocationBasedCountryDetector.this.mContext.getPackageName());
                             if (location != null) {
                                 LocationBasedCountryDetector.this.stop();
                                 queryCountryCode(location);

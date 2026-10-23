@@ -37,6 +37,8 @@
 
 #include "core_jni_helpers.h"
 
+#include <malloc.h>
+
 namespace android {
 
 using namespace uirenderer;
@@ -94,6 +96,19 @@ static void
 android_app_ActivityThread_dumpGraphics(JNIEnv* env, jobject clazz, jobject javaFileDescriptor) {
     int fd = jniGetFDFromFileDescriptor(env, javaFileDescriptor);
     android::uirenderer::renderthread::RenderProxy::dumpGraphicsMemory(fd);
+}
+
+/*
+ * Vendor addition: lets ActivityThread ask the allocator to release cached
+ * pages while the process is idle. Reverse-engineered from the device
+ * libandroid_runtime, where this is a single mallopt(M_PURGE, 0) call.
+ */
+static void
+android_app_ActivityThread_purgePendingResources(JNIEnv* env, jobject clazz) {
+#ifndef M_PURGE
+#define M_PURGE (-101)
+#endif
+    mallopt(M_PURGE, 0);
 }
 
 
@@ -216,7 +231,9 @@ static JNINativeMethod gMethods[] = {
 static JNINativeMethod gActivityThreadMethods[] = {
         // ------------ Regular JNI ------------------
     { "nDumpGraphicsInfo",        "(Ljava/io/FileDescriptor;)V",
-                                               (void*) android_app_ActivityThread_dumpGraphics }
+                                               (void*) android_app_ActivityThread_dumpGraphics },
+    { "nPurgePendingResources",   "()V",
+                                               (void*) android_app_ActivityThread_purgePendingResources }
 };
 
 int register_android_view_DisplayListCanvas(JNIEnv* env) {

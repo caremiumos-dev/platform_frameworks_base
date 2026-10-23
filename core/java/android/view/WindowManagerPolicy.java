@@ -1338,6 +1338,11 @@ public interface WindowManagerPolicy {
     public boolean isScreenOn();
 
     /**
+     * XTC 差异：是否正在运行 monkey 测试。
+     */
+    public boolean isMonkeyRunning();
+
+    /**
      * @return whether the device is currently allowed to animate.
      *
      * Note: this can be true even if it is not appropriate to animate for reasons that are outside

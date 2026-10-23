@@ -364,6 +364,10 @@ public class Content {
                 throw new IllegalArgumentException("Content provider URI not specified."
                         + " Did you specify --uri argument?");
             }
+            // CAF/XTC 差异：禁止通过 content 命令访问厂商 init 服务——**已谴责**。
+            if (uri.toString().contains("com.xtc.initservice")) {
+                throw new IllegalArgumentException("Content provider URI not found.");
+            }
             return new QueryCommand(uri, userId, projection, where, sort);
         }
 

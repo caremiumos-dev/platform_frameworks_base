@@ -16,6 +16,7 @@
 
 package com.android.server.pm;
 
+import android.app.ApplicationPackageManager;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
 import android.util.ArrayMap;
@@ -450,6 +451,11 @@ public final class PermissionsState {
         return false;
     }
 
+    private static void invalidateCache() {
+        PackageManager.invalidatePackageInfoCache();
+        ApplicationPackageManager.invalidatePermissionCaches();
+    }
+
     public boolean updatePermissionFlagsForAllPermissions(
             int userId, int flagMask, int flagValues) {
         enforceValidUserId(userId);
@@ -519,6 +525,7 @@ public final class PermissionsState {
      */
     public void reset() {
         mGlobalGids = NO_GIDS;
+        invalidateCache();
         mPermissions = null;
         mPermissionReviewRequired = null;
     }
@@ -698,6 +705,7 @@ public final class PermissionsState {
 
             userState.mGranted = true;
 
+            invalidateCache();
             return true;
         }
 
@@ -717,6 +725,7 @@ public final class PermissionsState {
                 mUserStates.remove(userId);
             }
 
+            invalidateCache();
             return true;
         }
 
@@ -751,6 +760,7 @@ public final class PermissionsState {
 
             final int newFlags = flagValues & flagMask;
 
+            invalidateCache();
             PermissionState userState = mUserStates.get(userId);
             if (userState != null) {
                 final int oldFlags = userState.mFlags;

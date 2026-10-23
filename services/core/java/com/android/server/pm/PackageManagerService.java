@@ -114,6 +114,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
+import android.app.ApplicationPackageManager;
 import android.app.IActivityManager;
 import android.app.ResourcesManager;
 import android.app.admin.IDevicePolicyManager;
@@ -230,6 +231,7 @@ import android.text.format.DateUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Base64;
+import android.util.BoostFramework;
 import android.util.TimingsTraceLog;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
@@ -258,6 +260,7 @@ import com.android.internal.content.PackageHelper;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.os.IParcelFileDescriptorFactory;
+import com.android.internal.os.RegionalizationEnvironment;
 import com.android.internal.os.RoSystemProperties;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.os.Zygote;
@@ -386,6 +389,29 @@ public class PackageManagerService extends IPackageManager.Stub
         implements PackageSender {
     static final String TAG = "PackageManager";
     static final boolean DEBUG_SETTINGS = false;
+
+    private static boolean sIsPerfLockAcquired = false;
+    private static BoostFramework sPerfBoost = null;
+
+    // Allow-list of packages permitted to enumerate all installed packages/applications.
+    // TRUST-MODEL CONDEMNATION: this lets a privileged vendor set see the full install
+    // list while silently returning an empty list to every other application, i.e. it
+    // hides installed packages from third-party apps. Reproduced only for device
+    // compatibility; it is not a security boundary.
+    private static final ArrayList<String> mReadXtcAppsList = new ArrayList<>();
+    static {
+        mReadXtcAppsList.add("com.xtc.appupdate");
+        mReadXtcAppsList.add("com.xtc.datacenter");
+        mReadXtcAppsList.add("com.xtc.i3launcher");
+        mReadXtcAppsList.add("com.xtc.message");
+        mReadXtcAppsList.add("com.xtc.setting");
+        mReadXtcAppsList.add("com.xtc.xws");
+        mReadXtcAppsList.add("com.xtc.videochat");
+        mReadXtcAppsList.add("com.xtc.systemupdate_i11");
+        mReadXtcAppsList.add("com.baidu.input.xtcime");
+        mReadXtcAppsList.add("com.xtc.migration");
+        mReadXtcAppsList.add("com.xtc.report");
+    }
     static final boolean DEBUG_PREFERRED = false;
     static final boolean DEBUG_UPGRADE = false;
     static final boolean DEBUG_DOMAIN_VERIFICATION = false;
@@ -665,6 +691,9 @@ public class PackageManagerService extends IPackageManager.Stub
 
     /** Directory where installed third-party apps stored */
     final File mAppInstallDir;
+
+    /** Directory where regionalization third-party apps are staged */
+    final File mRegionalizationAppInstallDir;
 
     /**
      * Directory to which applications installed internally have their
@@ -2277,12 +2306,14 @@ public class PackageManagerService extends IPackageManager.Stub
     }
 
     void scheduleWriteSettingsLocked() {
+        PackageManager.invalidatePackageInfoCache();
         if (!mHandler.hasMessages(WRITE_SETTINGS)) {
             mHandler.sendEmptyMessageDelayed(WRITE_SETTINGS, WRITE_SETTINGS_DELAY);
         }
     }
 
     void scheduleWritePackageListLocked(int userId) {
+        PackageManager.invalidatePackageInfoCache();
         if (!mHandler.hasMessages(WRITE_PACKAGE_LIST)) {
             Message msg = mHandler.obtainMessage(WRITE_PACKAGE_LIST);
             msg.arg1 = userId;
@@ -2296,6 +2327,7 @@ public class PackageManagerService extends IPackageManager.Stub
     }
 
     void scheduleWritePackageRestrictionsLocked(int userId) {
+        PackageManager.invalidatePackageInfoCache();
         final int[] userIds = (userId == UserHandle.USER_ALL)
                 ? sUserManager.getUserIds() : new int[]{userId};
         for (int nextUserId : userIds) {
@@ -2406,6 +2438,13 @@ public class PackageManagerService extends IPackageManager.Stub
 
     public PackageManagerService(Context context, Installer installer,
             boolean factoryTest, boolean onlyCore) {
+        PackageManager.invalidatePackageInfoCache();
+        PackageManager.disableApplicationInfoCache();
+        PackageManager.disablePackageInfoCache();
+        ApplicationPackageManager.invalidatePermissionCaches();
+        ApplicationPackageManager.disablePackageNamePermissionCache();
+        ApplicationPackageManager.disablePermissionCache();
+        PackageManager.corkPackageInfoCache();
         LockGuard.installLock(mPackages, LockGuard.INDEX_PACKAGES);
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "create package manager");
         EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_START,
@@ -2489,6 +2528,7 @@ public class PackageManagerService extends IPackageManager.Stub
 
             File dataDir = Environment.getDataDirectory();
             mAppInstallDir = new File(dataDir, "app");
+            mRegionalizationAppInstallDir = new File(dataDir, "app-regional");
             mAppLib32InstallDir = new File(dataDir, "app-lib");
             mAsecInternalPath = new File(dataDir, "app-asec").getPath();
             mDrmAppPrivateInstallDir = new File(dataDir, "app-private");
@@ -2760,11 +2800,24 @@ public class PackageManagerService extends IPackageManager.Stub
             if (!mOnlyCore) {
                 EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_DATA_SCAN_START,
                         SystemClock.uptimeMillis());
+                if (Build.IS_CTA && isFirstBoot()) {
+                    Log.i(TAG, "It's first boot, install the third apps");
+                    installThirdApps();
+                }
                 scanDirTracedLI(mAppInstallDir, 0, scanFlags | SCAN_REQUIRE_KNOWN, 0);
 
                 scanDirTracedLI(mDrmAppPrivateInstallDir, mDefParseFlags
                         | PackageParser.PARSE_FORWARD_LOCK,
                         scanFlags | SCAN_REQUIRE_KNOWN, 0);
+
+                if (RegionalizationEnvironment.isSupported()) {
+                    Log.d(TAG, "Load Regionalization 3rd apks from res packages.");
+                    for (String name : RegionalizationEnvironment.getAllPackageNames()) {
+                        File f = new File(mRegionalizationAppInstallDir, name);
+                        Log.d(TAG, "Load Regionalization 3rd apks of path " + f.getPath());
+                        scanDirLI(f, 0, scanFlags | SCAN_REQUIRE_KNOWN, 0);
+                    }
+                }
 
                 // Remove disable package settings for updated system apps that were
                 // removed via an OTA. If the update is no longer present, remove the
@@ -3096,6 +3149,7 @@ public class PackageManagerService extends IPackageManager.Stub
         // Now after opening every single application zip, make sure they
         // are all flushed.  Not really needed, but keeps things nice and
         // tidy.
+        PackageManager.uncorkPackageInfoCache();
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "GC");
         Runtime.getRuntime().gc();
         Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
@@ -3396,6 +3450,28 @@ public class PackageManagerService extends IPackageManager.Stub
     public boolean isOnlyCoreApps() {
         // allow instant applications
         return mOnlyCore;
+    }
+
+    /**
+     * XTC xses: reports whether the package manager's "de status" integrity
+     * check passes.
+     *
+     * <p><b>Strong condemnation.</b> This feeds the xses reboot path: when it
+     * returns {@code false}, {@code ActivityManagerService#xseException()} is
+     * invoked and the user's device is forcibly rebooted. The original check is
+     * implemented in the vendor native installd, which is not part of the Java
+     * framework reconstruction; this implementation conservatively reports
+     * "ok" (never triggers a reboot) to avoid abusing the user.
+     *
+     * @hide
+     */
+    public boolean getXseCheckDeStatus() {
+        try {
+            Slog.d(TAG, "getXseCheckDeStatus");
+            return SystemProperties.getBoolean("persist.sys.xtc.de_status", true);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
@@ -4407,6 +4483,13 @@ public class PackageManagerService extends IPackageManager.Stub
             }
             return new ParceledListSlice<>(out);
         }
+    }
+
+    public String getApkFileMd5(String apkPath) {
+        if (TextUtils.isEmpty(apkPath)) {
+            return null;
+        }
+        return new com.xtc.secure.pm.ApkInfoUtil(mContext).getFileMd5(apkPath);
     }
 
     private ApplicationInfo generateApplicationInfoFromSettingsLPw(String packageName, int flags,
@@ -6681,6 +6764,64 @@ public class PackageManagerService extends IPackageManager.Stub
             }
         }
         return false;
+    }
+
+    public java.util.Map getXtcInstallChannelExtInfo(String apkPath) {
+        if (TextUtils.isEmpty(apkPath)) {
+            return null;
+        }
+        com.xtc.secure.walle.ChannelInfo channelInfo =
+                com.xtc.secure.walle.ChannelReader.get(new java.io.File(apkPath));
+        if (channelInfo != null) {
+            return channelInfo.getExtraInfo();
+        }
+        Log.d(TAG, "getXtcInstallChannelName ChannelInfo is null:" + apkPath);
+        return null;
+    }
+
+    public String getXtcInstallChannelName(String apkPath) {
+        if (TextUtils.isEmpty(apkPath)) {
+            return null;
+        }
+        com.xtc.secure.walle.ChannelInfo channelInfo =
+                com.xtc.secure.walle.ChannelReader.get(new java.io.File(apkPath));
+        if (channelInfo != null) {
+            return channelInfo.getChannel();
+        }
+        Log.d(TAG, "getXtcInstallChannelName ChannelInfo is null:" + apkPath);
+        return null;
+    }
+
+    public boolean isSupportXtcInstallVerify() {
+        return true;
+    }
+
+    public ParceledListSlice<PackageInfo> XtcGetInstalledPackages(int flags, int userId,
+            String callingPackage) {
+        Binder.getCallingUid();
+        ArrayList<PackageInfo> list = new ArrayList<>();
+        if (mReadXtcAppsList.contains(callingPackage)) {
+            Log.d(TAG, "The system-level application is successfully obtained. packageName is "
+                    + callingPackage);
+            return getInstalledPackages(flags, userId);
+        }
+        Log.d(TAG, "Non-system-level applications cannot be obtained. packageName is "
+                + callingPackage);
+        return new ParceledListSlice<>(list);
+    }
+
+    public ParceledListSlice<ApplicationInfo> xtcGetInstalledApplications(int flags, int userId,
+            String callingPackage) {
+        Binder.getCallingUid();
+        ArrayList<ApplicationInfo> list = new ArrayList<>();
+        if (mReadXtcAppsList.contains(callingPackage)) {
+            Log.d(TAG, "The system-level application is successfully obtained. packageName is "
+                    + callingPackage);
+            return getInstalledApplications(flags, userId);
+        }
+        Log.d(TAG, "Non-system-level applications cannot be obtained. packageName is "
+                + callingPackage);
+        return new ParceledListSlice<>(list);
     }
 
     @Override
@@ -11246,6 +11387,16 @@ public class PackageManagerService extends IPackageManager.Stub
         }
         pkgSetting.setTimeStamp(scanFileTime);
 
+        if (pkgSetting != null && pkgSetting.isThirdPartyApp) {
+            Log.d(TAG, "bbk_third_party_app this is third party app packagename ="
+                    + pkg.packageName);
+            pkg.applicationInfo.isSystemSignature = false;
+        }
+        if (pkgSetting != null && pkgSetting.isIFAC) {
+            Log.d(TAG, "bbk the app install from adb CMD,package = " + pkg.packageName);
+            pkg.applicationInfo.isInstallFromAdb = true;
+        }
+
         if ((scanFlags & SCAN_CHECK_ONLY) != 0) {
             if (nonMutatedPs != null) {
                 synchronized (mPackages) {
@@ -11354,6 +11505,16 @@ public class PackageManagerService extends IPackageManager.Stub
             // Bail out. The resource and code paths haven't been set.
             throw new PackageManagerException(INSTALL_FAILED_INVALID_APK,
                     "Code and resource paths haven't been set correctly");
+        }
+
+        // XTC: reject a launcher package that is not signed by the platform's system
+        // certificate. TRUST-MODEL CONDEMNATION: this binds the launcher identity to a
+        // vendor-controlled signature, which is an anti-competitive lock-in rather than
+        // a meaningful integrity check. Reproduced only for device compatibility.
+        if (pkg != null && pkg.packageName.contains("xtc.i3launcher")
+                && !pkg.applicationInfo.isSystemSignature) {
+            throw new PackageManagerException(INSTALL_FAILED_INVALID_APK,
+                    "assert install launcher Failed.");
         }
 
         // Make sure we're not adding any bogus keyset info
@@ -15934,6 +16095,14 @@ public class PackageManagerService extends IPackageManager.Stub
         // Queue up an async operation since the package installation may take a little while.
         mHandler.post(new Runnable() {
             public void run() {
+                if (sPerfBoost == null) {
+                    sPerfBoost = new BoostFramework();
+                }
+                if (sPerfBoost != null && !sIsPerfLockAcquired) {
+                    sPerfBoost.perfHint(4232, null, Integer.MAX_VALUE, -1);
+                    sIsPerfLockAcquired = true;
+                    Slog.d(TAG, "Perflock perfHint for processPendingInstall");
+                }
                 mHandler.removeCallbacks(this);
                  // Result object to be returned
                 PackageInstalledInfo res = new PackageInstalledInfo();
@@ -16009,6 +16178,13 @@ public class PackageManagerService extends IPackageManager.Stub
                     Message msg = mHandler.obtainMessage(POST_INSTALL, token, 0);
                     mHandler.sendMessage(msg);
                 }
+
+                if (!sIsPerfLockAcquired || sPerfBoost == null) {
+                    return;
+                }
+                sPerfBoost.perfLockRelease();
+                sIsPerfLockAcquired = false;
+                Slog.d(TAG, "Perflock released for processPendingInstall");
             }
         });
     }
@@ -18489,6 +18665,60 @@ public class PackageManagerService extends IPackageManager.Stub
         }
     }
 
+    private void installThirdApps() {
+        File thirdAppDir = new File("/system/third_app");
+        if (!thirdAppDir.exists()) {
+            Log.e(TAG, "/system/third_app is not exist");
+            return;
+        }
+        String[] dirs = thirdAppDir.list();
+        if (dirs == null) {
+            Log.e(TAG, "apk file name is null");
+            return;
+        }
+        for (String dir : dirs) {
+            File subDir = new File("/system/third_app", dir);
+            Log.e(TAG, "srcFile=" + subDir);
+            String[] files = subDir.list();
+            for (int i = 0; i < files.length; i++) {
+                Slog.d(TAG, "srcFileNames = " + files[i]);
+                File src = new File(subDir, files[i]);
+                if (!src.isDirectory()
+                        && !copyThirdApps(src, new File("/data/app/", files[i]))) {
+                    Log.d(TAG, "install failed");
+                }
+            }
+        }
+    }
+
+    private boolean copyThirdApps(File src, File dst) {
+        if (src == null || dst == null || !src.exists()) {
+            Log.e(TAG, "invalid arguments for movePreinstallApkFile()");
+            Log.e(TAG, "move " + src + " to " + dst + " failed");
+            return false;
+        }
+        try {
+            dst.createNewFile();
+            try {
+                Runtime.getRuntime().exec("chmod 644 " + dst.getAbsolutePath());
+            } catch (Exception e) {
+                Log.e(TAG, "chmod file faild! due to:" + e);
+            }
+            try {
+                if (!FileUtils.copyFile(src, dst)) {
+                    Log.e(TAG, "copy file faild!");
+                    return false;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "copy file faild! due to:" + e);
+            }
+            return dst.exists();
+        } catch (Exception e) {
+            Log.e(TAG, "create file faild! due to:" + e);
+            return false;
+        }
+    }
+
     private void installPackageLI(InstallArgs args, PackageInstalledInfo res) {
         final int installFlags = args.installFlags;
         final String installerPackageName = args.installerPackageName;
@@ -18932,6 +19162,11 @@ public class PackageManagerService extends IPackageManager.Stub
         BackgroundDexOptService.notifyPackageChanged(pkg.packageName);
 
         startIntentFilterVerifications(args.user.getIdentifier(), replace, pkg);
+
+        if ((installFlags & PackageManager.INSTALL_FROM_ADB) != 0) {
+            Slog.d(TAG, "fullADB true  setInstallFromADB true");
+            pkg.applicationInfo.isInstallFromAdb = true;
+        }
 
         try (PackageFreezer freezer = freezePackageForInstall(pkgName, installFlags,
                 "installPackageLI")) {
@@ -25675,6 +25910,7 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
 
                 final PackageSetting ps = mSettings.mPackages.get(targetPackageName);
                 ps.setOverlayPaths(overlayPaths, userId);
+                PackageManager.invalidatePackageInfoCache();
                 return true;
             }
         }
@@ -25744,6 +25980,28 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
+        }
+    }
+
+    /**
+     * XTC 差异：为白名单进程直接授予 provider 权限（绕过标准权限模型，**已谴责**）。
+     */
+    public int grantContentProviderPermission(int appId, String processName, String permission,
+            int userId) {
+        synchronized (mPackages) {
+            final Object userIdLPr = mSettings.getUserIdLPr(UserHandle.getAppId(appId));
+            if (userIdLPr == null) {
+                return -2;
+            }
+            final PermissionsState permissionsState =
+                    ((SettingBase) userIdLPr).getPermissionsState();
+            final BasePermission basePermission = mSettings.mPermissions.get(permission);
+            final int result = permissionsState.grantRuntimePermission(basePermission, userId);
+            if (result == -1) {
+                Log.w(TAG, "grant ContentProvider whitelist permission failed pkg:" + processName
+                        + " name:" + basePermission.name);
+            }
+            return result;
         }
     }
 

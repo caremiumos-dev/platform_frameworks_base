@@ -2048,6 +2048,40 @@ public class AudioTrack extends PlayerBase
             throw new IllegalStateException("pause() called on uninitialized AudioTrack.");
         }
 
+        // XTC/BBK: fade the volume out before pausing. Bundled WeChat gets a slow ramp
+        // plus an extra delay; other callers are muted immediately.
+        try {
+            String packageName = android.app.ActivityThread.currentOpPackageName();
+            if (packageName == null) {
+                String[] packagesForUid = android.app.ActivityThread.getPackageManager()
+                        .getPackagesForUid(android.os.Process.myUid());
+                if (packagesForUid != null && packagesForUid.length > 0) {
+                    android.util.Log.e(TAG, "audiotrack pause1    called by  " + packagesForUid);
+                }
+            } else if (packageName.equals("com.xtc.weichat")) {
+                android.util.Log.e(TAG, "audiotrack pause2  called by " + packageName);
+                float maxVolume = getMaxVolume();
+                for (int i = 1; i < 6; i++) {
+                    setVolume(maxVolume - ((maxVolume / 5.0f) * i));
+                    try {
+                        Thread.sleep(20L);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    Thread.sleep(200L);
+                } catch (InterruptedException e2) {
+                    e2.printStackTrace();
+                }
+            } else {
+                android.util.Log.d(TAG, "audiotrack pause3\tcalled by  " + packageName);
+                setVolume(0.0f);
+            }
+        } catch (android.os.RemoteException e) {
+            // ignore package lookup failures
+        }
+
         // pause playback
         synchronized(mPlayStateLock) {
             native_pause();

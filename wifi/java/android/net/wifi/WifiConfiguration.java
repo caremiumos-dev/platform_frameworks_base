@@ -61,6 +61,9 @@ public class WifiConfiguration implements Parcelable {
     public static final String priorityVarName = "priority";
     /** {@hide} */
     public static final String hiddenSSIDVarName = "scan_ssid";
+
+    /** CAF/QTI vendor extension. */
+    public static final String shareThisApVarName = "share_this_ap";
     /** {@hide} */
     public static final String pmfVarName = "ieee80211w";
     /** {@hide} */
@@ -261,10 +264,16 @@ public class WifiConfiguration implements Parcelable {
     public static final int AP_BAND_2GHZ = 0;
 
     /**
-     * 5GHz band.
+     * 5GHz band for AP mode.
      * @hide
      */
     public static final int AP_BAND_5GHZ = 1;
+
+    /**
+     * CAF/QTI vendor extension: dual band (2.4GHz + 5GHz) AP mode.
+     * @hide
+     */
+    public static final int AP_BAND_DUAL = 2;
 
     /**
      * The band which AP resides on
@@ -321,6 +330,13 @@ public class WifiConfiguration implements Parcelable {
      * SSID-specific probe request must be used for scans.
      */
     public boolean hiddenSSID;
+
+    /**
+     * CAF/QTI vendor extension: this configuration is used to share the current AP
+     * (soft AP extension) instead of being a regular client network.
+     * @hide
+     */
+    public boolean shareThisAp;
 
     /**
      * This is a network that requries Protected Management Frames (PMF).
@@ -1512,6 +1528,7 @@ public class WifiConfiguration implements Parcelable {
         roamingConsortiumIds = new long[0];
         priority = 0;
         hiddenSSID = false;
+        shareThisAp = false;
         allowedKeyManagement = new BitSet();
         allowedProtocols = new BitSet();
         allowedAuthAlgorithms = new BitSet();
@@ -1586,6 +1603,7 @@ public class WifiConfiguration implements Parcelable {
                 append(" BSSID: ").append(this.BSSID).append(" FQDN: ").append(this.FQDN)
                 .append(" PRIO: ").append(this.priority)
                 .append(" HIDDEN: ").append(this.hiddenSSID)
+                .append(" ShareThisAp: ").append(this.shareThisAp)
                 .append('\n');
 
 
@@ -2065,6 +2083,7 @@ public class WifiConfiguration implements Parcelable {
             wepTxKeyIndex = source.wepTxKeyIndex;
             priority = source.priority;
             hiddenSSID = source.hiddenSSID;
+            shareThisAp = source.shareThisAp;
             allowedKeyManagement   = (BitSet) source.allowedKeyManagement.clone();
             allowedProtocols       = (BitSet) source.allowedProtocols.clone();
             allowedAuthAlgorithms  = (BitSet) source.allowedAuthAlgorithms.clone();
@@ -2144,6 +2163,7 @@ public class WifiConfiguration implements Parcelable {
         dest.writeInt(wepTxKeyIndex);
         dest.writeInt(priority);
         dest.writeInt(hiddenSSID ? 1 : 0);
+        dest.writeInt(shareThisAp ? 1 : 0);
         dest.writeInt(requirePMF ? 1 : 0);
         dest.writeString(updateIdentifier);
 
@@ -2213,6 +2233,7 @@ public class WifiConfiguration implements Parcelable {
                 config.wepTxKeyIndex = in.readInt();
                 config.priority = in.readInt();
                 config.hiddenSSID = in.readInt() != 0;
+                config.shareThisAp = in.readInt() != 0;
                 config.requirePMF = in.readInt() != 0;
                 config.updateIdentifier = in.readString();
 

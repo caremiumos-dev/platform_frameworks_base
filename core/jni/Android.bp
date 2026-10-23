@@ -35,6 +35,7 @@ cc_library_shared {
         "com_google_android_gles_jni_EGLImpl.cpp",
         "com_google_android_gles_jni_GLImpl.cpp", // TODO: .arm
         "android_app_Activity.cpp",
+        "android_app_ActivityTrigger.cpp",
         "android_app_ApplicationLoaders.cpp",
         "android_app_NativeActivity.cpp",
         "android_app_admin_SecurityLog.cpp",
@@ -106,6 +107,7 @@ cc_library_shared {
         "android_util_EventLog.cpp",
         "android_util_MemoryIntArray.cpp",
         "android_util_Log.cpp",
+        "android_util_SeempLog.cpp",
         "android_util_PathParser.cpp",
         "android_util_Process.cpp",
         "android_util_StringBlock.cpp",
