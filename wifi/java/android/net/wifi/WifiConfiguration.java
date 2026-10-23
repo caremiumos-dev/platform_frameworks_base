@@ -116,10 +116,23 @@ public class WifiConfiguration implements Parcelable {
          */
         public static final int FT_EAP = 7;
 
+        // XTC/CAF: FILS（IEEE 802.11ai）密钥管理，供应商 supplicant HAL 扩展位。
+        /**
+         * FILS with SHA-256 authentication.
+         * @hide
+         */
+        public static final int FILS_SHA256 = 8;
+
+        /**
+         * FILS with SHA-384 authentication.
+         * @hide
+         */
+        public static final int FILS_SHA384 = 9;
+
         public static final String varName = "key_mgmt";
 
         public static final String[] strings = { "NONE", "WPA_PSK", "WPA_EAP", "IEEE8021X",
-                "WPA2_PSK", "OSEN", "FT_PSK", "FT_EAP" };
+                "WPA2_PSK", "OSEN", "FT_PSK", "FT_EAP", "FILS_SHA256", "FILS_SHA384" };
     }
 
     /**
