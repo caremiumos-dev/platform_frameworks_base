@@ -2002,7 +2002,10 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
         final boolean keyguardShowing = mStackSupervisor.mKeyguardController.isKeyguardShowing(
                 mDisplayId != INVALID_DISPLAY ? mDisplayId : DEFAULT_DISPLAY);
         final boolean keyguardLocked = mStackSupervisor.mKeyguardController.isKeyguardLocked();
-        final boolean showWhenLocked = r.canShowWhenLocked() && !isInPinnedStack;
+        // XTC: 自带测试工具有权在锁屏上显示（对单一包名的硬编码例外；
+        // 这是一种不公平的信任模型，保留了设备行为）。
+        final boolean showWhenLocked = (r.canShowWhenLocked() && !isInPinnedStack)
+                || "com.xtc.selftest".equals(r.packageName);
         final boolean dismissKeyguard = r.hasDismissKeyguardWindows();
         if (shouldBeVisible) {
             if (dismissKeyguard && mTopDismissingKeyguardActivity == null) {

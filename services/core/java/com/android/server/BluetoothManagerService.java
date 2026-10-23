@@ -19,6 +19,7 @@ package com.android.server;
 import android.Manifest;
 import android.app.ActivityManager;
 import android.app.AppGlobals;
+import android.app.AppOpsManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.IBluetooth;
@@ -52,6 +53,7 @@ import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.UserManagerInternal;
@@ -123,6 +125,9 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
     private static final int MESSAGE_ADD_PROXY_DELAYED = 400;
     private static final int MESSAGE_BIND_PROFILE_SERVICE = 401;
     private static final int MESSAGE_RESTORE_USER_SETTING = 500;
+    // XTC/CTA：开启蓝牙需经 MobileManagerService 异步鉴权（见 checkEnablePermission）。
+    private static final int MESSAGE_CONFIRM_ENABLE = 5001;
+    private static final int MESSAGE_REJECT_ENABLE = 5002;
 
     private static final int RESTORE_SETTING_TO_ON = 1;
     private static final int RESTORE_SETTING_TO_OFF = 0;
@@ -452,6 +457,65 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
      */
     private boolean isNameAndAddressSet() {
         return mName !=null && mAddress!= null && mName.length()>0 && mAddress.length()>0;
+    }
+
+    private boolean isStrictOpEnable() {
+        return SystemProperties.getBoolean("persist.sys.strict_op_enable", false);
+    }
+
+    /**
+     * 向 MobileManagerService 异步申请开启蓝牙的权限，结果通过
+     * {@link #MESSAGE_CONFIRM_ENABLE}/{@link #MESSAGE_REJECT_ENABLE} 回到本服务。
+     *
+     * 批评：把本地硬件开关的最终决定权外包给可远程配置的鉴权服务，
+     * 用户与第三方应用都无法据此判断为何开不了蓝牙。
+     */
+    private void checkEnablePermission(final String packageName) {
+        Slog.d(TAG, "checkEnablePermission");
+        com.xtc.auth.MobileManagerUtils.checkPermissionAsync(
+                "sub-permission.CHANGE_BT_STATE_ON", Binder.getCallingUid(),
+                new com.xtc.auth.IRequestedPermissionCallback.Stub() {
+                    @Override
+                    public void onPermissionCheckResult(String permissionName, int uid,
+                            int result) {
+                        Slog.v(TAG, "onPermissionCheckResult(): permissionName = "
+                                + permissionName + ", uid = " + uid + ", result = " + result);
+                        Message message = mHandler.obtainMessage();
+                        message.obj = packageName;
+                        if (result == 0) {
+                            message.what = MESSAGE_CONFIRM_ENABLE;
+                        } else {
+                            message.what = MESSAGE_REJECT_ENABLE;
+                        }
+                        mHandler.sendMessage(message);
+                    }
+                });
+    }
+
+    private void confirmEnable(String packageName) {
+        Slog.d(TAG, "confirmEnable packageName=" + packageName);
+        synchronized (mReceiver) {
+            mQuietEnableExternal = false;
+            mEnableExternal = true;
+            long callingIdentity = Binder.clearCallingIdentity();
+            persistBluetoothSetting(BLUETOOTH_ON_BLUETOOTH);
+            Binder.restoreCallingIdentity(callingIdentity);
+            sendEnableMsg(false, packageName);
+        }
+    }
+
+    private void rejectEnable() {
+        Slog.d(TAG, "rejectEnable");
+        Intent intent = new Intent(BluetoothAdapter.ACTION_STATE_CHANGED);
+        intent.putExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, BluetoothAdapter.STATE_OFF);
+        intent.putExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_TURNING_ON);
+        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+        mContext.sendBroadcastAsUser(intent, UserHandle.ALL, BLUETOOTH_PERM);
+        Intent intent2 = new Intent(BluetoothAdapter.ACTION_STATE_CHANGED);
+        intent2.putExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, BluetoothAdapter.STATE_TURNING_ON);
+        intent2.putExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF);
+        intent2.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+        mContext.sendBroadcastAsUser(intent2, UserHandle.ALL, BLUETOOTH_PERM);
     }
 
     /**
@@ -828,10 +892,33 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
             }
         }
 
+        if (isStrictOpEnable()) {
+            AppOpsManager appOps = (AppOpsManager) mContext.getSystemService(
+                    AppOpsManager.class);
+            String callingPackage = mContext.getPackageManager().getNameForUid(callingUid);
+            if (callingUid >= Process.FIRST_APPLICATION_UID
+                    && !callingPackage.startsWith("android.uid.systemui")
+                    && !callingPackage.startsWith("android.uid.system")
+                    && appOps.noteOp(AppOpsManager.OP_BLUETOOTH_ADMIN, callingUid,
+                            callingPackage) == AppOpsManager.MODE_IGNORED) {
+                return false;
+            }
+        }
+
         if (DBG) {
             Slog.d(TAG,"enable(" + packageName + "):  mBluetooth =" + mBluetooth +
                     " mBinding = " + mBinding + " mState = " +
                     BluetoothAdapter.nameForState(mState));
+        }
+
+        // XTC/CTA：非系统进程开启蓝牙要先向 MobileManagerService 申请，
+        // 批准/拒绝在 MESSAGE_CONFIRM_ENABLE / MESSAGE_REJECT_ENABLE 中处理。
+        // 批评：这是把系统开关的最终决定权交给一个可远程配置的白名单服务，
+        // 用户对本地硬件开关的自主权被削弱。
+        if (callingUid > Process.FIRST_APPLICATION_UID
+                && com.xtc.auth.MobileManagerUtils.isCtaVersion()) {
+            checkEnablePermission(packageName);
+            return true;
         }
 
         synchronized(mReceiver) {
@@ -1459,6 +1546,14 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                     }
                     break;
 
+                // XTC/CTA：鉴权结果回调。
+                case MESSAGE_CONFIRM_ENABLE:
+                    confirmEnable((String) msg.obj);
+                    break;
+                case MESSAGE_REJECT_ENABLE:
+                    rejectEnable();
+                    break;
+
                 case MESSAGE_REGISTER_ADAPTER:
                 {
                     IBluetoothManagerCallback callback = (IBluetoothManagerCallback) msg.obj;
@@ -1892,7 +1987,7 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
         Intent intent = new Intent(BluetoothAdapter.ACTION_BLE_STATE_CHANGED);
         intent.putExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, prevState);
         intent.putExtra(BluetoothAdapter.EXTRA_STATE, newState);
-        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
+        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL, BLUETOOTH_PERM);
     }
 
@@ -1966,7 +2061,7 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
             Intent intent = new Intent(BluetoothAdapter.ACTION_STATE_CHANGED);
             intent.putExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, prevState);
             intent.putExtra(BluetoothAdapter.EXTRA_STATE, newState);
-            intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
+            intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
             mContext.sendBroadcastAsUser(intent, UserHandle.ALL, BLUETOOTH_PERM);
         }
     }

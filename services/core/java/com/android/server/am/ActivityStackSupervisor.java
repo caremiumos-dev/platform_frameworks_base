@@ -1617,6 +1617,12 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
         if (startAnyPerm == PERMISSION_GRANTED) {
             return true;
         }
+        // XTC: 非 system uid 一律禁止拉起 mmitest 进程（对单一进程名的硬编码封禁；
+        // 属于歧视性信任模型，保留设备行为）。
+        if ("com.xtc.mmitest".equals(aInfo.processName) && callingUid != Process.SYSTEM_UID) {
+            Slog.w(TAG, "AdbSecure XTC not allowed to start mmitest(in activity)");
+            return false;
+        }
         final int componentRestriction = getComponentRestrictionForCallingPackage(
                 aInfo, callingPackage, callingPid, callingUid, ignoreTargetSecurity);
         final int actionRestriction = getActionRestrictionForCallingPackage(
