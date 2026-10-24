@@ -617,6 +617,8 @@ public class MediaPlayer extends PlayerBase
     }
 
     private final static String TAG = "MediaPlayer";
+    // XTC: 功耗分析日志（播放时长按音频/视频分类）。
+    private static final String POWER_ANALYTICS_TAG = "PwrHistorian";
     // Name of the remote interface for the media player. Must be kept
     // in sync with the 2nd parameter of the IMPLEMENT_META_INTERFACE
     // macro invocation in IMediaPlayer.cpp
@@ -632,6 +634,9 @@ public class MediaPlayer extends PlayerBase
     private boolean mStayAwake;
     private int mStreamType = AudioManager.USE_DEFAULT_STREAM_TYPE;
     private int mUsage = -1;
+    // XTC: 功耗分析用。
+    private long mMediaPlayerUseStartTime;
+    private boolean mVideoUsed;
     private boolean mBypassInterruptionPolicy;
 
     // Modular DRM
@@ -758,6 +763,7 @@ public class MediaPlayer extends PlayerBase
         }
         _setVideoSurface(surface);
         updateSurfaceScreenOn();
+        mVideoUsed = true;
     }
 
     /**
@@ -787,6 +793,7 @@ public class MediaPlayer extends PlayerBase
         mSurfaceHolder = null;
         _setVideoSurface(surface);
         updateSurfaceScreenOn();
+        mVideoUsed = true;
     }
 
     /* Do not change these video scaling mode values below without updating
@@ -1336,6 +1343,20 @@ public class MediaPlayer extends PlayerBase
         baseStart();
         stayAwake(true);
         _start();
+        mMediaPlayerUseStartTime = System.currentTimeMillis();
+    }
+
+    /**
+     * XTC: 记录本次播放时长到 PwrHistorian（按音频/视频分类）。
+     */
+    private void printPowerAnalyTime(long now) {
+        String packageName = android.app.ActivityThread.currentOpPackageName();
+        String tag = mVideoUsed ? "XtcPwrVideoPlayer" : "XtcPwrAudioPlayer";
+        if (now <= 0 || mMediaPlayerUseStartTime <= 0) {
+            return;
+        }
+        Log.d(POWER_ANALYTICS_TAG, tag + " time=" + (now - mMediaPlayerUseStartTime)
+                + " ms ,callingPackage=" + packageName);
     }
 
     private native void _start() throws IllegalStateException;
