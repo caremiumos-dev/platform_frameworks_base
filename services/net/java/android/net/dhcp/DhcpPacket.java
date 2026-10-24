@@ -264,6 +264,11 @@ public abstract class DhcpPacket {
     protected static final byte DHCP_OPTION_END = (byte) 0xff;
 
     /**
+     * DHCP rapid commit option (RFC 4039)，用于 FILS 快速接入。
+     */
+    protected static final byte DHCP_OPTION_RAPID_COMMIT = 80;
+
+    /**
      * The transaction identifier used in this particular DHCP negotiation
      */
     protected final int mTransId;
@@ -287,6 +292,9 @@ public abstract class DhcpPacket {
      * Does the client request a broadcast response?
      */
     protected boolean mBroadcast;
+
+    // XTC/CAF: RFC 4039 rapid commit（FILS 快速接入）。
+    protected boolean mRapidCommit;
 
     /**
      * The six-octet MAC of the client.
@@ -314,6 +322,12 @@ public abstract class DhcpPacket {
     protected DhcpPacket(int transId, short secs, Inet4Address clientIp, Inet4Address yourIp,
                          Inet4Address nextIp, Inet4Address relayIp,
                          byte[] clientMac, boolean broadcast) {
+        this(transId, secs, clientIp, yourIp, nextIp, relayIp, clientMac, broadcast, false);
+    }
+
+    protected DhcpPacket(int transId, short secs, Inet4Address clientIp, Inet4Address yourIp,
+                         Inet4Address nextIp, Inet4Address relayIp,
+                         byte[] clientMac, boolean broadcast, boolean rapidCommit) {
         mTransId = transId;
         mSecs = secs;
         mClientIp = clientIp;
@@ -322,6 +336,7 @@ public abstract class DhcpPacket {
         mRelayIp = relayIp;
         mClientMac = clientMac;
         mBroadcast = broadcast;
+        mRapidCommit = rapidCommit;
     }
 
     /**
@@ -523,6 +538,14 @@ public abstract class DhcpPacket {
     /**
      * Adds an optional parameter containing a single byte value.
      */
+    /**
+     * XTC/CAF: adds a zero-length option (e.g. rapid commit).
+     */
+    protected static void addTlv(ByteBuffer buf, byte type) {
+        buf.put(type);
+        buf.put((byte) 0);
+    }
+
     protected static void addTlv(ByteBuffer buf, byte type, byte value) {
         buf.put(type);
         buf.put((byte) 1);
@@ -1173,8 +1196,18 @@ public abstract class DhcpPacket {
      */
     public static ByteBuffer buildDiscoverPacket(int encap, int transactionId,
         short secs, byte[] clientMac, boolean broadcast, byte[] expectedParams) {
+        return buildDiscoverPacket(encap, transactionId, secs, clientMac, broadcast,
+                expectedParams, false);
+    }
+
+    /**
+     * XTC/CAF: build a DISCOVER with the rapid-commit option (RFC 4039).
+     */
+    public static ByteBuffer buildDiscoverPacket(int encap, int transactionId,
+        short secs, byte[] clientMac, boolean broadcast, byte[] expectedParams,
+        boolean rapidCommit) {
         DhcpPacket pkt = new DhcpDiscoverPacket(
-            transactionId, secs, clientMac, broadcast);
+            transactionId, secs, clientMac, broadcast, rapidCommit);
         pkt.mRequestedParams = expectedParams;
         return pkt.buildPacket(encap, DHCP_SERVER, DHCP_CLIENT);
     }

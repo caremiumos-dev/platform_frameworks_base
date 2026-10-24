@@ -67,6 +67,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -366,6 +367,9 @@ public class IpManager extends StateMachine {
         /* package */ ApfCapabilities mApfCapabilities;
         /* package */ int mProvisioningTimeoutMs = DEFAULT_TIMEOUT_MS;
         /* package */ int mIPv6AddrGenMode = INetd.IPV6_ADDR_GEN_MODE_STABLE_PRIVACY;
+        // XTC/CAF: FILS 快速接入——rapid commit 与「DISCOVER 已由上层发出」。
+        public boolean mRapidCommit;
+        public boolean mDiscoverSent;
 
         public ProvisioningConfiguration() {} // used by Builder
 
@@ -375,6 +379,8 @@ public class IpManager extends StateMachine {
             mUsingIpReachabilityMonitor = other.mUsingIpReachabilityMonitor;
             mRequestedPreDhcpActionMs = other.mRequestedPreDhcpActionMs;
             mInitialConfig = InitialConfiguration.copy(other.mInitialConfig);
+            mRapidCommit = other.mRapidCommit;
+            mDiscoverSent = other.mDiscoverSent;
             mStaticIpConfig = other.mStaticIpConfig;
             mApfCapabilities = other.mApfCapabilities;
             mProvisioningTimeoutMs = other.mProvisioningTimeoutMs;
@@ -753,6 +759,13 @@ public class IpManager extends StateMachine {
 
     public void completedPreDhcpAction() {
         sendMessage(EVENT_PRE_DHCP_ACTION_COMPLETE);
+    }
+
+    /**
+     * XTC/CAF: build the DHCP DISCOVER (rapid commit) used for FILS HLP.
+     */
+    public ByteBuffer buildDiscoverWithRapidCommitPacket() {
+        return mDhcpClient.buildDiscoverWithRapidCommitPacket();
     }
 
     /**
@@ -1238,7 +1251,14 @@ public class IpManager extends StateMachine {
             // Start DHCPv4.
             mDhcpClient = DhcpClient.makeDhcpClient(mContext, IpManager.this, mInterfaceName);
             mDhcpClient.registerForPreDhcpNotification();
-            mDhcpClient.sendMessage(DhcpClient.CMD_START_DHCP);
+            // XTC/CAF: FILS rapid commit 走专门命令。
+            if (mConfiguration.mRapidCommit || mConfiguration.mDiscoverSent) {
+                mDhcpClient.sendMessage(DhcpClient.CMD_START_DHCP_RAPID_COMMIT,
+                        mConfiguration.mRapidCommit ? 1 : 0,
+                        mConfiguration.mDiscoverSent ? 1 : 0);
+            } else {
+                mDhcpClient.sendMessage(DhcpClient.CMD_START_DHCP);
+            }
         }
 
         return true;

@@ -30,6 +30,15 @@ class DhcpDiscoverPacket extends DhcpPacket {
         super(transId, secs, INADDR_ANY, INADDR_ANY, INADDR_ANY, INADDR_ANY, clientMac, broadcast);
     }
 
+    /**
+     * XTC/CAF: DISCOVER with RFC 4039 rapid commit.
+     */
+    DhcpDiscoverPacket(int transId, short secs, byte[] clientMac, boolean broadcast,
+            boolean rapidCommit) {
+        super(transId, secs, INADDR_ANY, INADDR_ANY, INADDR_ANY, INADDR_ANY, clientMac,
+                broadcast, rapidCommit);
+    }
+
     public String toString() {
         String s = super.toString();
         return s + " DISCOVER " +
@@ -55,6 +64,9 @@ class DhcpDiscoverPacket extends DhcpPacket {
         addTlv(buffer, DHCP_CLIENT_IDENTIFIER, getClientId());
         addCommonClientTlvs(buffer);
         addTlv(buffer, DHCP_PARAMETER_LIST, mRequestedParams);
+        if (mRapidCommit) {
+            addTlv(buffer, DHCP_OPTION_RAPID_COMMIT);
+        }
         addTlvEnd(buffer);
     }
 }
