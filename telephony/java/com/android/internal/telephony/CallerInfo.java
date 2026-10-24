@@ -29,11 +29,16 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.RawContacts;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.Rlog;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.telecom.XtcSecurePii;
 import android.util.SeempLog;
 
 import com.android.i18n.phonenumbers.geocoding.PhoneNumberOfflineGeocoder;
@@ -84,6 +89,16 @@ public class CallerInfo {
      * field here, NOT name.  We're NOT always guaranteed to have a name
      * for a connection, but the number should be displayable.
      */
+    // XTC: 联系人扩展字段（来自厂商联系人库/通话记录）。
+    public static String callTransName;
+    public String callAutoCall;
+    public String callCountryCode;
+    public String callInShortNumWhiteList;
+    public String callMobileID;
+    public String callParentReview;
+    public String callPhotoPath;
+    public String callType;
+
     public String name;
     public String phoneNumber;
     public String normalizedNumber;
@@ -281,6 +296,10 @@ public class CallerInfo {
                 columnIndex = cursor.getColumnIndex(PhoneLookup.SEND_TO_VOICEMAIL);
                 info.shouldSendToVoicemail = (columnIndex != -1) &&
                         ((cursor.getInt(columnIndex)) == 1);
+
+                // XTC: 厂商联系人库扩展列（AUTO_CALL/MOBILE_ID/TYPE/PHOTO_PATH/
+                // COUNTRY_CODE/shortDialNumber/parentReview）。
+                parseXtcColumns(info, cursor);
                 info.contactExists = true;
             }
             cursor.close();
@@ -292,6 +311,248 @@ public class CallerInfo {
         info.contactRefUri = contactRef;
 
         return info;
+    }
+
+    private static void parseXtcColumns(CallerInfo info, Cursor cursor) {
+        int columnIndex = cursor.getColumnIndex("AUTO_CALL");
+        if (columnIndex != -1) {
+            info.callAutoCall = cursor.getString(columnIndex);
+        }
+        columnIndex = cursor.getColumnIndex("MOBILE_ID");
+        if (columnIndex != -1) {
+            info.callMobileID = cursor.getString(columnIndex);
+        }
+        columnIndex = cursor.getColumnIndex("TYPE");
+        if (columnIndex != -1) {
+            info.callType = cursor.getString(columnIndex);
+        }
+        columnIndex = cursor.getColumnIndex("PHOTO_PATH");
+        if (columnIndex != -1) {
+            info.callPhotoPath = cursor.getString(columnIndex);
+        }
+        columnIndex = cursor.getColumnIndex("COUNTRY_CODE");
+        if (columnIndex != -1) {
+            info.callCountryCode = cursor.getString(columnIndex);
+        }
+        columnIndex = cursor.getColumnIndex("shortDialNumber");
+        if (columnIndex != -1) {
+            info.callInShortNumWhiteList = cursor.getString(columnIndex);
+        }
+        columnIndex = cursor.getColumnIndex("parentReview");
+        if (columnIndex != -1) {
+            info.callParentReview = cursor.getString(columnIndex);
+        }
+        Log.e(TAG, "bbklhj getCallerInfo from xtcContactDB info :  " + info
+                + ",callParentReview = " + info.callParentReview);
+    }
+
+    /**
+     * XTC: 把游标里的所有匹配行解析成 CallerInfo 列表（callTransName 用于过滤）。
+     */
+    private static List<CallerInfo> cursor2CallerInfo(Context context, Cursor cursor, Uri uri) {
+        List<CallerInfo> infos = new ArrayList<>();
+        if (cursor == null) {
+            return infos;
+        }
+        Log.d(TAG, "cursor2CallerInfo start->");
+        while (cursor.moveToNext()) {
+            CallerInfo info = new CallerInfo();
+            info.photoResource = 0;
+            info.phoneLabel = null;
+            info.numberType = 0;
+            info.numberLabel = null;
+            info.cachedPhoto = null;
+            info.isCachedPhotoCurrent = false;
+            info.contactExists = false;
+
+            int columnIndex = cursor.getColumnIndex("NAME");
+            if (columnIndex == -1) {
+                columnIndex = cursor.getColumnIndex(PhoneLookup.DISPLAY_NAME);
+            }
+            if (columnIndex != -1) {
+                info.name = cursor.getString(columnIndex);
+                Log.d(TAG, "bbklhj   getCallerInfo from xtcContactDB name ="
+                        + XtcSecurePii.encrypt(info.name));
+            }
+            columnIndex = cursor.getColumnIndex("NUMBER");
+            if (columnIndex == -1) {
+                columnIndex = cursor.getColumnIndex(PhoneLookup.NUMBER);
+            }
+            if (columnIndex != -1) {
+                info.phoneNumber = cursor.getString(columnIndex);
+                Log.d(TAG, "bbklhj   getCallerInfo from xtcContactDB info.phoneNumber ="
+                        + XtcSecurePii.encrypt(info.phoneNumber));
+            }
+            columnIndex = cursor.getColumnIndex("normalized_number");
+            if (columnIndex == -1) {
+                columnIndex = cursor.getColumnIndex(PhoneLookup.NORMALIZED_NUMBER);
+            }
+            if (columnIndex != -1) {
+                info.normalizedNumber = cursor.getString(columnIndex);
+            }
+            parseXtcColumns(info, cursor);
+
+            int labelIndex = cursor.getColumnIndex("label");
+            int typeIndex = cursor.getColumnIndex("type");
+            if (labelIndex != -1 && typeIndex != -1) {
+                info.numberType = cursor.getInt(typeIndex);
+                info.numberLabel = cursor.getString(labelIndex);
+                info.phoneLabel = Phone.getDisplayLabel(context, info.numberType,
+                        info.numberLabel).toString();
+            }
+
+            int personIdIndex = getColumnIndexForPersonId(uri, cursor);
+            if (personIdIndex != -1) {
+                long contactId = cursor.getLong(personIdIndex);
+                if (contactId != 0 && !Contacts.isEnterpriseContactId(contactId)) {
+                    info.contactIdOrZero = contactId;
+                }
+                if (Contacts.isEnterpriseContactId(contactId)) {
+                    info.userType = USER_TYPE_WORK;
+                }
+            }
+
+            int lookupIndex = cursor.getColumnIndex(Contacts.LOOKUP_KEY);
+            if (lookupIndex != -1) {
+                info.lookupKey = cursor.getString(lookupIndex);
+            }
+
+            int photoIndex = cursor.getColumnIndex(PhoneLookup.PHOTO_URI);
+            if (photoIndex != -1 && cursor.getString(photoIndex) != null) {
+                info.contactDisplayPhotoUri = Uri.parse(cursor.getString(photoIndex));
+            } else {
+                info.contactDisplayPhotoUri = null;
+            }
+
+            int ringtoneIndex = cursor.getColumnIndex(PhoneLookup.CUSTOM_RINGTONE);
+            if (ringtoneIndex != -1 && cursor.getString(ringtoneIndex) != null) {
+                if (TextUtils.isEmpty(cursor.getString(ringtoneIndex))) {
+                    info.contactRingtoneUri = Uri.EMPTY;
+                } else {
+                    info.contactRingtoneUri = Uri.parse(cursor.getString(ringtoneIndex));
+                }
+            } else {
+                info.contactRingtoneUri = null;
+            }
+
+            int voicemailIndex = cursor.getColumnIndex(PhoneLookup.SEND_TO_VOICEMAIL);
+            info.shouldSendToVoicemail = (voicemailIndex != -1)
+                    && (cursor.getInt(voicemailIndex) == 1);
+            info.contactExists = true;
+            info.needUpdate = false;
+            info.name = normalize(info.name);
+            info.contactRefUri = uri;
+
+            Log.d(TAG, "callTransName:" + callTransName);
+            if (callTransName == null || info.name == null
+                    || info.name.contains(callTransName)) {
+                infos.add(info);
+            } else {
+                Log.d(TAG, "callTransName is not matching");
+            }
+        }
+        Log.d(TAG, "cursor2CallerInfo end <-- callerInfo.Size:" + infos.size());
+        cursor.close();
+        return infos;
+    }
+
+    /**
+     * XTC: 多个联系人匹配同一号码时，优先取号码完全相等的，其次取后缀匹配的。
+     */
+    public static CallerInfo getCallerInfo(Context context, String number, Uri contactRef,
+            Cursor cursor) {
+        SeempLog.record_uri(12, contactRef);
+        List<CallerInfo> infos = cursor2CallerInfo(context, cursor, contactRef);
+        Log.d(TAG, "framework getCallerInfo number: " + XtcSecurePii.encrypt(number)
+                + " ,callerInfos=" + infos);
+        CallerInfo info = new CallerInfo();
+        info.phoneNumber = number;
+        if (infos.isEmpty() || TextUtils.isEmpty(number)) {
+            return info;
+        }
+        String firstNumber = infos.get(0).phoneNumber;
+        info.callInShortNumWhiteList = infos.get(0).callInShortNumWhiteList;
+        if (TextUtils.isEmpty(firstNumber)) {
+            return info;
+        }
+        if (infos.size() == 1) {
+            return (firstNumber.endsWith(number) || number.endsWith(firstNumber))
+                    ? infos.get(0) : info;
+        }
+        LinkedHashMap<String, CallerInfo> byNumber = new LinkedHashMap<>();
+        for (CallerInfo ci : infos) {
+            Log.d(TAG, "do getCallerInfo info: " + ci);
+            if (!TextUtils.isEmpty(ci.phoneNumber)) {
+                byNumber.put(ci.phoneNumber, ci);
+            } else if (!TextUtils.isEmpty(ci.callInShortNumWhiteList)) {
+                byNumber.put(ci.callInShortNumWhiteList, ci);
+            }
+        }
+        if (byNumber.isEmpty()) {
+            return info;
+        }
+        if (byNumber.containsKey(number)) {
+            return byNumber.get(number);
+        }
+        for (String key : byNumber.keySet()) {
+            CallerInfo ci = byNumber.get(key);
+            if (!TextUtils.isEmpty(ci.callInShortNumWhiteList)) {
+                info.callInShortNumWhiteList = ci.callInShortNumWhiteList;
+            }
+            if (key.equals(number)) {
+                return ci;
+            }
+            if (key.endsWith(number) || number.endsWith(key)) {
+                return ci;
+            }
+        }
+        return info;
+    }
+
+    /**
+     * XTC: 按号码查询联系人（返回多行匹配后的结果）。
+     */
+    public static CallerInfo getCallerInfo(Context context, String number, Uri contactRef) {
+        ContentResolver cr = CallerInfoAsyncQuery.getCurrentProfileContentResolver(context);
+        if (cr == null) {
+            return null;
+        }
+        try {
+            return getCallerInfo(context, number, contactRef,
+                    cr.query(contactRef, null, null, null, null));
+        } catch (RuntimeException re) {
+            Rlog.e(TAG, "Error getting caller info.", re);
+            return null;
+        }
+    }
+
+    private static int getListEqualLength(ArrayList<String> first, ArrayList<String> second) {
+        if (first == null || second == null || first.isEmpty() || second.isEmpty()) {
+            return 0;
+        }
+        if (first.size() < second.size()) {
+            ArrayList<String> tmp = first;
+            first = second;
+            second = tmp;
+        }
+        int equal = 0;
+        for (int i = 0; i < first.size(); i++) {
+            if (i >= second.size()) {
+                return second.size();
+            }
+            if (!first.get(i).equals(second.get(i))) {
+                break;
+            }
+            equal++;
+        }
+        return equal;
+    }
+
+    /**
+     * XTC: 设置通话转接/翻译名过滤（只保留名字包含该串的联系人）。
+     */
+    public static void setTransName(String name) {
+        callTransName = name;
     }
 
     /**
@@ -643,45 +904,40 @@ public class CallerInfo {
      */
     @Override
     public String toString() {
-        // Warning: never check in this file with VERBOSE_DEBUG = true
-        // because that will result in PII in the system log.
-        final boolean VERBOSE_DEBUG = false;
-
-        if (VERBOSE_DEBUG) {
-            return new StringBuilder(384)
-                    .append(super.toString() + " { ")
-                    .append("\nname: " + name)
-                    .append("\nphoneNumber: " + phoneNumber)
-                    .append("\nnormalizedNumber: " + normalizedNumber)
-                    .append("\ngeoDescription: " + geoDescription)
-                    .append("\ncnapName: " + cnapName)
-                    .append("\nnumberPresentation: " + numberPresentation)
-                    .append("\nnamePresentation: " + namePresentation)
-                    .append("\ncontactExits: " + contactExists)
-                    .append("\nphoneLabel: " + phoneLabel)
-                    .append("\nnumberType: " + numberType)
-                    .append("\nnumberLabel: " + numberLabel)
-                    .append("\nphotoResource: " + photoResource)
-                    .append("\ncontactIdOrZero: " + contactIdOrZero)
-                    .append("\nneedUpdate: " + needUpdate)
-                    .append("\ncontactRingtoneUri: " + contactRingtoneUri)
-                    .append("\ncontactDisplayPhotoUri: " + contactDisplayPhotoUri)
-                    .append("\nshouldSendToVoicemail: " + shouldSendToVoicemail)
-                    .append("\ncachedPhoto: " + cachedPhoto)
-                    .append("\nisCachedPhotoCurrent: " + isCachedPhotoCurrent)
-                    .append("\nemergency: " + mIsEmergency)
-                    .append("\nvoicemail " + mIsVoiceMail)
-                    .append("\ncontactExists " + contactExists)
-                    .append("\nuserType " + userType)
-                    .append(" }")
-                    .toString();
-        } else {
-            return new StringBuilder(128)
-                    .append(super.toString() + " { ")
-                    .append("name " + ((name == null) ? "null" : "non-null"))
-                    .append(", phoneNumber " + ((phoneNumber == null) ? "null" : "non-null"))
-                    .append(" }")
-                    .toString();
-        }
+        // XTC: 号码/姓名等 PII 一律脱敏后输出，另附厂商联系人扩展字段。
+        return new StringBuilder(512)
+                .append(super.toString()).append(" { ")
+                .append("\nname: ").append(XtcSecurePii.encrypt(name))
+                .append("\nphoneNumber: ").append(XtcSecurePii.encrypt(phoneNumber))
+                .append("\ncallAutoCall: ").append(callAutoCall)
+                .append("\ncallMobileID: ").append(callMobileID)
+                .append("\ncallType: ").append(callType)
+                .append("\ncallPhotoPath: ").append(callPhotoPath)
+                .append("\ncallCountryCode: ").append(callCountryCode)
+                .append("\nnormalizedNumber: ").append(XtcSecurePii.encrypt(normalizedNumber))
+                .append("\ngeoDescription: ").append(geoDescription)
+                .append("\ncnapName: ").append(XtcSecurePii.encrypt(cnapName))
+                .append("\nnumberPresentation: ").append(numberPresentation)
+                .append("\nnamePresentation: ").append(namePresentation)
+                .append("\ncontactExits: ").append(contactExists)
+                .append("\nphoneLabel: ").append(phoneLabel)
+                .append("\nnumberType: ").append(numberType)
+                .append("\nnumberLabel: ").append(numberLabel)
+                .append("\nphotoResource: ").append(photoResource)
+                .append("\ncontactIdOrZero: ").append(contactIdOrZero)
+                .append("\nneedUpdate: ").append(needUpdate)
+                .append("\ncontactRingtoneUri: ").append(contactRingtoneUri)
+                .append("\ncontactDisplayPhotoUri: ").append(contactDisplayPhotoUri)
+                .append("\nshouldSendToVoicemail: ").append(shouldSendToVoicemail)
+                .append("\ncachedPhoto: ").append(cachedPhoto)
+                .append("\nisCachedPhotoCurrent: ").append(isCachedPhotoCurrent)
+                .append("\nemergency: ").append(mIsEmergency)
+                .append("\nvoicemail ").append(mIsVoiceMail)
+                .append("\ncontactExists ").append(contactExists)
+                .append("\nuserType ").append(userType)
+                .append("\ncallAutoCall ").append(callAutoCall)
+                .append("\ncallCountryCode ").append(callCountryCode)
+                .append("\ncallInShortNumWhiteList ").append(callInShortNumWhiteList)
+                .append(" }").toString();
     }
 }

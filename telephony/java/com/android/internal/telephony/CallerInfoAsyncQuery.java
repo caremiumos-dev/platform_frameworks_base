@@ -343,7 +343,7 @@ public class CallerInfoAsyncQuery {
                 } else if (cw.event == EVENT_VOICEMAIL_NUMBER) {
                     mCallerInfo = new CallerInfo().markAsVoiceMail(cw.subId);
                 } else {
-                    mCallerInfo = CallerInfo.getCallerInfo(mContext, mQueryUri, cursor);
+                    mCallerInfo = CallerInfo.getCallerInfo(mContext, cw.number, mQueryUri, cursor);
                     if (DBG) Rlog.d(LOG_TAG, "==> Got mCallerInfo: " + mCallerInfo);
 
                     CallerInfo newCallerInfo = CallerInfo.doSecondaryLookupIfNecessary(
