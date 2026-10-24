@@ -475,8 +475,12 @@ public final class ViewRootImpl implements ViewParent,
 
     private String mTag = TAG;
 
+    // XTC: 截屏/录屏时屏蔽输入事件的工具。
+    android.view.XtcScreenCutUtils mXtcScreenCutUtils = new android.view.XtcScreenCutUtils();
+
     public ViewRootImpl(Context context, Display display) {
         mContext = context;
+        mXtcScreenCutUtils.setContext(context);
         mWindowSession = WindowManagerGlobal.getWindowSession();
         mDisplay = display;
         mBasePackageName = context.getBasePackageName();
@@ -4829,7 +4833,11 @@ public final class ViewRootImpl implements ViewParent,
 
             mAttachInfo.mUnbufferedDispatchRequested = false;
             mAttachInfo.mHandlingPointerEvent = true;
-            boolean handled = mView.dispatchPointerEvent(event);
+            // XTC: 截屏遮挡期间把触摸事件吃掉。
+            boolean handled = (!mXtcScreenCutUtils.isShieldScreenCut()
+                    && SystemProperties.getInt("persist.sys.xtcscreencut", 0) == 1
+                    && mXtcScreenCutUtils.dealPausedPointerEvent(event))
+                    ? true : mView.dispatchPointerEvent(event);
             maybeUpdatePointerIcon(event);
             maybeUpdateTooltip(event);
             mAttachInfo.mHandlingPointerEvent = false;
