@@ -194,4 +194,50 @@
     <!-- CAF/QTI: the two interface names used for dual soft-AP mode. -->
     <array name="config_wifi_dual_sap_interfaces" />
 
+    <!-- XTC: 霍尔（翻盖）动画/音效资源列表。 -->
+    <array name="hall_anim_list">
+        <item>system/media/hall/data/animations/Streamspeed</item>
+        <item>system/media/hall/data/animations/Glarespacetime</item>
+        <item>system/media/hall/data/animations/Mirrorlight</item>
+        <item>system/media/hall/data/animations/Punkera</item>
+        <item>system/media/hall/data/animations/Qtzmechanics</item>
+    </array>
+    <array name="hall_anim_path">
+        <item>system/media/hall/animation/Glittering.zip</item>
+        <item>system/media/hall/animation/XHero.zip</item>
+        <item>system/media/hall/animation/Youthful.zip</item>
+        <item>system/media/hall/animation/PhantomBlade.zip</item>
+        <item>system/media/hall/animation/VariableStars.zip</item>
+        <item>system/media/hall/animation/IronMan.zip</item>
+        <item>system/media/hall/animation/PurpleNightStar.zip</item>
+        <item>system/media/hall/animation/MechRevolution.zip</item>
+    </array>
+    <array name="hall_open_sound">
+        <item>system/media/hall/sounds/Glittering.aac</item>
+        <item>system/media/hall/sounds/XHero.aac</item>
+        <item>system/media/hall/sounds/Youthful.aac</item>
+        <item>system/media/hall/sounds/PhantomBlade.aac</item>
+        <item>system/media/hall/sounds/VariableStars.aac</item>
+        <item>system/media/hall/sounds/IronMan.aac</item>
+        <item>system/media/hall/sounds/Technology.aac</item>
+        <item>system/media/hall/sounds/Detective.aac</item>
+        <item>system/media/hall/sounds/Simple.aac</item>
+        <item>system/media/hall/sounds/Lovely.aac</item>
+        <item>system/media/hall/sounds/PurpleNightStar.aac</item>
+        <item>system/media/hall/sounds/MechRevolution.aac</item>
+        <item>none</item>
+    </array>
+    <array name="hall_sound_list">
+        <item>system/media/hall/data/sounds/Streamspeed</item>
+        <item>system/media/hall/data/sounds/Glarespacetime</item>
+        <item>system/media/hall/data/sounds/Mirrorlight</item>
+        <item>system/media/hall/data/sounds/Punkera</item>
+        <item>system/media/hall/data/sounds/Qtzmechanics</item>
+        <item>none</item>
+    </array>
+    <array name="config_longPressVibeShutdownPattern">
+        <item>150</item>
+        <item>150</item>
+    </array>
+
 </resources>
