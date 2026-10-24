@@ -53,6 +53,9 @@ public class WifiP2pWfdInfo implements Parcelable {
 
     private int mMaxThroughput;
 
+    // XTC/CAF: Wi-Fi Display R2 device info（-1 表示不支持 R2）。
+    private int mR2DeviceInfo = -1;
+
     public WifiP2pWfdInfo() {
     }
 
@@ -61,6 +64,7 @@ public class WifiP2pWfdInfo implements Parcelable {
         mDeviceInfo = devInfo;
         mCtrlPort = ctrlPort;
         mMaxThroughput = maxTput;
+        mR2DeviceInfo = -1;
     }
 
     public boolean isWfdEnabled() {
@@ -142,12 +146,28 @@ public class WifiP2pWfdInfo implements Parcelable {
                 Locale.US, "%04x%04x%04x", mDeviceInfo, mCtrlPort, mMaxThroughput);
     }
 
+    /**
+     * XTC/CAF: Wi-Fi Display R2 device info，格式为 "0002xxxx"。
+     */
+    public String getR2DeviceInfoHex() {
+        return String.format(Locale.US, "%04x%04x", 2, mR2DeviceInfo);
+    }
+
+    public boolean isWfdR2Supported() {
+        return mR2DeviceInfo >= 0;
+    }
+
+    public void setWfdR2Device(int r2DeviceInfo) {
+        mR2DeviceInfo = r2DeviceInfo;
+    }
+
     public String toString() {
         StringBuffer sbuf = new StringBuffer();
         sbuf.append("WFD enabled: ").append(mWfdEnabled);
         sbuf.append("WFD DeviceInfo: ").append(mDeviceInfo);
         sbuf.append("\n WFD CtrlPort: ").append(mCtrlPort);
         sbuf.append("\n WFD MaxThroughput: ").append(mMaxThroughput);
+        sbuf.append("\n WFD R2 DeviceInfo: ").append(mR2DeviceInfo);
         return sbuf.toString();
     }
 
@@ -163,6 +183,7 @@ public class WifiP2pWfdInfo implements Parcelable {
             mDeviceInfo = source.mDeviceInfo;
             mCtrlPort = source.mCtrlPort;
             mMaxThroughput = source.mMaxThroughput;
+            mR2DeviceInfo = source.mR2DeviceInfo;
         }
     }
 
@@ -172,6 +193,7 @@ public class WifiP2pWfdInfo implements Parcelable {
         dest.writeInt(mDeviceInfo);
         dest.writeInt(mCtrlPort);
         dest.writeInt(mMaxThroughput);
+        dest.writeInt(mR2DeviceInfo);
     }
 
     public void readFromParcel(Parcel in) {
@@ -179,6 +201,7 @@ public class WifiP2pWfdInfo implements Parcelable {
         mDeviceInfo = in.readInt();
         mCtrlPort = in.readInt();
         mMaxThroughput = in.readInt();
+        mR2DeviceInfo = in.readInt();
     }
 
     /** Implement the Parcelable interface */

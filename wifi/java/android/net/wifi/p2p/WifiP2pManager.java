@@ -476,6 +476,13 @@ public class WifiP2pManager {
     public static final int REPORT_NFC_HANDOVER_SUCCEEDED           = BASE + 80;
     /** @hide */
     public static final int REPORT_NFC_HANDOVER_FAILED              = BASE + 81;
+    // XTC/CAF: Wi-Fi Display R2 device info（设备上对应 139346/139347/139348）。
+    /** @hide */
+    public static final int SET_WFDR2_INFO                          = BASE + 82;
+    /** @hide */
+    public static final int SET_WFDR2_INFO_FAILED                   = BASE + 83;
+    /** @hide */
+    public static final int SET_WFDR2_INFO_SUCCEEDED                = BASE + 84;
 
 
     /**
@@ -771,6 +778,7 @@ public class WifiP2pManager {
                     case STOP_LISTEN_FAILED:
                     case SET_CHANNEL_FAILED:
                     case REPORT_NFC_HANDOVER_FAILED:
+                    case SET_WFDR2_INFO_FAILED:
                         if (listener != null) {
                             ((ActionListener) listener).onFailure(message.arg1);
                         }
@@ -797,6 +805,7 @@ public class WifiP2pManager {
                     case STOP_LISTEN_SUCCEEDED:
                     case SET_CHANNEL_SUCCEEDED:
                     case REPORT_NFC_HANDOVER_SUCCEEDED:
+                    case SET_WFDR2_INFO_SUCCEEDED:
                         if (listener != null) {
                             ((ActionListener) listener).onSuccess();
                         }
@@ -1381,6 +1390,22 @@ public class WifiP2pManager {
             e.rethrowFromSystemServer();
         }
         c.mAsyncChannel.sendMessage(SET_WFD_INFO, 0, c.putListener(listener), wfdInfo);
+    }
+
+    /**
+     * XTC/CAF: Set Wi-Fi Display R2 device info.
+     * @hide
+     */
+    public void setWFDR2Info(
+            Channel c, WifiP2pWfdInfo wfdInfo,
+            ActionListener listener) {
+        checkChannel(c);
+        try {
+            mService.checkConfigureWifiDisplayPermission();
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+        c.mAsyncChannel.sendMessage(SET_WFDR2_INFO, 0, c.putListener(listener), wfdInfo);
     }
 
 
