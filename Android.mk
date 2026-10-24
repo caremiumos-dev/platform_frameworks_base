@@ -1536,6 +1536,59 @@ LOCAL_SRC_FILES := \
     $(call all-proto-files-under, libs/incident/proto)
 include $(BUILD_HOST_JAVA_LIBRARY)
 
+# ====  android_stubs_current（平台 current SDK 桩） ============
+# 上游 8.1 的 frameworks/base 只通过 api-stubs 生成文档桩源码，却从未定义
+# android_stubs_current 这个 java 库；而 frameworks/support 下所有 support
+# 库都写着 LOCAL_SDK_VERSION := current，build 系统因此找不到该模块，
+# SystemUI / android-support-v4 等统统编不过。
+# 这里用 prebuilts/sdk/current/android.jar（公开 API + java.* 的完整
+# bootclasspath）直接补上该模块。注意：只含公开 API，隐藏 API 不可见。
+include $(CLEAR_VARS)
+LOCAL_MODULE := android_stubs_current
+LOCAL_MODULE_CLASS := JAVA_LIBRARIES
+LOCAL_SRC_FILES := ../../prebuilts/sdk/current/android.jar
+LOCAL_MIN_SDK_VERSION := $(PLATFORM_JACK_MIN_SDK_VERSION)
+LOCAL_UNINSTALLABLE_MODULE := true
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_PREBUILT)
+
+# ====  android.arch.*（Android Architecture Components）Make 规则 ====
+# 上游 8.1 只给 arch/lifecycle 提供了 Gradle 脚本，而
+# frameworks/support/compat/Android.mk 却引用了
+# apptoolkit-arch-core-common / apptoolkit-lifecycle-common /
+# apptoolkit-lifecycle-runtime 三个模块，Make 侧从未定义，导致
+# android-support-compat（进而 android-support-v4、SystemUI）无法构建。
+# 这里按 Gradle 模块划分把源码编成三个静态 java 库补上。
+include $(CLEAR_VARS)
+LOCAL_MODULE := apptoolkit-arch-core-common
+LOCAL_SDK_VERSION := current
+LOCAL_SRC_FILES := ../support/app-toolkit/common/src/main/java/android/arch/core/internal/SafeIterableMap.java \
+    ../support/app-toolkit/common/src/main/java/android/arch/core/internal/FastSafeIterableMap.java
+LOCAL_STATIC_JAVA_LIBRARIES := android-support-annotations
+LOCAL_JAVA_LANGUAGE_VERSION := 1.7
+include $(BUILD_STATIC_JAVA_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := apptoolkit-lifecycle-common
+LOCAL_SDK_VERSION := current
+LOCAL_SRC_FILES := $(call all-java-files-under, ../support/lifecycle/common/src/main/java)
+LOCAL_STATIC_JAVA_LIBRARIES := \
+    android-support-annotations \
+    apptoolkit-arch-core-common
+LOCAL_JAVA_LANGUAGE_VERSION := 1.7
+include $(BUILD_STATIC_JAVA_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := apptoolkit-lifecycle-runtime
+LOCAL_SDK_VERSION := current
+LOCAL_SRC_FILES := $(call all-java-files-under, ../support/lifecycle/runtime/src/main/java)
+LOCAL_STATIC_JAVA_LIBRARIES := \
+    android-support-annotations \
+    apptoolkit-arch-core-common \
+    apptoolkit-lifecycle-common
+LOCAL_JAVA_LANGUAGE_VERSION := 1.7
+include $(BUILD_STATIC_JAVA_LIBRARY)
+
 
 # Include subdirectory makefiles
 # ============================================================
