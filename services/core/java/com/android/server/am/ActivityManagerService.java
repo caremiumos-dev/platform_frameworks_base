@@ -1922,6 +1922,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             } break;
             case SHOW_FINGERPRINT_ERROR_UI_MSG: {
+                // XTC/厂商：persist.vendor.hide.dialog 可整体隐藏该错误弹窗。
+                if (SystemProperties.getBoolean("persist.vendor.hide.dialog", false)) {
+                    break;
+                }
                 if (mShowDialogs) {
                     AlertDialog d = new BaseErrorDialog(mUiContext);
                     d.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
