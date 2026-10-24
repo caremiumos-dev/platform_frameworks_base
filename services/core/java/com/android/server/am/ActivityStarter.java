@@ -115,6 +115,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.service.voice.IVoiceInteractionSession;
 import android.text.TextUtils;
+import android.util.BoostFramework;
 import android.util.EventLog;
 import android.util.Slog;
 
@@ -173,6 +174,8 @@ class ActivityStarter {
 
     private TaskRecord mInTask;
     private boolean mAddingToTask;
+    // XTC/QTI: 应用启动性能提升（perfHint 4225）。
+    public BoostFramework mPerf;
     private TaskRecord mReuseTask;
 
     private ActivityInfo mNewTaskInfo;
@@ -260,6 +263,10 @@ class ActivityStarter {
         mSupervisor = supervisor;
         mInterceptor = new ActivityStartInterceptor(mService, mSupervisor);
         mUsingVr2dDisplay = false;
+        mPerf = null;
+        if (mPerf == null) {
+            mPerf = new BoostFramework();
+        }
     }
 
     int startActivityLocked(IApplicationThread caller, Intent intent, Intent ephemeralIntent,
@@ -1241,6 +1248,12 @@ class ActivityStarter {
         if (mStartActivity.resultTo == null && mInTask == null && !mAddingToTask
                 && (mLaunchFlags & FLAG_ACTIVITY_NEW_TASK) != 0) {
             newTask = true;
+            // XTC/QTI: 新任务启动的性能提示。
+            String packageName = mService.mContext.getPackageName();
+            if (mPerf != null) {
+                mStartActivity.perfActivityBoostHandler =
+                        mPerf.perfHint(4225, packageName, -1, 1);
+            }
             result = setTaskFromReuseOrCreateNewTask(
                     taskToAffiliate, preferredLaunchStackId, topStack);
         } else if (mSourceRecord != null) {
@@ -1912,6 +1925,12 @@ class ActivityStarter {
             return START_RETURN_LOCK_TASK_MODE_VIOLATION;
         }
 
+        // XTC/QTI: 从源 Activity 启动时给新 Activity 一个性能提示。
+        String packageName = mService.mContext.getPackageName();
+        if (mPerf != null) {
+            mStartActivity.perfActivityBoostHandler =
+                    mPerf.perfHint(4225, packageName, -1, 1);
+        }
         final TaskRecord sourceTask = mSourceRecord.getTask();
         final ActivityStack sourceStack = mSourceRecord.getStack();
         // We only want to allow changing stack in two cases:

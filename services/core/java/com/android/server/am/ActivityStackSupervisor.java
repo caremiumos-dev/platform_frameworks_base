@@ -150,6 +150,7 @@ import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.voice.IVoiceInteractionSession;
 import android.util.ArrayMap;
+import android.util.BoostFramework;
 import android.util.ArraySet;
 import android.util.EventLog;
 import android.util.IntArray;
@@ -2164,8 +2165,50 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
         }
     }
 
+    // XTC/QTI: 应用启动性能提示（perfHint 4225 / perfIOPrefetchStart）。
+    public static boolean mPerfSendTapHint = false;
+    public BoostFramework mPerfBoost = null;
+    public BoostFramework mPerfPack = null;
+    public BoostFramework mPerfIop = null;
+    public BoostFramework mUxPerf = null;
+
+    void acquireAppLaunchPerfLock(String packageName) {
+        if (mPerfBoost == null) {
+            mPerfBoost = new BoostFramework();
+        }
+        if (mPerfBoost != null) {
+            mPerfBoost.perfHint(4225, packageName, 2500, 1);
+            mPerfSendTapHint = true;
+        }
+        if (mPerfPack == null) {
+            mPerfPack = new BoostFramework();
+        }
+        if (mPerfPack != null) {
+            mPerfPack.perfHint(4225, packageName, -1, 2);
+        }
+        if (mPerfIop == null) {
+            mPerfIop = new BoostFramework();
+        }
+        if (mPerfIop != null) {
+            mPerfIop.perfIOPrefetchStart(-1, packageName, "");
+        }
+    }
+
+    void acquireUxPerfLock(int eventId, String packageName) {
+        mUxPerf = new BoostFramework();
+        if (mUxPerf != null) {
+            mUxPerf.perfUXEngine_events(eventId, 0, packageName, 0);
+        }
+    }
+
     void findTaskToMoveToFrontLocked(TaskRecord task, int flags, ActivityOptions options,
             String reason, boolean forceNonResizeable) {
+        // XTC/QTI: 若焦点栈顶 Activity 已销毁，给启动过程一个性能提示。
+        ActivityStack focusedStack = getFocusedStack();
+        ActivityRecord focusedTop = focusedStack != null ? focusedStack.topActivity() : null;
+        if (focusedTop != null && focusedTop.state == ActivityStack.ActivityState.DESTROYED) {
+            acquireAppLaunchPerfLock(focusedTop.packageName);
+        }
         if ((flags & ActivityManager.MOVE_TASK_NO_USER_ACTION) == 0) {
             mUserLeaving = true;
         }
@@ -3120,6 +3163,14 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
                 // matches not on the specified display.
                 if (mTmpFindTaskResult.r != null) {
                     if (!mTmpFindTaskResult.matchedByRootAffinity) {
+                        // XTC/QTI: 目标任务已销毁/已停止时的启动性能提示。
+                        if (mTmpFindTaskResult.r.state
+                                == ActivityStack.ActivityState.DESTROYED) {
+                            acquireAppLaunchPerfLock(r.packageName);
+                        }
+                        if (mTmpFindTaskResult.r.state == ActivityStack.ActivityState.STOPPED) {
+                            acquireUxPerfLock(6, r.packageName);
+                        }
                         return mTmpFindTaskResult.r;
                     } else if (mTmpFindTaskResult.r.getDisplayId() == displayId) {
                         // Note: since the traversing through the stacks is top down, the floating
@@ -3131,6 +3182,10 @@ public class ActivityStackSupervisor extends ConfigurationContainer implements D
             }
         }
 
+        if (mTmpFindTaskResult.r == null
+                || mTmpFindTaskResult.r.state == ActivityStack.ActivityState.DESTROYED) {
+            acquireAppLaunchPerfLock(r.packageName);
+        }
         if (DEBUG_TASKS && affinityMatch == null) Slog.d(TAG_TASKS, "No task found");
         return affinityMatch;
     }

@@ -114,6 +114,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.service.voice.IVoiceInteractionSession;
 import android.util.ArraySet;
+import android.util.BoostFramework;
 import android.util.EventLog;
 import android.util.IntArray;
 import android.util.Log;
@@ -165,6 +166,9 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
 
     // XTC/QTI: notifies a vendor component of activity lifecycle transitions.
     static final ActivityTrigger mActivityTrigger = new ActivityTrigger();
+
+    // XTC/QTI: 应用切换性能提升。
+    public BoostFramework mPerf = null;
 
     // Ticks during which we check progress while waiting for an app to launch.
     static final int LAUNCH_TICK = 500;
@@ -2525,6 +2529,10 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
                     + next.packageName + ": " + e);
         }
 
+        // XTC/QTI: 应用切换时的性能提示（perfHint 4227）。
+        if (mPerf == null) {
+            mPerf = new BoostFramework();
+        }
         // We are starting up the next activity, so tell the window manager
         // that the previous one will be hidden soon.  This way it can know
         // to ignore it when computing the desired screen orientation.
@@ -2540,6 +2548,9 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
                     mWindowManager.prepareAppTransition(prev.getTask() == next.getTask()
                             ? TRANSIT_ACTIVITY_CLOSE
                             : TRANSIT_TASK_CLOSE, false);
+                    if (prev.getTask() != next.getTask() && mPerf != null) {
+                        mPerf.perfHint(4227, next.packageName);
+                    }
                 }
                 prev.setVisibility(false);
             } else {
@@ -2554,6 +2565,9 @@ class ActivityStack<T extends StackWindowController> extends ConfigurationContai
                             : next.mLaunchTaskBehind
                                     ? TRANSIT_TASK_OPEN_BEHIND
                                     : TRANSIT_TASK_OPEN, false);
+                    if (prev.getTask() != next.getTask() && mPerf != null) {
+                        mPerf.perfHint(4227, next.packageName);
+                    }
                 }
             }
         } else {
