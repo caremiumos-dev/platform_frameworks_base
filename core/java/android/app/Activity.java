@@ -18,6 +18,7 @@ package android.app;
 
 import static java.lang.Character.MIN_VALUE;
 
+import android.Manifest;
 import android.annotation.CallSuper;
 import android.annotation.DrawableRes;
 import android.annotation.IdRes;
@@ -64,6 +65,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcelable;
+import android.os.Process;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.ServiceManager.ServiceNotFoundException;
@@ -78,6 +80,7 @@ import android.transition.Scene;
 import android.transition.TransitionManager;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
+import android.util.BoostFramework;
 import android.util.EventLog;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
@@ -131,6 +134,7 @@ import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -698,6 +702,14 @@ public class Activity extends ContextThemeWrapper
     private static final String TAG = "Activity";
     private static final boolean DEBUG_LIFECYCLE = false;
 
+    /** XTC: package that receives drag-time performance boosts. */
+    private static final String PERF_PACKAGE_NAME = "com.xtc.camera.app";
+    private static int mDragBoostPossible = -1;
+    private static BoostFramework mPerf = null;
+    private static int mPerfLockDuration = 1000;
+    private static int[] mPerfLockParam = {1082130432, WindowManager.LayoutParams.TYPE_DRAG,
+            1090519040, 4};
+
     /** XTC camera menu attached to the decor view of camera activities. */
     private com.xtc.widget.CameraMenuView mCameraMenuView;
 
@@ -1023,6 +1035,11 @@ public class Activity extends ContextThemeWrapper
         }
         mRestoredFromBundle = savedInstanceState != null;
         mCalled = true;
+        showNetworkMsgIfNecessary();
+        // XTC: 相机应用启动时初始化高通 BoostFramework。
+        if (mPerf == null && PERF_PACKAGE_NAME.equals(getPackageName())) {
+            mPerf = new BoostFramework();
+        }
     }
 
     /**
@@ -1108,6 +1125,68 @@ public class Activity extends ContextThemeWrapper
                 mCameraMenuView.setMenuVisibility(value);
             }
         }
+    }
+
+    /**
+     * XTC: hall-close handling. When the hall is closed while this activity was
+     * opened by a hall open event, ask the system for the close animation and
+     * finish shortly after.
+     */
+    private boolean handleHallKeyEvent(int keyCode) {
+        if (keyCode != 1004 || !fromHallOpen(getIntent())) {
+            return false;
+        }
+        try {
+            ActivityManager.getService().requestHallEvent(com.xtc.utils.HallUtil.CLOSE_ANIM, "1");
+        } catch (RemoteException e) {
+            Log.e(TAG, "bind call requestHallEvent err:", e);
+        }
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, 200);
+        return true;
+    }
+
+    /**
+     * XTC: true when every permission in {@code permissions} is already granted.
+     */
+    private boolean isPermissionGranted(String[] permissions) {
+        if (permissions == null) {
+            throw new RuntimeException("requested permission is null");
+        }
+        if (Build.VERSION.SDK_INT < 23) {
+            return true;
+        }
+        for (String permission : permissions) {
+            if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * XTC: report a launcher-style activity start so the framework can show the
+     * "network denied" notice for this uid.
+     */
+    private void showNetworkMsgIfNecessary() {
+        final Intent intent = getIntent();
+        boolean isLauncher = intent.getCategories() != null
+                && intent.getCategories().contains(Intent.CATEGORY_LAUNCHER);
+        boolean isMain = Intent.ACTION_MAIN.equals(intent.getAction());
+        if (!isLauncher || !isMain) {
+            return;
+        }
+        Log.d(TAG, "showNetworkMsgIfNecessary");
+        try {
+            ActivityManager.getService().showNetworkMsg(Process.myUid());
+        } catch (RemoteException e) {
+            Log.e(TAG, "xtc showNetworkMsg fail:" + e.getMessage());
+        }
+        Log.d(TAG, "showNetworkMsgIfNecessary end");
     }
 
     /**
@@ -2991,6 +3070,9 @@ public class Activity extends ContextThemeWrapper
      * @see android.view.KeyEvent
      */
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (handleHallKeyEvent(keyCode)) {
+            return true;
+        }
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (getApplicationInfo().targetSdkVersion
                     >= Build.VERSION_CODES.ECLAIR) {
@@ -3415,6 +3497,19 @@ public class Activity extends ContextThemeWrapper
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             onUserInteraction();
+        } else if (ev.getAction() == MotionEvent.ACTION_UP) {
+            // XTC: 相机应用抬手时申请一次性能锁，减少拖动卡顿。
+            if (mDragBoostPossible == -1 && PERF_PACKAGE_NAME.equals(getPackageName())) {
+                mDragBoostPossible = 1;
+            }
+            if (mDragBoostPossible == 1) {
+                if (mPerf == null) {
+                    mPerf = new BoostFramework();
+                }
+                if (mPerf != null) {
+                    mPerf.perfLockAcquire(mPerfLockDuration, mPerfLockParam);
+                }
+            }
         }
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
@@ -4484,15 +4579,37 @@ public class Activity extends ContextThemeWrapper
         if (requestCode < 0) {
             throw new IllegalArgumentException("requestCode should be >= 0");
         }
+        String[] permissionsToRequest;
+        if (Build.IS_CTA) {
+            // XTC: in CTA mode SEND_SMS is force-granted; never ask the user for it.
+            ArrayList<String> filtered = new ArrayList<>();
+            for (String permission : permissions) {
+                if (!permission.contains(Manifest.permission.SEND_SMS)) {
+                    filtered.add(permission);
+                }
+            }
+            if (filtered.size() == 0) {
+                return;
+            }
+            permissionsToRequest = filtered.toArray(new String[0]);
+        } else {
+            permissionsToRequest = permissions;
+        }
         if (mHasCurrentPermissionsRequest) {
             Log.w(TAG, "Can reqeust only one set of permissions at a time");
             // Dispatch the callback with empty arrays which means a cancellation.
             onRequestPermissionsResult(requestCode, new String[0], new int[0]);
-            return;
+        } else if (Build.IS_CTA || !isPermissionGranted(permissionsToRequest)) {
+            Intent intent = getPackageManager().buildRequestPermissionsIntent(permissionsToRequest);
+            startActivityForResult(REQUEST_PERMISSIONS_WHO_PREFIX, intent, requestCode, null);
+            mHasCurrentPermissionsRequest = true;
+        } else {
+            // XTC: silently grant permissions that are already held.
+            Log.d(TAG, "XTC: permission already granted");
+            int[] grantResults = new int[permissionsToRequest.length];
+            Arrays.fill(grantResults, PackageManager.PERMISSION_GRANTED);
+            onRequestPermissionsResult(requestCode, permissionsToRequest, grantResults);
         }
-        Intent intent = getPackageManager().buildRequestPermissionsIntent(permissions);
-        startActivityForResult(REQUEST_PERMISSIONS_WHO_PREFIX, intent, requestCode, null);
-        mHasCurrentPermissionsRequest = true;
     }
 
     /**

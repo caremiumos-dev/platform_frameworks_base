@@ -131,9 +131,13 @@ oneway interface IApplicationThread {
             boolean dumpInfo, boolean dumpDalvik, boolean dumpSummaryOnly, boolean dumpUnreachable,
             in String[] args);
     void dumpGfxInfo(in ParcelFileDescriptor fd, in String[] args);
+    /** XTC: dump the property invalidated caches. */
+    void dumpCacheInfo(in ParcelFileDescriptor fd, in String[] args);
     void dumpProvider(in ParcelFileDescriptor fd, IBinder servicetoken,
             in String[] args);
     void dumpDbInfo(in ParcelFileDescriptor fd, in String[] args);
+    /** XTC: dump product/battery/storage info for the self test service. */
+    void dumpProductInfo(in ParcelFileDescriptor fd, in String[] args);
     void unstableProviderDied(IBinder provider);
     void requestAssistContextExtras(IBinder activityToken, IBinder requestToken,
             int requestType, int sessionId, int flags);

@@ -731,4 +731,10 @@ void setShowWhenLocked(in IBinder token, boolean showWhenLocked);
      * @hide
      */
     void callUpdateOomAdj();
+
+    /**
+     * XTC: whether the system-wide memory monitor module switch is on.
+     * @hide
+     */
+    boolean getMemMonitorSwitch();
 }

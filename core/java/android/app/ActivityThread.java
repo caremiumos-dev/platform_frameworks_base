@@ -79,6 +79,7 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.StatFs;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
@@ -144,9 +145,11 @@ import libcore.net.event.NetworkEventDispatcher;
 
 import org.apache.harmony.dalvik.ddmc.DdmVmInternal;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
@@ -276,6 +279,9 @@ public final class ActivityThread {
     private static final String MSG_START = ">>>>> Dispatching";
     private static final String MSG_END = "<<<<< Finished";
     private static final long TIME_BLOCK = 50;
+
+    // XTC performance: argv marker for zygote-preforked processes.
+    private static String PREFORK_PREFIX = "--preforkprocess-";
     private static boolean isRunningMonitor = false;
     private static boolean started = false;
     private static int sameCount = 0;
@@ -597,6 +603,63 @@ public final class ActivityThread {
 
         public String toString() {
             return "AppBindData{appInfo=" + appInfo + "}";
+        }
+    }
+
+    /**
+     * XTC: product/battery/storage summary used by the self test service.
+     */
+    static final class ProductInfo {
+        ProductInfo() {
+        }
+
+        public String getNodeString(String path) {
+            try {
+                return new BufferedReader(new FileReader(path)).readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "unknow";
+            }
+        }
+
+        public String humanReadableByteCount(long bytes, boolean si) {
+            int unit = si ? 1024 : 1000;
+            long rem = 0;
+            long value = bytes;
+            int exp = 0;
+            while (value > 999) {
+                exp++;
+                rem = value;
+                value = ((unit / 2) + value) / unit;
+            }
+            String valueStr = String.valueOf(value);
+            String out;
+            if (exp == 0 || valueStr.length() != 1) {
+                out = valueStr;
+            } else {
+                long integer = rem / unit;
+                out = String.valueOf(integer) + "."
+                        + String.valueOf(((((rem - (unit * integer)) * 100) + TIME_BLOCK) / unit) / 10);
+            }
+            return out + (si ? "BKMGTPE" : "BkMGTPE").charAt(exp);
+        }
+
+        public void printProductInfo(PrintWriter pw) {
+            File dataDirectory = Environment.getDataDirectory();
+            pw.println("bindnumber:" + SystemProperties.get("ro.boot.bindnumber", "(unknown)"));
+            pw.println("softversion:" + SystemProperties.get("ro.product.current.softversion",
+                    "(unknown)"));
+            pw.println("innermodel:" + SystemProperties.get("ro.product.innermodel", "(unknown)"));
+            pw.println("platform:" + SystemProperties.get("ro.board.platform", "(unknown)"));
+            pw.println("charge_full_design:"
+                    + getNodeString("/sys/class/power_supply/battery/charge_full_design"));
+            pw.println("capacity:" + getNodeString("/sys/class/power_supply/battery/capacity"));
+            StatFs statFs = new StatFs(dataDirectory.getPath());
+            long blockSize = statFs.getBlockSize();
+            pw.println("used_size:" + humanReadableByteCount(
+                    ((long) (statFs.getBlockCount() - statFs.getFreeBlocks())) * blockSize, true));
+            pw.println("total_size:" + humanReadableByteCount(
+                    ((long) statFs.getBlockCount()) * blockSize, true));
         }
     }
 
@@ -1360,6 +1423,24 @@ public final class ActivityThread {
             nDumpGraphicsInfo(pfd.getFileDescriptor());
             WindowManagerGlobal.getInstance().dumpGfxInfo(pfd.getFileDescriptor(), args);
             IoUtils.closeQuietly(pfd);
+        }
+
+        @Override
+        public void dumpCacheInfo(ParcelFileDescriptor pfd, String[] args) {
+            PropertyInvalidatedCache.dumpCacheInfo(pfd.getFileDescriptor(), args);
+            IoUtils.closeQuietly(pfd);
+        }
+
+        @Override
+        public void dumpProductInfo(ParcelFileDescriptor pfd, String[] args) {
+            FastPrintWriter pw = new FastPrintWriter(
+                    new FileOutputStream(pfd.getFileDescriptor()));
+            try {
+                new ProductInfo().printProductInfo(pw);
+            } finally {
+                pw.flush();
+                IoUtils.closeQuietly(pfd);
+            }
         }
 
         private void dumpDatabaseInfo(ParcelFileDescriptor pfd, String[] args) {
@@ -3343,6 +3424,21 @@ public final class ActivityThread {
     private void handlePreforkStart() {
         Slog.d(TAG, "handlePreforkStart() -> attach(false)");
         attach(false);
+    }
+
+    /**
+     * XTC optimization: hand this preforked process over to the performance
+     * service, which waits for the matching bind-application transaction.
+     */
+    private void attahPreforkAndWait(String processName) {
+        if (mPm == null) {
+            mPm = (com.xtc.performance.PerformanceManager) getSystemContext()
+                    .getSystemService(Context.XTC_PERFORMANCE_SERVICE);
+        }
+        if (mPm != null) {
+            mPm.attachPreforkApplication(UserHandle.myUserId(), mAppThread.asBinder(), processName);
+        }
+        Slog.d(TAG, "attahPreforkAndWait -> attachPreforkApplication procName=" + processName);
     }
 
     /**
@@ -6959,10 +7055,32 @@ public final class ActivityThread {
 
         Process.setArgV0("<pre-initialized>");
 
+        // XTC: a zygote-preforked process is told apart by this argv marker.
+        String preforkName = "";
+        boolean isPrefork = false;
+        if (args != null) {
+            for (String arg : args) {
+                if (arg.startsWith(PREFORK_PREFIX)) {
+                    isPrefork = true;
+                    preforkName = arg.replace(PREFORK_PREFIX, "");
+                    Process.setArgV0("<pre-forked-" + preforkName + ">");
+                    Log.d(TAG, "prefork-Process start for :" + preforkName);
+                    break;
+                }
+            }
+        }
+
         Looper.prepareMainLooper();
 
         ActivityThread thread = new ActivityThread();
-        thread.attach(false);
+        if (isPrefork) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                    "attahPreforkAndWait:" + preforkName);
+            thread.attahPreforkAndWait(preforkName);
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        } else {
+            thread.attach(false);
+        }
 
         if (sMainThreadHandler == null) {
             sMainThreadHandler = thread.getHandler();

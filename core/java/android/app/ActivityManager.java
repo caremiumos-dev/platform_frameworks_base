@@ -4400,6 +4400,18 @@ public class ActivityManager {
         }
     }
 
+    /**
+     * XTC device addition: whether the memory monitor module switch is enabled.
+     * @hide
+     */
+    public boolean getMemMonitorSwitch() {
+        try {
+            return getService().getMemMonitorSwitch();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     public void setWatchHeapLimit(long pssSize) {
         try {
             getService().setDumpHeapDebugLimit(null, 0, pssSize,

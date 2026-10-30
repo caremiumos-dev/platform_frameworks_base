@@ -267,6 +267,18 @@ public class RuntimeInit {
         return new MethodAndArgsCaller(m, argv);
     }
 
+    /**
+     * XTC: query the system-wide memory monitor module switch.
+     */
+    private static boolean getMemMonitorSwitch() {
+        try {
+            return ActivityManager.getService().getMemMonitorSwitch();
+        } catch (Throwable t) {
+            Slog.e(TAG, "getMemMonitorSwitch FAILE ", t);
+            return false;
+        }
+    }
+
     public static final void main(String[] argv) {
         enableDdms();
         if (argv.length == 2 && argv[1].equals("application")) {
