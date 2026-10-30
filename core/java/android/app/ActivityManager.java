@@ -1238,6 +1238,10 @@ public class ActivityManager {
      * @hide
      */
     static public boolean isHighEndGfx() {
+        // Vendor: the same switch disables hardware acceleration gating.
+        if ("1".equals(SystemProperties.get("persist.sys.force_sw_gles", "0"))) {
+            return false;
+        }
         return !isLowRamDeviceStatic() &&
                 !Resources.getSystem().getBoolean(com.android.internal.R.bool.config_avoidGfxAccel);
     }

@@ -20546,6 +20546,14 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         final String action = intent.getAction();
+        // Vendor: remember which package requested the factory reset, so RecoverySystem can
+        // tag the wipe command with it.
+        if (callerPackage != null
+                && (Intent.ACTION_MASTER_CLEAR.equals(action)
+                        || "android.intent.action.FACTORY_RESET".equals(action))) {
+            Slog.d(TAG, "factory reset packageName=" + callerPackage);
+            SystemProperties.set("persist.sys.factory.reset", callerPackage);
+        }
         if (isProtectedBroadcast
                 || Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)
                 || Intent.ACTION_DISMISS_KEYBOARD_SHORTCUTS.equals(action)

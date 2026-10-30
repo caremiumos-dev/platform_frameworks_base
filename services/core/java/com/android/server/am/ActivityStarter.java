@@ -111,6 +111,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.service.voice.IVoiceInteractionSession;
@@ -785,6 +786,27 @@ class ActivityStarter {
                 callingUid = realCallingUid;
             } else {
                 callingPid = callingUid = -1;
+            }
+
+            // Vendor: record who dialled the last outgoing call, and tag shutdown/reboot
+            // requests with the caller package as their reason. The uid+package string is
+            // world-readable state about the user's calls; kept only for device parity.
+            final String launchAction = intent.getAction();
+            if (launchAction != null && launchAction.equals("android.intent.action.CALL")) {
+                Slog.d(TAG, "call uid = " + callingUid + ", packageName=" + callingPackage);
+                SystemProperties.set("persist.sys.cta.call_uid",
+                        callingUid + "_" + callingPackage);
+            }
+            if ((launchAction != null
+                        && "android.intent.action.REQUEST_SHUTDOWN".equals(launchAction))
+                    || "android.intent.action.REBOOT".equals(launchAction)) {
+                String shutdownReason =
+                        intent.getStringExtra("android.intent.extra.REASON");
+                Slog.d(TAG, "call uid =" + callingUid + ", packageName=" + callingPackage
+                        + " REQUEST_SHUTDOWN/ACTION_REBOOT, reason=" + shutdownReason);
+                if (shutdownReason == null) {
+                    intent.putExtra("android.intent.extra.REASON", callingPackage);
+                }
             }
 
             final ActivityStack stack = mSupervisor.mFocusedStack;

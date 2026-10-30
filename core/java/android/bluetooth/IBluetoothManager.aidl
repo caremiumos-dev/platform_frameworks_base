@@ -34,6 +34,8 @@ interface IBluetoothManager
     void registerStateChangeCallback(in IBluetoothStateChangeCallback callback);
     void unregisterStateChangeCallback(in IBluetoothStateChangeCallback callback);
     boolean isEnabled();
+    boolean setblecontimeout(long timeout);
+    long getblecontimeout();
     boolean enable(String packageName);
     boolean enableNoAutoConnect(String packageName);
     boolean disable(String packageName, boolean persist);
@@ -45,6 +47,7 @@ interface IBluetoothManager
 
     String getAddress();
     String getName();
+    boolean factoryReset();
 
     boolean isBleScanAlwaysAvailable();
     int updateBleAppCount(IBinder b, boolean enable, String packageName);

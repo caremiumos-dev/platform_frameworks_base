@@ -47,6 +47,7 @@ import android.os.DropBoxManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UEventObserver;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -380,19 +381,25 @@ public final class BatteryService extends SystemService {
     private void shutdownIfNoPowerLocked() {
         // shut down gracefully if our battery is critically low and we are not powered.
         // wait until the system has booted before attempting to display the shutdown dialog.
-        if (mBatteryProps.batteryLevel == 0 && !isPoweredLocked(BatteryManager.BATTERY_PLUGGED_ANY)) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mActivityManagerInternal.isSystemReady()) {
-                        Intent intent = new Intent(Intent.ACTION_REQUEST_SHUTDOWN);
-                        intent.putExtra(Intent.EXTRA_KEY_CONFIRM, false);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        mContext.startActivityAsUser(intent, UserHandle.CURRENT);
-                    }
-                }
-            });
+        // Vendor: allow booting down to 8% when the charger was disabled by the factory
+        // self-test property, instead of the usual 2%.
+        int shutdownLevel = SystemProperties.getInt("persist.sys.chgdisabled", 0) == 1 ? 8 : 2;
+        if (mBatteryProps.batteryLevel > shutdownLevel
+                || isPoweredLocked(BatteryManager.BATTERY_PLUGGED_ANY)) {
+            return;
         }
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mActivityManagerInternal.isSystemReady()) {
+                    Slog.d(TAG, "shutdown caused by low power");
+                    Intent intent = new Intent(Intent.ACTION_REQUEST_SHUTDOWN);
+                    intent.putExtra(Intent.EXTRA_KEY_CONFIRM, false);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivityAsUser(intent, UserHandle.CURRENT);
+                }
+            }
+        });
     }
 
     private void shutdownIfOverTempLocked() {

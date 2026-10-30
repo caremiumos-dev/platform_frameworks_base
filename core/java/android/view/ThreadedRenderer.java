@@ -246,6 +246,11 @@ public final class ThreadedRenderer {
         if (sSupportsOpenGL != null) {
             return sSupportsOpenGL.booleanValue();
         }
+        // Vendor: force the software GLES path for the whole system.
+        if (SystemProperties.getInt("persist.sys.force_sw_gles", 0) == 1) {
+            sSupportsOpenGL = false;
+            return false;
+        }
         if (SystemProperties.getInt("ro.kernel.qemu", 0) == 0) {
             // Device is not an emulator.
             sSupportsOpenGL = true;

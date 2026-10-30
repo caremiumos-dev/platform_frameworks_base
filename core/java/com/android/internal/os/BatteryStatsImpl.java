@@ -42,6 +42,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.WorkSource;
 import android.telephony.DataConnectionRealTimeInfo;
@@ -417,7 +418,7 @@ public class BatteryStatsImpl extends BatteryStats {
     int mWakeLockNesting;
     boolean mWakeLockImportant;
     public boolean mRecordAllHistory;
-    boolean mNoAutoReset;
+    boolean mNoAutoReset = SystemProperties.getBoolean("persist.sys.bs.noAutoReset", true);
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     protected int mScreenState = Display.STATE_UNKNOWN;

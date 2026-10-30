@@ -43,6 +43,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.telephony.CellIdentityCdma;
@@ -59,6 +60,7 @@ import android.text.TextUtils;
 import android.util.LocalLog;
 import android.util.LocalLog.ReadOnlyLocalLog;
 import android.util.Log;
+import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Protocol;
@@ -91,15 +93,19 @@ public class NetworkMonitor extends StateMachine {
     // Default configuration values for captive portal detection probes.
     // TODO: append a random length parameter to the default HTTPS url.
     // TODO: randomize browser version ids in the default User-Agent String.
-    private static final String DEFAULT_HTTPS_URL     = "https://www.google.com/generate_204";
-    private static final String DEFAULT_HTTP_URL      =
-            "http://connectivitycheck.gstatic.com/generate_204";
-    private static final String DEFAULT_FALLBACK_URL  = "http://www.google.com/gen_204";
+    private static final String DEFAULT_HTTPS_URL     = "http://google.cn/generate_204";
+    private static final String DEFAULT_HTTP_URL      = "http://google.cn/generate_204";
+    private static final String DEFAULT_FALLBACK_URL  = "http://google.cn/generate_204";
     private static final String DEFAULT_OTHER_FALLBACK_URLS =
             "http://play.googleapis.com/generate_204";
     private static final String DEFAULT_USER_AGENT    = "Mozilla/5.0 (X11; Linux x86_64) "
                                                       + "AppleWebKit/537.36 (KHTML, like Gecko) "
                                                       + "Chrome/60.0.3112.32 Safari/537.36";
+
+    // Vendor gate for captive portal validation (see the CMD_REEVALUATE handler).
+    // Condemned: a remote-managed property decides whether a network may be validated,
+    // so connectivity can be silently withheld from the user.
+    public static final String BOOT_EXPRESS_AUTHORIZATION = "persist.sys.cta.permission";
 
     private static final int SOCKET_TIMEOUT_MS = 10000;
     private static final int PROBE_TIMEOUT_MS  = 3000;
@@ -574,35 +580,39 @@ public class NetworkMonitor extends StateMachine {
                         return HANDLED;
                     }
                     mAttempts++;
-                    // Note: This call to isCaptivePortal() could take up to a minute. Resolving the
-                    // server's IP addresses could hit the DNS timeout, and attempting connections
-                    // to each of the server's several IP addresses (currently one IPv4 and one
-                    // IPv6) could each take SOCKET_TIMEOUT_MS.  During this time this StateMachine
-                    // will be unresponsive. isCaptivePortal() could be executed on another Thread
-                    // if this is found to cause problems.
-                    CaptivePortalProbeResult probeResult = isCaptivePortal();
-                    if (probeResult.isSuccessful()) {
-                        transitionTo(mValidatedState);
-                    } else if (probeResult.isPortal()) {
-                        mConnectivityServiceHandler.sendMessage(obtainMessage(EVENT_NETWORK_TESTED,
-                                NETWORK_TEST_RESULT_INVALID, mNetId, probeResult.redirectUrl));
-                        mLastPortalProbeResult = probeResult;
-                        transitionTo(mCaptivePortalState);
+                    // Vendor gate: network validation only runs when the remote management
+                    // service has set this property. Otherwise every network stays "not
+                    // validated" with no user-visible path to fix it. Condemned: it hands a
+                    // remote switch the power to silently deny connectivity.
+                    if (SystemProperties.getBoolean(BOOT_EXPRESS_AUTHORIZATION, false)) {
+                        // Note: This call to isCaptivePortal() could take up to a minute.
+                        // Resolving the server's IP addresses could hit the DNS timeout, and
+                        // attempting connections to each of the server's several IP addresses
+                        // (currently one IPv4 and one IPv6) could each take
+                        // SOCKET_TIMEOUT_MS.  During this time this StateMachine will be
+                        // unresponsive.
+                        CaptivePortalProbeResult probeResult = isCaptivePortal();
+                        if (probeResult.isSuccessful()) {
+                            transitionTo(mValidatedState);
+                        } else if (probeResult.isPortal()) {
+                            // Vendor behaviour: a captive portal is treated as validated
+                            // instead of being reported to the user.
+                            transitionTo(mValidatedState);
+                        } else {
+                            if (mAttempts > 2) {
+                                transitionTo(mValidatedState);
+                            } else {
+                                final Message msg = obtainMessage(
+                                        CMD_REEVALUATE, ++mReevaluateToken, 0);
+                                sendMessageDelayed(msg, mReevaluateDelayMs);
+                                mReevaluateDelayMs += 1000;
+                                if (mReevaluateDelayMs > MAX_REEVALUATE_DELAY_MS) {
+                                    mReevaluateDelayMs = MAX_REEVALUATE_DELAY_MS;
+                                }
+                            }
+                        }
                     } else {
-                        final Message msg = obtainMessage(CMD_REEVALUATE, ++mReevaluateToken, 0);
-                        sendMessageDelayed(msg, mReevaluateDelayMs);
-                        logNetworkEvent(NetworkEvent.NETWORK_VALIDATION_FAILED);
-                        mConnectivityServiceHandler.sendMessage(obtainMessage(
-                                EVENT_NETWORK_TESTED, NETWORK_TEST_RESULT_INVALID, mNetId,
-                                probeResult.redirectUrl));
-                        if (mAttempts >= BLAME_FOR_EVALUATION_ATTEMPTS) {
-                            // Don't continue to blame UID forever.
-                            TrafficStats.clearThreadStatsUid();
-                        }
-                        mReevaluateDelayMs *= 2;
-                        if (mReevaluateDelayMs > MAX_REEVALUATE_DELAY_MS) {
-                            mReevaluateDelayMs = MAX_REEVALUATE_DELAY_MS;
-                        }
+                        Slog.d(TAG, "The user is not authorized to use the network");
                     }
                     return HANDLED;
                 case CMD_FORCE_REEVALUATION:

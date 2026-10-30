@@ -2128,6 +2128,13 @@ public final class PowerManagerService extends SystemService
         if (sleepTimeout >= 0) {
             timeout = Math.min(timeout, sleepTimeout);
         }
+        // Vendor: "keep screen on" (or an unset timeout) pins the screen-off timeout to
+        // the device-admin maximum.
+        if (mScreenOffTimeoutSetting < 1
+                || SystemProperties.getBoolean("persist.sys.keepScreenOn", false)) {
+            return Math.max(mMaximumScreenOffTimeoutFromDeviceAdmin,
+                    mMaximumScreenOffTimeoutFromDeviceAdmin);
+        }
         return Math.max(timeout, mMinimumScreenOffTimeoutConfig);
     }
 

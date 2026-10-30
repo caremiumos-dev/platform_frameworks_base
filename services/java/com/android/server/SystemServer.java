@@ -321,6 +321,12 @@ public final class SystemServer {
                 SystemProperties.set("persist.sys.localevar", "");
             }
 
+            // Vendor: clear the bluetooth "reject call" flag left over from the previous boot.
+            if (SystemProperties.getBoolean("persist.sys.bt.rejectcall", false)) {
+                Slog.i(TAG, "bbklhj  set persist.sys.bt.rejectcall false");
+                SystemProperties.set("persist.sys.bt.rejectcall", "false");
+            }
+
             // The system server should never make non-oneway calls
             Binder.setWarnOnBlocking(true);
 

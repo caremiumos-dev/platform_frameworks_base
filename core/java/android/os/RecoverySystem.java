@@ -56,9 +56,11 @@ import java.security.SignatureException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Locale;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -514,6 +516,17 @@ public class RecoverySystem {
     @RequiresPermission(android.Manifest.permission.RECOVERY)
     public static void installPackage(Context context, File packageFile)
             throws IOException {
+        // Vendor: on non-debuggable, non-CT builds close the serial port before starting
+        // the update so the recovery UI does not fight the running system for it.
+        if ("1".equals(SystemProperties.get("ro.debuggable"))) {
+            Log.d(TAG, "system is debug");
+        } else {
+            Log.d(TAG, "system is user");
+            if (!Build.IS_CT) {
+                Log.d(TAG, "setprop persist.sys.port.close 1");
+                SystemProperties.set("persist.sys.port.close", "1");
+            }
+        }
         installPackage(context, packageFile, false);
     }
 
@@ -762,12 +775,31 @@ public class RecoverySystem {
         }
 
         String reasonArg = null;
-        if (!TextUtils.isEmpty(reason)) {
+        String factoryArg = null;
+        if (TextUtils.isEmpty(reason)) {
+            reasonArg = "--reason=" + combinationArg();
+        } else {
             reasonArg = "--reason=" + sanitizeArg(reason);
+            // Vendor: mark vendor-initiated wipes so recovery can log/report them.
+            if (reason.equals("XTC_FACTORY_RESET")) {
+                factoryArg = "xtc";
+            } else if (reason.equals("XTC_FACTORY_RESET_SHUTDOWN")) {
+                factoryArg = "xtc_reboot";
+            }
+        }
+        if (factoryArg == null) {
+            factoryArg = "null";
         }
 
         final String localeArg = "--locale=" + Locale.getDefault().toLanguageTag() ;
-        bootCommand(context, shutdownArg, "--wipe_data", reasonArg, localeArg);
+        bootCommand(context, shutdownArg, "--wipe_data", reasonArg, localeArg,
+                "--factory=" + factoryArg);
+    }
+
+    // Vendor: the package that requested the pending factory reset, if any.
+    private static String combinationArg() {
+        String value = SystemProperties.get("persist.sys.factory.reset", "");
+        return !TextUtils.isEmpty(value) ? value + " factory reset" : "";
     }
 
     private static void wipeEuiccData(Context context, final boolean isWipeEuicc) {
@@ -930,6 +962,15 @@ public class RecoverySystem {
                 command.append("\n");
             }
         }
+        // Vendor: tag the command with a timestamp and the touch-screen flag so the
+        // recovery UI can pick the right input driver.
+        command.append("--date="
+                + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(
+                        System.currentTimeMillis())));
+        command.append("\n");
+        command.append("--touch=" + SystemProperties.getBoolean("persist.sys.recovery.touch",
+                false) + "\n");
+        command.append("\n");
 
         // Write the command into BCB (bootloader control block) and boot from
         // there. Will not return unless failed.
