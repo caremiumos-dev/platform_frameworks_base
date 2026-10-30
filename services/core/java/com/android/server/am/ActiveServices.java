@@ -846,79 +846,13 @@ public final class ActiveServices {
             smap.mActiveForegroundAppsChanged = false;
         }
 
-        final NotificationManager nm = (NotificationManager) mAm.mContext.getSystemService(
-                Context.NOTIFICATION_SERVICE);
-        final Context context = mAm.mContext;
-
-        if (active != null) {
-            for (int i = 0; i < active.size(); i++) {
-                ActiveForegroundApp aa = active.get(i);
-                if (aa.mLabel == null) {
-                    PackageManager pm = context.getPackageManager();
-                    try {
-                        ApplicationInfo ai = pm.getApplicationInfoAsUser(aa.mPackageName,
-                                PackageManager.MATCH_KNOWN_PACKAGES, smap.mUserId);
-                        aa.mLabel = ai.loadLabel(pm);
-                    } catch (PackageManager.NameNotFoundException e) {
-                        aa.mLabel = aa.mPackageName;
-                    }
-                }
-            }
-
-            Intent intent;
-            String title;
-            String msg;
-            String[] pkgs;
-            final long nowElapsed = SystemClock.elapsedRealtime();
-            long oldestStartTime = nowElapsed;
-            if (active.size() == 1) {
-                intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.fromParts("package", active.get(0).mPackageName, null));
-                title = context.getString(
-                        R.string.foreground_service_app_in_background, active.get(0).mLabel);
-                msg = context.getString(R.string.foreground_service_tap_for_details);
-                pkgs = new String[] { active.get(0).mPackageName };
-                oldestStartTime = active.get(0).mStartTime;
-            } else {
-                intent = new Intent(Settings.ACTION_FOREGROUND_SERVICES_SETTINGS);
-                pkgs = new String[active.size()];
-                for (int i = 0; i < active.size(); i++) {
-                    pkgs[i] = active.get(i).mPackageName;
-                    oldestStartTime = Math.min(oldestStartTime, active.get(i).mStartTime);
-                }
-                intent.putExtra("packages", pkgs);
-                title = context.getString(
-                        R.string.foreground_service_apps_in_background, active.size());
-                msg = active.get(0).mLabel.toString();
-                for (int i = 1; i < active.size(); i++) {
-                    msg = context.getString(R.string.foreground_service_multiple_separator,
-                            msg, active.get(i).mLabel);
-                }
-            }
-            Bundle notificationBundle = new Bundle();
-            notificationBundle.putStringArray(Notification.EXTRA_FOREGROUND_APPS, pkgs);
-            Notification.Builder n =
-                    new Notification.Builder(context,
-                            SystemNotificationChannels.FOREGROUND_SERVICE)
-                            .addExtras(notificationBundle)
-                            .setSmallIcon(R.drawable.stat_sys_vitals)
-                            .setOngoing(true)
-                            .setShowWhen(oldestStartTime < nowElapsed)
-                            .setWhen(System.currentTimeMillis() - (nowElapsed - oldestStartTime))
-                            .setColor(context.getColor(
-                                    com.android.internal.R.color.system_notification_accent_color))
-                            .setContentTitle(title)
-                            .setContentText(msg)
-                            .setContentIntent(
-                                    PendingIntent.getActivityAsUser(context, 0, intent,
-                                            PendingIntent.FLAG_UPDATE_CURRENT,
-                                            null, new UserHandle(smap.mUserId)));
-            nm.notifyAsUser(null, SystemMessageProto.SystemMessage.NOTE_FOREGROUND_SERVICES,
-                    n.build(), new UserHandle(smap.mUserId));
-        } else {
-            nm.cancelAsUser(null, SystemMessageProto.SystemMessage.NOTE_FOREGROUND_SERVICES,
-                    new UserHandle(smap.mUserId));
-        }
+        // The device build deliberately drops AOSP's "apps running in background"
+        // notification for foreground services and only logs the list.  This
+        // removes the only passive, user-visible signal that a third-party app is
+        // holding a foreground service, which makes it easier for a vendor
+        // preloaded app to keep running unnoticed.  Reimplemented for fidelity,
+        // but the trust model behind hiding it is objectionable.
+        printActiveService(active);
     }
 
     private void requestUpdateActiveForegroundAppsLocked(ServiceMap smap, long timeElapsed) {
@@ -2493,6 +2427,15 @@ public final class ActiveServices {
         return false;
     }
 
+    private void printActiveService(ArrayList<ActiveForegroundApp> list) {
+        if (list == null) {
+            return;
+        }
+        for (int i = 0; i < list.size(); i++) {
+            Slog.d(TAG, "Active ForegroundApp:" + list.get(i).mPackageName);
+        }
+    }
+
     private final void bringDownServiceIfNeededLocked(ServiceRecord r, boolean knowConn,
             boolean hasConn) {
         //Slog.i(TAG, "Bring down service:");
@@ -3480,9 +3423,10 @@ public final class ActiveServices {
         }
     }
 
-    void serviceForegroundCrash(ProcessRecord app) {
+    void serviceForegroundCrash(ProcessRecord app, CharSequence seq) {
         mAm.crashApplication(app.uid, app.pid, app.info.packageName, app.userId,
-                "Context.startForegroundService() did not then call Service.startForeground()",
+                "Context.startForegroundService() did not then call Service.startForeground(): "
+                        + seq,
                 false /*force*/);
     }
 

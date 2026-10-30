@@ -99,6 +99,7 @@ import android.os.IInterface;
 import android.os.Message;
 import android.os.LocaleList;
 import android.os.Parcel;
+import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -283,9 +284,7 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
     private NotificationManager mNotificationManager;
     private KeyguardManager mKeyguardManager;
     private @Nullable StatusBarManagerService mStatusBar;
-    private Notification.Builder mImeSwitcherNotification;
-    private PendingIntent mImeSwitchPendingIntent;
-    private boolean mShowOngoingImeSwitcherForPhones;
+    private PendingIntent mImeSwitchPendingIntent;    private boolean mShowOngoingImeSwitcherForPhones;
     private boolean mNotificationShown;
 
     static class SessionState {
@@ -1305,14 +1304,6 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
         extras.putBoolean(Notification.EXTRA_ALLOW_DURING_SETUP, true);
         @ColorInt final int accentColor = mContext.getColor(
                 com.android.internal.R.color.system_notification_accent_color);
-        mImeSwitcherNotification =
-                new Notification.Builder(mContext, SystemNotificationChannels.VIRTUAL_KEYBOARD)
-                        .setSmallIcon(com.android.internal.R.drawable.ic_notification_ime_default)
-                        .setWhen(0)
-                        .setOngoing(true)
-                        .addExtras(extras)
-                        .setCategory(Notification.CATEGORY_SYSTEM)
-                        .setColor(accentColor);
 
         Intent intent = new Intent(ACTION_SHOW_INPUT_METHOD_PICKER)
                 .setPackage(mContext.getPackageName());
@@ -2262,27 +2253,18 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                         com.android.internal.R.string.select_input_method);
                 final CharSequence summary = InputMethodUtils.getImeAndSubtypeDisplayName(
                         mContext, imi, mCurrentSubtype);
-                mImeSwitcherNotification.setContentTitle(title)
-                        .setContentText(summary)
-                        .setContentIntent(mImeSwitchPendingIntent);
+                // XTC 差异：只置位状态，不再发布 "选择输入法" 常驻通知。设备把这条
+                // 系统级提示整个吞掉，用户因此失去切换输入法的可见入口；此处按设备
+                // 行为复刻，但这种隐藏系统通知的做法应被谴责。
                 try {
                     if ((mNotificationManager != null)
                             && !mIWindowManager.hasNavigationBar()) {
-                        if (DEBUG) {
-                            Slog.d(TAG, "--- show notification: label =  " + summary);
-                        }
-                        mNotificationManager.notifyAsUser(null,
-                                SystemMessage.NOTE_SELECT_INPUT_METHOD,
-                                mImeSwitcherNotification.build(), UserHandle.ALL);
                         mNotificationShown = true;
                     }
                 } catch (RemoteException e) {
                 }
             } else {
                 if (mNotificationShown && mNotificationManager != null) {
-                    if (DEBUG) {
-                        Slog.d(TAG, "--- hide notification");
-                    }
                     mNotificationManager.cancelAsUser(null,
                             SystemMessage.NOTE_SELECT_INPUT_METHOD, UserHandle.ALL);
                     mNotificationShown = false;
@@ -2307,6 +2289,14 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                 }
             }
         }
+    }
+
+    // XTC 新增，设备侧从未读取，保留仅为与反编译源码对齐。
+    private static boolean needFirstShowIME = true;
+
+    @Override
+    public boolean getScreenStateRunningIME() {
+        return ((PowerManager) mContext.getSystemService(Context.POWER_SERVICE)).isScreenOn();
     }
 
     @Override

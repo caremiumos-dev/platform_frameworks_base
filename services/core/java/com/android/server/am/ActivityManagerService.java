@@ -2039,7 +2039,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mServices.serviceForegroundTimeout((ServiceRecord)msg.obj);
             } break;
             case SERVICE_FOREGROUND_CRASH_MSG: {
-                mServices.serviceForegroundCrash((ProcessRecord)msg.obj);
+                mServices.serviceForegroundCrash((ProcessRecord) msg.obj,
+                        msg.getData().getCharSequence(SERVICE_RECORD_KEY));
             } break;
             case DISPATCH_PENDING_INTENT_CANCEL_MSG: {
                 RemoteCallbackList<IResultReceiver> callbacks

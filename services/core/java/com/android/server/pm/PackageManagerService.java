@@ -412,6 +412,12 @@ public class PackageManagerService extends IPackageManager.Stub
         mReadXtcAppsList.add("com.xtc.migration");
         mReadXtcAppsList.add("com.xtc.report");
     }
+    // Allow-list of packages whose requested runtime permissions are granted
+    // without user consent.
+    // TRUST-MODEL CONDEMNATION: this silently bypasses the runtime-permission
+    // grant flow for a vendor-chosen package, which no third-party app can ever
+    // obtain. Reproduced only for device compatibility.
+    private final ArrayList<String> mPermissionWhiteList = new ArrayList<>();
     static final boolean DEBUG_PREFERRED = false;
     static final boolean DEBUG_UPGRADE = false;
     static final boolean DEBUG_DOMAIN_VERIFICATION = false;
@@ -1428,6 +1434,9 @@ public class PackageManagerService extends IPackageManager.Stub
             | FLAG_PERMISSION_REVOKE_ON_UPGRADE;
 
     final @Nullable String mRequiredVerifierPackage;
+    // XTC/CAF: optional (Qualcomm) package verifier, resolved from the
+    // config_optionalPackageVerifierName resource below.
+    final @Nullable String mOptionalVerifierPackage;
     final @NonNull String mRequiredInstallerPackage;
     final @NonNull String mRequiredUninstallerPackage;
     final @Nullable String mSetupWizardPackage;
@@ -2456,6 +2465,8 @@ public class PackageManagerService extends IPackageManager.Stub
 
         mContext = context;
 
+        mPermissionWhiteList.add("com.xtc.xtcdialer");
+
         mPermissionReviewRequired = context.getResources().getBoolean(
                 R.bool.config_permissionReviewRequired);
 
@@ -3082,6 +3093,7 @@ public class PackageManagerService extends IPackageManager.Stub
 
             if (!mOnlyCore) {
                 mRequiredVerifierPackage = getRequiredButNotReallyRequiredVerifierLPr();
+                mOptionalVerifierPackage = getOptionalVerifierLPr();
                 mRequiredInstallerPackage = getRequiredInstallerLPr();
                 mRequiredUninstallerPackage = getRequiredUninstallerLPr();
                 mIntentFilterVerifierComponent = getIntentFilterVerifierComponentNameLPr();
@@ -3099,6 +3111,7 @@ public class PackageManagerService extends IPackageManager.Stub
                         SharedLibraryInfo.VERSION_UNDEFINED);
             } else {
                 mRequiredVerifierPackage = null;
+                mOptionalVerifierPackage = null;
                 mRequiredInstallerPackage = null;
                 mRequiredUninstallerPackage = null;
                 mIntentFilterVerifierComponent = null;
@@ -3493,6 +3506,28 @@ public class PackageManagerService extends IPackageManager.Stub
             return null;
         }
         throw new RuntimeException("There must be exactly one verifier; found " + matches);
+    }
+
+    private @Nullable String getOptionalVerifierLPr() {
+        final Intent intent = new Intent(
+                "com.qualcomm.qti.intent.action.PACKAGE_NEEDS_OPTIONAL_VERIFICATION");
+        final List<ResolveInfo> matches = queryIntentReceiversInternal(intent, PACKAGE_MIME_TYPE,
+                MATCH_SYSTEM_ONLY | MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE,
+                0, false /*allowDynamicSplits*/);
+        if (matches.size() >= 1) {
+            final String marker = mContext.getResources().getString(
+                    com.android.internal.R.string.config_optionalPackageVerifierName);
+            if (TextUtils.isEmpty(marker)) {
+                return null;
+            }
+            for (int i = 0; i < matches.size(); i++) {
+                final String packageName = matches.get(i).getComponentInfo().packageName;
+                if (packageName.contains(marker)) {
+                    return packageName;
+                }
+            }
+        }
+        return null;
     }
 
     private @NonNull String getRequiredSharedLibraryLPr(String name, int version) {
@@ -6549,6 +6584,12 @@ public class PackageManagerService extends IPackageManager.Stub
 
     @Override
     public List<String> getAllPackages() {
+        // XTC 差异：只允许 system/root/shell 和厂商指定的 uid 1071 枚举全部包名，
+        // 其他调用者（包括普通第三方应用）会被 SecurityException 拒绝。
+        // 谴责：这是把系统级 API 变成厂商私有特权，正常应用无法获得同等能力。
+        if (Binder.getCallingUid() != 1071) {
+            enforceSystemOrRootOrShell("getAllPackages is limited to privileged callers");
+        }
         final int callingUid = Binder.getCallingUid();
         final int callingUserId = UserHandle.getUserId(callingUid);
         synchronized (mPackages) {
@@ -13431,6 +13472,7 @@ public class PackageManagerService extends IPackageManager.Stub
                                             changedRuntimePermissionUserIds, userId);
                                 }
                             }
+                            grantWhitelistPermission(pkg, bp, permissionsState, userId);
                             // Propagate the permission flags.
                             permissionsState.updatePermissionFlags(bp, userId, flags, flags);
                         }
@@ -16698,10 +16740,14 @@ public class PackageManagerService extends IPackageManager.Stub
                 final int requiredUid = mRequiredVerifierPackage == null ? -1
                         : getPackageUid(mRequiredVerifierPackage, MATCH_DEBUG_TRIAGED_MISSING,
                                 verifierUser.getIdentifier());
+                final int optionalUid = mOptionalVerifierPackage == null ? -1
+                        : getPackageUid(mOptionalVerifierPackage, MATCH_DEBUG_TRIAGED_MISSING,
+                                verifierUser.getIdentifier());
                 final int installerUid =
                         verificationInfo == null ? -1 : verificationInfo.installerUid;
-                if (!origin.existing && requiredUid != -1
-                        && isVerificationEnabled(
+                if (origin.existing
+                        || (requiredUid == -1 && optionalUid == -1)
+                        || !isVerificationEnabled(
                                 verifierUser.getIdentifier(), installFlags, installerUid)) {
                     final Intent verification = new Intent(
                             Intent.ACTION_PACKAGE_NEEDS_VERIFICATION);
@@ -16787,6 +16833,37 @@ public class PackageManagerService extends IPackageManager.Stub
                                 sufficientIntent.setComponent(verifierComponent);
                                 mContext.sendBroadcastAsUser(sufficientIntent, verifierUser);
                             }
+                        }
+                    }
+
+                    // XTC/CAF: additionally ask the optional verifier.  Its
+                    // verdict is mandatory for the install to proceed.
+                    if (mOptionalVerifierPackage != null) {
+                        final Intent optionalIntent = new Intent(verification);
+                        optionalIntent.setAction(
+                                "com.qualcomm.qti.intent.action.PACKAGE_NEEDS_OPTIONAL_VERIFICATION");
+                        optionalIntent.setComponent(matchComponentForVerifier(
+                                mOptionalVerifierPackage,
+                                queryIntentReceiversInternal(optionalIntent, PACKAGE_MIME_TYPE, 0,
+                                        verifierUser.getIdentifier(), false)));
+                        verificationState.addOptionalVerifier(optionalUid);
+                        if (mRequiredVerifierPackage != null) {
+                            mContext.sendBroadcastAsUser(optionalIntent, verifierUser,
+                                    android.Manifest.permission.PACKAGE_VERIFICATION_AGENT);
+                        } else {
+                            mContext.sendOrderedBroadcastAsUser(optionalIntent, verifierUser,
+                                    android.Manifest.permission.PACKAGE_VERIFICATION_AGENT,
+                                    new BroadcastReceiver() {
+                                        @Override
+                                        public void onReceive(Context context, Intent intent) {
+                                            final Message msg = mHandler
+                                                    .obtainMessage(CHECK_PENDING_VERIFICATION);
+                                            msg.arg1 = verificationId;
+                                            mHandler.sendMessageDelayed(msg,
+                                                    getVerificationTimeout());
+                                        }
+                                    }, null, 0, null, null);
+                            mArgs = null;
                         }
                     }
 
@@ -25984,6 +26061,19 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
     }
 
     /**
+     * XTC 差异：白名单包在授权流程里被直接授予运行时权限（绕过用户同意，**已谴责**）。
+     */
+    private void grantWhitelistPermission(PackageParser.Package pkg,
+            BasePermission basePermission, PermissionsState permissionsState, int userId) {
+        if (mPermissionWhiteList.contains(pkg.packageName)
+                && !permissionsState.hasPermission(basePermission.name, userId)
+                && permissionsState.grantRuntimePermission(basePermission, userId) == -1) {
+            Log.w(TAG, "grant whitelist permission failed pkg:" + pkg.packageName
+                    + " name:" + basePermission.name);
+        }
+    }
+
+    /**
      * XTC 差异：为白名单进程直接授予 provider 权限（绕过标准权限模型，**已谴责**）。
      */
     public int grantContentProviderPermission(int appId, String processName, String permission,
@@ -26024,6 +26114,14 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
         if (callingUid != Process.PHONE_UID && callingUid != Process.SYSTEM_UID) {
             throw new SecurityException(
                     "Cannot call " + tag + " from UID " + callingUid);
+        }
+    }
+
+    private static void enforceSystemOrRootOrShell(String message) {
+        int callingUid = Binder.getCallingUid();
+        if (callingUid != Process.SYSTEM_UID && callingUid != Process.ROOT_UID
+                && callingUid != Process.SHELL_UID) {
+            throw new SecurityException(message);
         }
     }
 

@@ -75,6 +75,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.WeakHashMap;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
@@ -94,6 +95,14 @@ class PackageManagerShellCommand extends ShellCommand {
 
     PackageManagerShellCommand(PackageManagerService service) {
         mInterface = service;
+    }
+
+    // XTC: 设备声明但从未读取的禁用命令表，仅为与反编译源码对齐。
+    private static final List<String> userForbiddenCmdList = new CopyOnWriteArrayList<>();
+    static {
+        userForbiddenCmdList.add("list");
+        userForbiddenCmdList.add(com.android.server.xgseserver.xss.SystemExceptionManager
+                .EXCEPTION_TYPE_UNINSTALL);
     }
 
     @Override

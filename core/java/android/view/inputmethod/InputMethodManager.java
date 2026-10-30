@@ -679,6 +679,22 @@ public final class InputMethodManager {
         return sInstance;
     }
 
+    private boolean getScreenStateRunningIME() {
+        try {
+            return mService.getScreenStateRunningIME();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    private boolean isHasEditText(String packageName, View view) {
+        if (Arrays.asList(InputMethodClient.systemAPPNeedIme).contains(packageName)
+                || view == null || !(view instanceof android.widget.EditText)) {
+            return false;
+        }
+        return true;
+    }
+
     /** @hide */
     public IInputMethodClient getClient() {
         return mClient;

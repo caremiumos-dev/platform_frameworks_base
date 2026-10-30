@@ -216,6 +216,12 @@ public class LocationManagerService extends ILocationManager.Stub {
 
     private final LocationRequestStatistics mRequestStatistics = new LocationRequestStatistics();
 
+    // Combo network location provider (screen-location) support restored from the
+    // device build.
+    private String mComboNlpPackageName;
+    private String mComboNlpReadyMarker;
+    private String mComboNlpScreenMarker;
+
     // mapping from provider name to last known location
     private final HashMap<String, Location> mLastLocation = new HashMap<>();
 
@@ -725,6 +731,13 @@ public class LocationManagerService extends ILocationManager.Stub {
                 com.android.internal.R.array.config_locationProviderPackageNames);
         if (proxy == null) {
             Slog.d(TAG, "Unable to bind ActivityRecognitionProxy.");
+        }
+
+        mComboNlpPackageName = resources.getString(
+                com.android.internal.R.string.config_comboNetworkLocationProvider);
+        if (mComboNlpPackageName != null) {
+            mComboNlpReadyMarker = mComboNlpPackageName + ".nlp:ready";
+            mComboNlpScreenMarker = mComboNlpPackageName + ".nlp:screen";
         }
 
         String[] testProviderStrings = resources.getStringArray(
@@ -2789,6 +2802,60 @@ public class LocationManagerService extends ILocationManager.Stub {
         }
     }
 
+    private Location screenLocationLocked(Location location, String provider) {
+        if (isMockProvider("network")) {
+            return location;
+        }
+
+        LocationProviderProxy networkProvider =
+                (LocationProviderProxy) mProvidersByName.get("network");
+        if (mComboNlpPackageName == null || networkProvider == null
+                || !provider.equals("network") || isMockProvider("network")) {
+            return location;
+        }
+        String connectedPackageName = networkProvider.getConnectedPackageName();
+        if (connectedPackageName == null
+                || !connectedPackageName.equals(mComboNlpPackageName)) {
+            return location;
+        }
+
+        Bundle extras = location.getExtras();
+        boolean screened = false;
+        if (extras == null || !extras.containsKey(mComboNlpReadyMarker)) {
+            // Not yet ready: deliver this location only to the combo NLP, marked
+            // as a screening request, and do not broadcast it.
+            ArrayList<UpdateRecord> records = mRecordsByProvider.get("passive");
+            if (records != null) {
+                for (UpdateRecord record : records) {
+                    if (record.mReceiver.mIdentity.mPackageName.equals(mComboNlpPackageName)) {
+                        if (!screened) {
+                            if (extras == null) {
+                                location.setExtras(new Bundle());
+                                extras = location.getExtras();
+                            }
+                            extras.putBoolean(mComboNlpScreenMarker, true);
+                            screened = true;
+                        }
+                        if (!record.mReceiver.callLocationChangedLocked(location)) {
+                            Slog.w(TAG, "RemoteException calling onLocationChanged on "
+                                    + record.mReceiver);
+                        } else if (D) {
+                            Log.d(TAG, "Sending location for screening");
+                        }
+                    }
+                }
+            }
+            if (screened) {
+                return null;
+            }
+            if (D) Log.d(TAG, "Not screening locations");
+        } else {
+            if (D) Log.d(TAG, "This location is marked as ready for broadcast");
+            extras.remove(mComboNlpReadyMarker);
+        }
+        return location;
+    }
+
     private void handleLocationChanged(Location location, boolean passive) {
         // create a working copy of the incoming Location so that the service can modify it without
         // disturbing the caller's copy
@@ -2805,6 +2872,11 @@ public class LocationManagerService extends ILocationManager.Stub {
         synchronized (mLock) {
             if (isAllowedByCurrentUserSettingsLocked(provider)) {
                 if (!passive) {
+                    // XTC/CAF 差异：非 passive provider 的新位置先经过 combo NLP 的
+                    // "屏幕位置" 过滤，必要时拦截广播并只投递给该 NLP。
+                    if (screenLocationLocked(location, provider) == null) {
+                        return;
+                    }
                     // notify passive provider of the new location
                     mPassiveProvider.updateLocation(myLocation);
                 }

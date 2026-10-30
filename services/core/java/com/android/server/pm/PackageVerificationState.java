@@ -43,6 +43,16 @@ class PackageVerificationState {
 
     private boolean mRequiredVerificationPassed;
 
+    // XTC/CAF: an additional optional verifier (Qualcomm's optional verification
+    // service) must also reply before the install is allowed.
+    private boolean mHasOptionalVerifier;
+
+    private boolean mOptionalVerificationComplete;
+
+    private boolean mOptionalVerificationPassed;
+
+    private int mOptionalVerifierUid;
+
     private boolean mExtendedTimeout;
 
     /**
@@ -74,6 +84,17 @@ class PackageVerificationState {
     }
 
     /**
+     * Add an optional verifier which must also reply before the install is
+     * allowed.
+     *
+     * @param uid user ID of optional verifier
+     */
+    public void addOptionalVerifier(int uid) {
+        mOptionalVerifierUid = uid;
+        mHasOptionalVerifier = true;
+    }
+
+    /**
      * Should be called when a verification is received from an agent so the
      * state of the package verification can be tracked.
      *
@@ -95,6 +116,18 @@ class PackageVerificationState {
             }
             return true;
         } else {
+            if (mHasOptionalVerifier && uid == mOptionalVerifierUid) {
+                mOptionalVerificationComplete = true;
+                switch (code) {
+                    case PackageManager.VERIFICATION_ALLOW:
+                        mOptionalVerificationPassed = true;
+                        break;
+                    default:
+                        mOptionalVerificationPassed = false;
+                        break;
+                }
+                return true;
+            }
             if (mSufficientVerifierUids.get(uid)) {
                 if (code == PackageManager.VERIFICATION_ALLOW) {
                     mSufficientVerificationComplete = true;
@@ -121,7 +154,11 @@ class PackageVerificationState {
      * @return {@code true} when verification is considered complete
      */
     public boolean isVerificationComplete() {
-        if (!mRequiredVerificationComplete) {
+        if (mRequiredVerifierUid != -1 && !mRequiredVerificationComplete) {
+            return false;
+        }
+
+        if (mHasOptionalVerifier && !mOptionalVerificationComplete) {
             return false;
         }
 
@@ -139,7 +176,11 @@ class PackageVerificationState {
      * @return {@code true} if installation should be allowed
      */
     public boolean isInstallAllowed() {
-        if (!mRequiredVerificationPassed) {
+        if (mRequiredVerifierUid != -1 && !mRequiredVerificationPassed) {
+            return false;
+        }
+
+        if (mHasOptionalVerifier && !mOptionalVerificationPassed) {
             return false;
         }
 

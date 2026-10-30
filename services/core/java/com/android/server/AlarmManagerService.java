@@ -106,6 +106,9 @@ class AlarmManagerService extends SystemService {
             "org.codeaurora.poweroffalarm.action.SET_ALARM";
     private static final String POWER_OFF_ALARM_PACKAGE = "com.qualcomm.qti.poweroffalarm";
     private static final String TIME = "time";
+    // XTC: broadcast emitted after the system clock is changed, so the vendor UI
+    // can resync its notification timestamps.
+    private static final String XTC_TIME_CHANGE_ACTION = "com.xtc.time.change.ACTION";
 
     // Mask for testing whether a given alarm type is wakeup vs non-wakeup
     static final int TYPE_NONWAKEUP_MASK = 0x1; // low bit => non-wakeup
@@ -1350,6 +1353,14 @@ class AlarmManagerService extends SystemService {
     }
 
     private final IBinder mService = new IAlarmManager.Stub() {
+        private void sendTimeChangeBroadcast(long oldTime, long newTime) {
+            Intent intent = new Intent(XTC_TIME_CHANGE_ACTION);
+            intent.putExtra("old_time", oldTime);
+            intent.putExtra("new_time", newTime);
+            Slog.d(TAG, "Sync notification time: old_time=" + oldTime + ", newTime=" + newTime);
+            getContext().sendBroadcastAsUser(intent, UserHandle.ALL);
+        }
+
         @Override
         public void set(String callingPackage,
                 int type, long triggerAtTime, long windowLength, long interval, int flags,
@@ -1423,7 +1434,11 @@ class AlarmManagerService extends SystemService {
             }
 
             synchronized (mLock) {
-                return setKernelTime(mNativeData, millis) == 0;
+                final long oldTime = System.currentTimeMillis();
+                final boolean result = setKernelTime(mNativeData, millis) == 0;
+                sendTimeChangeBroadcast(oldTime, millis);
+                Slog.d(TAG, "setTime result=" + result);
+                return result;
             }
         }
 

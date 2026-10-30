@@ -1414,6 +1414,12 @@
     <!-- Package name providing network location support. Used only when
          config_enableNetworkLocationOverlay is false. -->
     <string name="config_networkLocationProviderPackageName" translatable="false">@null</string>
+    <!-- Combo network location provider used for "screen location" handshakes.
+         XTC 差异：设备用厂商预置的 com.qualcomm.location 做位置筛查。 -->
+    <string name="config_comboNetworkLocationProvider" translatable="false">com.qualcomm.location</string>
+    <!-- Optional package verifier (XTC/CAF): the package name fragment used to
+         match the optional verification service. -->
+    <string name="config_optionalPackageVerifierName" translatable="false">seemp.service</string>
 
     <!-- Whether to enable fused location provider overlay which allows fused
          location provider to be replaced by an app at run-time. When disabled,
