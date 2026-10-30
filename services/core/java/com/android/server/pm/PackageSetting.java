@@ -109,6 +109,13 @@ final class PackageSetting extends PackageSettingBase {
                 : super.getPermissionsState();
     }
 
+    public boolean isPrebuildUninstallableApp() {
+        if (codePathString != null) {
+            return codePathString.startsWith("/system/vital-app");
+        }
+        return false;
+    }
+
     public boolean isPrivileged() {
         return (pkgPrivateFlags & ApplicationInfo.PRIVATE_FLAG_PRIVILEGED) != 0;
     }

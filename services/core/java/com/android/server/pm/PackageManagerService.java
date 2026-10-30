@@ -485,6 +485,8 @@ public class PackageManagerService extends IPackageManager.Stub
     static final int SCAN_AS_INSTANT_APP = 1<<17;
     static final int SCAN_AS_FULL_APP = 1<<18;
     static final int SCAN_AS_VIRTUAL_PRELOAD = 1<<19;
+    // XTC: package comes from /system/vital-app and may be uninstalled by the user.
+    static final int SCAN_AS_PREBUILD_APP = 1<<20;
     /** Should not be with the scan flags */
     static final int FLAGS_REMOVE_CHATTY = 1<<31;
 
@@ -2630,6 +2632,13 @@ public class PackageManagerService extends IPackageManager.Stub
             mPromoteSystemApps =
                     mIsUpgrade && ver.sdkVersion <= Build.VERSION_CODES.LOLLIPOP_MR1;
 
+            // XTC: the charge-usable flag is only valid for the boot that set it.
+            final String chargeUsable = SystemProperties.get("persist.sys.charge.usable", "false");
+            Slog.w(TAG, "current persist.sys.charge.usable:" + chargeUsable);
+            if (chargeUsable.equals("true")) {
+                SystemProperties.set("persist.sys.charge.usable", "false");
+            }
+
             // When upgrading from pre-N, we need to handle package extraction like first boot,
             // as there is no profiling data available.
             mIsPreNUpgrade = mIsUpgrade && ver.sdkVersion < Build.VERSION_CODES.N;
@@ -2681,6 +2690,12 @@ public class PackageManagerService extends IPackageManager.Stub
                     | PackageParser.PARSE_IS_SYSTEM
                     | PackageParser.PARSE_IS_SYSTEM_DIR
                     | PackageParser.PARSE_IS_PRIVILEGED, scanFlags, 0);
+
+            // XTC: preinstalled apps that the user is allowed to uninstall.
+            final File vitalAppDir = new File(Environment.getRootDirectory(), "vital-app");
+            scanDirTracedLI(vitalAppDir, mDefParseFlags
+                    | PackageParser.PARSE_IS_SYSTEM
+                    | PackageParser.PARSE_IS_SYSTEM_DIR, scanFlags | SCAN_AS_PREBUILD_APP, 0);
 
             // Collect ordinary system packages.
             final File systemAppDir = new File(Environment.getRootDirectory(), "app");
@@ -2758,9 +2773,14 @@ public class PackageManagerService extends IPackageManager.Stub
                     }
 
                     if (!mSettings.isDisabledSystemPackageLPr(ps.name)) {
-                        psit.remove();
-                        logCriticalInfo(Log.WARN, "System package " + ps.name
-                                + " no longer exists; it's data will be wiped");
+                        // XTC: a prebuild app that the user already uninstalled must
+                        // keep its settings instead of being wiped here.
+                        final Boolean prebuildState = mSettings.mPrebuildState.get(ps.name);
+                        if (prebuildState == null || !prebuildState) {
+                            psit.remove();
+                            logCriticalInfo(Log.WARN, "System package " + ps.name
+                                    + " no longer exists; it's data will be wiped");
+                        }
                         // Actual deletion of code and data will be handled by later
                         // reconciliation step
                     } else {
@@ -9810,9 +9830,43 @@ public class PackageManagerService extends IPackageManager.Stub
             scanFlags |= SCAN_AS_VIRTUAL_PRELOAD;
         }
 
+        // XTC: skip a prebuild app that the user already uninstalled, unless the
+        // system image now ships a newer version (upgrade path).
+        if ((scanFlags & SCAN_AS_PREBUILD_APP) != 0) {
+            synchronized (mPackages) {
+                Boolean prebuildState = mSettings.mPrebuildState.get(pkg.packageName);
+                if (prebuildState == null) {
+                    if (mIsUpgrade && ps == null) {
+                        prebuildState = true;
+                        mSettings.mPrebuildState.put(pkg.packageName, true);
+                    } else {
+                        prebuildState = false;
+                    }
+                }
+                if (prebuildState) {
+                    if (!mIsUpgrade || ps == null || pkg.mVersionCode <= ps.versionCode) {
+                        Slog.d(TAG, "The current app on the system partition has been "
+                                + "uninstalled and does not need to be installed");
+                        throw new PackageManagerException(5, "Package " + pkg.packageName
+                                + " at " + pkg.codePath
+                                + " has been uninstalled and will not be installed");
+                    }
+                }
+            }
+        }
+
         // Note that we invoke the following method only if we are about to unpack an application
         PackageParser.Package scannedPkg = scanPackageLI(pkg, policyFlags, scanFlags
                 | SCAN_UPDATE_SIGNATURE, currentTime, user);
+
+        if ((scanFlags & SCAN_AS_PREBUILD_APP) != 0) {
+            synchronized (mPackages) {
+                if (pkg.packageName != null) {
+                    Slog.d(TAG, "Add to mPrebuildState pkgName = " + pkg.packageName);
+                    mSettings.mPrebuildState.put(pkg.packageName, false);
+                }
+            }
+        }
 
         /*
          * If the system app should be overridden by a previously installed
@@ -19026,7 +19080,8 @@ public class PackageManagerService extends IPackageManager.Stub
 
             PackageSetting ps = mSettings.mPackages.get(pkgName);
             if (ps != null) {
-                if (DEBUG_INSTALL) Slog.d(TAG, "Existing package: " + ps);
+                Slog.d(TAG, "Existing package: " + ps
+                        + ", isPrebuildUninstallableApp = " + ps.isPrebuildUninstallableApp());
 
                 // Static shared libs have same package with different versions where
                 // we internally use a synthetic package name to allow multiple versions
@@ -19909,6 +19964,14 @@ public class PackageManagerService extends IPackageManager.Stub
             info.origUsers = uninstalledPs.queryInstalledUsers(allUsers, true);
         }
 
+        // XTC: prebuild apps are deleted through the system-app path even when
+        // the caller did not ask for it.
+        if (uninstalledPs.isPrebuildUninstallableApp()) {
+            deleteFlags |= PackageManager.DELETE_SYSTEM_APP;
+            Slog.d(TAG, "deletePackageX: pkg=" + packageName
+                    + " isPrebuildUninstallableApp=true");
+        }
+
         final int freezeUser;
         if (isUpdatedSystemApp(uninstalledPs)
                 && ((deleteFlags & PackageManager.DELETE_SYSTEM_APP) == 0)) {
@@ -20531,11 +20594,23 @@ public class PackageManagerService extends IPackageManager.Stub
         if (DEBUG_REMOVE) Slog.d(TAG, "deletePackageLI: " + packageName + " user " + user);
 
         PackageSetting ps;
+        boolean isUpdatedPrebuildApp = false;
         synchronized (mPackages) {
             ps = mSettings.mPackages.get(packageName);
             if (ps == null) {
                 Slog.w(TAG, "Package named '" + packageName + "' doesn't exist.");
                 return false;
+            }
+
+            // XTC: prebuild apps from /system/vital-app can be removed like a
+            // normal app; record the removal so it is not restored on scan.
+            isUpdatedPrebuildApp = mSettings.mPrebuildState.containsKey(packageName)
+                    && !ps.isPrebuildUninstallableApp();
+            Slog.d(TAG, "deletePackageLI: " + packageName + " user " + user
+                    + ", isUpdatedPrebuildApp = " + isUpdatedPrebuildApp);
+            if (ps.isPrebuildUninstallableApp()) {
+                deletePrebuildPackageLIF(ps, flags, user, outInfo);
+                return true;
             }
 
             if (ps.parentPackageName != null && (!isSystemApp(ps)
@@ -20556,7 +20631,7 @@ public class PackageManagerService extends IPackageManager.Stub
         }
 
         if (((!isSystemApp(ps) || (flags&PackageManager.DELETE_SYSTEM_APP) != 0) && user != null
-                && user.getIdentifier() != UserHandle.USER_ALL)) {
+                && user.getIdentifier() != UserHandle.USER_ALL && !isUpdatedPrebuildApp)) {
             // The caller is asking that the package only be deleted for a single
             // user.  To do this, we just mark its uninstalled state and delete
             // its data. If this is a system app, we only allow this to happen if
@@ -20620,10 +20695,20 @@ public class PackageManagerService extends IPackageManager.Stub
 
         boolean ret = false;
         if (isSystemApp(ps)) {
-            if (DEBUG_REMOVE) Slog.d(TAG, "Removing system package: " + ps.name);
+            if (DEBUG_REMOVE) Slog.d(TAG, "Removing system package: " + ps.name
+                    + ", isPrebuildUninstallableApp = " + ps.isPrebuildUninstallableApp());
             // When an updated system application is deleted we delete the existing resources
             // as well and fall back to existing code in system partition
             ret = deleteSystemPackageLIF(ps.pkg, ps, allUserHandles, flags, outInfo, writeSettings);
+            // XTC: if the fallback package is itself a prebuild app, drop its state
+            // as well.
+            synchronized (mPackages) {
+                ps = mSettings.mPackages.get(ps.name);
+            }
+            if (ps != null && ps.isPrebuildUninstallableApp()) {
+                deletePrebuildPackageLIF(ps, flags, user, outInfo);
+                return ret;
+            }
         } else {
             if (DEBUG_REMOVE) Slog.d(TAG, "Removing non-system package: " + ps.name);
             ret = deleteInstalledPackageLIF(ps, deleteCodeAndResources, flags, allUserHandles,
@@ -20742,6 +20827,83 @@ public class PackageManagerService extends IPackageManager.Stub
         }
 
         return true;
+    }
+
+    private boolean clearPackageStateForUserLIF(PackageSetting ps, int userId,
+            PackageRemovedInfo outInfo, int flags) {
+        final PackageParser.Package pkg;
+        synchronized (mPackages) {
+            pkg = mPackages.get(ps.name);
+        }
+
+        final int[] userIds = (userId == UserHandle.USER_ALL) ? sUserManager.getUserIds()
+                : new int[] {userId};
+        for (int nextUserId : userIds) {
+            if (DEBUG_REMOVE) {
+                Slog.d(TAG, "Updating package:" + ps.name + " install state for user:"
+                        + nextUserId);
+            }
+
+            if ((flags & PackageManager.DELETE_KEEP_DATA) == 0) {
+                destroyAppDataLIF(pkg, userId,
+                        StorageManager.FLAG_STORAGE_DE | StorageManager.FLAG_STORAGE_CE);
+            }
+            destroyAppProfilesLIF(pkg, userId);
+            clearDefaultBrowserIfNeededForUser(ps.name, userId);
+            removeKeystoreDataIfNeeded(nextUserId, ps.appId);
+            schedulePackageCleaning(ps.name, nextUserId, false);
+            synchronized (mPackages) {
+                if (clearPackagePreferredActivitiesLPw(ps.name, nextUserId)) {
+                    scheduleWritePackageRestrictionsLocked(nextUserId);
+                }
+                resetUserChangesToRuntimePermissionsAndFlagsLPw(ps, nextUserId);
+            }
+        }
+
+        if (outInfo != null) {
+            outInfo.removedPackage = ps.name;
+            outInfo.installerPackageName = ps.installerPackageName;
+            outInfo.isStaticSharedLib = pkg != null && pkg.staticSharedLibName != null;
+            outInfo.removedAppId = ps.appId;
+            outInfo.removedUsers = userIds;
+            outInfo.broadcastUsers = userIds;
+        }
+
+        return true;
+    }
+
+    /**
+     * XTC: removes a preinstalled app shipped under /system/vital-app and records
+     * in settings that the user uninstalled it, so the scan pass will not
+     * resurrect it on the next boot.
+     */
+    private void deletePrebuildPackageLIF(PackageSetting ps, int flags, UserHandle user,
+            PackageRemovedInfo outInfo) {
+        int removedAppId = -1;
+        final boolean deleteData = (flags & PackageManager.DELETE_KEEP_DATA) == 0;
+        clearPackageStateForUserLIF(ps, user == null ? UserHandle.USER_ALL : user.getIdentifier(),
+                outInfo, flags);
+        removePackageLI(ps, (flags & FLAGS_REMOVE_CHATTY) != 0);
+        if (deleteData) {
+            final int appId = mSettings.removePackageLPw(ps.name);
+            updatePermissionsLPw(ps.name, null, 0);
+            if (appId != -1) {
+                removeKeystoreDataIfNeeded(UserHandle.USER_ALL, appId);
+            }
+            removedAppId = appId;
+        }
+        if (outInfo != null) {
+            outInfo.dataRemoved = deleteData;
+            outInfo.removedAppId = removedAppId;
+            outInfo.isRemovedPackageSystemUpdate = false;
+            outInfo.isUpdate = false;
+        }
+        Slog.d(TAG, "deletePrebuildPackageLIF dataRemoved = " + deleteData
+                + ", removedAppId = " + removedAppId);
+        synchronized (mPackages) {
+            mSettings.mPrebuildState.put(ps.name, true);
+            mSettings.writeLPr();
+        }
     }
 
     private final class ClearStorageConnection implements ServiceConnection {

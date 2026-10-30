@@ -276,6 +276,10 @@ final class Settings {
     private final ArrayMap<String, PackageSetting> mDisabledSysPackages =
         new ArrayMap<String, PackageSetting>();
 
+    // XTC: tracks preinstalled apps shipped under /system/vital-app, keyed by
+    // package name; the value records whether the user already uninstalled it.
+    final ArrayMap<String, Boolean> mPrebuildState = new ArrayMap<>();
+
     /** List of packages that are blocked for uninstall for specific users */
     private final SparseArray<ArraySet<String>> mBlockUninstallPackages = new SparseArray<>();
 
@@ -2544,6 +2548,21 @@ final class Settings {
                 writeDisabledSysPackageLPr(serializer, pkg);
             }
 
+            if (mPrebuildState.size() > 0) {
+                serializer.startTag(null, "prebuild-app-state");
+                for (int i = 0; i < mPrebuildState.size(); i++) {
+                    final String name = mPrebuildState.keyAt(i);
+                    final boolean uninstalled = mPrebuildState.valueAt(i);
+                    if (name != null) {
+                        serializer.startTag(null, "package");
+                        serializer.attribute(null, ATTR_NAME, name);
+                        serializer.attribute(null, "uninstalled", String.valueOf(uninstalled));
+                        serializer.endTag(null, "package");
+                    }
+                }
+                serializer.endTag(null, "prebuild-app-state");
+            }
+
             for (final SharedUserSetting usr : mSharedUsers.values()) {
                 serializer.startTag(null, "shared-user");
                 serializer.attribute(null, ATTR_NAME, usr.name);
@@ -3128,6 +3147,8 @@ final class Settings {
                     readDefaultAppsLPw(parser, 0);
                 } else if (tagName.equals("updated-package")) {
                     readDisabledSysPackageLPw(parser);
+                } else if (tagName.equals("prebuild-app-state")) {
+                    readPrebuildAppState(parser);
                 } else if (tagName.equals("cleaning-package")) {
                     String name = parser.getAttributeValue(null, ATTR_NAME);
                     String userStr = parser.getAttributeValue(null, ATTR_USER);
@@ -3789,6 +3810,31 @@ final class Settings {
     private static int PRE_M_APP_INFO_FLAG_CANT_SAVE_STATE = 1<<28;
     private static int PRE_M_APP_INFO_FLAG_FORWARD_LOCK = 1<<29;
     private static int PRE_M_APP_INFO_FLAG_PRIVILEGED = 1<<30;
+
+    private void readPrebuildAppState(XmlPullParser parser)
+            throws XmlPullParserException, IOException {
+        final int depth = parser.getDepth();
+        while (true) {
+            int type = parser.next();
+            if (type == XmlPullParser.END_DOCUMENT) {
+                return;
+            }
+            if (type == XmlPullParser.END_TAG && parser.getDepth() <= depth) {
+                return;
+            }
+            if (type == XmlPullParser.END_TAG || type == XmlPullParser.TEXT) {
+                continue;
+            }
+            String tagName = parser.getName();
+            if ("package".equals(tagName)) {
+                String name = parser.getAttributeValue(null, ATTR_NAME);
+                String uninstalled = parser.getAttributeValue(null, "uninstalled");
+                if (name != null && uninstalled != null) {
+                    mPrebuildState.put(name, Boolean.parseBoolean(uninstalled));
+                }
+            }
+        }
+    }
 
     private void readPackageLPw(XmlPullParser parser) throws XmlPullParserException, IOException {
         String name = null;
