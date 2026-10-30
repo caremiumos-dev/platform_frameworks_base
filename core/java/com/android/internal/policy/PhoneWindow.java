@@ -2549,6 +2549,11 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
         int layoutResource;
         int features = getLocalFeatures();
         // System.out.println("Features: 0x" + Integer.toHexString(features));
+        // XTC: 声明该特性的窗口在双指截屏期间屏蔽输入事件。
+        if ((features & (1 << FEATURE_SHIELD_XTCSCREENCUT)) != 0) {
+            Log.d(TAG, "generateLayout: set shield double finger xtcScreenCut");
+            getAttributes().shieldScreenCut = true;
+        }
         if ((features & (1 << FEATURE_SWIPE_TO_DISMISS)) != 0) {
             layoutResource = R.layout.screen_swipe_dismiss;
             setCloseOnSwipeEnabled(true);

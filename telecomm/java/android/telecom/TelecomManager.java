@@ -1099,6 +1099,48 @@ public class TelecomManager {
     }
 
     /**
+     * XTC: answer/reject behaviour selector forwarded to Telecom.
+     * @hide
+     */
+    public void setAnserAndRejectType(int type, int value) {
+        try {
+            if (isServiceConnected()) {
+                getTelecomService().setAnserAndRejectType(type, value);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException setAnserAndRejectType: ", e);
+        }
+    }
+
+    /**
+     * XTC: caller type selector forwarded to Telecom.
+     * @hide
+     */
+    public void setCallerType(int type, int soundMode) {
+        try {
+            if (isServiceConnected()) {
+                getTelecomService().setCallerType(type, soundMode);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException setCallerType: " + type + ", soundMode:" + soundMode, e);
+        }
+    }
+
+    /**
+     * XTC: ask Telecom to hang up because of thermal throttling.
+     * @hide
+     */
+    public void setThermalHangup() {
+        try {
+            if (isServiceConnected()) {
+                getTelecomService().setThermalHangup();
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException setThermalHangup: ", e);
+        }
+    }
+
+    /**
      * Used to determine the dialer package that is preloaded on the system partition.
      *
      * @return package name for the system dialer package or null if no system dialer is preloaded.

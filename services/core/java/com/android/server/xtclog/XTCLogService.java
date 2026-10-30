@@ -391,9 +391,11 @@ public class XTCLogService extends SystemService {
                 return;
             }
             try {
-                // The AOSP 8.1 interface has no temporary-density call, so the
-                // persistent call is used for both cases.
-                wm.setForcedDisplayDensityForUser(0, density, UserHandle.USER_CURRENT);
+                if (isDefault) {
+                    wm.setForcedDisplayDensityForUser(0, density, UserHandle.USER_CURRENT);
+                } else {
+                    wm.setTemporaryDisplayDensityForUser(0, density, UserHandle.USER_CURRENT);
+                }
             } catch (RemoteException e) {
                 e.printStackTrace();
             }

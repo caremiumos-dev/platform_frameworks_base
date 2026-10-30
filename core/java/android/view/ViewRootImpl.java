@@ -637,6 +637,13 @@ public final class ViewRootImpl implements ViewParent,
         synchronized (this) {
             if (mView == null) {
                 mView = view;
+                mXtcScreenCutUtils.setAttachView(view);
+                // XTC: 关机对话框等窗口在双指截屏期间屏蔽输入事件。
+                if (attrs.shieldScreenCut || (attrs.getTitle() != null
+                        && attrs.getTitle().equals("shutDownDialogWindow"))) {
+                    Slog.d(mTag, "shield double finger xtcScreenCut");
+                    mXtcScreenCutUtils.setShieldScreenCut();
+                }
 
                 mAttachInfo.mDisplayState = mDisplay.getState();
                 mDisplayManager.registerDisplayListener(mDisplayListener, mHandler);

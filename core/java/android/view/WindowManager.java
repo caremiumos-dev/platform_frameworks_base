@@ -1166,6 +1166,11 @@ public interface WindowManager extends ViewManager {
          */
         public static final int FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS = 0x80000000;
 
+        // XTC: vendor window flags carried in LayoutParams.flagsEx.
+        public static final int FLAG_EX_DISABLE_COVER_SLEEP = 1;
+        public static final int FLAG_EX_DISABLE_HALL_FLIP = 2;
+        public static final int FLAG_EX_QR_CODE_MODE = 4;
+
         /**
          * Various behavioral options/flags.  Default is none.
          *
@@ -1974,6 +1979,9 @@ public interface WindowManager extends ViewManager {
          */
         public long hideTimeoutMilliseconds = -1;
 
+        // XTC: window requests that the screen-cut (screenshot) path skip it.
+        public boolean shieldScreenCut = false;
+
         /**
          * The color mode requested by this window. The target display may
          * not be able to honor the request. When the color mode is not set
@@ -2147,6 +2155,7 @@ public interface WindowManager extends ViewManager {
             TextUtils.writeToParcel(accessibilityTitle, out, parcelableFlags);
             out.writeInt(mColorMode);
             out.writeLong(hideTimeoutMilliseconds);
+            out.writeInt(shieldScreenCut ? 1 : 0);
         }
 
         public static final Parcelable.Creator<LayoutParams> CREATOR
@@ -2203,6 +2212,7 @@ public interface WindowManager extends ViewManager {
             accessibilityTitle = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
             mColorMode = in.readInt();
             hideTimeoutMilliseconds = in.readLong();
+            shieldScreenCut = in.readInt() != 0;
         }
 
         @SuppressWarnings({"PointlessBitwiseExpression"})

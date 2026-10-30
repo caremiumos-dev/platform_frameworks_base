@@ -147,6 +147,9 @@ public abstract class Window {
      */
     public static final int FEATURE_ACTIVITY_TRANSITIONS = 13;
 
+    /** XTC: window opts into the double-finger screen-cut shield. @hide */
+    public static final int FEATURE_SHIELD_XTCSCREENCUT = 20;
+
     /**
      * Max value used as a feature ID
      * @hide
@@ -1111,6 +1114,13 @@ public abstract class Window {
         final WindowManager.LayoutParams attrs = getAttributes();
         attrs.flags = (attrs.flags&~mask) | (flags&mask);
         mForcedWindowFlags |= mask;
+        dispatchWindowAttributesChanged(attrs);
+    }
+
+    /** XTC: set vendor window flags (LayoutParams.flagsEx). @hide */
+    public void setFlagsEx(int flags, int mask) {
+        final WindowManager.LayoutParams attrs = getAttributes();
+        attrs.flagsEx = (attrs.flagsEx&~mask) | (flags&mask);
         dispatchWindowAttributesChanged(attrs);
     }
 

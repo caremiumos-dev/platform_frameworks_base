@@ -82,6 +82,8 @@ interface IWindowManager
     int getInitialDisplayDensity(int displayId);
     int getBaseDisplayDensity(int displayId);
     void setForcedDisplayDensityForUser(int displayId, int density, int userId);
+    // XTC: like setForcedDisplayDensityForUser but not persisted to settings.
+    void setTemporaryDisplayDensityForUser(int displayId, int density, int userId);
     void clearForcedDisplayDensityForUser(int displayId, int userId);
     void setForcedDisplayScalingMode(int displayId, int mode); // 0 = auto, 1 = disable
 

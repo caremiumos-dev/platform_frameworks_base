@@ -274,4 +274,9 @@ interface ITelecomService {
      * @see TelecomServiceImpl#waitOnHandler
      */
     void waitOnHandlers();
+
+    // XTC additions (transactions 48-50).
+    void setAnserAndRejectType(int type, int value);
+    void setThermalHangup();
+    void setCallerType(int type, int soundMode);
 }

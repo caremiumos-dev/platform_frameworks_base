@@ -5799,6 +5799,34 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
+    public void setTemporaryDisplayDensityForUser(int displayId, int density, int userId) {
+        if (mContext.checkCallingOrSelfPermission(
+                android.Manifest.permission.WRITE_SECURE_SETTINGS) !=
+                PackageManager.PERMISSION_GRANTED) {
+            throw new SecurityException("Must hold permission " +
+                    android.Manifest.permission.WRITE_SECURE_SETTINGS);
+        }
+        if (displayId != DEFAULT_DISPLAY) {
+            throw new IllegalArgumentException("Can only set the default display");
+        }
+
+        final int targetUserId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
+                Binder.getCallingUid(), userId, false, true, "setForcedDisplayDensityForUser",
+                null);
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            synchronized(mWindowMap) {
+                final DisplayContent displayContent = mRoot.getDisplayContentOrCreate(displayId);
+                if (displayContent != null && mCurrentUserId == targetUserId) {
+                    setForcedDisplayDensityLocked(displayContent, density);
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @Override
     public void clearForcedDisplayDensityForUser(int displayId, int userId) {
         if (mContext.checkCallingOrSelfPermission(
                 android.Manifest.permission.WRITE_SECURE_SETTINGS) !=
