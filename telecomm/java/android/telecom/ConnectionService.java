@@ -172,7 +172,8 @@ public abstract class ConnectionService extends Service {
     private static final int MSG_ON_STOP_RTT = 27;
     private static final int MSG_RTT_UPGRADE_RESPONSE = 28;
     private static final int MSG_CREATE_CONNECTION_COMPLETE = 29;
-
+    // XTC: add a participant to an existing connection or conference.
+    private static final int MSG_ADD_PARTICIPANT_WITH_CONFERENCE = 40;
     private static Connection sNullConnection;
 
     private final Map<String, Connection> mConnectionById = new ConcurrentHashMap<>();
@@ -590,6 +591,14 @@ public abstract class ConnectionService extends Service {
             } finally {
                 Log.endSession();
             }
+        }
+
+        @Override
+        public void addParticipantWithConference(String callId, String participant) {
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = callId;
+            args.arg2 = participant;
+            mHandler.obtainMessage(MSG_ADD_PARTICIPANT_WITH_CONFERENCE, args).sendToTarget();
         }
     };
 
@@ -1009,6 +1018,15 @@ public abstract class ConnectionService extends Service {
                     } finally {
                         args.recycle();
                         Log.endSession();
+                    }
+                    break;
+                }
+                case MSG_ADD_PARTICIPANT_WITH_CONFERENCE: {
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    try {
+                        addParticipantWithConference((String) args.arg1, (String) args.arg2);
+                    } finally {
+                        args.recycle();
                     }
                     break;
                 }
@@ -1695,6 +1713,26 @@ public abstract class ConnectionService extends Service {
         } else if (mConferenceById.containsKey(callId)) {
             Log.w(this, "handleRttUpgradeResponse called on a conference.");
         }
+    }
+
+    /**
+     * XTC: add {@code participant} to the connection or conference identified by {@code callId}.
+     */
+    public void addParticipantWithConference(String callId, String participant) {
+        Log.d(this, "ConnectionService addParticipantWithConference(%s, %s)", participant, callId);
+        Conference conference = findConferenceForAction(callId, "addParticipantWithConference");
+        Connection connection = findConnectionForAction(callId, "addParticipantWithConnection");
+        if (connection != getNullConnection()) {
+            onAddParticipant(connection, participant);
+        } else if (conference != getNullConference()) {
+            conference.onAddParticipant(participant);
+        }
+    }
+
+    /**
+     * XTC: called when Telecom asks to add a participant to {@code connection}.
+     */
+    public void onAddParticipant(Connection connection, String participant) {
     }
 
     private void onPostDialContinue(String callId, boolean proceed) {

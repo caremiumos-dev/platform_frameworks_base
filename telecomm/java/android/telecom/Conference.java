@@ -326,6 +326,13 @@ public abstract class Conference extends Conferenceable {
     public void onAudioStateChanged(AudioState state) {}
 
     /**
+     * XTC: called when Telecom asks to add a participant to this conference.
+     *
+     * @param participant The participant to add.
+     */
+    public void onAddParticipant(String participant) {}
+
+    /**
      * Notifies the {@link Conference} that the {@link #getCallAudioState()} property has a new
      * value.
      *

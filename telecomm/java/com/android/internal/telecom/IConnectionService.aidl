@@ -100,4 +100,7 @@ oneway interface IConnectionService {
 
     void respondToRttUpgradeRequest(String callId, in ParcelFileDescriptor fromInCall,
     in ParcelFileDescriptor toInCall, in Session.Info sessionInfo);
+
+    // XTC: add a participant to the call/conference identified by callId (transaction 29).
+    void addParticipantWithConference(String callId, String participant);
 }
