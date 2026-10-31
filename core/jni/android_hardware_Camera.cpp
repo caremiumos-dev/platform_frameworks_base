@@ -1020,6 +1020,28 @@ static void android_hardware_Camera_enableFocusMoveCallback(JNIEnv *env, jobject
 
 //-------------------------------------------------
 
+// XTC/QC HAL1 extensions. The AOSP camera HAL has no histogram/metadata
+// command, so these are accepted as no-ops instead of failing the JNI lookup.
+static void android_hardware_Camera_setHistogramMode(JNIEnv *env, jobject thiz, jboolean enable)
+{
+    ALOGV("setHistogramMode(%d): ignored by the AOSP HAL", enable);
+}
+
+static void android_hardware_Camera_setMetadataCb(JNIEnv *env, jobject thiz, jboolean enable)
+{
+    ALOGV("setMetadataCb(%d): ignored by the AOSP HAL", enable);
+}
+
+static void android_hardware_Camera_sendHistogramData(JNIEnv *env, jobject thiz)
+{
+    ALOGV("sendHistogramData: ignored by the AOSP HAL");
+}
+
+static void android_hardware_Camera_sendMetaData(JNIEnv *env, jobject thiz)
+{
+    ALOGV("sendMetaData: ignored by the AOSP HAL");
+}
+
 static const JNINativeMethod camMethods[] = {
   { "getNumberOfCameras",
     "()I",
@@ -1102,6 +1124,18 @@ static const JNINativeMethod camMethods[] = {
   { "enableFocusMoveCallback",
     "(I)V",
     (void *)android_hardware_Camera_enableFocusMoveCallback},
+  { "native_setHistogramMode",
+    "(Z)V",
+    (void *)android_hardware_Camera_setHistogramMode },
+  { "native_setMetadataCb",
+    "(Z)V",
+    (void *)android_hardware_Camera_setMetadataCb },
+  { "native_sendHistogramData",
+    "()V",
+    (void *)android_hardware_Camera_sendHistogramData },
+  { "native_sendMetaData",
+    "()V",
+    (void *)android_hardware_Camera_sendMetaData },
 };
 
 struct field {

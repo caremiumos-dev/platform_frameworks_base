@@ -26,6 +26,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.os.SystemProperties;
 import android.media.IAudioService;
 import android.os.Handler;
 import android.os.IBinder;
@@ -156,6 +157,9 @@ public class Camera {
     private static final int CAMERA_MSG_RAW_IMAGE_NOTIFY = 0x200;
     private static final int CAMERA_MSG_PREVIEW_METADATA = 0x400;
     private static final int CAMERA_MSG_FOCUS_MOVE       = 0x800;
+    // XTC/QC HAL1 extensions.
+    private static final int CAMERA_MSG_STATS_DATA       = 0x1000;
+    private static final int CAMERA_MSG_META_DATA        = 0x2000;
 
     private long mNativeContext; // accessed by native methods
     private EventHandler mEventHandler;
@@ -174,6 +178,14 @@ public class Camera {
     private boolean mWithBuffer;
     private boolean mFaceDetectionRunning = false;
     private final Object mAutoFocusCallbackLock = new Object();
+
+    // XTC/QC HAL1 extensions.
+    private CameraDataCallback mCameraDataCallback;
+    private CameraMetaDataCallback mCameraMetaDataCallback;
+    private long mCameraUseStartTime = 0;
+    private boolean mFinalizeRelease = false;
+    private int mCameraFacing = 0;
+    private static final String POWER_ANALYTICS_TAG = "PwrHistorian";
 
     private static final int NO_ERROR = 0;
 
@@ -290,6 +302,11 @@ public class Camera {
          * The facing of the camera is the same as that of the screen.
          */
         public static final int CAMERA_FACING_FRONT = 1;
+
+        /** XTC: camera supports non-ZSL capture mode. */
+        public static final int CAMERA_SUPPORT_MODE_NONZSL = 3;
+        /** XTC: camera supports ZSL capture mode. */
+        public static final int CAMERA_SUPPORT_MODE_ZSL = 2;
 
         /**
          * The direction that the camera faces. It should be
@@ -486,8 +503,38 @@ public class Camera {
             mEventHandler = null;
         }
 
+        // XTC/QC: packages listed in camera.hal1.packagelist may force the HAL1
+        // API on a camera that otherwise reports HAL3 support.
+        String opPackageName = ActivityThread.currentOpPackageName();
+        String hal1Packages = SystemProperties.get("camera.hal1.packagelist", "");
+        if (hal1Packages.length() > 0) {
+            TextUtils.SimpleStringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
+            splitter.setString(hal1Packages);
+            for (String pkg : splitter) {
+                if (opPackageName.equals(pkg)) {
+                    halVersion = CAMERA_HAL_API_VERSION_1_0;
+                    break;
+                }
+            }
+        }
+        mCameraUseStartTime = System.currentTimeMillis();
+        mCameraFacing = getFaceByCameraId(cameraId);
+
         return native_setup(new WeakReference<Camera>(this), cameraId, halVersion,
-                ActivityThread.currentOpPackageName());
+                opPackageName);
+    }
+
+    /**
+     * XTC/QC: decode a big-endian int32 out of a byte buffer.
+     *
+     * @hide
+     */
+    public static int byteToInt(byte[] buf, int offset) {
+        int value = 0;
+        for (int i = 0; i < 4; i++) {
+            value += (buf[(3 - i) + offset] & 0xFF) << ((3 - i) * 8);
+        }
+        return value;
     }
 
     private int cameraInitNormal(int cameraId) {
@@ -594,6 +641,7 @@ public class Camera {
 
     @Override
     protected void finalize() {
+        mFinalizeRelease = true;
         release();
     }
 
@@ -611,6 +659,34 @@ public class Camera {
     public final void release() {
         native_release();
         mFaceDetectionRunning = false;
+        if (mFinalizeRelease) {
+            return;
+        }
+        printPowerAnalyTime(System.currentTimeMillis());
+        mFinalizeRelease = false;
+    }
+
+    /**
+     * XTC: account the camera usage duration to the power historian.
+     */
+    private void printPowerAnalyTime(long now) {
+        String callingPackage = ActivityThread.currentOpPackageName();
+        String tag = mCameraFacing == CameraInfo.CAMERA_FACING_BACK
+                ? "XtcPwrBackCamera" : "XtcPwrFrontCamera";
+        if (now <= 0 || mCameraUseStartTime <= 0) {
+            return;
+        }
+        Log.d(POWER_ANALYTICS_TAG, tag + " time=" + (now - mCameraUseStartTime)
+                + " ms ,callingPackage=" + callingPackage);
+    }
+
+    /**
+     * XTC: facing of the given camera id, or back-facing when unknown.
+     */
+    private int getFaceByCameraId(int cameraId) {
+        CameraInfo info = new CameraInfo();
+        getCameraInfo(cameraId, info);
+        return info.facing;
     }
 
     /**
@@ -1245,6 +1321,23 @@ public class Camera {
                 }
                 return;
 
+            case CAMERA_MSG_STATS_DATA:
+                // XTC/QC: 257 little-endian int32 histogram bins.
+                int[] stats = new int[257];
+                for (int i = 0; i < 257; i++) {
+                    stats[i] = byteToInt((byte[]) msg.obj, i * 4);
+                }
+                if (mCameraDataCallback != null) {
+                    mCameraDataCallback.onCameraData(stats, mCamera);
+                }
+                return;
+
+            case CAMERA_MSG_META_DATA:
+                if (mCameraMetaDataCallback != null) {
+                    mCameraMetaDataCallback.onCameraMetaData((byte[]) msg.obj, mCamera);
+                }
+                return;
+
             default:
                 Log.e(TAG, "Unknown message type " + msg.what);
                 return;
@@ -1411,6 +1504,60 @@ public class Camera {
          * @param camera the Camera service object
          */
         void onAutoFocusMoving(boolean start, Camera camera);
+    }
+
+    /**
+     * XTC: histogram (statistics) data callback, only delivered when
+     * {@link #setHistogramMode} is enabled.
+     *
+     * @deprecated We recommend using the new {@link android.hardware.camera2} API for new
+     *             applications.
+     */
+    @Deprecated
+    public interface CameraDataCallback {
+        /**
+         * Called with the latest 257-entry histogram buffer.
+         */
+        void onCameraData(int[] data, Camera camera);
+    }
+
+    /**
+     * XTC: vendor meta data callback, only delivered when {@link #setMetadataCb}
+     * is enabled.
+     *
+     * @deprecated We recommend using the new {@link android.hardware.camera2} API for new
+     *             applications.
+     */
+    @Deprecated
+    public interface CameraMetaDataCallback {
+        /**
+         * Called with the vendor meta data blob.
+         */
+        void onCameraMetaData(byte[] data, Camera camera);
+    }
+
+    /**
+     * XTC: a touch (AF/AEC) coordinate reported by the vendor HAL.
+     *
+     * @deprecated We recommend using the new {@link android.hardware.camera2} API for new
+     *             applications.
+     */
+    @Deprecated
+    public class Coordinate {
+        public int xCoordinate;
+        public int yCoordinate;
+
+        public Coordinate(int x, int y) {
+            xCoordinate = x;
+            yCoordinate = y;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Coordinate)) return false;
+            Coordinate c = (Coordinate) obj;
+            return xCoordinate == c.xCoordinate && yCoordinate == c.yCoordinate;
+        }
     }
 
     /**
@@ -1763,6 +1910,43 @@ public class Camera {
     }
 
     /**
+     * XTC/QC: enable or disable histogram delivery via {@link CameraDataCallback}.
+     */
+    public final void setHistogramMode(CameraDataCallback callback) {
+        mCameraDataCallback = callback;
+        native_setHistogramMode(callback != null);
+    }
+
+    /**
+     * XTC/QC: enable or disable vendor meta data delivery via
+     * {@link CameraMetaDataCallback}.
+     */
+    public final void setMetadataCb(CameraMetaDataCallback callback) {
+        mCameraMetaDataCallback = callback;
+        native_setMetadataCb(callback != null);
+    }
+
+    private native final void native_setHistogramMode(boolean enable);
+    private native final void native_setMetadataCb(boolean enable);
+
+    /**
+     * XTC/QC: ask the HAL for a new histogram/statistics frame.
+     */
+    public final void sendHistogramData() {
+        native_sendHistogramData();
+    }
+
+    /**
+     * XTC/QC: ask the HAL for a new meta data frame.
+     */
+    public final void sendMetaData() {
+        native_sendMetaData();
+    }
+
+    private native final void native_sendHistogramData();
+    private native final void native_sendMetaData();
+
+    /**
      * Starts the face detection. This should be called after preview is started.
      * The camera will notify {@link FaceDetectionListener} of the detected
      * faces in the preview frame. The detected faces may be the same as the
@@ -2014,6 +2198,32 @@ public class Camera {
     }
 
     /**
+     * XTC/QC: current manual focus position, or -1 when unset.
+     */
+    public int getCurrentFocusPosition() {
+        Parameters p = new Parameters();
+        p.unflatten(native_getParameters());
+        String position = p.getCurrentFocusPosition();
+        if (position != null) {
+            return Integer.parseInt(position);
+        }
+        return -1;
+    }
+
+    /**
+     * XTC/QC: current white balance CCT, or 0 when unset.
+     */
+    public int getWBCurrentCCT() {
+        Parameters p = new Parameters();
+        p.unflatten(native_getParameters());
+        String cct = p.getWBCurrentCCT();
+        if (cct != null) {
+            return Integer.parseInt(cct);
+        }
+        return 0;
+    }
+
+    /**
      * Returns an empty {@link Parameters} for testing purpose.
      *
      * @return a Parameter object.
@@ -2259,6 +2469,55 @@ public class Camera {
 
         // Parameter key suffix for supported values.
         private static final String SUPPORTED_VALUES_SUFFIX = "-values";
+
+        // XTC/QC vendor parameter keys (HAL1 extensions).
+        public static final String KEY_QC_AE_BRACKET_HDR = "ae-bracket-hdr";
+        private static final String KEY_QC_AUTO_EXPOSURE = "auto-exposure";
+        private static final String KEY_QC_AUTO_HDR_ENABLE = "auto-hdr-enable";
+        private static final String KEY_QC_CAMERA_MODE = "camera-mode";
+        private static final String KEY_QC_CONTINUOUS_AF = "continuous-af";
+        private static final String KEY_QC_CONTRAST = "contrast";
+        private static final String KEY_QC_DENOISE = "denoise";
+        private static final String KEY_QC_EXIF_DATETIME = "exif-datetime";
+        private static final String KEY_QC_EXPOSURE_TIME = "exposure-time";
+        private static final String KEY_QC_FACE_DETECTION = "face-detection";
+        private static final String KEY_QC_GPS_ALTITUDE_REF = "gps-altitude-ref";
+        private static final String KEY_QC_GPS_LATITUDE_REF = "gps-latitude-ref";
+        private static final String KEY_QC_GPS_LONGITUDE_REF = "gps-longitude-ref";
+        private static final String KEY_QC_GPS_STATUS = "gps-status";
+        private static final String KEY_QC_HFR_SIZE = "hfr-size";
+        private static final String KEY_QC_HISTOGRAM = "histogram";
+        private static final String KEY_QC_ISO_MODE = "iso";
+        private static final String KEY_QC_LENSSHADE = "lensshade";
+        private static final String KEY_QC_MANUAL_FOCUS_POSITION = "manual-focus-position";
+        private static final String KEY_QC_MANUAL_FOCUS_POS_TYPE = "manual-focus-pos-type";
+        private static final String KEY_QC_MAX_CONTRAST = "max-contrast";
+        private static final String KEY_QC_MAX_EXPOSURE_TIME = "max-exposure-time";
+        private static final String KEY_QC_MAX_SATURATION = "max-saturation";
+        private static final String KEY_QC_MAX_SHARPNESS = "max-sharpness";
+        private static final String KEY_QC_MAX_WB_CCT = "max-wb-cct";
+        private static final String KEY_QC_MEMORY_COLOR_ENHANCEMENT = "mce";
+        private static final String KEY_QC_MIN_EXPOSURE_TIME = "min-exposure-time";
+        private static final String KEY_QC_MIN_WB_CCT = "min-wb-cct";
+        private static final String KEY_QC_POWER_MODE = "power-mode";
+        private static final String KEY_QC_POWER_MODE_SUPPORTED = "power-mode-supported";
+        private static final String KEY_QC_PREVIEW_FRAME_RATE_AUTO_MODE = "frame-rate-auto";
+        private static final String KEY_QC_PREVIEW_FRAME_RATE_FIXED_MODE = "frame-rate-fixed";
+        private static final String KEY_QC_PREVIEW_FRAME_RATE_MODE = "preview-frame-rate-mode";
+        private static final String KEY_QC_REDEYE_REDUCTION = "redeye-reduction";
+        private static final String KEY_QC_SATURATION = "saturation";
+        private static final String KEY_QC_SCENE_DETECT = "scene-detect";
+        private static final String KEY_QC_SELECTABLE_ZONE_AF = "selectable-zone-af";
+        private static final String KEY_QC_SHARPNESS = "sharpness";
+        private static final String KEY_QC_SKIN_TONE_ENHANCEMENT = "skinToneEnhancement";
+        private static final String KEY_QC_TOUCH_AF_AEC = "touch-af-aec";
+        private static final String KEY_QC_TOUCH_INDEX_AEC = "touch-index-aec";
+        private static final String KEY_QC_TOUCH_INDEX_AF = "touch-index-af";
+        private static final String KEY_QC_VIDEO_HDR = "video-hdr";
+        private static final String KEY_QC_VIDEO_HIGH_FRAME_RATE = "video-hfr";
+        private static final String KEY_QC_VIDEO_ROTATION = "video-rotation";
+        private static final String KEY_QC_WB_MANUAL_CCT = "wb-manual-cct";
+        private static final String KEY_QC_ZSL = "zsl";
 
         private static final String TRUE = "true";
         private static final String FALSE = "false";
@@ -2668,6 +2927,397 @@ public class Camera {
          */
         public void set(String key, int value) {
             put(key, Integer.toString(value));
+        }
+
+        // ---- XTC/QC vendor parameter accessors (HAL1 extensions) ----
+
+        public String getAEBracket() {
+            return get(KEY_QC_AE_BRACKET_HDR);
+        }
+
+        public void setAEBracket(String value) {
+            set(KEY_QC_AE_BRACKET_HDR, value);
+        }
+
+        public String getAutoExposure() {
+            return get(KEY_QC_AUTO_EXPOSURE);
+        }
+
+        public void setAutoExposure(String value) {
+            set(KEY_QC_AUTO_EXPOSURE, value);
+        }
+
+        public void setAutoHDRMode(String value) {
+            set(KEY_QC_AUTO_HDR_ENABLE, value);
+        }
+
+        public String getCameraMode() {
+            return get(KEY_QC_CAMERA_MODE);
+        }
+
+        public void setCameraMode(int value) {
+            set(KEY_QC_CAMERA_MODE, value);
+        }
+
+        public String getContinuousAf() {
+            return get(KEY_QC_CONTINUOUS_AF);
+        }
+
+        public void setContinuousAf(String value) {
+            set(KEY_QC_CONTINUOUS_AF, value);
+        }
+
+        public int getContrast() {
+            return getInt(KEY_QC_CONTRAST);
+        }
+
+        public void setContrast(int value) {
+            if (value < 0 || value > getMaxContrast()) {
+                throw new IllegalArgumentException("Invalid Contrast " + value);
+            }
+            set(KEY_QC_CONTRAST, String.valueOf(value));
+        }
+
+        public String getCurrentFocusPosition() {
+            return get(KEY_QC_MANUAL_FOCUS_POSITION);
+        }
+
+        public String getDenoise() {
+            return get(KEY_QC_DENOISE);
+        }
+
+        public void setDenoise(String value) {
+            set(KEY_QC_DENOISE, value);
+        }
+
+        public void setExifDateTime(String value) {
+            set(KEY_QC_EXIF_DATETIME, value);
+        }
+
+        public String getExposureTime() {
+            return get(KEY_QC_EXPOSURE_TIME);
+        }
+
+        public void setExposureTime(int value) {
+            set(KEY_QC_EXPOSURE_TIME, Integer.toString(value));
+        }
+
+        public String getMaxExposureTime() {
+            return get(KEY_QC_MAX_EXPOSURE_TIME);
+        }
+
+        public String getMinExposureTime() {
+            return get(KEY_QC_MIN_EXPOSURE_TIME);
+        }
+
+        public String getFaceDetectionMode() {
+            return get(KEY_QC_FACE_DETECTION);
+        }
+
+        public void setFaceDetectionMode(String value) {
+            set(KEY_QC_FACE_DETECTION, value);
+        }
+
+        public void setFocusPosition(int type, int position) {
+            set(KEY_QC_MANUAL_FOCUS_POS_TYPE, Integer.toString(type));
+            set(KEY_QC_MANUAL_FOCUS_POSITION, Integer.toString(position));
+        }
+
+        public void setGpsAltitudeRef(double value) {
+            set(KEY_QC_GPS_ALTITUDE_REF, Double.toString(value));
+        }
+
+        public void setGpsLatitudeRef(String value) {
+            set(KEY_QC_GPS_LATITUDE_REF, value);
+        }
+
+        public void setGpsLongitudeRef(String value) {
+            set(KEY_QC_GPS_LONGITUDE_REF, value);
+        }
+
+        public void setGpsStatus(double value) {
+            set(KEY_QC_GPS_STATUS, Double.toString(value));
+        }
+
+        public String getISOValue() {
+            return get(KEY_QC_ISO_MODE);
+        }
+
+        public void setISOValue(String value) {
+            set(KEY_QC_ISO_MODE, value);
+        }
+
+        public String getLensShade() {
+            return get(KEY_QC_LENSSHADE);
+        }
+
+        public void setLensShade(String value) {
+            set(KEY_QC_LENSSHADE, value);
+        }
+
+        public int getMaxContrast() {
+            return getInt(KEY_QC_MAX_CONTRAST);
+        }
+
+        public int getMaxSaturation() {
+            return getInt(KEY_QC_MAX_SATURATION);
+        }
+
+        public int getMaxSharpness() {
+            return getInt(KEY_QC_MAX_SHARPNESS);
+        }
+
+        public String getMaxWBCCT() {
+            return get(KEY_QC_MAX_WB_CCT);
+        }
+
+        public String getMemColorEnhance() {
+            return get(KEY_QC_MEMORY_COLOR_ENHANCEMENT);
+        }
+
+        public void setMemColorEnhance(String value) {
+            set(KEY_QC_MEMORY_COLOR_ENHANCEMENT, value);
+        }
+
+        public String getPowerMode() {
+            return get(KEY_QC_POWER_MODE);
+        }
+
+        public void setPowerMode(String value) {
+            set(KEY_QC_POWER_MODE, value);
+        }
+
+        public boolean isPowerModeSupported() {
+            return TRUE.equals(get(KEY_QC_POWER_MODE_SUPPORTED));
+        }
+
+        public String getPreviewFrameRateMode() {
+            return get(KEY_QC_PREVIEW_FRAME_RATE_MODE);
+        }
+
+        public void setPreviewFrameRateMode(String value) {
+            set(KEY_QC_PREVIEW_FRAME_RATE_MODE, value);
+        }
+
+        public String getRedeyeReductionMode() {
+            return get(KEY_QC_REDEYE_REDUCTION);
+        }
+
+        public void setRedeyeReductionMode(String value) {
+            set(KEY_QC_REDEYE_REDUCTION, value);
+        }
+
+        public int getSaturation() {
+            return getInt(KEY_QC_SATURATION);
+        }
+
+        public void setSaturation(int value) {
+            if (value < 0 || value > getMaxSaturation()) {
+                throw new IllegalArgumentException("Invalid Saturation " + value);
+            }
+            set(KEY_QC_SATURATION, String.valueOf(value));
+        }
+
+        public String getSceneDetectMode() {
+            return get(KEY_QC_SCENE_DETECT);
+        }
+
+        public void setSceneDetectMode(String value) {
+            set(KEY_QC_SCENE_DETECT, value);
+        }
+
+        public String getSelectableZoneAf() {
+            return get(KEY_QC_SELECTABLE_ZONE_AF);
+        }
+
+        public void setSelectableZoneAf(String value) {
+            set(KEY_QC_SELECTABLE_ZONE_AF, value);
+        }
+
+        public int getSharpness() {
+            return getInt(KEY_QC_SHARPNESS);
+        }
+
+        public void setSharpness(int value) {
+            if (value < 0 || value > getMaxSharpness()) {
+                throw new IllegalArgumentException("Invalid Sharpness " + value);
+            }
+            set(KEY_QC_SHARPNESS, String.valueOf(value));
+        }
+
+        public String getTouchAfAec() {
+            return get(KEY_QC_TOUCH_AF_AEC);
+        }
+
+        public void setTouchAfAec(String value) {
+            set(KEY_QC_TOUCH_AF_AEC, value);
+        }
+
+        public Coordinate getTouchIndexAec() {
+            return strToCoordinate(get(KEY_QC_TOUCH_INDEX_AEC));
+        }
+
+        public void setTouchIndexAec(int x, int y) {
+            set(KEY_QC_TOUCH_INDEX_AEC, Integer.toString(x) + "x" + Integer.toString(y));
+        }
+
+        public Coordinate getTouchIndexAf() {
+            return strToCoordinate(get(KEY_QC_TOUCH_INDEX_AF));
+        }
+
+        public void setTouchIndexAf(int x, int y) {
+            set(KEY_QC_TOUCH_INDEX_AF, Integer.toString(x) + "x" + Integer.toString(y));
+        }
+
+        public String getVideoHDRMode() {
+            return get(KEY_QC_VIDEO_HDR);
+        }
+
+        public void setVideoHDRMode(String value) {
+            set(KEY_QC_VIDEO_HDR, value);
+        }
+
+        public String getVideoHighFrameRate() {
+            return get(KEY_QC_VIDEO_HIGH_FRAME_RATE);
+        }
+
+        public void setVideoHighFrameRate(String value) {
+            set(KEY_QC_VIDEO_HIGH_FRAME_RATE, value);
+        }
+
+        public String getVideoRotation() {
+            return get(KEY_QC_VIDEO_ROTATION);
+        }
+
+        public void setVideoRotation(String value) {
+            set(KEY_QC_VIDEO_ROTATION, value);
+        }
+
+        public String getWBCurrentCCT() {
+            return get(KEY_QC_WB_MANUAL_CCT);
+        }
+
+        public String getWBMinCCT() {
+            return get(KEY_QC_MIN_WB_CCT);
+        }
+
+        public void setWBManualCCT(int value) {
+            set(KEY_QC_WB_MANUAL_CCT, Integer.toString(value));
+        }
+
+        public String getZSLMode() {
+            return get(KEY_QC_ZSL);
+        }
+
+        public void setZSLMode(String value) {
+            set(KEY_QC_ZSL, value);
+        }
+
+        public List<String> getSupportedAutoexposure() {
+            return split(get("auto-exposure-values"));
+        }
+
+        public List<String> getSupportedContinuousAfModes() {
+            return split(get("continuous-af-values"));
+        }
+
+        public List<String> getSupportedDenoiseModes() {
+            return split(get("denoise-values"));
+        }
+
+        public List<String> getSupportedFaceDetectionModes() {
+            return split(get("face-detection-values"));
+        }
+
+        public List<Size> getSupportedHfrSizes() {
+            return splitSize(get("hfr-size-values"));
+        }
+
+        public List<String> getSupportedHistogramModes() {
+            return split(get("histogram-values"));
+        }
+
+        public List<String> getSupportedIsoValues() {
+            return split(get("iso-values"));
+        }
+
+        public List<String> getSupportedLensShadeModes() {
+            return split(get("lensshade-values"));
+        }
+
+        public List<String> getSupportedMemColorEnhanceModes() {
+            return split(get("mce-values"));
+        }
+
+        public List<String> getSupportedRedeyeReductionModes() {
+            return split(get("redeye-reduction-values"));
+        }
+
+        public List<String> getSupportedSceneDetectModes() {
+            return split(get("scene-detect-values"));
+        }
+
+        public List<String> getSupportedSelectableZoneAf() {
+            return split(get("selectable-zone-af-values"));
+        }
+
+        public List<String> getSupportedSkinToneEnhancementModes() {
+            return split(get("skinToneEnhancement-values"));
+        }
+
+        public List<String> getSupportedTouchAfAec() {
+            return split(get("touch-af-aec-values"));
+        }
+
+        public List<String> getSupportedVideoHDRModes() {
+            return split(get("video-hdr-values"));
+        }
+
+        public List<String> getSupportedVideoHighFrameRateModes() {
+            return split(get("video-hfr-values"));
+        }
+
+        public List<String> getSupportedVideoRotationValues() {
+            return split(get("video-rotation-values"));
+        }
+
+        public List<String> getSupportedZSLModes() {
+            return split(get("zsl-values"));
+        }
+
+        private Coordinate strToCoordinate(String str) {
+            if (str == null) {
+                return null;
+            }
+            int index = str.indexOf('x');
+            if (index <= 0) {
+                return null;
+            }
+            try {
+                return new Coordinate(Integer.parseInt(str.substring(0, index)),
+                        Integer.parseInt(str.substring(index + 1)));
+            } catch (NumberFormatException e) {
+                return null;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                return null;
+            }
+        }
+
+        private ArrayList<Coordinate> splitCoordinate(String str) {
+            ArrayList<Coordinate> list = new ArrayList<Coordinate>();
+            if (str == null) {
+                return list;
+            }
+            TextUtils.SimpleStringSplitter commaSplitter =
+                    new TextUtils.SimpleStringSplitter(',');
+            commaSplitter.setString(str);
+            for (String coordinate : commaSplitter) {
+                Coordinate c = strToCoordinate(coordinate);
+                if (c != null) {
+                    list.add(c);
+                }
+            }
+            return list;
         }
 
         private void put(String key, String value) {
