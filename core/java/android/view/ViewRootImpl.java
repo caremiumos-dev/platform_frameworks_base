@@ -68,6 +68,7 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.util.AndroidRuntimeException;
+import android.util.BoostFramework;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.MergedConfiguration;
@@ -138,6 +139,16 @@ public final class ViewRootImpl implements ViewParent,
     private static final boolean DEBUG_FPS = false;
     private static final boolean DEBUG_INPUT_STAGES = false || LOCAL_LOGV;
     private static final boolean DEBUG_KEEP_SCREEN_ON = false || LOCAL_LOGV;
+
+    // XTC: view-root identity for window debugging.
+    private static final boolean DEBUG_DEFAULT = true;
+    private static final boolean IS_DEBUG_BUILD = true;
+    private static long sIdent = 0;
+    private long mIdent;
+    // XTC: scroll-time performance boost state.
+    boolean mHaveMoveEvent;
+    boolean mIsPerfLockAcquired;
+    BoostFramework mPerf;
 
     /**
      * Set to false if we do not want to use the multi threaded renderer. Note that by disabling
@@ -522,6 +533,8 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         loadSystemProperties();
+
+        mIdent = sIdent++;
     }
 
     public static void addFirstDrawHandler(Runnable callback) {
@@ -916,6 +929,12 @@ public final class ViewRootImpl implements ViewParent,
 
     public CharSequence getTitle() {
         return mWindowAttributes.getTitle();
+    }
+
+    @Override
+    public String toString() {
+        return "ViewRoot{" + Integer.toHexString(System.identityHashCode(this))
+                + ", title=" + mWindowAttributes.getTitle() + ",ident = " + mIdent + "}";
     }
 
     void destroyHardwareResources() {
@@ -2923,6 +2942,17 @@ public final class ViewRootImpl implements ViewParent,
         scrollToRectOrFocus(null, false);
 
         if (mAttachInfo.mViewScrollChanged) {
+            // XTC: a scroll caused by a drag gets a one-shot scroll boost.
+            if (mHaveMoveEvent && !mIsPerfLockAcquired) {
+                mIsPerfLockAcquired = true;
+                if (mPerf == null) {
+                    mPerf = new BoostFramework();
+                }
+                if (mPerf != null) {
+                    mPerf.perfHint(BoostFramework.VENDOR_HINT_SCROLL_BOOST,
+                            mContext.getPackageName(), -1, 4);
+                }
+            }
             mAttachInfo.mViewScrollChanged = false;
             mAttachInfo.mTreeObserver.dispatchOnScrollChanged();
         }
@@ -4845,6 +4875,14 @@ public final class ViewRootImpl implements ViewParent,
                     && SystemProperties.getInt("persist.sys.xtcscreencut", 0) == 1
                     && mXtcScreenCutUtils.dealPausedPointerEvent(event))
                     ? true : mView.dispatchPointerEvent(event);
+            // XTC: track scroll gestures so draw() can boost the scroll hint.
+            final int actionMasked = event.getActionMasked();
+            if (actionMasked == MotionEvent.ACTION_MOVE) {
+                mHaveMoveEvent = true;
+            } else if (actionMasked == MotionEvent.ACTION_UP) {
+                mHaveMoveEvent = false;
+                mIsPerfLockAcquired = false;
+            }
             maybeUpdatePointerIcon(event);
             maybeUpdateTooltip(event);
             mAttachInfo.mHandlingPointerEvent = false;
